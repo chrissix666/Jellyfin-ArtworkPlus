@@ -1,0 +1,13 @@
+# .NET build output
+bin/
+obj/
+
+# Generated preview of the config page (python build_preview.py)
+preview/
+
+# Local backups of the pre-migration tree
+_backup/
+
+# Python
+__pycache__/
+*.pyc

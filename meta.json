@@ -1,0 +1,16 @@
+{
+  "category": "Experimental",
+  "changelog": "1.0.0.0: Initial release.",
+  "description": "Character posters, characterart, animated posters, actor art and customizable backdrop rotation for movies and TV shows.",
+  "guid": "a32fa765-c917-4c30-a58c-5998015cd046",
+  "name": "ArtworkPlus",
+  "overview": "Five independent features: rotating character-poster slideshows (movies + TV shows, detail page and library grids), characterart overlays, animated main posters, actor art on person pages (Red Carpet), and a configurable override of Jellyfin's native multi-backdrop rotation (Chrome/Chromium only).",
+  "owner": "",
+  "targetAbi": "10.10.7.0",
+  "timestamp": "0001-01-01T00:00:00.0000000Z",
+  "version": "1.0.0.0",
+  "status": "Active",
+  "autoUpdate": false,
+  "assemblies": [],
+  "imagePath": "logo.png"
+}

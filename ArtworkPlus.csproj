@@ -1,0 +1,201 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Jellyfin.Plugin.ArtworkPlus</RootNamespace>
+    <AssemblyName>Jellyfin.Plugin.ArtworkPlus</AssemblyName>
+    <!-- Real deployment bug found during real-world testing: this is a
+         class LIBRARY project (a Jellyfin plugin, no <OutputType>Exe>),
+         and .NET class libraries do NOT copy their own NuGet package
+         dependencies into the build output folder by default - only
+         "application" projects do that automatically. This was never a
+         problem before this session, since the plugin's only
+         dependencies (Jellyfin.Controller/Jellyfin.Model/Microsoft.
+         Extensions.Caching.Memory) are all already present in Jellyfin's
+         own server process, so a missing local copy of them never
+         actually mattered at runtime. SixLabors.ImageSharp is different -
+         a genuinely new, external dependency Jellyfin itself does not
+         already provide - and its absence from the plugin's own output
+         folder caused a real, reproduced System.IO.FileNotFoundException
+         at runtime ("Could not load file or assembly
+         'SixLabors.ImageSharp'"), confirmed directly against a real
+         Jellyfin server log. Confirmed via Microsoft's own official
+         MSBuild property documentation that this exact property is the
+         intended, documented fix specifically for "plugin projects that
+         have dependencies on other libraries" - not a workaround, the
+         recommended solution.
+
+         NOTE ON HISTORY: this project used to also depend on
+         Microsoft.ML.OnnxRuntime (for a trained ONNX text-detection
+         model, People Backdrops' text filter). That entire dependency -
+         and the large amount of MSBuild machinery this .csproj used to
+         carry to work around its native-library deployment problems
+         (a real "Malfunctioned" plugin-status bug caused by Jellyfin's
+         own PluginManager trying to load ONNX Runtime's native DLL as a
+         managed assembly, plus a build-time rename/cleanup step to work
+         around it) - was removed. PeopleBackdropsTextDetector.cs was
+         rewritten to use a much smaller, dependency-free classical
+         image-processing heuristic (Otsu thresholding + connected-
+         component analysis + geometric/grouping filters) instead of a
+         trained neural network, entirely in SixLabors.ImageSharp - see
+         that file's own doc comment for the full reasoning and the
+         empirical testing this was validated against before replacing
+         the ONNX approach. This removed ~100MB+ of native runtime
+         binaries and an entire class of native-DLL deployment bugs, at
+         the cost of using a less precise (but explicitly "good enough
+         as a shield, not perfect" per the user's own stated
+         requirement) detection method. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- IMPORTANT: 10.10.7 doesn't exist as its own NuGet package (confirmed
+         via web search - version jumps go straight from 10.10.6 to
+         10.11.x). 10.10.6 is the closest actually-existing version; being
+         a patch release relative to 10.10.7, no API breaks are expected.
+         targetAbi in meta.json (the value that actually decides whether
+         Jellyfin loads the plugin) stays at 10.10.7.0 regardless.
+         ExcludeAssets="runtime" added after a real, reproduced problem:
+         with CopyLocalLockFileAssemblies=true, these packages' own DLLs -
+         AND their transitive dependencies like Jellyfin.Data.dll,
+         MediaBrowser.*.dll, Emby.Naming.dll, ICU4N.dll/J2N.dll/
+         Diacritics.dll - all started getting copied into the plugin's
+         own output folder. All of these are ALREADY loaded in Jellyfin's
+         own host process (that's the whole point of referencing these
+         packages - they model Jellyfin's own existing types), so a
+         plugin-local copy is pure redundancy, and multiple real,
+         independent Jellyfin plugin bug reports (jellyfin-plugin-
+         webhook#96, jellyfin-plugin-artwork#17) confirm this exact
+         redundancy is a known, real cause of "FileLoadException:
+         Assembly with same name is already loaded" -> plugin marked
+         "Malfunctioned". ExcludeAssets="runtime" keeps these packages
+         fully available at COMPILE time (so all the code using
+         Jellyfin's own types still builds normally) while excluding
+         only their RUNTIME/deployment assets from ending up in this
+         plugin's own output folder - matching how Jellyfin plugins are
+         meant to reference the host application's own packages. -->
+    <PackageReference Include="Jellyfin.Controller" Version="10.10.6" ExcludeAssets="runtime" />
+    <PackageReference Include="Jellyfin.Model" Version="10.10.6" ExcludeAssets="runtime" />
+    <!-- For IMemoryCache (server-side caching, curriculum section B). Very
+         likely already available transitively via Jellyfin.Controller
+         (Jellyfin itself calls AddMemoryCache() in
+         ApplicationHost.cs:461), but referenced explicitly anyway, to
+         avoid risking an uncertain "should already be there" - can't be
+         verified here without actually compiling. Same ExcludeAssets
+         reasoning as the two packages above - Jellyfin's own host process
+         already has this loaded. -->
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" ExcludeAssets="runtime" />
+    <!-- For People Backdrops' image dimension checks (16:9 aspect-ratio
+         lock) AND its text-presence filter (see
+         PeopleBackdropsTextDetector.cs). System.Drawing.Common was ruled
+         out - Windows-only since .NET 6, no real cross-platform story
+         for a plugin that must also run on Linux/Docker/ARM.
+         SixLabors.ImageSharp: fully managed, genuinely cross-platform,
+         no native binaries whatsoever - this is precisely why it was
+         chosen to carry the ENTIRE text-detection workload itself once
+         the earlier ONNX Runtime approach was abandoned (see this
+         project's own history note in the PropertyGroup above), not
+         just the aspect-ratio check it was originally added for.
+         Licensing note: the "Six Labors Split License" is free
+         (Apache 2.0 terms) for open-source software like this plugin,
+         regardless of revenue - but starting at v4.0.0 specifically,
+         DIRECT package dependencies additionally require a build-time
+         license key even under the free terms (confirmed via direct
+         search - real build errors reported by other users hitting this
+         on 4.0.0). Deliberately pinned to 3.1.7 (the last major line
+         before that requirement was introduced) to avoid this extra
+         setup friction entirely for anyone building this plugin. -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Verified against MediaBrowser.Common.Plugins.BasePluginOfT: the
+         plugin ID is read at runtime via
+         GetCustomAttributes(typeof(GuidAttribute)) from the assembly, NOT
+         from meta.json. Must match the guid there. -->
+    <AssemblyAttribute Include="System.Runtime.InteropServices.GuidAttribute">
+      <_Parameter1>a32fa765-c917-4c30-a58c-5998015cd046</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Jellyfin's IHasWebPages/PluginPageInfo.EmbeddedResourcePath strictly
+         requires an embedded resource (verified against
+         MediaBrowser.Model.Plugins.PluginPageInfo) - the config page MUST
+         therefore be embedded, that's not a choice.
+         The three feature scripts (Jellyfin-ArtworkPlus-Posters-v1.js,
+         -RenderArt-v1.js, -Backdrops-v1.js) should
+         be seen as separate from that: they are deliberately NOT
+         embedded, but read from disk at runtime from the plugin's data
+         folder (one GetScript() endpoint per controller) - only this way
+         do they stay changeable without a rebuild. RenderArt-v1.js
+         replaced the two previously separate CharacterArt-v1.js/
+         RedCarpet-v1.js files (file-level merge only, per explicit user
+         request - neither feature's own behavior, admin-UI section, or
+         settings changed; see that file's own header comment).
+         Posters-v1.js replaced the three previously separate
+         CustomPoster-v1.js/AnimatedPoster-v1.js/ExtraPoster-v1.js files -
+         see that file's
+         own header comment for the full architecture consolidation
+         reasoning.
+         Jellyfin-ArtworkPlus-Core-v1.js is the one exception among the
+         four .js files - it's "connection and bundling functions, the
+         switching center, the engine" (not a tunable feature setting a
+         user would ever want to hand-edit post-install), so it IS
+         embedded here, removing a manual-copy step for it specifically -
+         served via its own dedicated endpoint reading this embedded
+         resource instead of a disk path (see CoreScriptController).
+         Explicit <LogicalName> (unlike configPage.html above, which
+         relies on MSBuild's default name-generation instead): without
+         it, the manifest resource name would have to be predicted by
+         hand in CoreScriptController.cs (RootNamespace + sanitized
+         folder segments + the raw file name, per MSBuild's
+         CreateCSharpManifestResourceName task) - a guess that's very
+         likely correct (the task does NOT sanitize the final file name
+         segment itself, only intermediate folder names, so the hyphens
+         in this file's name should survive unchanged), but still a
+         guess never confirmed against a real compiled DLL, since no
+         .NET SDK was available while building this plugin. An explicit
+         LogicalName sidesteps that prediction entirely - the name
+         becomes a stated fact instead of an inferred one, at the small
+         cost of it now living in two places (here and in
+         CoreScriptController.cs) that must be kept in sync if this file
+         is ever renamed or moved again. -->
+    <EmbeddedResource Include="Configuration\configPage.html" />
+    <EmbeddedResource Include="EmbeddedScripts\Jellyfin-ArtworkPlus-Core-v1.js">
+      <LogicalName>Jellyfin-ArtworkPlus-Core-v1.js</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Case textures (concept-mode session, boxes.zip) - deliberately NOT
+         EmbeddedResource but plain build-output files: they thereby land
+         automatically in the same ZIP as the DLL and, on install/update,
+         right next to it in the assembly folder
+         (plugins/ArtworkPlus_x.x.x.x/CaseTextures/...), without any manual
+         copy step and without bloating the DLL (currently ~8.5MB).
+         Explicitly NOT in DataFolderPath, because these files must travel
+         with the code (update automatically with every plugin update)
+         rather than stay stable across updates like the three editable
+         feature scripts there. `**\*.png` picks up the complete subfolder
+         structure (vivaelitecases/clearcases/vortexcases/vivaelite3dcases)
+         automatically without listing every file - unlike EmbeddedResource,
+         where that would be necessary. -->
+    <Content Include="CaseTextures\**\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- Plugin catalog logo (1280x720, icon + title + subtitle). Originally
+         an EmbeddedResource for an `IHasThumbImage` interface that does not
+         exist in Jellyfin 10.10 (caught by the first real build, Session
+         110, see Plugin.cs). Jellyfin reads the image via `imagePath` in
+         meta.json, relative to the plugin folder - hence a plain build-
+         output file next to the DLL, like the CaseTextures. -->
+    <Content Include="Assets\logo.png">
+      <Link>logo.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
