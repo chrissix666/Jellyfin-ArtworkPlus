@@ -1137,6 +1137,22 @@
                 // next pick from a shrunk list is already safe as-is).
                 if (idx < state.index) { state.index -= 1; }
                 else if (idx === state.index) { state.index -= 1; }
+                // REAL BUG FOUND AND FIXED (Session 113, seen live during a
+                // DNS outage that made every hotlink fail): the Shuffle
+                // bag still held indices into the OLD, longer list. After
+                // the splice an index >= the new length picked
+                // state.images[i] === undefined and handed "undefined" to
+                // the loader (4 such attempts logged for 8 dead images).
+                // Same repair clear() already does, but keeping the
+                // current round intact: drop the removed index and shift
+                // every higher one down by one.
+                var bag = [];
+                for (var b = 0; b < state._randomBag.length; b++) {
+                    var v = state._randomBag[b];
+                    if (v === idx) { continue; }
+                    bag.push(v > idx ? v - 1 : v);
+                }
+                state._randomBag = bag;
                 if (state.images.length === 0) {
                     // Nothing left at all - stop cleanly rather than
                     // letting a caller's own advance()/tick() call find
