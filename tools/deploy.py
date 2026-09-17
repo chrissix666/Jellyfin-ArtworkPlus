@@ -134,7 +134,11 @@ def main():
         sys.exit(0 if deploy_scripts() else 1)
     if mode != "full":
         raise SystemExit(__doc__)
-    if not wait(lambda: not jellyfin_running(), 90, "jellyfin.exe exited"):
+    import threading
+    threading.Thread(target=lambda: __import__("pywinauto"), daemon=True).start()  # overlap the ~3 s import with the shutdown wait
+    # May be started before the API shutdown is even sent (the caller
+    # fires it from the browser in parallel): wait for the process to go.
+    if not wait(lambda: not jellyfin_running(), 120, "jellyfin.exe exited"):
         sys.exit(1)
     deploy_plugin()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -145,7 +149,7 @@ def main():
         sys.exit(1)
     if not wait(lambda: http("/System/Info/Public")[0] == 200, 90, "API up"):
         sys.exit(1)
-    time.sleep(2)
+    wait(lambda: 'Loaded plugin: "ArtworkPlus"' in LOG.read_text(encoding="utf-8", errors="replace")[-200000:], 20, "plugin load line in log")
     ok = log_check()
     ok &= deploy_scripts()
     core = http("/ArtworkPlusCore/script.js")[0]
