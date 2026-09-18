@@ -1468,6 +1468,10 @@
 
     /** The owner currently on screen is leaving; fadeFn(reason) starts its fade-out. */
     function busRelease(owner, fadeFn) {
+        // An owner that leaves is no claimant any more (its pending render,
+        // if any, is discarded by its generation guard and would never
+        // report ready/empty - the claim must not linger).
+        delete bus.claims[owner];
         if (bus.showing === owner) { bus.showing = null; }
         var fired = false;
         var timer = null;
@@ -1737,7 +1741,11 @@
             visitShown = false;
             if (!hasContent()) {
                 emptyContainer();
-                if (bus.showing === name) { bus.showing = null; busApplyClasses(); }
+                delete bus.claims[name];
+                if (bus.showing === name) { bus.showing = null; }
+                busApplyClasses();
+                // No resolve here: a waiter's own grace timer decides (the
+                // successor's claim may still arrive in this same navigation).
                 return;
             }
             var myGeneration = generation;
