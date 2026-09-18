@@ -55,11 +55,11 @@ Sets (BoxSets): supported by Animated/Custom/Extra since Sessions 87–92 (Movie
 | Detail View Backdrops | item detail pages (replaces native rotation, Chromium only) | `Backdrops`: `settings`, `allowed-indices` | `Backdrops*` (14) | ❓ | |
 | People Backdrops | person pages + filmography lists; sources Appearances / Folder / Wallpapers.com (JSON cache per person) | `PeopleBackdrops`: `{personId}?scope=`, `{personId}/folder-image`, POST `test-api-key`, POST `wipe` | `PeopleBackdrops*` (19) | ✅ Wallpapers.com (Session 113, Keanu Reeves `25fbc31c…`) | Appearances/Folder ❓ |
 | Genre Backdrops | library view filtered by genre | `Backdrops/genre-pool` | `BackdropsGenre*` (11) | ✅ Session 116 (missing `img.src` fixed) | Movies → Genre Abenteuer `4dbf3d…` |
-| Studio Backdrops | library view / studio pages | `Backdrops/studio-settings`, `studio-image` | `BackdropsStudio*` (6) | ❓ | |
-| Tag Backdrops | library view filtered by tag | `Backdrops/tag-pool` | `BackdropsTag*` (8) | ❓ | |
-| Favorites Backdrops | favorites view; People cascade | `Backdrops/favorites-pool`, `favorites-people-pool` | `BackdropsFavorites*` (39), `BackdropsFavoritesPeople*` (3) | ❓ | |
+| Studio Backdrops | library view / studio pages; **Source**: Appearances (`studio-pool`) or Studio image (default) | `Backdrops/studio-settings`, `studio-image`, `studio-pool` | `BackdropsStudio*` (11) | ✅ Studio image live (user); Appearances ❓ (deploy pending) | |
+| Tag Backdrops | library view filtered by tag | `Backdrops/tag-pool` | `BackdropsTag*` (8) | ✅ live (user, Session 116) | |
+| Favorites Backdrops | favorites view; People cascade; endpoints `[Authorize]` (per-user data) | `Backdrops/favorites-pool`, `favorites-people-pool` | `BackdropsFavorites*` (39), `BackdropsFavoritesPeople*` (3) | ❌→fixed Session 116 (IsFavorite without user = HTTP 500), live check after deploy | |
 
-All backdrop rotation timing runs through `Core.createBackdropRotationEngine()` (tested by `tests/test_rotation_engine.py`); every category's render path is checked by `tests/test_backdrops_render.py` (a real image must appear in the category's own container).
+Live endpoint smoke: `tools/backdrops_smoke.js` (run in the logged-in tab after every deploy, must end `SMOKE OK`). All backdrop rotation timing runs through `Core.createBackdropRotationEngine()` (tested by `tests/test_rotation_engine.py`); every category's render path is checked by `tests/test_backdrops_render.py` (a real image must appear in the category's own container).
 
 ## Cross-cutting
 
