@@ -43,6 +43,7 @@ GATING = [
     'test_backdrops_render.py',
     'test_description_length.py',   # rule 27: one-line descriptions (needs the preview, built below)
     'test_backdrop_resolver.py',    # Session 118: Custom listener = Jellyfin's rules 1:1 (builds tests/resolver_harness on first run)
+    'test_renderart_render.py',     # Session 119: Characterart/Red Carpet as the CSS clearlogo replica (anchors, units, cycle/delay/fade, hide, fullscreen class)
 ]
 INFORMATIONAL = [
     'diagnostic_cross_node_check.py',

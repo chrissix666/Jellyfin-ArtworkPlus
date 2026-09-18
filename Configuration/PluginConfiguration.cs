@@ -1062,7 +1062,7 @@ public class PluginConfiguration : BasePluginConfiguration
     // CharacterartMoviesTopRightFullscreenOffsetVw below for the full
     // reasoning) - added on top of the OffsetVw above ONLY while the
     // browser tab is in fullscreen.
-    public double CharacterartMoviesTopLeftFullscreenOffsetVw { get; set; } = -2;
+    public double CharacterartMoviesTopLeftFullscreenOffsetVw { get; set; }
 
     public string CharacterartMoviesTopRightScaleMode { get; set; } = "Height";
 
@@ -1093,8 +1093,13 @@ public class PluginConfiguration : BasePluginConfiguration
     /// per-position after the user found windowed and fullscreen need
     /// visibly different corrections at different positions, not one
     /// shared amount.
+    /// Session 119: default 0 everywhere (was -2/+2 for the top
+    /// positions) - the CSS clearlogo replica removed the poster anchor
+    /// that caused the fullscreen drift, so no correction is needed by
+    /// default; the field stays for fine-tuning (applied via a body class
+    /// the client toggles, see Core.installFullscreenClass()).
     /// </summary>
-    public double CharacterartMoviesTopRightFullscreenOffsetVw { get; set; } = 2;
+    public double CharacterartMoviesTopRightFullscreenOffsetVw { get; set; }
 
     public string CharacterartMoviesBottomLeftScaleMode { get; set; } = "Height";
 
@@ -1148,7 +1153,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public double CharacterartTvShowsTopLeftOffsetVw { get; set; } = 9;
 
     // Per-position fullscreen offset - see CharacterartMoviesTopRightFullscreenOffsetVw's own doc comment for the full reasoning.
-    public double CharacterartTvShowsTopLeftFullscreenOffsetVw { get; set; } = -2;
+    public double CharacterartTvShowsTopLeftFullscreenOffsetVw { get; set; }
 
     public string CharacterartTvShowsTopRightScaleMode { get; set; } = "Height";
 
@@ -1165,7 +1170,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public double CharacterartTvShowsTopRightOffsetVw { get; set; } = -9;
 
     // Per-position fullscreen offset - see CharacterartMoviesTopRightFullscreenOffsetVw's own doc comment for the full reasoning.
-    public double CharacterartTvShowsTopRightFullscreenOffsetVw { get; set; } = 2;
+    public double CharacterartTvShowsTopRightFullscreenOffsetVw { get; set; }
 
     public string CharacterartTvShowsBottomLeftScaleMode { get; set; } = "Height";
 

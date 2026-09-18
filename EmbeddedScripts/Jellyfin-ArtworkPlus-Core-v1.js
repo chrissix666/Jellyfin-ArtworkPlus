@@ -1274,6 +1274,118 @@
         };
     }
 
+
+    // -----------------------------------------------------------------
+    // Session 119: CSS art boxes (Characterart + Red Carpet), the
+    // clearlogo replica. Jellyfin's own .detailLogo is pure CSS
+    // (librarybrowser.scss: position:absolute; top:10vh; right:25vw;
+    // width:25vw; height:16vh; background-size:contain) - it never
+    // measures anything, so it follows every window resize smoothly
+    // and never shifts in fullscreen. The old RenderArt code measured
+    // logo/poster/ribbon rectangles in pixels and re-applied them after
+    // a debounce, which is exactly the "zappeln" the user saw, and its
+    // poster anchor (max-height:80vh) is why fullscreen shifted the
+    // horizontal position. Everything positional now lives in ONE
+    // injected stylesheet plus a few CSS custom properties per box;
+    // JavaScript only creates the elements and runs the rotation.
+    // -----------------------------------------------------------------
+
+    var RENDERART_STYLE_ID = 'artworkplus-renderart-style';
+    var RENDERART_CSS = [
+        // The box: the admin's "window" (Height/Max width or Width/Max
+        // height, all vw/vh) - the image fits inside it like the
+        // clearlogo's background-size:contain, aligned by object-position.
+        '.artworkplus-art-box{pointer-events:none;--ap-fs:0vw;}',
+        '.artworkplus-art-box>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}',
+        // Characterart "top": a zero-height anchor on Jellyfin\'s ribbon line
+        // (.itemBackdrop height 40vh, .detailRibbon margin-top -7.2em - both
+        // Jellyfin\'s own values, incl. its <=31.25em height exception). The
+        // box hangs from that line with bottom:0 and grows upwards. Its
+        // horizontal edge is the clearlogo\'s edge: left edge 50vw (TopLeft
+        // = box right edge there), right edge 75vw (TopRight = box left edge
+        // there) - shifted by Offset (+ Fullscreen offset while fullscreen).
+        '.artworkplus-art-anchor{position:absolute;height:0;top:calc(40vh - 7.2em);pointer-events:none;z-index:0;}',
+        '.artworkplus-art-anchor.artworkplus-top-left{left:0;right:50vw;}',
+        '.artworkplus-art-anchor.artworkplus-top-right{left:75vw;right:0;}',
+        '.artworkplus-art-anchor>.artworkplus-art-box{position:absolute;bottom:0;}',
+        '.artworkplus-art-anchor.artworkplus-top-left>.artworkplus-art-box{right:calc(0px - var(--ap-offset) - var(--ap-fs));}',
+        '.artworkplus-art-anchor.artworkplus-top-right>.artworkplus-art-box{left:calc(var(--ap-offset) + var(--ap-fs));}',
+        '@media all and (max-height:31.25em){.artworkplus-art-anchor{top:calc(52vh - 7.2em);}}',
+        // Same breakpoints that hide the native clearlogo (librarybrowser.scss).
+        '@media all and (max-width:68.75em){.artworkplus-art-anchor{display:none;}}',
+        '.layout-mobile .artworkplus-art-anchor,.layout-tv .artworkplus-art-anchor{display:none;}',
+        // "Bottom" boxes (Characterart BottomLeft/BottomRight, Red Carpet):
+        // glued to the viewport like .skinHeader, 0.8vw from the side edge.
+        '.artworkplus-art-box.artworkplus-bottom-left,.artworkplus-art-box.artworkplus-bottom-right{position:fixed;bottom:0;}',
+        '.artworkplus-art-box.artworkplus-bottom-left{left:calc(0.8vw + var(--ap-offset) + var(--ap-fs));}',
+        '.artworkplus-art-box.artworkplus-bottom-right{right:calc(0.8vw - var(--ap-offset) - var(--ap-fs));}',
+        // Fullscreen offset: only while the <body> carries the class set by
+        // installFullscreenClass() - the sole remaining piece of JS in the
+        // positioning, because CSS :fullscreen cannot see the browser\'s F11.
+        'body.artworkplus-fullscreen .artworkplus-art-box{--ap-fs:var(--ap-fs-offset);}'
+    ].join('\n');
+
+    function ensureRenderArtStyles() {
+        if (document.getElementById(RENDERART_STYLE_ID)) { return; }
+        var style = document.createElement('style');
+        style.id = RENDERART_STYLE_ID;
+        style.textContent = RENDERART_CSS;
+        (document.head || document.documentElement).appendChild(style);
+    }
+
+    /**
+     * Fullscreen detection, kept ONLY for the "Fullscreen offset" fields:
+     * the Fullscreen API never reflects the browser's own F11 toggle, so
+     * (as the user's VideoOSD ClearLogoArt userscript does) a window that
+     * fills the entire screen height counts as fullscreen too. The result
+     * is one class on <body>; the stylesheet does the rest. No measuring,
+     * no debounce - a class toggle cannot make anything jump.
+     */
+    function isEffectivelyFullscreen() {
+        var api = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
+        var fillsScreen = !!window.screen && window.innerHeight >= window.screen.height; // the original heuristic of both RenderArt sections (height only - a maximized window still loses height to the browser chrome)
+        return api || fillsScreen;
+    }
+
+    var fullscreenClassInstalled = false;
+    function installFullscreenClass() {
+        if (fullscreenClassInstalled) { return; }
+        fullscreenClassInstalled = true;
+        var apply = function () {
+            try { document.body.classList.toggle('artworkplus-fullscreen', isEffectivelyFullscreen()); } catch (e) { /* no body yet */ }
+        };
+        window.addEventListener('resize', apply);
+        document.addEventListener('fullscreenchange', apply);
+        apply();
+    }
+
+    /**
+     * Writes the admin's sizing onto a box as pure CSS: ScaleMode Height =
+     * height:Hvh + width:MaxWvw; ScaleMode Width = width:Wvw +
+     * height:MaxHvh. A Max of 0 means "follow the image" - then the box
+     * takes the first image's aspect ratio (aspect-ratio CSS, a one-off
+     * natural value, no viewport dependency) instead of a fixed second
+     * side. Offsets become custom properties for the stylesheet above.
+     */
+    function applyArtBoxSizing(box, result, naturalAspectRatio) {
+        var ratio = naturalAspectRatio > 0 ? naturalAspectRatio : 1;
+        box.style.aspectRatio = '';
+        if (result.ScaleMode === 'Width') {
+            box.style.width = result.WidthVw + 'vw';
+            if (result.MaxHeightVh > 0) { box.style.height = result.MaxHeightVh + 'vh'; } else { box.style.height = 'auto'; box.style.aspectRatio = String(ratio); }
+        } else {
+            box.style.height = result.HeightVh + 'vh';
+            if (result.MaxWidthVw > 0) { box.style.width = result.MaxWidthVw + 'vw'; } else { box.style.width = 'auto'; box.style.aspectRatio = String(ratio); }
+        }
+        box.style.setProperty('--ap-offset', (result.HorizontalOffsetVw || 0) + 'vw');
+        box.style.setProperty('--ap-fs-offset', (result.FullscreenHorizontalOffsetVw || 0) + 'vw');
+    }
+
+    /** Position class for a box or its anchor: TopLeft/TopRight/BottomLeft/BottomRight -> artworkplus-top-left etc. */
+    function positionClass(position) {
+        return 'artworkplus-' + String(position || 'BottomRight').replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+    }
+
     window.ArtworkPlusCore = {
         getItemIdFromHash: getItemIdFromHash,
         isDetailsPage: isDetailsPage,
@@ -1284,6 +1396,11 @@
         horizontalAlignToObjectPosition: horizontalAlignToObjectPosition,
         getScrollOffset: getScrollOffset,
         ensureBodyIsPositioned: ensureBodyIsPositioned,
+        ensureRenderArtStyles: ensureRenderArtStyles,
+        installFullscreenClass: installFullscreenClass,
+        isEffectivelyFullscreen: isEffectivelyFullscreen,
+        applyArtBoxSizing: applyArtBoxSizing,
+        positionClass: positionClass,
         preloadImage: preloadImage,
         cssUrl: cssUrl,
         makeLogger: makeLogger,
