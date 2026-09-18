@@ -1544,7 +1544,7 @@
     // same technique already proven in this plugin for the
     // Keyart/Extrakeyart logo overlays.
     var CaseModModule = (function () {
-        var DEBUG = false;
+        var DEBUG = true; // gated at runtime by localStorage.ArtworkPlusDebug (Core.makeLogger, Session 114)
         var log = Core.makeLogger('[PostersPlus/CaseMod]', DEBUG);
         var BOX_CLASS = 'artworkplus-casemod-box';
         // Session 44 (real bug, user finding: "both visible at the same

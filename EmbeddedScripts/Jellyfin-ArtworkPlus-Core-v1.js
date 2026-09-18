@@ -546,8 +546,45 @@
         return true;
     }
 
+    /**
+     * Runtime debug switch (Session 114). The feature modules' own DEBUG
+     * constants used to be the only gate and were mostly `true`, so every
+     * page view spammed the console with dozens of [RedCarpet]/[Characterart]
+     * lines. Now a module's logger is live only when its DEBUG constant is
+     * true AND `localStorage.ArtworkPlusDebug` enables its tag:
+     *   (unset / '')            silent - the default for users
+     *   'all' | '*' | '1'       every module
+     *   'CaseMod,Backdrops'     comma list, case-insensitive substring of the tag
+     * Set it from the console: ArtworkPlusCore.setDebug('all'), then reload.
+     * Errors/warnings still use console.error/warn directly and are never
+     * gated. The value is read once per makeLogger() call, i.e. per page load.
+     */
+    function readDebugSetting() {
+        try { return (window.localStorage.getItem('ArtworkPlusDebug') || '').trim(); }
+        catch (e) { return ''; }
+    }
+    function isDebugTagEnabled(tag) {
+        var v = readDebugSetting();
+        if (!v) { return false; }
+        if (v === 'all' || v === '*' || v === '1') { return true; }
+        var t = String(tag).toLowerCase();
+        var parts = v.toLowerCase().split(',');
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i].trim();
+            if (part && t.indexOf(part) !== -1) { return true; }
+        }
+        return false;
+    }
+    function setDebug(value) {
+        try {
+            if (value) { window.localStorage.setItem('ArtworkPlusDebug', String(value)); }
+            else { window.localStorage.removeItem('ArtworkPlusDebug'); }
+        } catch (e) { /* storage unavailable - nothing to do */ }
+        return 'ArtworkPlusDebug=' + (readDebugSetting() || '(off)') + ' - reload the page to apply';
+    }
+
     function makeLogger(tag, debugEnabled) {
-        return debugEnabled
+        return (debugEnabled && isDebugTagEnabled(tag))
             ? function () { console.log.apply(console, [tag].concat([].slice.call(arguments))); }
             : function () {};
     }
@@ -1239,6 +1276,8 @@
         createTimerTracker: createTimerTracker,
         watchForNavigation: watchForNavigation,
         fisherYatesShuffle: fisherYatesShuffle,
-        createBackdropRotationEngine: createBackdropRotationEngine
+        createBackdropRotationEngine: createBackdropRotationEngine,
+        setDebug: setDebug,
+        isDebugTagEnabled: isDebugTagEnabled
     };
 })();

@@ -2029,7 +2029,7 @@ var ArtworkPlusBackdropTransition = {
     'use strict';
 
     var Core = window.ArtworkPlusCore;
-    var DEBUG = false;
+    var DEBUG = true; // gated at runtime by localStorage.ArtworkPlusDebug (Core.makeLogger, Session 114)
     function log() {
         if (!DEBUG) { return; }
         var args = ['[ArtworkPlus GenreBackdrops]'].concat(Array.prototype.slice.call(arguments));
@@ -2333,7 +2333,7 @@ var ArtworkPlusBackdropTransition = {
     'use strict';
 
     var Core = window.ArtworkPlusCore;
-    var DEBUG = false;
+    var DEBUG = true; // gated at runtime by localStorage.ArtworkPlusDebug (Core.makeLogger, Session 114)
     function log() {
         if (!DEBUG) { return; }
         console.log.apply(console, ['[ArtworkPlus StudioBackdrops]'].concat(Array.prototype.slice.call(arguments)));
@@ -2564,7 +2564,7 @@ var ArtworkPlusBackdropTransition = {
     'use strict';
 
     var Core = window.ArtworkPlusCore;
-    var DEBUG = false;
+    var DEBUG = true; // gated at runtime by localStorage.ArtworkPlusDebug (Core.makeLogger, Session 114)
     function log() {
         if (!DEBUG) { return; }
         console.log.apply(console, ['[ArtworkPlus TagBackdrops]'].concat(Array.prototype.slice.call(arguments)));
@@ -2802,7 +2802,7 @@ var ArtworkPlusBackdropTransition = {
     'use strict';
 
     var Core = window.ArtworkPlusCore;
-    var DEBUG = false;
+    var DEBUG = true; // gated at runtime by localStorage.ArtworkPlusDebug (Core.makeLogger, Session 114)
     function log() {
         if (!DEBUG) { return; }
         console.log.apply(console, ['[ArtworkPlus FavoritesBackdrops]'].concat(Array.prototype.slice.call(arguments)));
