@@ -3242,7 +3242,9 @@ var ArtworkPlusBackdropTransition = {
         if (myToken !== loadToken) { return; }
 
         var urls;
-        if (isPerson && settings.SourceMode === 'WallpapersCom') {
+        if (isPerson && (settings.SourceMode === 'WallpapersCom' || settings.SourceMode === 'Folder')) {
+            // Wallpapers.com: hotlinked URLs; Folder (Session 116): the
+            // /PeopleBackdrops/{id}/folder-image URLs - both come ready-made.
             urls = settings.WallpaperUrls || [];
         } else {
             var entries = settings.Images || [];

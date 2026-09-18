@@ -605,6 +605,22 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public string BackdropsFavoritesPeopleAppearancesFilter { get; set; } = "MoviesAndSeries";
 
+    /// <summary>
+    /// Session 116: Favorites-People mirrors the standalone People source
+    /// blocks (Appearances filter / Backdrops per item / Order / Traversal,
+    /// Folder files / Order); Wallpapers.com settings stay central in the
+    /// People tab. Same labels, same option lists, same defaults.
+    /// </summary>
+    public string BackdropsFavoritesPeopleAppearancesMainOnly { get; set; } = "Main";
+
+    public string BackdropsFavoritesPeopleAppearancesSortMode { get; set; } = "Shuffle";
+
+    public string BackdropsFavoritesPeopleAppearancesTraversalMode { get; set; } = "BeginAscending";
+
+    public string BackdropsFavoritesPeopleFolderBackdropFiles { get; set; } = "Single";
+
+    public string BackdropsFavoritesPeopleFolderOrderMode { get; set; } = "Sequential";
+
     public bool BackdropsFavoritesArtistsEnabled { get; set; } = true;
 
     public string BackdropsFavoritesArtistsSortMode { get; set; } = "Shuffle";
@@ -1723,6 +1739,9 @@ public class PluginConfiguration : BasePluginConfiguration
     /// "Appearances".
     /// </summary>
     public string PeopleBackdropsAppearancesSortMode { get; set; } = "Shuffle";
+
+    /// <summary>Session 116: Traversal for the Appearances Order, same semantics as BackdropsGenreTraversalMode.</summary>
+    public string PeopleBackdropsAppearancesTraversalMode { get; set; } = "BeginAscending";
 
     /// <summary>
     /// Fix #8 (Session 105, ported aus der Sandbox, Session 76): "Main"

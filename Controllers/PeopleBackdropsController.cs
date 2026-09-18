@@ -223,12 +223,16 @@ public class PeopleBackdropsController : ControllerBase
     // reflection/type metadata internally per-options-instance.
     private static readonly JsonSerializerOptions IndentedJsonOptions = new() { WriteIndented = true };
 
+    private readonly MediaBrowser.Controller.Library.IUserManager _userManager;
+
     public PeopleBackdropsController(
         ILibraryManager libraryManager,
         ILogger<PeopleBackdropsController> logger,
         IHttpClientFactory httpClientFactory,
-        MediaBrowser.Controller.Drawing.IImageProcessor imageProcessor)
+        MediaBrowser.Controller.Drawing.IImageProcessor imageProcessor,
+        MediaBrowser.Controller.Library.IUserManager userManager)
     {
+        _userManager = userManager;
         _libraryManager = libraryManager;
         _logger = logger;
         _httpClientFactory = httpClientFactory;
@@ -497,6 +501,14 @@ public class PeopleBackdropsController : ControllerBase
     /// since it never distinguishes a wallpaper URL from any other kind
     /// of URL string.
     /// </summary>
+    /// <summary>Session 116: the request user from Jellyfin's auth claim (null on anonymous calls).</summary>
+    private Jellyfin.Data.Entities.User? GetRequestUser()
+    {
+        var claim = User?.FindFirst("Jellyfin-UserId")?.Value;
+        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId)) { return null; }
+        return _userManager.GetUserById(userId);
+    }
+
     private async Task WriteAppearancesStreamAsync(Person person, PluginConfiguration config)
     {
         // Fixes #7/#8 (Session 105, ported aus der Sandbox, Session 74/76):
@@ -540,14 +552,33 @@ public class PeopleBackdropsController : ControllerBase
         {
             orderByField = parsedSortField;
         }
-
-        var items = _libraryManager.GetItemList(new MediaBrowser.Controller.Entities.InternalItemsQuery
+        // Session 116: Traversal (new) + the request user on the query.
+        // PlayCount/DatePlayed/IsPlayed/IsUnplayed/IsFavoriteOrLiked sort
+        // on UserDatas, which Jellyfin only joins with a user - without
+        // one the query fails ("no such column"), see BackdropsController.
+        var traversal = config.PeopleBackdropsAppearancesTraversalMode;
+        var order = (traversal == "BeginDescending" || traversal == "RandomStartDescending") ? SortOrder.Descending : SortOrder.Ascending;
+        var requestUser = GetRequestUser();
+        if (requestUser is null && (orderByField == ItemSortBy.PlayCount || orderByField == ItemSortBy.DatePlayed || orderByField == ItemSortBy.SeriesDatePlayed
+            || orderByField == ItemSortBy.IsPlayed || orderByField == ItemSortBy.IsUnplayed || orderByField == ItemSortBy.IsFavoriteOrLiked))
+        {
+            orderByField = ItemSortBy.SortName;
+        }
+        var appearancesQuery = new MediaBrowser.Controller.Entities.InternalItemsQuery(requestUser)
         {
             PersonIds = new[] { person.Id },
             IncludeItemTypes = includeTypes,
             Recursive = true,
-            OrderBy = new[] { (orderByField, SortOrder.Ascending) }
-        });
+            OrderBy = new[] { (orderByField, order) }
+        };
+        if (traversal == "RandomStartAscending" || traversal == "RandomStartDescending")
+        {
+            var total = _libraryManager.GetCount(appearancesQuery);
+            var maxStart = Math.Max(0, total - 100);
+            appearancesQuery.StartIndex = maxStart > 0 ? new Random().Next(0, maxStart + 1) : 0;
+            appearancesQuery.Limit = 100;
+        }
+        var items = _libraryManager.GetItemList(appearancesQuery);
 
         var extensions = (config.BackdropsAllowedFormats ?? string.Empty)
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -657,7 +688,7 @@ public class PeopleBackdropsController : ControllerBase
     /// (Studio's own ResolveStudioImagePath, Extraposter's candidate
     /// resolution) - falls back to ".jpg" if the list is empty.
     /// </summary>
-    private static List<string> ResolveFolderBackdropPaths(string personFolder, string backdropFilesMode, string? allowedFormatsCsv)
+    internal static List<string> ResolveFolderBackdropPaths(string personFolder, string backdropFilesMode, string? allowedFormatsCsv)
     {
         var extensions = (allowedFormatsCsv ?? string.Empty)
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -715,7 +746,7 @@ public class PeopleBackdropsController : ControllerBase
     /// GetPosterImage).
     /// </summary>
     [HttpGet("{personId}/folder-image")]
-    public ActionResult GetFolderImage([FromRoute] Guid personId, [FromQuery] int index)
+    public ActionResult GetFolderImage([FromRoute] Guid personId, [FromQuery] int index, [FromQuery] string? mode)
     {
         var config = Plugin.Instance!.Configuration;
         var item = _libraryManager.GetItemById(personId);
@@ -724,8 +755,12 @@ public class PeopleBackdropsController : ControllerBase
             return NotFound();
         }
 
+        // Session 116: "mode" lets the Favorites-People pool address its
+        // own Backdrop files setting (Single/Multiple) - without it the
+        // index would resolve against the standalone People setting.
+        var filesMode = mode == "Single" || mode == "Multiple" ? mode : config.PeopleBackdropsFolderBackdropFiles;
         var personFolder = GetPersonFolder(person);
-        var paths = ResolveFolderBackdropPaths(personFolder, config.PeopleBackdropsFolderBackdropFiles, config.BackdropsAllowedFormats);
+        var paths = ResolveFolderBackdropPaths(personFolder, filesMode, config.BackdropsAllowedFormats);
         if (index < 0 || index >= paths.Count)
         {
             return NotFound();

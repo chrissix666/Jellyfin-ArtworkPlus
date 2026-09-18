@@ -56,6 +56,12 @@ CASES = [
      ".artworkplus-studio-backdrop"),
     ("Tag", "#/list.html?tag=Horror&parentId=p1&serverId=s1", {"/Backdrops/tag-pool": POOL}, ".artworkplus-tag-backdrop"),
     ("Favorites", "#/list.html?type=Movie&IsFavorite=true&serverId=s1", {"/Backdrops/favorites-pool": POOL}, ".artworkplus-favorites-backdrop"),
+    # Session 116: Favorites-People with the Folder source delivers ready-made
+    # /PeopleBackdrops/{id}/folder-image URLs in WallpaperUrls (same as Wallpapers.com).
+    ("FavPeople", "#/list.html?type=Person&IsFavorite=true&serverId=s1",
+     {"/Backdrops/favorites-people-pool": {"Enabled": True, "SourceMode": "Folder", "SortMode": "Sequential", "CycleTimeMs": 5000, "KenBurnsEnabled": False, "KenBurnsZoomMs": 1000, "KenBurnsPanMs": 500,
+       "WallpaperUrls": ["/PeopleBackdrops/p1/folder-image?index=0&mode=Single", "/PeopleBackdrops/p2/folder-image?index=0&mode=Single"], "Images": []}},
+     ".artworkplus-favorites-backdrop"),
 ]
 
 PROBE = """
@@ -113,7 +119,7 @@ def main():
             fails += 0 if ok else 1
             print(("ok  " if ok else "FAIL"), f"{name:9s}", "" if ok else "; ".join(problems))
             # (a) rapid switch to a second page of the same category must never end empty
-            if not name.startswith("Studio") and hsh.count("=") > 1:
+            if not name.startswith("Studio") and name != "FavPeople" and hsh.count("=") > 1:
                 # Recorded live (Session 116): leave the category page (clear
                 # arms a 1.2 s fallback fade), come back to another page of
                 # the same category before it fires; the new page's first
@@ -146,7 +152,7 @@ def _serve(route, stubs):
             import json
             route.fulfill(status=200, content_type="application/json", body=json.dumps(payload))
             return
-    if "/Images/" in path or "studio-image" in path:
+    if "/Images/" in path or "studio-image" in path or "folder-image" in path:
         route.fulfill(status=200, content_type="image/png", body=PNG)
         return
     if path.startswith("/web/index.html"):

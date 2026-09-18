@@ -125,6 +125,9 @@ public class FavoritesPeoplePoolResult
 
     public string SourceMode { get; set; } = "WallpapersCom";
 
+    /// <summary>Session 116: the Order of the active source (Appearances sort field, Folder/Wallpapers Sequential/Shuffle/Random) - the client had been reading a field that did not exist.</summary>
+    public string SortMode { get; set; } = "Shuffle";
+
     public bool MainOnly { get; set; }
 
     public int CycleTimeMs { get; set; } = 24000;
@@ -812,7 +815,10 @@ public class BackdropsController : ControllerBase
         {
             Enabled = finalEnabled,
             SourceMode = sourceMode,
-            MainOnly = config.BackdropsFavoritesMainOnly == "Main",
+            SortMode = sourceMode == "Appearances" ? config.BackdropsFavoritesPeopleAppearancesSortMode
+                     : sourceMode == "Folder" ? config.BackdropsFavoritesPeopleFolderOrderMode
+                     : config.PeopleBackdropsOrderMode,
+            MainOnly = config.BackdropsFavoritesPeopleAppearancesMainOnly == "Main",
             CycleTimeMs = config.BackdropsFavoritesCycleTimeMs,
             KenBurnsEnabled = config.BackdropsFavoritesKenBurnsEnabled,
             KenBurnsZoomMs = config.BackdropsFavoritesKenBurnsZoomMs,
@@ -863,13 +869,19 @@ public class BackdropsController : ControllerBase
                 _ => new[] { BaseItemKind.Movie, BaseItemKind.Series }
             };
 
-            var items = _libraryManager.GetItemList(new InternalItemsQuery
+            // Session 116: own Order/Traversal (mirrors the standalone People
+            // Appearances block), the request user on the query, pool cap.
+            var appearancesQuery = new InternalItemsQuery(requestUser)
             {
                 PersonIds = personIds,
                 IncludeItemTypes = includeTypes,
-                Recursive = true,
-                OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
-            });
+                Recursive = true
+            };
+            var (apOrderBy, apOrder, apStart, apLimit) = ResolveRotationQuery(config.BackdropsFavoritesPeopleAppearancesSortMode, config.BackdropsFavoritesPeopleAppearancesTraversalMode, appearancesQuery);
+            appearancesQuery.OrderBy = new[] { (apOrderBy, apOrder) };
+            appearancesQuery.Limit = apLimit;
+            if (apStart.HasValue) { appearancesQuery.StartIndex = apStart.Value; }
+            var items = _libraryManager.GetItemList(appearancesQuery);
 
             var random = new Random();
             var images = new List<GenrePoolImageEntry>();
@@ -886,7 +898,7 @@ public class BackdropsController : ControllerBase
                 }
                 if (allowedIndices.Count == 0) { continue; }
 
-                var chosenIndex = config.BackdropsFavoritesMainOnly == "Main" && allowedIndices.Contains(0)
+                var chosenIndex = config.BackdropsFavoritesPeopleAppearancesMainOnly == "Main" && allowedIndices.Contains(0)
                     ? 0
                     : allowedIndices[random.Next(allowedIndices.Count)];
                 var tagValue = _imageProcessor.GetImageCacheTag(item, ImageType.Backdrop, chosenIndex);
@@ -914,6 +926,33 @@ public class BackdropsController : ControllerBase
         // the shared Wallpapers.com rate limit (documented on
         // PeopleBackdropsApiKey's own field: ~30/min without a key,
         // ~60/min with a free one).
+        if (sourceMode == "Folder")
+        {
+            // Session 116: Folder source for the favourite-people pool -
+            // every favourite person's own backdrop.ext / backdropN.ext
+            // (same resolver and image endpoint as the standalone People
+            // Folder source; the endpoint gets our own Single/Multiple
+            // mode so the indices match). Order: Sequential keeps person
+            // order with each person's files in native order, Shuffle/
+            // Random are applied by the client's engine over all files.
+            var folderMode = config.BackdropsFavoritesPeopleFolderBackdropFiles;
+            var folderUrls = new List<string>();
+            foreach (var person in favoritePeople)
+            {
+                var personFolder = PeopleBackdropsController.GetPersonFolder(person);
+                var paths = PeopleBackdropsController.ResolveFolderBackdropPaths(personFolder, folderMode, config.BackdropsAllowedFormats);
+                for (var i = 0; i < paths.Count; i++)
+                {
+                    folderUrls.Add("/PeopleBackdrops/" + person.Id + "/folder-image?index=" + i + "&mode=" + folderMode);
+                }
+            }
+            result.WallpaperUrls = folderUrls;
+            _logger.LogInformation(
+                "Backdrops: GetFavoritesPeoplePool - Folder, favoritePeople={PeopleCount}, mode={Mode}, imagesReturned={ImageCount}",
+                favoritePeople.Count, folderMode, folderUrls.Count);
+            return Ok(result);
+        }
+
         const int MaxCachedSample = 25;
         const int MaxNewFetchesPerVisit = 5;
 

@@ -286,16 +286,17 @@ are global by design).
 | 8 | — | Appearances filter | **Order** | Pan speed | **Order** | **Order** *(General)* |
 | 9 | — | Backdrops per item *(Appearances)* | **Traversal** | **Order** *(Appearances)* | **Traversal** | **Traversal** *(General)* |
 | 10 | — | **Order** *(Appearances)* | — | **Traversal** *(Appearances)* | — | 11 sub-types |
-| 11 | — | Backdrop files *(Folder)* | — | — | — | — |
-| 12 | — | **Order** *(Folder)* | — | — | — | — |
-| 13 | — | API Key [Test API Key] | — | — | — | — |
-| 14 | — | **Order** *(Wallpapers.com)* | — | — | — | — |
-| 15 | — | Max images per person | — | — | — | — |
-| 16 | — | Enable text filter | — | — | — | — |
+| 11 | — | **Traversal** *(Appearances)* | — | — | — | — |
+| 12 | — | Backdrop files *(Folder)* | — | — | — | — |
+| 13 | — | **Order** *(Folder)* | — | — | — | — |
+| 14 | — | API Key [Test API Key] | — | — | — | — |
+| 15 | — | **Order** *(Wallpapers.com)* | — | — | — | — |
+| 16 | — | Max images per person | — | — | — | — |
+| 17 | — | Enable text filter | — | — | — | — |
 
 People keeps its Source on row 7 with the three source blocks after it (a field
 cannot be gated by a control below it); inside the Appearances block the order is
 filter → Backdrops per item → Order, matching the grid. Studio's Source greys
 rows 4, 5, 9, 10 when Studio image is selected; Ken Burns applies to both sources.
 
-**Favorites' 11 sub-types:** all `Enable → Order → Traversal` — except **People: Enable → Source → Appearances filter**. With Manage=General only the Order/Traversal rows inside the 10 file-based subs grey out; the sub headers and Enable checkboxes stay active (Session 116 correction); People is unaffected.
+**Favorites' 11 sub-types:** all `Enable → Order → Traversal` — except **People**, which mirrors the standalone People source blocks (Session 116): `Enable → Source (Appearances / Folder / Wallpapers.com) → Appearances filter → Backdrops per item → Order → Traversal → Backdrop files → Order`; the Wallpapers.com settings (API key, Max images, text filter, Order) stay central in the People tab and apply to both. With Manage=General only the Order/Traversal rows inside the 10 file-based subs grey out; the sub headers and Enable checkboxes stay active (Session 116 correction); People is unaffected.

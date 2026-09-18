@@ -3145,6 +3145,16 @@
                             </select>
                             <div class="epDesc">Order the person's own movies/shows rotate through. Only used when Source above is Appearances.</div>
                         </div>
+                        <div class="epRow epRowMerged" id="PeopleBackdropsAppearancesTraversalModeRow">
+                            <label for="PeopleBackdropsAppearancesTraversalMode" class="epRowLabelSpan">Traversal</label>
+                            <select is="emby-select" id="PeopleBackdropsAppearancesTraversalMode" name="PeopleBackdropsAppearancesTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="BeginAscending">Begin, ascending</option>
+                                <option value="BeginDescending">Begin, descending</option>
+                                <option value="RandomStartAscending">Random start, ascending</option>
+                                <option value="RandomStartDescending">Random start, descending</option>
+                            </select>
+                            <div class="epDesc">Only used when Order above is a real field, not Shuffle/Random. Only used for Appearances.</div>
+                        </div>
 
                         <!-- Fix #8 (Session 105, ported aus der Sandbox,
                              Session 76): ersetzt die anderswo genutzte
@@ -3193,7 +3203,7 @@
                                 <option value="Shuffle">Shuffle</option>
                                 <option value="Random">Random</option>
                             </select>
-                            <div class="epDesc">Sequential: native order. Shuffle: no repeats/round. Random: repeats OK.</div>
+                            <div class="epDesc">Sequential: native order. Shuffle: no repeats/round. Random: repeats OK. Only used for Wallpapers.com.</div>
                         </div>
 
                         <div class="epRow epRowMerged" id="PeopleBackdropsMaxImagesRow">
@@ -3837,10 +3847,11 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleSourceModeRow">
                             <label for="BackdropsFavoritesPeopleSourceMode" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="BackdropsFavoritesPeopleSourceMode" name="BackdropsFavoritesPeopleSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="WallpapersCom">Wallpapers.com</option>
                                 <option value="Appearances">Appearances</option>
+                                <option value="Folder">Folder</option>
+                                <option value="WallpapersCom">Wallpapers.com</option>
                             </select>
-                            <div class="epDesc">Wallpapers.com reuses the People Backdrops cache. Appearances shows movies/shows they're in together.</div>
+                            <div class="epDesc">Appearances: your favourite people's movies/shows. Folder: their local backdrop files. Wallpapers.com: images from the web.</div>
                         </div>
                         <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleAppearancesFilterRow">
                             <label for="BackdropsFavoritesPeopleAppearancesFilter" class="epRowLabelSpan">Appearances filter</label>
@@ -3850,6 +3861,66 @@
                                 <option value="Series">Shows only</option>
                             </select>
                             <div class="epDesc">Only used when Source above is Appearances.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleAppearancesMainOnlyRow">
+                            <label for="BackdropsFavoritesPeopleAppearancesMainOnly" class="epRowLabelSpan">Backdrops per item</label>
+                            <select is="emby-select" id="BackdropsFavoritesPeopleAppearancesMainOnly" name="BackdropsFavoritesPeopleAppearancesMainOnly" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Main">Main Backdrop</option>
+                                <option value="All">All Backdrops</option>
+                            </select>
+                            <div class="epDesc">All picks a random backdrop per item instead of the main one. Only used for Appearances.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleAppearancesSortModeRow">
+                            <label for="BackdropsFavoritesPeopleAppearancesSortMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="BackdropsFavoritesPeopleAppearancesSortMode" name="BackdropsFavoritesPeopleAppearancesSortMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                                <option value="DateCreated">Date added</option>
+                                <option value="OfficialRating">Parental rating</option>
+                                <option value="DatePlayed">Date played</option>
+                                <option value="PremiereDate">Premiere date</option>
+                                <option value="StartDate">Start date</option>
+                                <option value="SortName">Sort name</option>
+                                <option value="Name">Name</option>
+                                <option value="Runtime">Runtime</option>
+                                <option value="CommunityRating">Community rating</option>
+                                <option value="ProductionYear">Production year</option>
+                                <option value="PlayCount">Play count</option>
+                                <option value="CriticRating">Critic rating</option>
+                                <option value="IsUnplayed">Unplayed</option>
+                                <option value="IsPlayed">Played</option>
+                                <option value="Studio">Studio</option>
+                                <option value="IsFavoriteOrLiked">Favorite</option>
+                                <option value="VideoBitRate">Video bit rate</option>
+                            </select>
+                            <div class="epDesc">Order the favourite people's movies/shows rotate through. Only used when Source above is Appearances.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleAppearancesTraversalModeRow">
+                            <label for="BackdropsFavoritesPeopleAppearancesTraversalMode" class="epRowLabelSpan">Traversal</label>
+                            <select is="emby-select" id="BackdropsFavoritesPeopleAppearancesTraversalMode" name="BackdropsFavoritesPeopleAppearancesTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="BeginAscending">Begin, ascending</option>
+                                <option value="BeginDescending">Begin, descending</option>
+                                <option value="RandomStartAscending">Random start, ascending</option>
+                                <option value="RandomStartDescending">Random start, descending</option>
+                            </select>
+                            <div class="epDesc">Only used when Order above is a real field, not Shuffle/Random. Only used for Appearances.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleFolderBackdropFilesRow">
+                            <label for="BackdropsFavoritesPeopleFolderBackdropFiles" class="epRowLabelSpan">Backdrop files</label>
+                            <select is="emby-select" id="BackdropsFavoritesPeopleFolderBackdropFiles" name="BackdropsFavoritesPeopleFolderBackdropFiles" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Single">Single</option>
+                                <option value="Multiple">Multiple</option>
+                            </select>
+                            <div class="epDesc">Single: looks for "backdrop.ext". Multiple: looks for "backdrop1.ext", "backdrop2.ext", etc. Only used when Source above is Folder.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleFolderOrderModeRow">
+                            <label for="BackdropsFavoritesPeopleFolderOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="BackdropsFavoritesPeopleFolderOrderMode" name="BackdropsFavoritesPeopleFolderOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: native order. Shuffle: no repeats/round. Random: repeats OK. Only used for Folder.</div>
                         </div>
                         </div>
 
@@ -4293,6 +4364,7 @@
                 PeopleBackdropsSourceMode: { type: 'select', def: 'WallpapersCom', tab: 'peoplebackdrops' },
                 PeopleBackdropsAppearancesFilter: { type: 'select', def: 'MoviesAndSeries', tab: 'peoplebackdrops' },
                 PeopleBackdropsAppearancesSortMode: { type: 'select', def: 'Shuffle', tab: 'peoplebackdrops' },
+                PeopleBackdropsAppearancesTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'peoplebackdrops' },
                 PeopleBackdropsAppearancesMainOnly: { type: 'select', def: 'Main', tab: 'peoplebackdrops' },
                 PeopleBackdropsFolderBackdropFiles: { type: 'select', def: 'Single', tab: 'peoplebackdrops' },
                 PeopleBackdropsFolderOrderMode: { type: 'select', def: 'Sequential', tab: 'peoplebackdrops' },
@@ -4363,6 +4435,11 @@
                 BackdropsFavoritesPeopleEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesPeopleSourceMode: { type: 'select', def: 'WallpapersCom', tab: 'backdropsfavorites' },
                 BackdropsFavoritesPeopleAppearancesFilter: { type: 'select', def: 'MoviesAndSeries', tab: 'backdropsfavorites' },
+                BackdropsFavoritesPeopleAppearancesMainOnly: { type: 'select', def: 'Main', tab: 'backdropsfavorites' },
+                BackdropsFavoritesPeopleAppearancesSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
+                BackdropsFavoritesPeopleAppearancesTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesPeopleFolderBackdropFiles: { type: 'select', def: 'Single', tab: 'backdropsfavorites' },
+                BackdropsFavoritesPeopleFolderOrderMode: { type: 'select', def: 'Sequential', tab: 'backdropsfavorites' },
                 BackdropsFavoritesArtistsEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesArtistsSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesArtistsTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
@@ -5448,6 +5525,13 @@
                                     id: 'peoplebackdrops_appearancesmainonly', structural: true, target: ['PeopleBackdropsAppearancesMainOnlyRow'],
                                     when: [ValueIn('PeopleBackdropsSourceMode', ['Appearances'])], children: []
                                 },
+                                // Session 116: Traversal for the Appearances Order - same
+                                // pair as Genre/Tag/Studio/Favorites (rule 3d: shares the
+                                // primary Source condition with _appearancessort).
+                                {
+                                    id: 'peoplebackdrops_appearancestraversal', structural: true, target: ['PeopleBackdropsAppearancesTraversalModeRow'],
+                                    when: [ValueIn('PeopleBackdropsSourceMode', ['Appearances']), ValueIn('PeopleBackdropsAppearancesSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: []
+                                },
                                 // Phase D2 (Session 101): third source, local files
                                 // only. Backdrop files and its own Order row only
                                 // make sense when Source is Folder; Order
@@ -5644,7 +5728,13 @@
                                         { id: 'backdropsfavorites_people_source', structural: true, target: ['BackdropsFavoritesPeopleSourceModeRow'], when: [], children: [] },
                                         // Phase F (Session 103): same pattern as the
                                         // standalone peoplebackdrops_appearancesfilter node.
-                                        { id: 'backdropsfavorites_people_appearancesfilter', structural: true, target: ['BackdropsFavoritesPeopleAppearancesFilterRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Appearances'])], children: [] }
+                                        { id: 'backdropsfavorites_people_appearancesfilter', structural: true, target: ['BackdropsFavoritesPeopleAppearancesFilterRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Appearances'])], children: [] },
+                                        // Session 116: the full People source blocks, mirrored.
+                                        { id: 'backdropsfavorites_people_appearancesmainonly', structural: true, target: ['BackdropsFavoritesPeopleAppearancesMainOnlyRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Appearances'])], children: [] },
+                                        { id: 'backdropsfavorites_people_appearancessort', structural: true, target: ['BackdropsFavoritesPeopleAppearancesSortModeRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Appearances'])], children: [] },
+                                        { id: 'backdropsfavorites_people_appearancestraversal', structural: true, target: ['BackdropsFavoritesPeopleAppearancesTraversalModeRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Appearances']), ValueIn('BackdropsFavoritesPeopleAppearancesSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: [] },
+                                        { id: 'backdropsfavorites_people_folder', structural: true, target: ['BackdropsFavoritesPeopleFolderBackdropFilesRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Folder'])], children: [] },
+                                        { id: 'backdropsfavorites_people_folder_order', structural: true, target: ['BackdropsFavoritesPeopleFolderOrderModeRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Folder']), ValueIn('BackdropsFavoritesPeopleFolderBackdropFiles', ['Multiple'])], children: [] }
                                     ]
                                 },
                                 {
