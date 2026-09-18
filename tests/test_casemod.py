@@ -66,6 +66,12 @@ var Core = {
         });
     }
 };
+// Session 121: the module holds/releases the view-level poster pending class (defined in the
+// shared file scope in production); stubs here, plus a probe of the hold state.
+var navTimers = { track: function (h) { return h; }, clearTimers: function () {} };
+var __caseModHoldCalls = [];
+function caseModHoldPoster(view, gen) { __caseModHoldCalls.push('hold'); window.__caseModHeld = true; }
+function caseModReleasePoster() { __caseModHoldCalls.push('release'); window.__caseModHeld = false; }
 var __origFetch = window.fetch;
 window.fetch = function (url, opts) {
     if (typeof url === 'string' && url.indexOf('/CaseMod/') === 0 && url.indexOf('/Texture/') === -1) {
@@ -1418,6 +1424,44 @@ def run():
               settled_state['frontOpacity'] == '1', f"{settled_state}")
         check('Fade-in: back also reaches opacity 1',
               settled_state['backOpacity'] == '1', f"{settled_state}")
+
+        # ═══ Tests 34-36 (Session 121): the poster hold - with the 3D case the poster is released only
+        # after the tilt is applied; with a flat case / not applicable it is released at once ═══
+        hold_3d = page.evaluate("""async ([top, left, w, h, dtop, dleft, dsize]) => {
+            document.body.classList.add('itemDetailPage'); // the hold is keyed on the detail view element
+            __caseModHoldCalls.length = 0;
+            __setResponse({ IsApplicable: true, CaseType: 'vivaelite3dcases', CaseAngleDegrees: -6,
+                TextureKey: '1080p', BackTextureKey: 'back_1080p', HasDiscart: false,
+                OpenAngleDegrees: 90, TopPercent: top, LeftPercent: left, WidthVw: w, HeightVw: h,
+                DiscTopPercent: dtop, DiscLeftPercent: dleft, DiscSizeVw: dsize });
+            var posterEl = document.querySelector('.card .cardImageContainer');
+            var p = __caseMod.check(null, 'hold-3d', posterEl, window.__bumpGen());
+            var heldDuringFetch = window.__caseModHeld === true;
+            await p;
+            var front = document.querySelector('.artworkplus-casemod-box-front');
+            var tilted = !!front && (front.style.transform || '').indexOf('matrix3d') === 0;
+            return { calls: __caseModHoldCalls.slice(), heldDuringFetch, releasedAfter: window.__caseModHeld === false, tilted };
+        }""", [top, left, w, h, dtop, dleft, dsize])
+        check('Poster hold (3D): held while /CaseMod is in flight',
+              hold_3d['heldDuringFetch'], f"{hold_3d}")
+        check('Poster hold (3D): released after the tilt was applied (hold -> release, tilt on the front)',
+              hold_3d['calls'] == ['hold', 'release'] and hold_3d['releasedAfter'] and hold_3d['tilted'], f"{hold_3d}")
+        hold_flat = page.evaluate("""async ([top, left, w, h, dtop, dleft, dsize]) => {
+            __caseModHoldCalls.length = 0;
+            __setResponse({ IsApplicable: true, CaseType: 'vivaelitecases',
+                TextureKey: '1080p', BackTextureKey: 'back_1080p', HasDiscart: false,
+                OpenAngleDegrees: 90, TopPercent: top, LeftPercent: left, WidthVw: w, HeightVw: h,
+                DiscTopPercent: dtop, DiscLeftPercent: dleft, DiscSizeVw: dsize });
+            var posterEl = document.querySelector('.card .cardImageContainer');
+            await __caseMod.check(null, 'hold-flat', posterEl, window.__bumpGen());
+            var a = __caseModHoldCalls.slice();
+            __caseModHoldCalls.length = 0;
+            __setResponse({ IsApplicable: false });
+            await __caseMod.check(null, 'hold-na', posterEl, window.__bumpGen());
+            return { flat: a, notApplicable: __caseModHoldCalls.slice() };
+        }""", [top, left, w, h, dtop, dleft, dsize])
+        check('Poster hold: flat case and not-applicable release immediately',
+              hold_flat['flat'] == ['hold', 'release'] and hold_flat['notApplicable'] == ['hold', 'release'], f"{hold_flat}")
 
         check('No page JS errors (after the new trigger tests)', not page_errors, str(page_errors[:2]))
 

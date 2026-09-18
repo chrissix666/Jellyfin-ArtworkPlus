@@ -385,6 +385,30 @@
         if (observer) { coord.arbiterProtectionObservers.push(observer); }
     }
 
+    // Session 121 (user: "bei der Detail Page zeigt er das Poster erst
+    // flach, dann erst die Neigung"): the poster arbiter decides (and
+    // reveals the poster) independently of Case Mod's own /CaseMod fetch.
+    // With the Viva Elite 3D Case that fetch also brings the TILT - if it
+    // lands later than the arbiter's decision the poster is seen flat
+    // first. Case Mod therefore HOLDS the view-level pending class (poster
+    // opacity 0) from its check() start until the tilt is applied (or it
+    // knows there is nothing to tilt); the arbiter's own reveal keeps
+    // working, it just does not lift that one class while the hold is on.
+    var caseModPosterHold = { view: null, generation: -1, timer: null };
+    function caseModHoldPoster(view, generation) {
+        caseModReleasePoster();
+        caseModPosterHold.view = view;
+        caseModPosterHold.generation = generation;
+        caseModPosterHold.timer = setTimeout(function () { caseModReleasePoster(); }, 3000); // safety net
+    }
+    function caseModReleasePoster() {
+        if (caseModPosterHold.timer) { clearTimeout(caseModPosterHold.timer); caseModPosterHold.timer = null; }
+        var view = caseModPosterHold.view;
+        caseModPosterHold.view = null;
+        if (view && caseModPosterHold.arbiterDone) { view.classList.remove('artworkplus-poster-pending'); }
+        caseModPosterHold.arbiterDone = false;
+    }
+
     // Centralizes the visibility restore - guarantees it happens exactly
     // once, regardless of which source ends up winning.
     function posterArbiterMarkVisible(coord, renderedSource, reason) {
@@ -399,7 +423,13 @@
         // finishes - which may never happen once we've replaced its image.
         coord.posterEl.classList.remove('lazy-hidden');
         var view = coord.posterEl.closest ? coord.posterEl.closest('.itemDetailPage') : null;
-        if (view) { view.classList.remove('artworkplus-poster-pending'); }
+        if (view) {
+            if (caseModPosterHold.view === view) {
+                caseModPosterHold.arbiterDone = true; // Case Mod lifts the class when the tilt is on
+            } else {
+                view.classList.remove('artworkplus-poster-pending');
+            }
+        }
         var hidePlaceholder = function () {
             var parent = coord.posterEl.parentNode;
             var canvas = coord.posterEl.previousSibling;
@@ -2826,6 +2856,8 @@
         // wins or when.
         async function check(coord, itemId, posterEl, myGeneration) {
             removeExistingOverlay();
+            var holdView = posterEl.closest ? posterEl.closest('.itemDetailPage') : null;
+            if (holdView) { caseModHoldPoster(holdView, myGeneration); }
 
             var response;
             try {
@@ -2833,17 +2865,20 @@
                     .then(function (r) { return r.json(); });
             } catch (e) {
                 log('Fetch error', e);
+                caseModReleasePoster();
                 return;
             }
 
-            if (myGeneration !== currentGeneration()) { return; }
+            if (myGeneration !== currentGeneration()) { caseModReleasePoster(); return; }
 
             if (!response || !response.IsApplicable) {
                 log('Not applicable for', itemId);
+                caseModReleasePoster();
                 return;
             }
 
-            if (!document.body.contains(posterEl)) { return; }
+            if (!document.body.contains(posterEl)) { caseModReleasePoster(); return; }
+            if (response.CaseType !== 'vivaelite3dcases') { caseModReleasePoster(); } // nothing to tilt: the arbiter reveals as always
 
             // The real poster CARD (position:absolute, vw/vh/%-based,
             // z-index:3) - NOT .cardImageContainer itself (that's deeper
@@ -2855,6 +2890,7 @@
             var detailImageContainer = (realCard && realCard.parentElement) || posterEl.closest('.detailImageContainer');
             if (!detailImageContainer) {
                 log('Could not find detailImageContainer for', itemId);
+                caseModReleasePoster();
                 return;
             }
 
@@ -3194,6 +3230,7 @@
                 if (response.TuneHidePoster && tiltCardScalableEl) {
                     tiltCardScalableEl.style.opacity = '0';
                 }
+                caseModReleasePoster(); // tilt is on - the poster may appear now, already tilted
                 // Settle passes + viewport listeners (Session 121, see retilt()).
                 navTimers.track(setTimeout(queueRetilt, 250));
                 navTimers.track(setTimeout(queueRetilt, 1200));
