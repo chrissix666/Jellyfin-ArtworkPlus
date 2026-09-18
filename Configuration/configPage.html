@@ -1490,7 +1490,7 @@
                                         <option value="Standalone">Standalone</option>
                                         <option value="Folder">Folder</option>
                                     </select>
-                                    <div class="epDesc">Standalone: typename.jpg. Folder: first matching file in a subfolder. No Prefixed - the show's own folder is already exclusive.</div>
+                                    <div class="epDesc">Standalone: typename.jpg. Folder: first match in a subfolder. No Prefixed, a show folder is exclusive.</div>
                                 </div>
                                 <div class="epRow epRowMerged" id="PostercaseTvShowsFolderNameRow">
                                     <label for="PostercaseTvShowsFolderName" class="epRowLabelSpan">Folder name</label>
@@ -1633,7 +1633,7 @@
                                         <option value="Standalone">Standalone</option>
                                         <option value="Folder">Folder</option>
                                     </select>
-                                    <div class="epDesc">Standalone: typename.jpg. Folder: first matching file in a subfolder. No Prefixed - the show's own folder is already exclusive.</div>
+                                    <div class="epDesc">Standalone: typename.jpg. Folder: first match in a subfolder. No Prefixed, a show folder is exclusive.</div>
                                 </div>
                                 <div class="epRow epRowMerged" id="KeyartTvShowsFolderNameRow">
                                     <label for="KeyartTvShowsFolderName" class="epRowLabelSpan">Folder name</label>
@@ -2412,7 +2412,7 @@
 
                         <div class="epCollapseHeader" data-collapse="characterartTvShows"><span class="epChevron">▶</span><span>TV shows</span></div>
                         <div class="epCollapseBody" data-collapsebody="characterartTvShows">
-                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0.4em;">Always reads from the show's own main folder, regardless of which of the three page types is currently open.</div>
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0.4em;">Always reads the show's main folder, whichever of the three page types is open.</div>
                         <div class="epRow epRowMerged">
                             <label for="CharacterartTvShowsNamingMode" class="epRowLabelSpan">Naming mode</label>
                             <select is="emby-select" id="CharacterartTvShowsNamingMode" name="CharacterartTvShowsNamingMode" class="emby-select-withcolor emby-select epSelectCompact">
@@ -3092,7 +3092,7 @@
                                 </select>
                                 <button type="button" is="emby-button" class="raised epActionBtn epDangerBtn emby-button" id="PeopleBackdropsWipeBtn">Wipe cache</button>
                             </div>
-                            <div class="epDesc">Appearances: this person's own movies/shows. Folder: local backdrop files. Wallpapers.com: images from the web.</div>
+                            <div class="epDesc">Appearances: person's own movies/shows. Folder: local backdrop files. Wallpapers.com: web images.</div>
                         </div>
 
                         <div class="epRow epRowMerged" id="PeopleBackdropsAppearancesFilterRow">
@@ -3166,7 +3166,7 @@
                                 <option value="Single">Single</option>
                                 <option value="Multiple">Multiple</option>
                             </select>
-                            <div class="epDesc">Single: looks for "backdrop.ext". Multiple: looks for "backdrop1.ext", "backdrop2.ext", etc. Only used when Source above is Folder.</div>
+                            <div class="epDesc">Single: backdrop.ext. Multiple: backdrop1.ext, backdrop2.ext, etc. Only used for Folder.</div>
                         </div>
                         <div class="epRow epRowMerged" id="PeopleBackdropsFolderOrderModeRow">
                             <label for="PeopleBackdropsFolderOrderMode" class="epRowLabelSpan">Order</label>
@@ -3264,7 +3264,7 @@
                                 <option value="Main">Main Backdrop</option>
                                 <option value="All">All Backdrops</option>
                             </select>
-                            <div class="epDesc">Main Backdrop uses only the item's primary backdrop. All Backdrops picks a random one from each item instead.</div>
+                            <div class="epDesc">Main Backdrop: only the item's primary backdrop. All Backdrops: a random one per item.</div>
                         </div>
                         <div class="epRow epRowMerged">
                             <label for="BackdropsGenreCycleTimeMs" class="epRowLabelSpan">Cycle time</label>
@@ -3324,7 +3324,7 @@
                                 <option value="IsFavoriteOrLiked">Favorite</option>
                                 <option value="Studio">Studio</option>
                             </select>
-                            <div class="epDesc">Order items rotate through, applies to Global/Movies/TV shows above. Shuffle: no repeats per round. Random: repeats OK.</div>
+                            <div class="epDesc">Order items rotate through. Shuffle: no repeats per round. Random: repeats OK.</div>
                         </div>
                         <div class="epRow epRowMerged" id="BackdropsGenreTraversalModeRow">
                             <label for="BackdropsGenreTraversalMode" class="epRowLabelSpan">Traversal</label>
@@ -3378,7 +3378,7 @@
                                 <option value="Main">Main Backdrop</option>
                                 <option value="All">All Backdrops</option>
                             </select>
-                            <div class="epDesc">Main Backdrop uses only the item's primary backdrop. All Backdrops picks a random one from each item instead.</div>
+                            <div class="epDesc">Main Backdrop: only the item's primary backdrop. All Backdrops: a random one per item.</div>
                         </div>
                         <div class="epRow epRowMerged" id="BackdropsStudioCycleTimeRow">
                             <label for="BackdropsStudioCycleTimeMs" class="epRowLabelSpan">Cycle time</label>
@@ -3438,7 +3438,7 @@
                                 <option value="IsFavoriteOrLiked">Favorite</option>
                                 <option value="Studio">Studio</option>
                             </select>
-                            <div class="epDesc">Order items rotate through, applies to Global/TV shows above. Shuffle: no repeats per round. Random: repeats OK.</div>
+                            <div class="epDesc">Order items rotate through. Shuffle: no repeats per round. Random: repeats OK.</div>
                         </div>
                         <div class="epRow epRowMerged" id="BackdropsStudioTraversalModeRow">
                             <label for="BackdropsStudioTraversalMode" class="epRowLabelSpan">Traversal</label>
@@ -3476,7 +3476,7 @@
                                 <option value="Main">Main Backdrop</option>
                                 <option value="All">All Backdrops</option>
                             </select>
-                            <div class="epDesc">Main Backdrop uses only the item's primary backdrop. All Backdrops picks a random one from each item instead.</div>
+                            <div class="epDesc">Main Backdrop: only the item's primary backdrop. All Backdrops: a random one per item.</div>
                         </div>
                         <div class="epRow epRowMerged">
                             <label for="BackdropsTagCycleTimeMs" class="epRowLabelSpan">Cycle time</label>
@@ -3580,7 +3580,7 @@
                                 <option value="Main">Main Backdrop</option>
                                 <option value="All">All Backdrops</option>
                             </select>
-                            <div class="epDesc">Main Backdrop uses only the item's primary backdrop. All Backdrops picks a random one from each item instead.</div>
+                            <div class="epDesc">Main Backdrop: only the item's primary backdrop. All Backdrops: a random one per item.</div>
                         </div>
                         <div class="epRow epRowMerged">
                             <label for="BackdropsFavoritesCycleTimeMs" class="epRowLabelSpan">Cycle time</label>
@@ -3640,7 +3640,7 @@
                                 <option value="SortName">Name</option>
                                 <option value="DateCreated">Date added</option>
                             </select>
-                            <div class="epDesc">Only fields valid for every type below (Artists/Playlists support little else in Jellyfin itself). Only used when Manage above is General.</div>
+                            <div class="epDesc">Only fields every type supports (Artists/Playlists allow little else). Only used when Manage is General.</div>
                         </div>
                         <div class="epRow epRowMerged" id="BackdropsFavoritesGeneralTraversalModeRow">
                             <label for="BackdropsFavoritesGeneralTraversalMode" class="epRowLabelSpan">Traversal</label>
@@ -3851,7 +3851,7 @@
                                 <option value="Folder">Folder</option>
                                 <option value="WallpapersCom">Wallpapers.com</option>
                             </select>
-                            <div class="epDesc">Appearances: your favourite people's movies/shows. Folder: their local backdrop files. Wallpapers.com: images from the web.</div>
+                            <div class="epDesc">Appearances: favourite people's movies/shows. Folder: their backdrop files. Wallpapers.com: web images.</div>
                         </div>
                         <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleAppearancesFilterRow">
                             <label for="BackdropsFavoritesPeopleAppearancesFilter" class="epRowLabelSpan">Appearances filter</label>
@@ -3911,7 +3911,7 @@
                                 <option value="Single">Single</option>
                                 <option value="Multiple">Multiple</option>
                             </select>
-                            <div class="epDesc">Single: looks for "backdrop.ext". Multiple: looks for "backdrop1.ext", "backdrop2.ext", etc. Only used when Source above is Folder.</div>
+                            <div class="epDesc">Single: backdrop.ext. Multiple: backdrop1.ext, backdrop2.ext, etc. Only used for Folder.</div>
                         </div>
                         <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleFolderOrderModeRow">
                             <label for="BackdropsFavoritesPeopleFolderOrderMode" class="epRowLabelSpan">Order</label>

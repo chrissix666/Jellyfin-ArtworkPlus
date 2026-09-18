@@ -68,6 +68,8 @@ Each of these rules was earned the hard way over several sessions, every single 
 
 ---
 
+27. **One-line descriptions (Session 117, TOP-PRIORITY user rule).** Every field description (`.epDesc`, `.epDescInline`) is exactly one line at the reference width 1920 px with Jellyfin's Noto Sans 10.5 px — never a wrap. Writing guideline: **max 105 characters** (the 804 px column fits ~108 average characters, nested subs have 794 px). Too long → shorten without changing the meaning; never let it wrap. Options are named in dropdown order. Tab intro paragraphs (`.epTabDescArea`, `white-space:normal`) are the only multi-line texts. Enforced by `tests/test_description_length.py` (renders the preview at 1920 px, fails on any wrap or any text over 105 chars) as a gate in `run_checks.py`. Measured, not guessed: 292 descriptions checked live in the user's Chrome, 13 wrapped, all shortened.
+
 ## Part B — Found contradiction (example of how this is supposed to work here)
 
 **W1 — Rule 1 vs. the tab-button function (Session 24/26):**

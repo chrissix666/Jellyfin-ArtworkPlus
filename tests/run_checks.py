@@ -28,7 +28,7 @@ import subprocess
 import sys
 import tempfile
 
-from _common import CONFIG_PAGE, TESTS_DIR
+from _common import CONFIG_PAGE, TESTS_DIR, ROOT
 
 GATING = [
     'test_configpage.py',
@@ -41,6 +41,7 @@ GATING = [
     'test_rotation_engine.py',
     'test_debug_switch.py',
     'test_backdrops_render.py',
+    'test_description_length.py',   # rule 27: one-line descriptions (needs the preview, built below)
 ]
 INFORMATIONAL = [
     'diagnostic_cross_node_check.py',
@@ -82,6 +83,8 @@ def run(script):
 
 
 if __name__ == '__main__':
+    # rule 27's test renders the preview - make sure it is current
+    subprocess.run([sys.executable, os.path.join(ROOT, 'build_preview.py')], capture_output=True)
     results = [node_check()] + [run(s) for s in GATING]
     if '--all' in sys.argv:
         print('\n--- informational diagnostics (findings documented in the Fibel) ---')
