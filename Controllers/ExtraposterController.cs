@@ -597,7 +597,11 @@ public class ExtraposterController : ControllerBase
 
         foreach (var itemId in itemIds)
         {
-            result.Items[itemId.ToString()] = ResolveLibraryItemResult(itemId, config);
+            // "N" (no dashes): the client looks the answer up by the tile's
+            // data-id, which Jellyfin serialises via JsonGuidConverter as the
+            // 32-hex form. Dictionary keys are strings and bypass that
+            // converter - Guid.ToString() (dashed) never matched (Session 122).
+            result.Items[itemId.ToString("N")] = ResolveLibraryItemResult(itemId, config);
         }
 
         _logger.LogInformation(
@@ -634,9 +638,13 @@ public class ExtraposterController : ControllerBase
         // ResolvePosterType/ResolveApplicability (isLibraryScope: true) -
         // the same, already-fixed logic the single-item detail endpoint
         // uses - instead of its own separate, silently-stale copy.
-        if (item is not Movie && item is not Series)
+        // Session 122: BoxSet admitted - ResolveApplicability/ResolveSetFolder
+        // below have handled Sets since Session 88, but this early gate
+        // still turned every Set tile away, so the library view could
+        // never show a Set's Extraposter.
+        if (item is not Movie && item is not Series && item is not BoxSet)
         {
-            _logger.LogInformation("Extraposter: ResolveLibraryItemResult - {ItemId} is neither a Movie nor a Series, skipping", itemId);
+            _logger.LogInformation("Extraposter: ResolveLibraryItemResult - {ItemId} is neither a Movie, a Series nor a BoxSet, skipping", itemId);
             return new PosterListResult { IsMovie = false };
         }
 

@@ -169,7 +169,11 @@ public class AnimatedPosterController : ControllerBase
 
         foreach (var itemId in itemIds)
         {
-            result.Items[itemId.ToString()] = ResolveItemResult(itemId, config, posterType, isLibraryScope) ?? new AnimatedPosterResult { IsApplicable = false };
+            // "N" (no dashes): the client looks the answer up by the tile's
+            // data-id, which Jellyfin serialises via JsonGuidConverter as the
+            // 32-hex form. Dictionary keys are strings and bypass that
+            // converter - Guid.ToString() (dashed) never matched (Session 122).
+            result.Items[itemId.ToString("N")] = ResolveItemResult(itemId, config, posterType, isLibraryScope) ?? new AnimatedPosterResult { IsApplicable = false };
         }
 
         return Ok(result);

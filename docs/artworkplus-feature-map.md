@@ -31,14 +31,14 @@ Status: ✅ verified live · ⚠️ gap known · ❓ not yet tested live · ❌ 
 | Feature | Renders on | Module | Controller / endpoints | Config prefix | Tab | Status | Fixture |
 |---|---|---|---|---|---|---|---|
 | Case Mod | detail page poster (Movie, BoxSet, Series main); 3D Case: geometry-keyed sized classes, `retilt()`, tilt hold of the whole card until the tilt is on (Session 121) | CaseModModule | `CaseMod`: `{itemId}`, `Texture/{caseType}/{key}` | `CaseMod*` (27), `*CaseTune*` dev fields | casemod | ✅ Session 115: 4 types × Movie/Set/TV, 12/12; Set inner case fixed | Movie: Resident Evil `9f8567…` (1080p, disc), Prinz von Ägypten `f792b6…` (480p), Bond Lizenz zum Töten `c4fc87…`; Set: Matrix Filmreihe `319bd8…`, Heavy Metal `4fccd5…`, Austin Powers `4199ae…`; TV: The Animatrix `864581…`, Blood & Chrome `fa0bf8…` (only 2 series / 15 sets have a Disc image) |
-| Animated Poster | detail page main poster (Movie, Series, Set) — replaces image source | AnimatedModule | `AnimatedPoster`: `{itemId}?type=`, `batch`, `{itemId}/image` | `AnimatedPoster*` (14) | animatedposter | ❓ | |
-| Animated Keyart | same, alternate base image | AnimatedModule | same controller, `type=animatedkeyart` | `AnimatedKeyart*` (11) | animatedposter | ❓ | |
-| Postercase (Custom Poster) | detail page main poster; **no library view** (⚠️ never scoped) | CustomModule | `CustomPoster`: `{itemId}?type=`, `batch`, `{itemId}/image` | `Postercase*` (14), `CustomPoster*` (3) | customposter | ❓ | |
+| Animated Poster | detail page main poster (Movie, Series, Set) — replaces image source; **library tiles** since Session 122 (page-wide batch, `data-src` rewrite, Jellyfin's own lazy loader loads the file) | AnimatedModule + `createLibraryTileSwapper` (priority 2) | `AnimatedPoster`: `{itemId}?type=`, `batch`, `{itemId}/image` | `AnimatedPoster*` (14) | animatedposter | ✅ library live (Session 122: 7 random tiles, GIF frames compared, scroll-out/in); detail ❓ | `*-animatedkeyart.gif` on 61 movies (Aquaman `ce82b3df…`), `*-animatedposter.gif` 94 tiles page 1 |
+| Animated Keyart | same, alternate base image (same code path, `auto` + `AnimatedPosterPriority`) | AnimatedModule | same controller, `type=animatedkeyart` | `AnimatedKeyart*` (11) | animatedposter | ✅ library live (Session 122) | |
+| Postercase (Custom Poster) | detail page main poster; **library tiles** since Session 122 (tile swapper priority 1, no Keyart logo on tiles) | CustomModule + `createLibraryTileSwapper` | `CustomPoster`: `{itemId}?type=`, `batch`, `{itemId}/image` | `Postercase*` (14), `CustomPoster*` (3) | customposter | ❓ library built, user test pending | `*-postercase.jpg` on many movies (Ad Astra also has Animated) |
 | Keyart (Custom Poster) | same, alternate base | CustomModule | same controller, `type=keyart` | `Keyart*` (17) | customposter | ❓ | |
-| Extraposter | detail page + library grid tiles, overlay slideshow | ExtraModule | `Extraposter`: `{itemId}/quickcheck`, `{itemId}?type=`, `batch`, `{itemId}/image/{fileName}` | `Extraposter*` (14) | extraposter | ❓ | |
+| Extraposter | detail page + library grid tiles, overlay slideshow (Session 122: page-wide batch, 50 % activation window, layers inside `.cardImageContainer` under Jellyfin's hover menu, tile ownership priority 3, Sets admitted server-side) | ExtraModule | `Extraposter`: `{itemId}/quickcheck`, `{itemId}?type=`, `batch`, `{itemId}/image/{fileName}` | `Extraposter*` (14) | extraposter | ❓ library rebuilt, user test pending | |
 | Extrakeyart | same, alternate base | ExtraModule | same controller, `type=extrakeyart` | `Extrakeyart*` (22) | extraposter | ❓ | |
 
-Priority when several want the poster slot: Custom (1) > Animated > Extra overlay, Extra's fallback reveals whatever is underneath (see curriculum "Poster controller").
+Priority when several want the poster slot: the HIGHEST number wins — Extra (3) > Animated (2) > Custom (1) > Main (0) (`posterArbiterRecomputeDecision` walks 3→1); the lower ones are Extra's backdrop during its Delay. Library tiles use the same order via `libraryTileOwners` (Session 122); the full chain (fallback on load error, order independence, flash prevention) is still open.
 Sets (BoxSets): supported by Animated/Custom/Extra since Sessions 87–92 (Movies' settings reused, naming Standalone).
 
 ### Positioned art (`RenderArt-v1.js`)
@@ -65,7 +65,7 @@ Sets (BoxSets): supported by Animated/Custom/Extra since Sessions 87–92 (Movie
 
 - **Gate system** (`EP_TREE`/`EP_FIELDS` in configPage.html): every Show-on/Enable/greying rule — Fibel rules 0–26, `tests/run_checks.py`.
 - **Naming modes**: Movies Standalone/Prefixed/Folder; TV Standalone/Folder (series main folder); Sets always Standalone.
-- **Known gaps (never scoped)**: no library-view mechanism for Postercase/Keyart; Import button lacks `.raised`; no dedicated tests for Animated Poster/Keyart and the Sets checkboxes.
+- **Known gaps**: library-tile wiring step 4 open (order dependence Extra/Animated, no load-error fallback, underlying image flashes on the first screen until ours is decoded); Keyart/Extrakeyart logo not drawn on tiles; Import button lacks `.raised`; no dedicated tests for Animated Poster/Keyart and the Sets checkboxes. Batch maps must be keyed like the tile `data-id` (no dashes) — `tests/diagnostic_batch_key_format.py`.
 - **Client logging**: every module logs through `Core.makeLogger`; silent by default, enabled per page with `localStorage.ArtworkPlusDebug` = `all` or a tag list (`ArtworkPlusCore.setDebug('CaseMod,Backdrops')`, reload). Server side: `config\logging.json` overrides `Jellyfin.Plugin.ArtworkPlus` to Debug.
 
 ## Live-test order (Session 114+)
