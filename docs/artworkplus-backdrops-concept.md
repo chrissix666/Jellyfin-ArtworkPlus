@@ -580,3 +580,21 @@ Decisions taken with the user (Session 120):
   sources ≤1200 ms; `empty` → fade-out at once.
 - D5 `hashchange` listener in Core for the synchronous claim (no cost, no
   polling; lesson B18: check what the platform offers before adding a fallback).
+
+### R8. Implemented (Session 120)
+
+Core: `ArtworkPlusCore.backdropBus` (claims as a set - a details page is
+claimed by Detail View AND People, the server decides; `ready` resolves the
+waiters, `empty` only when no claim and nothing showing is left), constants
+`HANDOVER_MS = 1200`, `HANDOVER_SLOW_MS = 600`, `NO_CLAIM_GRACE_MS = 50`
+(release and claim of one navigation arrive in either order); `onNavigation`
+(hashchange first, viewshow + 1 s poll as backup); `createBackdropOwner`
+(container without Jellyfin's class, Ken Burns frame with the owner's own
+constants, vanilla-style layer render, rotation engine, `addImages`,
+`release`, `setPaused`, `quietFrames` for People, `preload` 'all'/'next').
+Backdrops-v1.js: six IIFEs of ~100 lines each (page detection, fetch, URL
+building, claim) - 3330 → 993 lines. PeopleBackdropsController: the Header
+line carries `SourceMode` so the client can claim 'wallpapers' as soon as the
+stream starts. Test `tests/test_backdrops_transitions.py` (threaded stub
+server with real image delays, 100 ms sampling, 12 scenarios, gated).
+

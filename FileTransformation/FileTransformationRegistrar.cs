@@ -291,11 +291,15 @@ public static class FileTransformCallback
     /// by this static rule whenever this project's own `body` class
     /// (`artworkplus-backdrops-override`, toggled by Backdrops-v1.js
     /// itself based on its own settings/browser/detailsBanner checks) is
-    /// present - `:not(.artworkplus-own-backdrop)` specifically excludes
-    /// this project's OWN, separate backdrop container (see
-    /// Backdrops-v1.js's own getBackdropContainer()), which also uses
-    /// the `.backdropContainer` class for its native positioning/sizing
-    /// CSS but must stay visible.
+    /// present. Session 120: our own containers no longer carry
+    /// Jellyfin's `.backdropContainer` class at all (Core's
+    /// createBackdropOwner copies the three positioning rules instead -
+    /// Jellyfin caches `querySelector('.backdropContainer')` on first use
+    /// and would otherwise empty OUR container in clearBackdrop()); the
+    /// `:not(...)` guard stays as a harmless belt-and-braces. The body
+    /// class is now toggled by the transition bus in Core, exactly while
+    /// one of our six implementations shows (or is claimed for) the page
+    /// - never on Home or the library home pages (concept Part R).
     /// </summary>
     private const string BackdropsPrehidingStyleTag =
         "<style id=\"artworkplus-backdrops-prehiding\">body.artworkplus-backdrops-override .backdropContainer:not(.artworkplus-own-backdrop){visibility:hidden!important}</style>";

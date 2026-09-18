@@ -104,6 +104,9 @@ public class PeopleBackdropsStreamLine
 {
     public string Type { get; set; } = string.Empty; // "Header" | "Image" | "Done"
 
+    /// <summary>Session 120: the source the Header announces ("WallpapersCom" | "Appearances" | "Folder") - the client chooses its handover window from it (concept Part R3).</summary>
+    public string? SourceMode { get; set; }
+
     // Only populated when Type == "Header".
     public bool IsApplicable { get; set; }
     public string? Reason { get; set; }
@@ -349,6 +352,7 @@ public class PeopleBackdropsController : ControllerBase
             {
                 Type = "Header",
                 IsApplicable = true,
+                SourceMode = config.PeopleBackdropsSourceMode,
                 CycleTimeMs = config.PeopleBackdropsCycleTimeMs,
                 OrderMode = config.PeopleBackdropsOrderMode,
                 KenBurnsEnabled = config.PeopleBackdropsKenBurnsEnabled,
@@ -523,6 +527,7 @@ public class PeopleBackdropsController : ControllerBase
         {
             Type = "Header",
             IsApplicable = true,
+            SourceMode = config.PeopleBackdropsSourceMode,
             CycleTimeMs = config.PeopleBackdropsCycleTimeMs,
             OrderMode = sortMode,
             KenBurnsEnabled = config.PeopleBackdropsKenBurnsEnabled,
@@ -667,6 +672,7 @@ public class PeopleBackdropsController : ControllerBase
         {
             Type = "Header",
             IsApplicable = true,
+            SourceMode = config.PeopleBackdropsSourceMode,
             CycleTimeMs = config.PeopleBackdropsCycleTimeMs,
             OrderMode = config.PeopleBackdropsFolderOrderMode,
             KenBurnsEnabled = config.PeopleBackdropsKenBurnsEnabled,

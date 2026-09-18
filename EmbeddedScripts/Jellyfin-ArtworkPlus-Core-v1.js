@@ -1386,6 +1386,390 @@
         return 'artworkplus-' + String(position || 'BottomRight').replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
     }
 
+
+    // =================================================================
+    // Session 120: the backdrop transition system (concept Part R).
+    // ONE bus + ONE owner factory for all six backdrop implementations
+    // (Detail View, People, Genre, Studio, Tag, Favorites). Before this,
+    // every IIFE carried its own copy of container/Ken Burns/render/
+    // clear and guessed with a 1.2 s timeout whether a successor would
+    // come ("Tag -> Film: alte Slideshow läuft weiter, harter Abbruch,
+    // Pause, dann erst das Filmbild"). Now the responsible owner CLAIMS
+    // the page synchronously on the hash change, reports READY (first
+    // decoded image) or EMPTY, and the outgoing owner's RELEASE is
+    // decided by the bus from that claim.
+    // =================================================================
+
+    var BACKDROP_FADE_MS = 800;        // Jellyfin's backdrop-fadein keyframe
+    var HANDOVER_MS = 1200;            // max wait for a claimed successor (normal sources)
+    var HANDOVER_SLOW_MS = 600;        // max wait when the successor streams Wallpapers.com
+    var NO_CLAIM_GRACE_MS = 50;        // release and claim of one navigation may arrive in either order
+    var OVERRIDE_BODY_CLASS = 'artworkplus-backdrops-override';
+
+    var bus = {
+        claims: {},           // owner -> source; several owners may claim one page (details: Detail View AND People, the server decides)
+        showing: null,        // owner name whose image is currently on screen
+        waiters: [],          // outgoing releases waiting for ready/empty
+        claimSeq: 0
+    };
+
+    function claimCount() { return Object.keys(bus.claims).length; }
+    function claimHasWallpapers() {
+        for (var k in bus.claims) { if (bus.claims[k] === 'wallpapers') { return true; } }
+        return false;
+    }
+
+    function busApplyClasses() {
+        // Hide Jellyfin's container (and dim the page like Jellyfin does
+        // with .withBackdrop) exactly while one of ours is showing or a
+        // successor of ours is claimed - never on pages nobody of ours
+        // handles (Home, library home: Jellyfin behaves as the user set it).
+        var on = !!(bus.showing || claimCount());
+        try { document.body.classList.toggle(OVERRIDE_BODY_CLASS, on); } catch (e) { /* no body yet */ }
+        var bg = document.querySelector('.backgroundContainer');
+        if (bg) { bg.classList.toggle('withBackdrop', on); }
+    }
+
+    function busResolveWaiters(reason) {
+        var w = bus.waiters;
+        bus.waiters = [];
+        w.forEach(function (waiter) { waiter.fire(reason); });
+    }
+
+    /** A responsible owner announces itself for the current page. source: 'normal' | 'wallpapers'. */
+    function busClaim(owner, source) {
+        bus.claims[owner] = source === 'wallpapers' ? 'wallpapers' : 'normal';
+        bus.claimSeq++;
+        busApplyClasses();
+        // A release that came just before this claim (same navigation)
+        // must now wait for us instead of fading immediately.
+        bus.waiters.forEach(function (waiter) { waiter.rearm(); });
+        return bus.claimSeq;
+    }
+
+    /** First image of a claimant is decoded and fading in: crossfade point. */
+    function busReady(owner) {
+        delete bus.claims[owner];
+        bus.showing = owner;
+        busApplyClasses();
+        busResolveWaiters('ready');
+    }
+
+    /** A claimant has nothing to show (disabled deeper down, no images, not its item type, error). */
+    function busEmpty(owner) {
+        delete bus.claims[owner];
+        if (bus.showing === owner) { bus.showing = null; }
+        busApplyClasses();
+        if (!bus.showing && claimCount() === 0) {
+            // Nobody of ours will paint this page: the page's verdict is "empty".
+            busResolveWaiters('empty');
+        }
+    }
+
+    /** The owner currently on screen is leaving; fadeFn(reason) starts its fade-out. */
+    function busRelease(owner, fadeFn) {
+        if (bus.showing === owner) { bus.showing = null; }
+        var fired = false;
+        var timer = null;
+        var waiter = {
+            fire: function (reason) {
+                if (fired) { return; }
+                fired = true;
+                if (timer) { clearTimeout(timer); timer = null; }
+                var i = bus.waiters.indexOf(waiter);
+                if (i !== -1) { bus.waiters.splice(i, 1); }
+                busApplyClasses();
+                try { fadeFn(reason); } catch (e) { /* the outgoing side must never break the bus */ }
+            },
+            rearm: function () {
+                if (fired) { return; }
+                if (timer) { clearTimeout(timer); }
+                var ms = claimCount() === 0 ? NO_CLAIM_GRACE_MS : (claimHasWallpapers() ? HANDOVER_SLOW_MS : HANDOVER_MS);
+                timer = setTimeout(function () { waiter.fire(claimCount() ? 'timeout' : 'noclaim'); }, ms);
+            }
+        };
+        bus.waiters.push(waiter);
+        waiter.rearm();
+        busApplyClasses();
+        return waiter;
+    }
+
+    function busState() {
+        return { claims: Object.assign({}, bus.claims), showing: bus.showing, waiting: bus.waiters.length };
+    }
+
+    // --- navigation: hashchange (immediate) + viewshow + poll (backup) ---
+    var navigationListeners = [];
+    var navigationInstalled = false;
+    var lastDispatchedHash = null;
+    function dispatchNavigation(source) {
+        var hash = location.hash;
+        if (hash === lastDispatchedHash && source !== 'viewshow') { return; }
+        lastDispatchedHash = hash;
+        navigationListeners.forEach(function (fn) {
+            try { fn(hash, source); } catch (e) { /* one listener must not stop the others */ }
+        });
+    }
+    /**
+     * Registers fn(hash, source) for every navigation. Fires synchronously on
+     * the browser's own 'hashchange' (no polling, no cost) - this is where an
+     * owner claims or releases - and again on Jellyfin's 'viewshow' (the
+     * page DOM is ready then) and from a 1 s poll as the last backup.
+     */
+    function dispatchNavigationNow() { dispatchNavigation('viewshow'); }
+    function onNavigation(fn) {
+        navigationListeners.push(fn);
+        if (navigationInstalled) { return; }
+        navigationInstalled = true;
+        window.addEventListener('hashchange', function () { dispatchNavigation('hashchange'); });
+        document.addEventListener('viewshow', function () { dispatchNavigation('viewshow'); });
+        setInterval(function () { dispatchNavigation('poll'); }, 1000);
+    }
+
+    /**
+     * One backdrop owner = one implementation's container, Ken Burns frame,
+     * layer rendering (vanilla style: the new layer fades in ON TOP of the
+     * opaque old one, the old one is removed when the fade ends), rotation
+     * engine and release-through-the-bus. The implementation keeps only:
+     * page detection, endpoint fetch, URL building, and the claim.
+     *
+     * options: { name, containerClass, kenBurns: { zoomStart, zoomEnd, panPx, easing },
+     *            quietFrames: bool (People: wait for a calm page before the first fade-in),
+     *            log: fn }
+     */
+    function createBackdropOwner(options) {
+        var name = options.name;
+        var containerClass = options.containerClass;
+        var kb = options.kenBurns || { zoomStart: 1.10, zoomEnd: 1.30, panPx: 15, easing: 'cubic-bezier(0.645, 0.045, 0.355, 1)' };
+        var log = options.log || function () {};
+        var quietFrames = !!options.quietFrames;
+        // 'all' (small own lists: Detail View) preloads every image at start
+        // at low priority; 'next' (100-image pools) only the engine's next
+        // pick, on idle - measured in Session 116: bulk preloading a pool
+        // starved the visible image (11.5 s instead of 1.6 s).
+        var preload = options.preload || 'next';
+        var scheduleIdle = window.requestIdleCallback ? function (fn) { window.requestIdleCallback(fn); } : function (fn) { setTimeout(fn, 1500); };
+        function preloadNext() {
+            var next = engine.peekNext();
+            if (next) { preloadImage(next, { priority: 'low' }).catch(function () { /* background only */ }); }
+        }
+
+        var containerEl = null;
+        var frameEl = null;
+        var generation = 0;
+        var engine = createBackdropRotationEngine();
+        var visitShown = false;   // first image of this visit reached the screen -> bus.ready sent
+        var pendingCancel = null; // cancels a pending quiet-frames wait
+
+        function getContainer() {
+            if (containerEl && document.body.contains(containerEl)) { return containerEl; }
+            containerEl = document.querySelector('.' + containerClass);
+            if (!containerEl) {
+                containerEl = document.createElement('div');
+                containerEl.className = containerClass + ' artworkplus-backdrop-owner';
+                // Jellyfin's .backdropContainer rules copied (librarybrowser.scss +
+                // backdrop.scss) WITHOUT its class: Jellyfin caches
+                // document.querySelector('.backdropContainer') on first use and
+                // would otherwise empty OUR container in clearBackdrop().
+                containerEl.style.position = 'fixed';
+                containerEl.style.top = '0';
+                containerEl.style.left = '0';
+                containerEl.style.right = '0';
+                containerEl.style.bottom = '0';
+                containerEl.style.zIndex = '-1';
+                containerEl.style.contain = 'layout style size';
+                document.body.insertBefore(containerEl, document.body.firstChild);
+            }
+            return containerEl;
+        }
+
+        function getFrame(kenBurnsEnabled, zoomMs, panMs) {
+            var container = getContainer();
+            if (!kenBurnsEnabled) { return container; }
+            if (frameEl && container.contains(frameEl)) { return frameEl; }
+            var zoomEl = document.createElement('div');
+            zoomEl.className = 'artworkplus-kenburns-zoom';
+            zoomEl.style.position = 'absolute';
+            zoomEl.style.inset = '0';
+            zoomEl.style.overflow = 'hidden';
+            var panEl = document.createElement('div');
+            panEl.className = 'artworkplus-kenburns-pan';
+            panEl.style.position = 'absolute';
+            panEl.style.inset = '0';
+            zoomEl.appendChild(panEl);
+            container.appendChild(zoomEl);
+            if (zoomEl.animate) {
+                var zoomAnimation = zoomEl.animate(
+                    [{ transform: 'scale(' + kb.zoomStart + ')' }, { transform: 'scale(' + kb.zoomEnd + ')' }],
+                    { duration: zoomMs, easing: kb.easing, iterations: Infinity, direction: 'alternate' });
+                zoomAnimation.currentTime = Math.random() * zoomMs;
+                var panAnimation = panEl.animate(
+                    [{ transform: 'translate(-' + kb.panPx + 'px, -' + kb.panPx + 'px)' }, { transform: 'translate(' + kb.panPx + 'px, ' + kb.panPx + 'px)' }],
+                    { duration: panMs, easing: kb.easing, iterations: Infinity, direction: 'alternate' });
+                panAnimation.currentTime = Math.random() * panMs;
+            }
+            frameEl = panEl;
+            return panEl;
+        }
+
+        function emptyContainer() {
+            frameEl = null;
+            if (!containerEl) { return; }
+            while (containerEl.firstChild) { containerEl.removeChild(containerEl.firstChild); }
+            containerEl.style.opacity = '';
+            containerEl.style.transition = '';
+        }
+
+        function hasContent() {
+            return !!(containerEl && containerEl.firstChild && containerEl.style.opacity !== '0');
+        }
+
+        /** Renders one URL as a new layer (vanilla style). Resolves the bus on the visit's first image. */
+        function render(url, settings, onShown, onFailure) {
+            var myGeneration = generation;
+            var frame = getFrame(settings.KenBurnsEnabled, settings.KenBurnsZoomMs, settings.KenBurnsPanMs);
+            var existing = frame.querySelector('.displayingBackdropImage');
+            if (existing && existing.getAttribute('data-url') === url) {
+                // Same image again (Random order, or a fast return to a page
+                // whose old layer is still there): nothing to append, but the
+                // container may be mid-fade-out from the release - revive it,
+                // and this counts as the visit's first image for the bus.
+                var same = getContainer();
+                if (same.style.opacity === '0') { same.style.transition = ''; same.style.opacity = ''; }
+                if (!visitShown) { visitShown = true; busReady(name); }
+                engine.imageShown();
+                if (onShown) { onShown(); }
+                return;
+            }
+            preloadImage(url).then(function () {
+                if (myGeneration !== generation) { log('Discarding a stale image render for a no-longer-current rotation. URL:', url); return; }
+                var div = document.createElement('div');
+                div.className = 'backdropImage displayingBackdropImage';
+                div.style.position = 'absolute';
+                div.style.inset = '0';
+                div.style.backgroundSize = 'cover';
+                div.style.backgroundPosition = 'center center';
+                div.style.backgroundRepeat = 'no-repeat';
+                div.style.transition = 'opacity ' + BACKDROP_FADE_MS + 'ms ease';
+                div.style.opacity = '0';
+                div.setAttribute('data-url', url);
+                div.style.backgroundImage = cssUrl(url);
+                if (existing) { existing.classList.remove('displayingBackdropImage'); }
+                frame.appendChild(div);
+                // A container that was mid-fade-out (fast return to the same page) comes back.
+                var c = getContainer();
+                if (c.style.opacity === '0') { c.style.transition = ''; c.style.opacity = ''; }
+
+                var begin = function () {
+                    if (myGeneration !== generation) { return; }
+                    if (!visitShown) { visitShown = true; busReady(name); }
+                    void div.offsetWidth;
+                    div.style.opacity = '1';
+                    engine.imageShown();
+                    if (onShown) { onShown(); }
+                    if (preload === 'next') { scheduleIdle(preloadNext); }
+                    if (existing) {
+                        var cleaned = false;
+                        var cleanup = function (event) {
+                            if (event && event.propertyName && event.propertyName !== 'opacity') { return; }
+                            if (cleaned) { return; }
+                            cleaned = true;
+                            div.removeEventListener('transitionend', cleanup);
+                            if (existing.parentNode) { existing.parentNode.removeChild(existing); }
+                        };
+                        div.addEventListener('transitionend', cleanup);
+                        setTimeout(cleanup, BACKDROP_FADE_MS + 1000);
+                    }
+                };
+
+                if (quietFrames && !visitShown) {
+                    // People: the person page lays out heavily after viewshow (poster
+                    // decode, long tasks); starting the fade during that jank makes
+                    // it stutter. Wait for calm frames (cap 3.5 s), then fade.
+                    var QUIET_FRAMES_NEEDED = 45, QUIET_WAIT_CAP_MS = 3500;
+                    var t0 = performance.now(), prev = null, run = 0, raf = null, cancelled = false;
+                    var step = function (ts) {
+                        if (cancelled) { return; }
+                        if (prev !== null && (ts - prev) <= 34) { run++; } else { run = 0; }
+                        prev = ts;
+                        if (run >= QUIET_FRAMES_NEEDED || (performance.now() - t0) >= QUIET_WAIT_CAP_MS) { pendingCancel = null; begin(); return; }
+                        raf = requestAnimationFrame(step);
+                    };
+                    pendingCancel = function () { cancelled = true; if (raf) { cancelAnimationFrame(raf); } };
+                    raf = requestAnimationFrame(step);
+                } else {
+                    requestAnimationFrame(function () { requestAnimationFrame(begin); });
+                }
+            }).catch(function (e) {
+                if (myGeneration !== generation) { return; }
+                log('The image could not be loaded, skipping', e);
+                if (onFailure) { onFailure(url); }
+            });
+        }
+
+        /** Starts (or restarts) the rotation for a fresh list. The bus must have been claimed already. */
+        function start(images, settings) {
+            generation++;
+            if (pendingCancel) { pendingCancel(); pendingCancel = null; }
+            var cycleMs = Math.max(settings.CycleTimeMs || 0, Math.ceil(BACKDROP_FADE_MS * 1.5));
+            var orderMode = (settings.OrderMode === 'Shuffle' || settings.OrderMode === 'Random') ? settings.OrderMode : 'Sequential';
+            if (preload === 'all') {
+                for (var i = 1; i < images.length; i++) { preloadImage(images[i], { priority: 'low' }).catch(function () { /* background only */ }); }
+            }
+            engine.start(images, orderMode, cycleMs, function (url) {
+                render(url, settings, null, function (failedUrl) {
+                    engine.removeFailedImage(failedUrl);
+                    if (engine.peekNext() !== null || images.length > 1) { engine.advance(); } else { busEmpty(name); }
+                });
+            });
+        }
+
+        /** Starts a new visit: the first image of the next start()/render() reports ready to the bus. */
+        function beginVisit() {
+            visitShown = false;
+        }
+
+        /** Leaves the page: rotation stops, the container fades out when the bus says so. */
+        function release() {
+            generation++;
+            engine.clear();
+            if (pendingCancel) { pendingCancel(); pendingCancel = null; }
+            visitShown = false;
+            if (!hasContent()) {
+                emptyContainer();
+                if (bus.showing === name) { bus.showing = null; busApplyClasses(); }
+                return;
+            }
+            var myGeneration = generation;
+            var el = containerEl;
+            busRelease(name, function (reason) {
+                if (myGeneration !== generation) { return; } // a new rotation of ours started meanwhile - it owns the container now
+                log('Fading out (' + reason + ')');
+                el.style.transition = 'opacity ' + BACKDROP_FADE_MS + 'ms ease';
+                el.style.opacity = '0';
+                setTimeout(function () {
+                    if (myGeneration !== generation) { return; }
+                    emptyContainer();
+                }, BACKDROP_FADE_MS);
+            });
+        }
+
+        return {
+            name: name,
+            claim: function (source) { return busClaim(name, source); },
+            empty: function () { busEmpty(name); },
+            beginVisit: beginVisit,
+            start: start,
+            render: render,
+            addImages: function (urls) { engine.addImages(urls); },
+            release: release,
+            setPaused: function (p) { engine.setPaused(p); },
+            hasContent: hasContent,
+            peekNext: function () { return engine.peekNext(); },
+            getContainer: getContainer
+        };
+    }
+
     window.ArtworkPlusCore = {
         getItemIdFromHash: getItemIdFromHash,
         isDetailsPage: isDetailsPage,
@@ -1411,6 +1795,11 @@
         watchForNavigation: watchForNavigation,
         fisherYatesShuffle: fisherYatesShuffle,
         createBackdropRotationEngine: createBackdropRotationEngine,
+        createBackdropOwner: createBackdropOwner,
+        onNavigation: onNavigation,
+        dispatchNavigationNow: dispatchNavigationNow,
+        backdropBus: { claim: busClaim, ready: busReady, empty: busEmpty, release: busRelease, state: busState },
+        BACKDROP_FADE_MS: BACKDROP_FADE_MS,
         setDebug: setDebug,
         isDebugTagEnabled: isDebugTagEnabled
     };

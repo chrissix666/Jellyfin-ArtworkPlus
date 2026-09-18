@@ -81,7 +81,9 @@ PROBE = """
   const els = [...c.querySelectorAll('*')];
   const imgs = els.filter(e => e.tagName === 'IMG').map(e => ({ src: e.getAttribute('src') || '', complete: e.complete, nat: e.naturalWidth, op: getComputedStyle(e).opacity }));
   const bgs = els.map(e => e.style.backgroundImage).filter(b => b && b !== 'none');
-  return { container: true, imgs, bgs, rect: [c.offsetWidth, c.offsetHeight] };
+  const cop = parseFloat(getComputedStyle(c).opacity);
+  const bgVisible = els.filter(e => e.style.backgroundImage && e.style.backgroundImage !== 'none').map(e => parseFloat(getComputedStyle(e).opacity) * cop);
+  return { container: true, imgs, bgs, bgVisible, rect: [c.offsetWidth, c.offsetHeight] };
 }
 """
 
@@ -140,7 +142,8 @@ def main():
                 page.evaluate("(h) => { location.hash = h; document.dispatchEvent(new CustomEvent('viewshow')); }", hsh.replace("g1", "g3").replace("Horror", "Comedy").replace("type=Movie", "type=Episode"))
                 page.wait_for_timeout(3000)
                 r2 = page.evaluate(PROBE, sel)
-                vis2 = r2.get("container") and any(i["src"] and i["nat"] > 0 and float(i["op"]) > 0.5 for i in r2.get("imgs", []))
+                vis2 = r2.get("container") and (any(i["src"] and i["nat"] > 0 and float(i["op"]) > 0.5 for i in r2.get("imgs", []))
+                                                or any(o > 0.5 for o in r2.get("bgVisible", [])))
                 fails += 0 if vis2 else 1
                 print(("ok  " if vis2 else "FAIL"), f"{name:9s}", "rapid switch" if vis2 else f"rapid switch left the page black: {r2}")
             REQUEST_LOG.clear()
