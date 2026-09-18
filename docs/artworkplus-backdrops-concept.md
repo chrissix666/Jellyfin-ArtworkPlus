@@ -597,4 +597,7 @@ building, claim) - 3330 → 993 lines. PeopleBackdropsController: the Header
 line carries `SourceMode` so the client can claim 'wallpapers' as soon as the
 stream starts. Test `tests/test_backdrops_transitions.py` (threaded stub
 server with real image delays, 100 ms sampling, 12 scenarios, gated).
+Live-verified Session 120 (see curriculum): 14 matrix scenarios incl. the two
+live-found ones (claimant with no images must fade its previous content;
+releasing owner drops its claim).
 
