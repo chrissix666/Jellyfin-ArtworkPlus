@@ -2912,6 +2912,19 @@
                             </div>
                             <div class="epDesc">Allowed image formats. Excludes People Backdrops (URL-based).</div>
                         </div>
+                        <div class="epRow epRowMerged" id="BackdropsListenerRow">
+                            <label for="BackdropsListener" class="epRowLabelSpan">Listener</label>
+                            <select is="emby-select" id="BackdropsListener" name="BackdropsListener" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Native">Native</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                            <div class="epDesc">Native: Jellyfin's own DB backdrops, fastest. Custom: Kodi compatible naming without duplicate files.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsCustomBaseNameRow">
+                            <label for="BackdropsCustomBaseName" class="epRowLabelSpan">Base name</label>
+                            <input type="text" class="epTextCompact" id="BackdropsCustomBaseName" name="BackdropsCustomBaseName" />
+                            <div class="epDesc">Same rules as Jellyfin's backdrop(X), your name instead: (filename-)name.ext, (filename-)name1.ext.</div>
+                        </div>
 
                         <div class="epCollapseHeader" data-collapse="backdropsMod"><span class="epChevron">▶</span><span>Detail View Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsMod">
@@ -2986,6 +2999,38 @@
                                 <option value="Random">Random</option>
                             </select>
                             <div class="epDesc">Sequential: native order. Shuffle: no repeats/round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsEpisodeEnabledRow">
+                            <label for="BackdropsEpisodeEnabled">Episode backdrops</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsEpisodeEnabled" name="BackdropsEpisodeEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Own backdrop files per episode. Without files: season, then show backdrops.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsEpisodeBaseNameRow">
+                            <label for="BackdropsEpisodeBaseName" class="epRowLabelSpan">Base name</label>
+                            <input type="text" class="epTextCompact" id="BackdropsEpisodeBaseName" name="BackdropsEpisodeBaseName" />
+                            <div class="epDesc">Episode-file prefix required: episodefile-name.ext, episodefile-name1.ext.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsEpisodeBackdropFilesRow">
+                            <label for="BackdropsEpisodeBackdropFiles" class="epRowLabelSpan">Backdrop files</label>
+                            <select is="emby-select" id="BackdropsEpisodeBackdropFiles" name="BackdropsEpisodeBackdropFiles" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Single">Single</option>
+                                <option value="Multiple">Multiple</option>
+                            </select>
+                            <div class="epDesc">Single: name.ext. Multiple: name1.ext, name2.ext, etc.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsEpisodeOrderModeRow">
+                            <label for="BackdropsEpisodeOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="BackdropsEpisodeOrderMode" name="BackdropsEpisodeOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: file order. Shuffle: no repeats/round. Random: repeats OK. Only for Multiple.</div>
                         </div>
                         </div>
                         </div>
@@ -3160,13 +3205,18 @@
                              Session 76): ersetzt die anderswo genutzte
                              "Main backdrop only"-Checkbox durch ein
                              Dropdown, wie bei Genre/Tag/Favorites. -->
+                        <div class="epRow epRowMerged" id="PeopleBackdropsFolderBaseNameRow">
+                            <label for="PeopleBackdropsFolderBaseName" class="epRowLabelSpan">Base name</label>
+                            <input type="text" class="epTextCompact" id="PeopleBackdropsFolderBaseName" name="PeopleBackdropsFolderBaseName" />
+                            <div class="epDesc">Same rules as backdrop(X), your name instead: name.ext, name1.ext in the person's folder.</div>
+                        </div>
                         <div class="epRow epRowMerged" id="PeopleBackdropsFolderBackdropFilesRow">
                             <label for="PeopleBackdropsFolderBackdropFiles" class="epRowLabelSpan">Backdrop files</label>
                             <select is="emby-select" id="PeopleBackdropsFolderBackdropFiles" name="PeopleBackdropsFolderBackdropFiles" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Single">Single</option>
                                 <option value="Multiple">Multiple</option>
                             </select>
-                            <div class="epDesc">Single: backdrop.ext. Multiple: backdrop1.ext, backdrop2.ext, etc. Only used for Folder.</div>
+                            <div class="epDesc">Single: name.ext. Multiple: name1.ext, name2.ext, etc. Only used for Folder.</div>
                         </div>
                         <div class="epRow epRowMerged" id="PeopleBackdropsFolderOrderModeRow">
                             <label for="PeopleBackdropsFolderOrderMode" class="epRowLabelSpan">Order</label>
@@ -3911,7 +3961,7 @@
                                 <option value="Single">Single</option>
                                 <option value="Multiple">Multiple</option>
                             </select>
-                            <div class="epDesc">Single: backdrop.ext. Multiple: backdrop1.ext, backdrop2.ext, etc. Only used for Folder.</div>
+                            <div class="epDesc">Single: name.ext. Multiple: name1.ext, name2.ext, etc. Only used for Folder.</div>
                         </div>
                         <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleFolderOrderModeRow">
                             <label for="BackdropsFavoritesPeopleFolderOrderMode" class="epRowLabelSpan">Order</label>
@@ -4366,6 +4416,7 @@
                 PeopleBackdropsAppearancesSortMode: { type: 'select', def: 'Shuffle', tab: 'peoplebackdrops' },
                 PeopleBackdropsAppearancesTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'peoplebackdrops' },
                 PeopleBackdropsAppearancesMainOnly: { type: 'select', def: 'Main', tab: 'peoplebackdrops' },
+                PeopleBackdropsFolderBaseName: { type: 'text', def: 'backdrop', tab: 'peoplebackdrops' },
                 PeopleBackdropsFolderBackdropFiles: { type: 'select', def: 'Single', tab: 'peoplebackdrops' },
                 PeopleBackdropsFolderOrderMode: { type: 'select', def: 'Sequential', tab: 'peoplebackdrops' },
                 // Backdrops
@@ -4375,6 +4426,8 @@
                 // sub-section), same reasoning as ExtraposterEnabled's
                 // own identical change.
                 BackdropsEnabled: { type: 'checkbox', def: true, tab: 'backdropsmod' },
+                BackdropsListener: { type: 'select', def: 'Native', tab: 'backdropsmod' },
+                BackdropsCustomBaseName: { type: 'text', def: 'fanart', tab: 'backdropsmod' },
                 BackdropsGenreEnabled: { type: 'checkbox', def: true, tab: 'backdropsgenre' },
                 BackdropsGenreMainOnly: { type: 'select', def: 'Main', tab: 'backdropsgenre' },
                 BackdropsGenreCycleTimeMs: { type: 'number', def: 10000, tab: 'backdropsgenre' },
@@ -4457,6 +4510,10 @@
                 BackdropsShowOnTvShows: { type: 'checkbox', def: true, tab: 'backdropsmod' },
                 BackdropsShowOnSeasons: { type: 'checkbox', def: true, tab: 'backdropsmod' },
                 BackdropsShowOnEpisodes: { type: 'checkbox', def: true, tab: 'backdropsmod' },
+                BackdropsEpisodeEnabled: { type: 'checkbox', def: true, tab: 'backdropsmod' },
+                BackdropsEpisodeBaseName: { type: 'text', def: 'backdrop', tab: 'backdropsmod' },
+                BackdropsEpisodeBackdropFiles: { type: 'select', def: 'Multiple', tab: 'backdropsmod' },
+                BackdropsEpisodeOrderMode: { type: 'select', def: 'Shuffle', tab: 'backdropsmod' },
                 BackdropsShowOnVideos: { type: 'checkbox', def: true, tab: 'backdropsmod' },
                 BackdropsCycleTimeMs: { type: 'number', def: 10000, tab: 'backdropsmod' },
                 BackdropsOrderMode: { type: 'select', def: 'Shuffle', tab: 'backdropsmod' },
@@ -5467,6 +5524,9 @@
                 {
                     id: 'backdrops', isTabRoot: true, when: [AllChecked(['BackdropsTabEnabled'])],
                     children: [
+                        // Session 118: global Listener switch - Base name only with Custom.
+                        { id: 'backdrops_listener', structural: true, target: ['BackdropsListenerRow'], when: [], children: [] },
+                        { id: 'backdrops_custombasename', structural: true, target: ['BackdropsCustomBaseNameRow'], when: [ValueIn('BackdropsListener', ['Custom'])], children: [] },
                         {
                             id: 'backdropsmod', target: ['BackdropsDependentFields'], headerTarget: ['backdropsMod'],
                             when: [
@@ -5481,6 +5541,13 @@
                                 // RedCarpetShowOnRow above - was missed
                                 // originally for the same reason.
                                 { id: 'backdropsmod_showon', structural: true, target: ['BackdropsShowOnRow'], when: [], children: [] },
+                                // Session 118: per-episode backdrop files. The checkbox needs
+                                // Show on Episodes; its three settings need the checkbox; Order
+                                // additionally needs Multiple (Single has nothing to order).
+                                { id: 'backdropsmod_episode', structural: true, target: ['BackdropsEpisodeEnabledRow'], when: [AllChecked(['BackdropsShowOnEpisodes'])], children: [] },
+                                { id: 'backdropsmod_episode_basename', structural: true, target: ['BackdropsEpisodeBaseNameRow'], when: [AllChecked(['BackdropsShowOnEpisodes']), AllChecked(['BackdropsEpisodeEnabled'])], children: [] },
+                                { id: 'backdropsmod_episode_files', structural: true, target: ['BackdropsEpisodeBackdropFilesRow'], when: [AllChecked(['BackdropsShowOnEpisodes']), AllChecked(['BackdropsEpisodeEnabled'])], children: [] },
+                                { id: 'backdropsmod_episode_order', structural: true, target: ['BackdropsEpisodeOrderModeRow'], when: [AllChecked(['BackdropsShowOnEpisodes']), AllChecked(['BackdropsEpisodeEnabled']), ValueIn('BackdropsEpisodeBackdropFiles', ['Multiple'])], children: [] },
                                 {
                                     id: 'backdropsmod_kenburns', target: ['BackdropsKenBurnsZoomRow', 'BackdropsKenBurnsPanRow'],
                                     when: [AllChecked(['BackdropsKenBurnsEnabled'])], children: []
@@ -5539,6 +5606,10 @@
                                 // (Single has at most one image, nothing to order) -
                                 // an own refinement beyond the sandbox template,
                                 // deliberately kept.
+                                {
+                                    id: 'peoplebackdrops_folder_basename', structural: true, target: ['PeopleBackdropsFolderBaseNameRow'],
+                                    when: [ValueIn('PeopleBackdropsSourceMode', ['Folder'])], children: []
+                                },
                                 {
                                     id: 'peoplebackdrops_folder', structural: true, target: ['PeopleBackdropsFolderBackdropFilesRow'],
                                     when: [ValueIn('PeopleBackdropsSourceMode', ['Folder'])], children: []

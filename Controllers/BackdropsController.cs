@@ -39,6 +39,22 @@ public class BackdropsSettingsResult
     public int KenBurnsZoomMs { get; set; } = 10000;
 
     public int KenBurnsPanMs { get; set; } = 5000;
+
+    /// <summary>
+    /// Session 118: the ready-made image URLs for this item, resolved on
+    /// the server: own episode files first (if enabled), then the item's
+    /// backdrops, then the first ancestor with backdrops (season, show) -
+    /// each from the configured Listener (Native = Jellyfin's DB, Custom =
+    /// the plugin's own file resolution). Empty = nothing to show, the
+    /// native display stays untouched.
+    /// </summary>
+    public List<string> Images { get; set; } = new();
+
+    /// <summary>"Episode" (own episode files, EpisodeOrderMode applies), "Item", "Parent" or "" - for the log and the client's order choice.</summary>
+    public string ImageSource { get; set; } = string.Empty;
+
+    /// <summary>Order for the episode file list (Sequential/Shuffle/Random); the normal OrderMode applies to everything else.</summary>
+    public string EpisodeOrderMode { get; set; } = "Shuffle";
 }
 
 /// <summary>
@@ -55,6 +71,9 @@ public class GenrePoolImageEntry
     public string Tag { get; set; } = string.Empty;
 
     public int Index { get; set; }
+
+    /// <summary>Session 118: set for Listener=Custom - a ready-made /Backdrops/custom-image URL; the client uses it instead of building an /Items image URL from SourceId/Tag/Index.</summary>
+    public string? Url { get; set; }
 }
 
 /// <summary>
@@ -260,9 +279,25 @@ public class BackdropsController : ControllerBase
         }
 
         var finalEnabled = effectivelyEnabled && typeAllowed;
+
+        // Session 118: the image list is resolved here (episode files,
+        // then item, then ancestors - per Listener) instead of the client
+        // reading BackdropImageTags/ParentBackdropImageTags from the DTO,
+        // which knows neither episode files nor the Custom listener.
+        var images = new List<string>();
+        var imageSource = string.Empty;
+        if (finalEnabled && itemId.HasValue)
+        {
+            var item = _libraryManager.GetItemById(itemId.Value);
+            if (item is not null)
+            {
+                (images, imageSource) = ResolveDetailViewImages(item, config);
+            }
+        }
+
         _logger.LogInformation(
-            "Backdrops: GetSettings - ItemId={ItemId}, ResolvedType={ResolvedType}, TabEnabled={TabEnabled}, ModEnabled={ModEnabled}, TypeAllowed={TypeAllowed}, FinalEnabled={Final}, Cycle={Cycle}, Order={Order}, KenBurns={KenBurns}",
-            itemId, resolvedType, config.BackdropsTabEnabled, config.BackdropsEnabled, typeAllowed, finalEnabled, config.BackdropsCycleTimeMs, config.BackdropsOrderMode, config.BackdropsKenBurnsEnabled);
+            "Backdrops: GetSettings - ItemId={ItemId}, ResolvedType={ResolvedType}, TabEnabled={TabEnabled}, ModEnabled={ModEnabled}, TypeAllowed={TypeAllowed}, FinalEnabled={Final}, Listener={Listener}, Source={Source}, Images={Images}, Cycle={Cycle}, Order={Order}, KenBurns={KenBurns}",
+            itemId, resolvedType, config.BackdropsTabEnabled, config.BackdropsEnabled, typeAllowed, finalEnabled, config.BackdropsListener, imageSource, images.Count, config.BackdropsCycleTimeMs, config.BackdropsOrderMode, config.BackdropsKenBurnsEnabled);
 
         return Ok(new BackdropsSettingsResult
         {
@@ -271,8 +306,89 @@ public class BackdropsController : ControllerBase
             OrderMode = config.BackdropsOrderMode,
             KenBurnsEnabled = config.BackdropsKenBurnsEnabled,
             KenBurnsZoomMs = config.BackdropsKenBurnsZoomMs,
-            KenBurnsPanMs = config.BackdropsKenBurnsPanMs
+            KenBurnsPanMs = config.BackdropsKenBurnsPanMs,
+            Images = images,
+            ImageSource = imageSource,
+            EpisodeOrderMode = config.BackdropsEpisodeOrderMode
         });
+    }
+
+    /// <summary>
+    /// Session 118: the detail-view chain. 1) Episode with "Episode
+    /// backdrops" on: the episode's own files (episodefile-name.ext [+
+    /// episodefile-name1..20 with Multiple]) - a separate list with its
+    /// own Order. 2) The item's own backdrops. 3) The first ancestor with
+    /// backdrops, walking GetParents() exactly like Jellyfin's DtoService
+    /// fills ParentBackdropImageTags (season, then show). Steps 2 and 3
+    /// read from the Listener's source only - Native never mixes with
+    /// Custom (user decision).
+    /// </summary>
+    private (List<string> Images, string Source) ResolveDetailViewImages(BaseItem item, PluginConfiguration config)
+    {
+        var allowed = Helpers.BackdropFileResolver.ParseAllowedFormats(config.BackdropsAllowedFormats);
+
+        if (item is Episode episode && config.BackdropsEpisodeEnabled && episode.IsFileProtocol && !string.IsNullOrEmpty(episode.Path))
+        {
+            var folder = episode.ContainingFolderPath;
+            var fileName = episode.FileNameWithoutExtension;
+            if (!string.IsNullOrEmpty(folder) && !string.IsNullOrEmpty(fileName))
+            {
+                var baseName = string.IsNullOrWhiteSpace(config.BackdropsEpisodeBaseName) ? "backdrop" : config.BackdropsEpisodeBaseName.Trim();
+                var files = Helpers.BackdropFileResolver.ResolvePrefixed(folder, fileName, baseName, config.BackdropsEpisodeBackdropFiles == "Multiple", allowed);
+                if (files.Count > 0)
+                {
+                    var urls = new List<string>();
+                    for (var i = 0; i < files.Count; i++)
+                    {
+                        urls.Add("/Backdrops/episode-image?itemId=" + episode.Id.ToString("N") + "&index=" + i);
+                    }
+
+                    return (urls, "Episode");
+                }
+            }
+        }
+
+        var own = CandidateUrls(item, config, allowed);
+        if (own.Count > 0) { return (own, "Item"); }
+
+        foreach (var parent in item.GetParents())
+        {
+            if (parent is Folder && parent.IsTopParent) { break; } // library root - Jellyfin stops before CollectionFolder/UserView too
+            var inherited = CandidateUrls(parent, config, allowed);
+            if (inherited.Count > 0) { return (inherited, "Parent"); }
+        }
+
+        return (new List<string>(), string.Empty);
+    }
+
+    /// <summary>All allowed backdrop URLs of one item, in original index order, per Listener.</summary>
+    private List<string> CandidateUrls(BaseItem item, PluginConfiguration config, IReadOnlyCollection<string>? allowed)
+    {
+        var urls = new List<string>();
+        foreach (var c in GetBackdropCandidates(item, config))
+        {
+            urls.Add(c.Url ?? ("/Items/" + item.Id.ToString("N") + "/Images/Backdrop/" + c.Index + "?tag=" + Uri.EscapeDataString(c.Tag)));
+        }
+
+        return urls;
+    }
+
+    /// <summary>GET /Backdrops/episode-image?itemId=X&amp;index=N - one of the episode's own backdrop files.</summary>
+    [AllowAnonymous]
+    [HttpGet("episode-image")]
+    public ActionResult GetEpisodeImage([FromQuery] Guid itemId, [FromQuery] int index)
+    {
+        var config = Plugin.Instance!.Configuration;
+        if (_libraryManager.GetItemById(itemId) is not Episode episode || !episode.IsFileProtocol || string.IsNullOrEmpty(episode.Path)) { return NotFound(); }
+        var baseName = string.IsNullOrWhiteSpace(config.BackdropsEpisodeBaseName) ? "backdrop" : config.BackdropsEpisodeBaseName.Trim();
+        var files = Helpers.BackdropFileResolver.ResolvePrefixed(episode.ContainingFolderPath, episode.FileNameWithoutExtension, baseName, config.BackdropsEpisodeBackdropFiles == "Multiple", Helpers.BackdropFileResolver.ParseAllowedFormats(config.BackdropsAllowedFormats));
+        if (index < 0 || index >= files.Count) { return NotFound(); }
+        var path = files[index];
+        var contentType = Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".png" => "image/png", ".webp" => "image/webp", ".gif" => "image/gif", ".svg" => "image/svg+xml", _ => "image/jpeg"
+        };
+        return PhysicalFile(path, contentType);
     }
 
     /// <summary>
@@ -423,11 +539,6 @@ public class BackdropsController : ControllerBase
             query.StartIndex = resolvedStartIndex.Value;
         }
 
-        var extensions = (config.BackdropsAllowedFormats ?? string.Empty)
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(f => "." + f.ToLowerInvariant())
-            .Distinct()
-            .ToArray();
 
         var items = _libraryManager.GetItemList(query);
         var random = new Random();
@@ -441,36 +552,10 @@ public class BackdropsController : ControllerBase
             // then used the filtered list's own 0-based position,
             // which silently pointed at the wrong (sometimes disallowed)
             // image whenever an earlier index was filtered out.
-            var allBackdrops = item.GetImages(ImageType.Backdrop).ToList();
-            var allowedIndices = new List<int>();
-            for (var i = 0; i < allBackdrops.Count; i++)
-            {
-                if (extensions.Length == 0 || extensions.Contains(Path.GetExtension(allBackdrops[i].Path), StringComparer.OrdinalIgnoreCase))
-                {
-                    allowedIndices.Add(i);
-                }
-            }
-            if (allowedIndices.Count == 0) { continue; }
-
-            // Main = the file without a number, confirmed always added
-            // FIRST by Jellyfin's own LocalImageProvider.PopulateBackdrops
-            // - lands reliably at original index 0. allowedIndices[0] is
-            // only equal to 0 if index 0 itself passed the format
-            // filter - if it didn't, there is no allowed "Main" for this
-            // item, so it correctly falls through to Random-among-
-            // allowed instead of ever returning a disallowed format.
-            var chosenIndex = config.BackdropsGenreMainOnly == "Main" && allowedIndices.Contains(0)
-                ? 0
-                : allowedIndices[random.Next(allowedIndices.Count)];
-            var tag = _imageProcessor.GetImageCacheTag(item, ImageType.Backdrop, chosenIndex);
-            if (tag is null) { continue; }
-
-            images.Add(new GenrePoolImageEntry
-            {
-                SourceId = item.Id,
-                Tag = tag,
-                Index = chosenIndex
-            });
+            var candidates = GetBackdropCandidates(item, config);
+            if (candidates.Count == 0) { continue; }
+            var main = candidates.FirstOrDefault(c => c.Index == 0);
+            images.Add(config.BackdropsGenreMainOnly == "Main" && main is not null ? main : candidates[random.Next(candidates.Count)]);
         }
 
         result.Images = images;
@@ -617,35 +702,16 @@ public class BackdropsController : ControllerBase
             query.StartIndex = resolvedStartIndex.Value;
         }
 
-        var extensions = (config.BackdropsAllowedFormats ?? string.Empty)
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(f => "." + f.ToLowerInvariant())
-            .Distinct()
-            .ToArray();
 
         var items = _libraryManager.GetItemList(query);
         var random = new Random();
         var images = new List<GenrePoolImageEntry>();
         foreach (var item in items)
         {
-            var allBackdrops = item.GetImages(ImageType.Backdrop).ToList();
-            var allowedIndices = new List<int>();
-            for (var i = 0; i < allBackdrops.Count; i++)
-            {
-                if (extensions.Length == 0 || extensions.Contains(Path.GetExtension(allBackdrops[i].Path), StringComparer.OrdinalIgnoreCase))
-                {
-                    allowedIndices.Add(i);
-                }
-            }
-            if (allowedIndices.Count == 0) { continue; }
-
-            var chosenIndex = config.BackdropsTagMainOnly == "Main" && allowedIndices.Contains(0)
-                ? 0
-                : allowedIndices[random.Next(allowedIndices.Count)];
-            var tagValue = _imageProcessor.GetImageCacheTag(item, ImageType.Backdrop, chosenIndex);
-            if (tagValue is null) { continue; }
-
-            images.Add(new GenrePoolImageEntry { SourceId = item.Id, Tag = tagValue, Index = chosenIndex });
+            var candidates = GetBackdropCandidates(item, config);
+            if (candidates.Count == 0) { continue; }
+            var main = candidates.FirstOrDefault(c => c.Index == 0);
+            images.Add(config.BackdropsTagMainOnly == "Main" && main is not null ? main : candidates[random.Next(candidates.Count)]);
         }
 
         result.Images = images;
@@ -757,35 +823,16 @@ public class BackdropsController : ControllerBase
             query.StartIndex = resolvedStartIndex.Value;
         }
 
-        var extensions = (config.BackdropsAllowedFormats ?? string.Empty)
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(f => "." + f.ToLowerInvariant())
-            .Distinct()
-            .ToArray();
 
         var items = _libraryManager.GetItemList(query);
         var random = new Random();
         var images = new List<GenrePoolImageEntry>();
         foreach (var item in items)
         {
-            var allBackdrops = item.GetImages(ImageType.Backdrop).ToList();
-            var allowedIndices = new List<int>();
-            for (var i = 0; i < allBackdrops.Count; i++)
-            {
-                if (extensions.Length == 0 || extensions.Contains(Path.GetExtension(allBackdrops[i].Path), StringComparer.OrdinalIgnoreCase))
-                {
-                    allowedIndices.Add(i);
-                }
-            }
-            if (allowedIndices.Count == 0) { continue; }
-
-            var chosenIndex = config.BackdropsFavoritesMainOnly == "Main" && allowedIndices.Contains(0)
-                ? 0
-                : allowedIndices[random.Next(allowedIndices.Count)];
-            var tagValue = _imageProcessor.GetImageCacheTag(item, ImageType.Backdrop, chosenIndex);
-            if (tagValue is null) { continue; }
-
-            images.Add(new GenrePoolImageEntry { SourceId = item.Id, Tag = tagValue, Index = chosenIndex });
+            var candidates = GetBackdropCandidates(item, config);
+            if (candidates.Count == 0) { continue; }
+            var main = candidates.FirstOrDefault(c => c.Index == 0);
+            images.Add(config.BackdropsFavoritesMainOnly == "Main" && main is not null ? main : candidates[random.Next(candidates.Count)]);
         }
 
         result.Images = images;
@@ -887,24 +934,10 @@ public class BackdropsController : ControllerBase
             var images = new List<GenrePoolImageEntry>();
             foreach (var item in items)
             {
-                var allBackdrops = item.GetImages(ImageType.Backdrop).ToList();
-                var allowedIndices = new List<int>();
-                for (var i = 0; i < allBackdrops.Count; i++)
-                {
-                    if (extensions.Length == 0 || extensions.Contains(Path.GetExtension(allBackdrops[i].Path), StringComparer.OrdinalIgnoreCase))
-                    {
-                        allowedIndices.Add(i);
-                    }
-                }
-                if (allowedIndices.Count == 0) { continue; }
-
-                var chosenIndex = config.BackdropsFavoritesPeopleAppearancesMainOnly == "Main" && allowedIndices.Contains(0)
-                    ? 0
-                    : allowedIndices[random.Next(allowedIndices.Count)];
-                var tagValue = _imageProcessor.GetImageCacheTag(item, ImageType.Backdrop, chosenIndex);
-                if (tagValue is null) { continue; }
-
-                images.Add(new GenrePoolImageEntry { SourceId = item.Id, Tag = tagValue, Index = chosenIndex });
+                var candidates = GetBackdropCandidates(item, config);
+                if (candidates.Count == 0) { continue; }
+                var main = candidates.FirstOrDefault(c => c.Index == 0);
+                images.Add(config.BackdropsFavoritesPeopleAppearancesMainOnly == "Main" && main is not null ? main : candidates[random.Next(candidates.Count)]);
             }
 
             result.Images = images;
@@ -1077,36 +1110,92 @@ public class BackdropsController : ControllerBase
     /// only if it passed the format filter; otherwise random among the
     /// allowed indices.
     /// </summary>
+    /// <summary>
+    /// Session 118: the backdrop candidates of ONE item as pool entries,
+    /// honouring the Listener. Native = Jellyfin's database images (tag
+    /// URLs built by the client, exactly as before). Custom = the plugin's
+    /// own file resolution (Helpers/BackdropFileResolver, Jellyfin's six
+    /// stages with the configured base name) served through
+    /// /Backdrops/custom-image. Both paths return original indices and both
+    /// apply the Allowed image formats filter.
+    /// </summary>
+    private List<GenrePoolImageEntry> GetBackdropCandidates(BaseItem item, PluginConfiguration config)
+    {
+        var allowed = Helpers.BackdropFileResolver.ParseAllowedFormats(config.BackdropsAllowedFormats);
+        var result = new List<GenrePoolImageEntry>();
+        if (config.BackdropsListener == "Custom")
+        {
+            var files = ResolveCustomFiles(item, config, allowed);
+            for (var i = 0; i < files.Count; i++)
+            {
+                result.Add(new GenrePoolImageEntry { SourceId = item.Id, Tag = string.Empty, Index = i, Url = "/Backdrops/custom-image?itemId=" + item.Id.ToString("N") + "&index=" + i });
+            }
+
+            return result;
+        }
+
+        var allBackdrops = item.GetImages(ImageType.Backdrop).ToList();
+        for (var i = 0; i < allBackdrops.Count; i++)
+        {
+            if (allowed is not null && !allowed.Contains(Path.GetExtension(allBackdrops[i].Path), StringComparer.OrdinalIgnoreCase)) { continue; }
+            var tag = _imageProcessor.GetImageCacheTag(item, ImageType.Backdrop, i);
+            if (tag is null) { continue; }
+            result.Add(new GenrePoolImageEntry { SourceId = item.Id, Tag = tag, Index = i });
+        }
+
+        return result;
+    }
+
+    /// <summary>The Custom listener's file list for an item (its own folder, Jellyfin rules, configured base name).</summary>
+    private static List<string> ResolveCustomFiles(BaseItem item, PluginConfiguration config, IReadOnlyCollection<string>? allowed)
+    {
+        if (!item.IsFileProtocol || string.IsNullOrEmpty(item.Path)) { return new List<string>(); }
+        var folder = item.ContainingFolderPath;
+        if (string.IsNullOrEmpty(folder)) { return new List<string>(); }
+        var baseName = string.IsNullOrWhiteSpace(config.BackdropsCustomBaseName) ? "backdrop" : config.BackdropsCustomBaseName.Trim();
+        // Folders (series, seasons, box sets) have no file name of their own - Jellyfin passes null there too.
+        var fileName = item.IsFolder ? null : item.FileNameWithoutExtension;
+        return Helpers.BackdropFileResolver.ResolveLikeJellyfin(folder, fileName, item.IsInMixedFolder, baseName, allowed);
+    }
+
+    /// <summary>
+    /// GET /Backdrops/custom-image?itemId=X&amp;index=N - serves one file of
+    /// the Custom listener's list for that item. Anonymous like Jellyfin's
+    /// own /Items/{id}/Images (the browser loads it as a plain image).
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("custom-image")]
+    public ActionResult GetCustomImage([FromQuery] Guid itemId, [FromQuery] int index)
+    {
+        var config = Plugin.Instance!.Configuration;
+        var item = _libraryManager.GetItemById(itemId);
+        if (item is null) { return NotFound(); }
+        var files = ResolveCustomFiles(item, config, Helpers.BackdropFileResolver.ParseAllowedFormats(config.BackdropsAllowedFormats));
+        if (index < 0 || index >= files.Count) { return NotFound(); }
+        var path = files[index];
+        var contentType = Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".png" => "image/png", ".webp" => "image/webp", ".gif" => "image/gif", ".svg" => "image/svg+xml", _ => "image/jpeg"
+        };
+        return PhysicalFile(path, contentType);
+    }
+
     private List<GenrePoolImageEntry> CollectPoolImages(IReadOnlyList<BaseItem> items, bool mainOnly, string? allowedFormatsCsv)
     {
-        var extensions = (allowedFormatsCsv ?? string.Empty)
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(f => "." + f.ToLowerInvariant())
-            .Distinct()
-            .ToArray();
+        // Session 118: candidates come from GetBackdropCandidates (Native DB
+        // or Custom files); Main = the candidate with ORIGINAL index 0 if it
+        // passed the format filter, otherwise a random allowed one.
+        var config = Plugin.Instance!.Configuration;
         var random = new Random();
         var images = new List<GenrePoolImageEntry>();
         foreach (var item in items)
         {
-            var allBackdrops = item.GetImages(ImageType.Backdrop).ToList();
-            var allowedIndices = new List<int>();
-            for (var i = 0; i < allBackdrops.Count; i++)
-            {
-                if (extensions.Length == 0 || extensions.Contains(Path.GetExtension(allBackdrops[i].Path), StringComparer.OrdinalIgnoreCase))
-                {
-                    allowedIndices.Add(i);
-                }
-            }
-            if (allowedIndices.Count == 0) { continue; }
-
-            var chosenIndex = mainOnly && allowedIndices.Contains(0)
-                ? 0
-                : allowedIndices[random.Next(allowedIndices.Count)];
-            var tag = _imageProcessor.GetImageCacheTag(item, ImageType.Backdrop, chosenIndex);
-            if (tag is null) { continue; }
-
-            images.Add(new GenrePoolImageEntry { SourceId = item.Id, Tag = tag, Index = chosenIndex });
+            var candidates = GetBackdropCandidates(item, config);
+            if (candidates.Count == 0) { continue; }
+            var main = candidates.FirstOrDefault(c => c.Index == 0);
+            images.Add(mainOnly && main is not null ? main : candidates[random.Next(candidates.Count)]);
         }
+
         return images;
     }
 

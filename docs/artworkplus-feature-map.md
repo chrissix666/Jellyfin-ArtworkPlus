@@ -52,14 +52,14 @@ Sets (BoxSets): supported by Animated/Custom/Extra since Sessions 87–92 (Movie
 
 | Feature | Renders on | Controller / endpoints | Config prefix | Status | Fixture |
 |---|---|---|---|---|---|
-| Detail View Backdrops | item detail pages (replaces native rotation, Chromium only) | `Backdrops`: `settings`, `allowed-indices` | `Backdrops*` (14) | ❓ | |
+| Detail View Backdrops | item detail pages (replaces native rotation, Chromium only); server-resolved image list; **episode backdrop files** (Session 118) | `Backdrops`: `settings` (Images/ImageSource), `allowed-indices` (legacy), `episode-image`, `custom-image` | `Backdrops*` (14 + Episode* 4 + Listener 2) | ✅ live (user) · Episode/Custom ❓ (deploy pending) | |
 | People Backdrops | person pages + filmography lists; sources Appearances / Folder / Wallpapers.com (JSON cache per person) | `PeopleBackdrops`: `{personId}?scope=`, `{personId}/folder-image`, POST `test-api-key`, POST `wipe` | `PeopleBackdrops*` (19) | ✅ Wallpapers.com (Session 113, Keanu Reeves `25fbc31c…`); Traversal for Appearances since Session 116 | Appearances/Folder ❓ |
 | Genre Backdrops | library view filtered by genre | `Backdrops/genre-pool` | `BackdropsGenre*` (11) | ✅ Session 116 (missing `img.src` fixed) | Movies → Genre Abenteuer `4dbf3d…` |
 | Studio Backdrops | library view / studio pages; **Source**: Appearances (`studio-pool`) or Studio image (default) | `Backdrops/studio-settings`, `studio-image`, `studio-pool` | `BackdropsStudio*` (11) | ✅ Studio image live (user); Appearances endpoint smoke ok, visual ❓ | |
 | Tag Backdrops | library view filtered by tag | `Backdrops/tag-pool` | `BackdropsTag*` (8) | ✅ live (user, Session 116) | |
 | Favorites Backdrops | favorites view; People cascade; endpoints `[Authorize]` (per-user data) | `Backdrops/favorites-pool`, `favorites-people-pool` | `BackdropsFavorites*` (39), `BackdropsFavoritesPeople*` (3) | ✅ Session 116: user fix (26 movies / 18 series live), People pool via GetPeopleItems (100 images live), People has Source Appearances/Folder/Wallpapers.com like the People tab | |
 
-Live endpoint smoke: `tools/backdrops_smoke.js` (run in the logged-in tab after every deploy, must end `SMOKE OK`). All backdrop rotation timing runs through `Core.createBackdropRotationEngine()` (tested by `tests/test_rotation_engine.py`); every category's render path is checked by `tests/test_backdrops_render.py` (a real image must appear in the category's own container).
+**Listener** (Session 118, global): Native = Jellyfin DB, Custom = `Helpers/BackdropFileResolver` (Jellyfin's six stages 1:1, base name replaces "backdrop"), gated by `tests/test_backdrop_resolver.py`. Live endpoint smoke: `tools/backdrops_smoke.js` (run in the logged-in tab after every deploy, must end `SMOKE OK`). All backdrop rotation timing runs through `Core.createBackdropRotationEngine()` (tested by `tests/test_rotation_engine.py`); every category's render path is checked by `tests/test_backdrops_render.py` (a real image must appear in the category's own container).
 
 ## Cross-cutting
 

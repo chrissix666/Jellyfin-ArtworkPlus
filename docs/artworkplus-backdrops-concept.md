@@ -267,6 +267,8 @@ Sandbox test caveat (kept for the record): the replica had its own embedded `win
 
 ## Part P — Field-order reference of the whole Backdrops tab
 
+Tab head (Session 118): Allowed image formats → **Listener** (Native/Custom) → **Base name** (Custom only), then the six category collapses.
+
 Uniform grid since Session 116 (user decision "greatest possible consistency"):
 **Enable → where it applies → Source (if any) → Backdrops per item → Cycle time →
 Ken Burns effect → Zoom speed → Pan speed → Order → Traversal → category-specific rest.**
@@ -283,11 +285,12 @@ are global by design).
 | 5 | Zoom speed | Zoom speed | Ken Burns effect | Cycle time *(Appearances)* | Ken Burns effect | Zoom speed |
 | 6 | Pan speed | Pan speed | Zoom speed | Ken Burns effect | Zoom speed | Pan speed |
 | 7 | **Order** | Source [Wipe cache] | Pan speed | Zoom speed | Pan speed | Manage |
-| 8 | — | Appearances filter | **Order** | Pan speed | **Order** | **Order** *(General)* |
-| 9 | — | Backdrops per item *(Appearances)* | **Traversal** | **Order** *(Appearances)* | **Traversal** | **Traversal** *(General)* |
-| 10 | — | **Order** *(Appearances)* | — | **Traversal** *(Appearances)* | — | 11 sub-types |
-| 11 | — | **Traversal** *(Appearances)* | — | — | — | — |
-| 12 | — | Backdrop files *(Folder)* | — | — | — | — |
+| 8 | Episode backdrops | Appearances filter | **Order** | Pan speed | **Order** | **Order** *(General)* |
+| 9 | Base name *(Episode)* | Backdrops per item *(Appearances)* | **Traversal** | **Order** *(Appearances)* | **Traversal** | **Traversal** *(General)* |
+| 10 | Backdrop files *(Episode)* | **Order** *(Appearances)* | — | **Traversal** *(Appearances)* | — | 11 sub-types |
+| 11 | **Order** *(Episode)* | **Traversal** *(Appearances)* | — | — | — | — |
+| 12 | — | Base name *(Folder)* | — | — | — | — |
+| 12b | — | Backdrop files *(Folder)* | — | — | — | — |
 | 13 | — | **Order** *(Folder)* | — | — | — | — |
 | 14 | — | API Key [Test API Key] | — | — | — | — |
 | 15 | — | **Order** *(Wallpapers.com)* | — | — | — | — |
@@ -300,3 +303,45 @@ filter → Backdrops per item → Order, matching the grid. Studio's Source grey
 rows 4, 5, 9, 10 when Studio image is selected; Ken Burns applies to both sources.
 
 **Favorites' 11 sub-types:** all `Enable → Order → Traversal` — except **People**, which mirrors the standalone People source blocks (Session 116): `Enable → Source (Appearances / Folder / Wallpapers.com) → Appearances filter → Backdrops per item → Order → Traversal → Backdrop files → Order`; the Wallpapers.com settings (API key, Max images, text filter, Order) stay central in the People tab and apply to both. With Manage=General only the Order/Traversal rows inside the 10 file-based subs grey out; the sub headers and Enable checkboxes stay active (Session 116 correction); People is unaffected.
+
+## Part Q — Listener (Native / Custom) and episode backdrops (Session 118)
+
+**Listener** (global, under Allowed image formats; applies to Detail View, Genre,
+Studio-Appearances, Tag, Favorites, Favorites-People-Appearances and People
+Appearances — not to People Folder, which is the plugin's own file search anyway):
+
+- **Native** (default): Jellyfin's database images, exactly what its
+  `LocalImageProvider.PopulateBackdrops` found at scan time.
+- **Custom**: the plugin reads the item's folder itself with the SAME six-stage
+  rules (`Helpers/BackdropFileResolver.ResolveLikeJellyfin`): `<file>-fanart` →
+  `fanart`/`fanart-1…20` → `background`/… → `art`/… → `extrafanart\` → **base name**
+  /`base name1…20` (this last stage is where Jellyfin uses "backdrop"; the user's
+  Base name, default `fanart`, replaces it). Prefix variants, three-miss rule,
+  extension order png>jpg>jpeg>webp>tbn>gif>svg, zero-byte files ignored, each file
+  once (Jellyfin does not dedupe because its stages never overlap; with "fanart"
+  stage 2 and 6 do). With Base name `backdrop` Custom equals Native — the test
+  `tests/test_backdrop_resolver.py` asserts that. Images are served through
+  `/Backdrops/custom-image?itemId&index`; pool entries carry a ready `Url` the
+  client prefers.
+
+**Why:** Kodi skins name backdrops `fanart`, `fanart1`, `fanart2` (no dash);
+Jellyfin only knows `fanart-1`. Custom lets one set of files serve both without
+duplicates.
+
+**Episode backdrops** (Detail View, after Order; default on, base name `backdrop`,
+Multiple, Shuffle): Jellyfin has no episode backdrops beyond `<episodefile>-fanart`.
+The plugin looks for `<episodefile>-<name>.ext` (Single) or that plus
+`<episodefile>-<name>1…20.ext` (Multiple) next to the episode
+(`BackdropFileResolver.ResolvePrefixed`, served by `/Backdrops/episode-image`).
+Files found → rotation with the episode block's own Order; exactly one → static;
+none → the usual fallback. The fallback chain is built on the server
+(`ResolveDetailViewImages`): episode files → the item's own backdrops → the first
+ancestor with backdrops walking `GetParents()` like Jellyfin's DtoService (season,
+then show) — every step from the Listener's source only, never mixed. The client
+receives the finished list in `settings.Images` (+ `ImageSource`,
+`EpisodeOrderMode`) and no longer reads `BackdropImageTags` from the DTO.
+
+**People Folder base name** (`PeopleBackdropsFolderBaseName`, default `backdrop`):
+the person-folder file name is configurable; Multiple now includes the plain
+`name.ext` as index 0 before `name1…20` (same rule as the episode files and
+Jellyfin's backdrop stage). Favorites-People-Folder inherits it.

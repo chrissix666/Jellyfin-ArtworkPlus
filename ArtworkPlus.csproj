@@ -170,6 +170,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Session 118: the test harness under tests/ has its own project and
+         must not be compiled into the plugin (duplicate assembly attributes). -->
+    <Compile Remove="tests\**" />
+    <None Remove="tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Case textures (concept-mode session, boxes.zip) - deliberately NOT
          EmbeddedResource but plain build-output files: they thereby land
          automatically in the same ZIP as the DLL and, on install/update,

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Tiny console harness so tests/test_backdrop_resolver.py can drive
+       BackdropFileResolver against a temporary folder tree. Not part of the
+       plugin build; compiles the resolver source directly. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ResolverHarness</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Helpers\BackdropFileResolver.cs" Link="BackdropFileResolver.cs" />
+  </ItemGroup>
+</Project>

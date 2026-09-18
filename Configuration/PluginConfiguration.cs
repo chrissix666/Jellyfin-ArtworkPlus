@@ -409,6 +409,36 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public bool BackdropsGenreTvShowsEnabled { get; set; } = true;
 
+    /// <summary>
+    /// Session 118: where backdrop files come from for every category
+    /// except People Folder. "Native" = Jellyfin's own database (what its
+    /// LocalImageProvider found at scan time). "Custom" = the plugin reads
+    /// the item folders itself with the same six-stage rules as Jellyfin
+    /// (Helpers/BackdropFileResolver), only the last stage's base name
+    /// "backdrop" is replaced by BackdropsCustomBaseName - Kodi-style
+    /// "fanart, fanart1, fanart2" without duplicating files.
+    /// </summary>
+    public string BackdropsListener { get; set; } = "Native";
+
+    /// <summary>Custom listener base name; "backdrop" makes Custom identical to Native.</summary>
+    public string BackdropsCustomBaseName { get; set; } = "fanart";
+
+    /// <summary>
+    /// Session 118: per-episode backdrop files (Jellyfin has none beyond
+    /// "episodefile-fanart"). Files next to the episode with the episode
+    /// file name as prefix: episodefile-name.ext (+ episodefile-name1..20
+    /// with Multiple). None found: the usual season, then show fallback.
+    /// Own Order because episode files are a separate list from the
+    /// inherited backdrops.
+    /// </summary>
+    public bool BackdropsEpisodeEnabled { get; set; } = true;
+
+    public string BackdropsEpisodeBaseName { get; set; } = "backdrop";
+
+    public string BackdropsEpisodeBackdropFiles { get; set; } = "Multiple";
+
+    public string BackdropsEpisodeOrderMode { get; set; } = "Shuffle";
+
     /// <summary>See BackdropsGenreEnabled's own doc comment.</summary>
     public bool BackdropsStudioEnabled { get; set; } = true;
 
@@ -1762,6 +1792,9 @@ public class PluginConfiguration : BasePluginConfiguration
     /// PeopleBackdropsController.cs). Only relevant when
     /// PeopleBackdropsSourceMode is "Folder".
     /// </summary>
+    /// <summary>Session 118: the base name of the person-folder files (was hardcoded "backdrop").</summary>
+    public string PeopleBackdropsFolderBaseName { get; set; } = "backdrop";
+
     public string PeopleBackdropsFolderBackdropFiles { get; set; } = "Single";
 
     /// <summary>

@@ -591,30 +591,46 @@ public class PeopleBackdropsController : ControllerBase
         var written = 0;
         foreach (var appearanceItem in items)
         {
-            var backdrops = appearanceItem.GetImages(MediaBrowser.Model.Entities.ImageType.Backdrop).ToList();
-            var allowedIndices = new List<int>();
-            for (var i = 0; i < backdrops.Count; i++)
+            // Session 118: honour the global Listener. Custom = the plugin's
+            // own file resolution (same rules as Jellyfin, configured base
+            // name) served via /Backdrops/custom-image; Native = the DB
+            // images as before. Main = original index 0 in both cases.
+            string? url = null;
+            if (config.BackdropsListener == "Custom")
             {
-                if (extensions.Length == 0 || extensions.Contains(Path.GetExtension(backdrops[i].Path), StringComparer.OrdinalIgnoreCase))
-                {
-                    allowedIndices.Add(i);
-                }
+                var folder = appearanceItem.IsFileProtocol ? appearanceItem.ContainingFolderPath : null;
+                if (string.IsNullOrEmpty(folder)) { continue; }
+                var baseName = string.IsNullOrWhiteSpace(config.BackdropsCustomBaseName) ? "backdrop" : config.BackdropsCustomBaseName.Trim();
+                var allowed = Helpers.BackdropFileResolver.ParseAllowedFormats(config.BackdropsAllowedFormats);
+                var files = Helpers.BackdropFileResolver.ResolveLikeJellyfin(folder, appearanceItem.IsFolder ? null : appearanceItem.FileNameWithoutExtension, appearanceItem.IsInMixedFolder, baseName, allowed);
+                if (files.Count == 0) { continue; }
+                var customIndex = mainOnly ? 0 : random.Next(files.Count);
+                url = "/Backdrops/custom-image?itemId=" + appearanceItem.Id.ToString("N") + "&index=" + customIndex;
             }
-            if (allowedIndices.Count == 0) { continue; }
+            else
+            {
+                var backdrops = appearanceItem.GetImages(MediaBrowser.Model.Entities.ImageType.Backdrop).ToList();
+                var allowedIndices = new List<int>();
+                for (var i = 0; i < backdrops.Count; i++)
+                {
+                    if (extensions.Length == 0 || extensions.Contains(Path.GetExtension(backdrops[i].Path), StringComparer.OrdinalIgnoreCase))
+                    {
+                        allowedIndices.Add(i);
+                    }
+                }
+                if (allowedIndices.Count == 0) { continue; }
 
-            // Main = the file without a number, confirmed always added
-            // FIRST by Jellyfin's own LocalImageProvider.PopulateBackdrops
-            // - lands reliably at index 0 (same reasoning as
-            // BackdropsController's own GetGenrePool/GetTagPool/
-            // GetFavoritesPool).
-            var index = mainOnly && allowedIndices.Contains(0)
-                ? 0
-                : allowedIndices[random.Next(allowedIndices.Count)];
+                // Main = the file without a number, confirmed always added
+                // FIRST by Jellyfin's own LocalImageProvider.PopulateBackdrops
+                // - lands reliably at index 0.
+                var index = mainOnly && allowedIndices.Contains(0)
+                    ? 0
+                    : allowedIndices[random.Next(allowedIndices.Count)];
 
-            var tag = _imageProcessor.GetImageCacheTag(appearanceItem, MediaBrowser.Model.Entities.ImageType.Backdrop, index);
-            if (tag is null) { continue; }
-
-            var url = "/Items/" + appearanceItem.Id + "/Images/Backdrop/" + index + "?tag=" + Uri.EscapeDataString(tag);
+                var tag = _imageProcessor.GetImageCacheTag(appearanceItem, MediaBrowser.Model.Entities.ImageType.Backdrop, index);
+                if (tag is null) { continue; }
+                url = "/Items/" + appearanceItem.Id + "/Images/Backdrop/" + index + "?tag=" + Uri.EscapeDataString(tag);
+            }
             await WriteStreamLineAsync(new PeopleBackdropsStreamLine { Type = "Image", Url = url }).ConfigureAwait(false);
             written++;
         }
@@ -659,7 +675,7 @@ public class PeopleBackdropsController : ControllerBase
         }).ConfigureAwait(false);
 
         var personFolder = GetPersonFolder(person);
-        var paths = ResolveFolderBackdropPaths(personFolder, config.PeopleBackdropsFolderBackdropFiles, config.BackdropsAllowedFormats);
+        var paths = ResolveFolderBackdropPaths(personFolder, config.PeopleBackdropsFolderBackdropFiles, config.BackdropsAllowedFormats, config.PeopleBackdropsFolderBaseName);
 
         for (var i = 0; i < paths.Count; i++)
         {
@@ -688,54 +704,16 @@ public class PeopleBackdropsController : ControllerBase
     /// (Studio's own ResolveStudioImagePath, Extraposter's candidate
     /// resolution) - falls back to ".jpg" if the list is empty.
     /// </summary>
-    internal static List<string> ResolveFolderBackdropPaths(string personFolder, string backdropFilesMode, string? allowedFormatsCsv)
+    internal static List<string> ResolveFolderBackdropPaths(string personFolder, string backdropFilesMode, string? allowedFormatsCsv, string? baseName = null)
     {
-        var extensions = (allowedFormatsCsv ?? string.Empty)
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(f => "." + f.ToLowerInvariant())
-            .Distinct()
-            .ToArray();
-        if (extensions.Length == 0)
-        {
-            extensions = new[] { ".jpg" };
-        }
-
-        string? FindFile(string baseName)
-        {
-            foreach (var ext in extensions)
-            {
-                var candidate = Path.Combine(personFolder, baseName + ext);
-                if (System.IO.File.Exists(candidate)) { return candidate; }
-            }
-            return null;
-        }
-
-        var results = new List<string>();
-        if (backdropFilesMode == "Multiple")
-        {
-            var consecutiveMisses = 0;
-            for (var i = 1; i <= 20; i++)
-            {
-                var found = FindFile("backdrop" + i);
-                if (found is not null)
-                {
-                    results.Add(found);
-                    consecutiveMisses = 0;
-                }
-                else
-                {
-                    consecutiveMisses++;
-                    if (consecutiveMisses >= 3) { break; }
-                }
-            }
-        }
-        else
-        {
-            var found = FindFile("backdrop");
-            if (found is not null) { results.Add(found); }
-        }
-
-        return results;
+        // Session 118: shared resolver (Helpers/BackdropFileResolver.ResolvePlain).
+        // Base name configurable (PeopleBackdropsFolderBaseName, default
+        // "backdrop"); Multiple now includes the plain "name.ext" as index 0
+        // before name1..name20 - the same rule as Jellyfin's backdrop stage
+        // and the episode files (user decision, Session 118).
+        var name = string.IsNullOrWhiteSpace(baseName) ? "backdrop" : baseName.Trim();
+        var allowed = Helpers.BackdropFileResolver.ParseAllowedFormats(allowedFormatsCsv) ?? new[] { ".jpg" };
+        return Helpers.BackdropFileResolver.ResolvePlain(personFolder, name, backdropFilesMode == "Multiple", allowed);
     }
 
     /// <summary>
@@ -760,7 +738,7 @@ public class PeopleBackdropsController : ControllerBase
         // index would resolve against the standalone People setting.
         var filesMode = mode == "Single" || mode == "Multiple" ? mode : config.PeopleBackdropsFolderBackdropFiles;
         var personFolder = GetPersonFolder(person);
-        var paths = ResolveFolderBackdropPaths(personFolder, filesMode, config.BackdropsAllowedFormats);
+        var paths = ResolveFolderBackdropPaths(personFolder, filesMode, config.BackdropsAllowedFormats, config.PeopleBackdropsFolderBaseName);
         if (index < 0 || index >= paths.Count)
         {
             return NotFound();

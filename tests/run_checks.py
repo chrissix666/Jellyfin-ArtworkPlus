@@ -42,6 +42,7 @@ GATING = [
     'test_debug_switch.py',
     'test_backdrops_render.py',
     'test_description_length.py',   # rule 27: one-line descriptions (needs the preview, built below)
+    'test_backdrop_resolver.py',    # Session 118: Custom listener = Jellyfin's rules 1:1 (builds tests/resolver_harness on first run)
 ]
 INFORMATIONAL = [
     'diagnostic_cross_node_check.py',

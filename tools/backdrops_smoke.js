@@ -40,10 +40,15 @@
     var tag = tagItems.length ? tagItems[0].Tags[0] : null;
     var movie = await first('Users/' + uid + '/Items', { Recursive: true, IncludeItemTypes: 'Movie', ImageTypes: 'Backdrop', Limit: 1 });
     var person = await first('Persons', { Limit: 1 });
+    var episode = await first('Users/' + uid + '/Items', { Recursive: true, IncludeItemTypes: 'Episode', Limit: 1 });
     var favPersons = (await api.getJSON(api.getUrl('Persons', { UserId: uid, IsFavorite: true, Limit: 1 }))).TotalRecordCount || 0;
 
     var checks = [
-        ['settings', 'Backdrops/settings', { itemId: movie && movie.Id }, function (j) { return j && typeof j.Enabled === 'boolean'; }],
+        // Session 118: settings carries the server-resolved image list (Images/ImageSource)
+        ['settings (movie)', 'Backdrops/settings', { itemId: movie && movie.Id }, function (j) { return j && typeof j.Enabled === 'boolean' && Array.isArray(j.Images) && (!j.Enabled || j.Images.length > 0); }],
+        ['settings (episode)', 'Backdrops/settings', { itemId: episode && episode.Id }, function (j) { return j && Array.isArray(j.Images) && (!j.Enabled || j.Images.length > 0) && ['Episode', 'Item', 'Parent', ''].indexOf(j.ImageSource) !== -1; }],
+        ['custom-image (404 ok)', 'Backdrops/custom-image', { itemId: movie && movie.Id, index: 0 }, function (j, raw, status) { return status === 200 || status === 404; }],
+        ['episode-image (404 ok)', 'Backdrops/episode-image', { itemId: episode && episode.Id, index: 0 }, function (j, raw, status) { return status === 200 || status === 404; }],
         ['allowed-indices', 'Backdrops/allowed-indices', { sourceId: movie && movie.Id }, function (j) { return Array.isArray(j); }],
         ['genre-pool (movies)', 'Backdrops/genre-pool', { genreId: genre && genre.Id, parentId: movieLib && movieLib.Id }, function (j) { return j && Array.isArray(j.Images); }],
         ['genre-pool (global)', 'Backdrops/genre-pool', { genreId: genre && genre.Id }, function (j) { return j && Array.isArray(j.Images); }],
@@ -63,7 +68,7 @@
         var c = checks[i];
         if (Object.values(c[2]).some(function (v) { return v === undefined || v === null; })) { line(true, c[0], 'skipped - no fixture in this library'); continue; }
         var r = await getJson(c[1], c[2]);
-        var ok = r.status === 200 && c[3](r.json, r.text);
+        var ok = (r.status === 200 || c[0].indexOf('404 ok') !== -1) && c[3](r.json, r.text, r.status);
         var info = 'HTTP ' + r.status + (r.json ? (' Enabled=' + r.json.Enabled + (r.json.Images ? ' images=' + r.json.Images.length : '')) : ' ' + r.text);
         line(ok, c[0], info);
     }

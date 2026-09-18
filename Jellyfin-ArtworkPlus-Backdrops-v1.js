@@ -682,6 +682,25 @@ var ArtworkPlusBackdropTransition = {
 
         var myToken = ++itemLoadToken;
 
+        // Session 118: the server resolves the image list itself (episode
+        // files -> item -> first ancestor, per Listener) and hands it over in
+        // settings.Images. Episode files carry their own Order.
+        if (settings && Array.isArray(settings.Images)) {
+            if (!settings.Images.length) {
+                clearOwnRotation();
+                log('No backdrops for this item (server-resolved), the native display (if any) stays untouched');
+                return;
+            }
+            var resolvedUrls = settings.Images.map(function (u) { return u.charAt(0) === '/' ? (window.ApiClient.serverAddress ? window.ApiClient.serverAddress() : '') + u : u; });
+            var effective = settings;
+            if (settings.ImageSource === 'Episode' && settings.EpisodeOrderMode) {
+                effective = Object.assign({}, settings, { OrderMode: settings.EpisodeOrderMode });
+            }
+            log('Detail View images from server | source:', settings.ImageSource, '| count:', resolvedUrls.length, '| order:', effective.OrderMode);
+            startOwnRotation(resolvedUrls, effective);
+            return;
+        }
+
         var item;
         try {
             item = await window.ApiClient.getItem(window.ApiClient.getCurrentUserId(), itemId);
@@ -2322,6 +2341,8 @@ var ArtworkPlusBackdropTransition = {
         }
 
         var urls = settings.Images.map(function (entry) {
+            // Session 118: Listener=Custom sends a ready-made URL
+            if (entry.Url) { return entry.Url; }
             return window.ApiClient.getScaledImageUrl(entry.SourceId, {
                 type: 'Backdrop',
                 tag: entry.Tag,
@@ -2664,6 +2685,8 @@ var ArtworkPlusBackdropTransition = {
             return;
         }
         var urls = pool.Images.map(function (entry) {
+            // Session 118: Listener=Custom sends a ready-made URL
+            if (entry.Url) { return entry.Url; }
             return window.ApiClient.getScaledImageUrl(entry.SourceId, {
                 type: 'Backdrop',
                 tag: entry.Tag,
@@ -2941,6 +2964,8 @@ var ArtworkPlusBackdropTransition = {
         }
 
         var urls = settings.Images.map(function (entry) {
+            // Session 118: Listener=Custom sends a ready-made URL
+            if (entry.Url) { return entry.Url; }
             return window.ApiClient.getScaledImageUrl(entry.SourceId, {
                 type: 'Backdrop',
                 tag: entry.Tag,
@@ -3249,6 +3274,7 @@ var ArtworkPlusBackdropTransition = {
         } else {
             var entries = settings.Images || [];
             urls = entries.map(function (entry) {
+                if (entry.Url) { return entry.Url; } // Session 118: Custom listener
                 return window.ApiClient.getScaledImageUrl(entry.SourceId, {
                     type: 'Backdrop',
                     tag: entry.Tag,

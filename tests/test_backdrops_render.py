@@ -44,8 +44,18 @@ POOL = {"Enabled": True, "SortMode": "Shuffle", "CycleTimeMs": 5000, "KenBurnsEn
         "KenBurnsZoomMs": 1000, "KenBurnsPanMs": 500,
         "Images": [{"SourceId": "aaaa", "Tag": "t1", "Index": 0}, {"SourceId": "bbbb", "Tag": "t2", "Index": 0}]}
 
+DV = {"Enabled": True, "CycleTimeMs": 5000, "OrderMode": "Shuffle", "KenBurnsEnabled": False, "KenBurnsZoomMs": 1000, "KenBurnsPanMs": 500}
+
 CASES = [
     # (name, hash, endpoint substring -> json, container selector)
+    # Session 118: Detail View takes the server-resolved list (settings.Images) -
+    # Custom listener URLs and per-episode files never reach Jellyfin's DTO.
+    ("DetailView", "#/details?id=i1&serverId=s1",
+     {"/Backdrops/settings": dict(DV, Images=["/Backdrops/custom-image?itemId=i1&index=0", "/Backdrops/custom-image?itemId=i1&index=1"], ImageSource="Item", EpisodeOrderMode="Shuffle")},
+     ".artworkplus-own-backdrop"),
+    ("Episode", "#/details?id=e1&serverId=s1",
+     {"/Backdrops/settings": dict(DV, Images=["/Backdrops/episode-image?itemId=e1&index=0", "/Backdrops/episode-image?itemId=e1&index=1"], ImageSource="Episode", EpisodeOrderMode="Sequential")},
+     ".artworkplus-own-backdrop"),
     ("Genre", "#/list.html?genreId=g1&parentId=p1&serverId=s1", {"/Backdrops/genre-pool": POOL}, ".artworkplus-genre-backdrop"),
     ("Studio", "#/list.html?studioId=st1&parentId=p1&serverId=s1",
      {"/Backdrops/studio-settings": {"Enabled": True, "HasImage": True, "KenBurnsEnabled": False, "KenBurnsZoomMs": 1000, "KenBurnsPanMs": 500}},
@@ -119,7 +129,7 @@ def main():
             fails += 0 if ok else 1
             print(("ok  " if ok else "FAIL"), f"{name:9s}", "" if ok else "; ".join(problems))
             # (a) rapid switch to a second page of the same category must never end empty
-            if not name.startswith("Studio") and name != "FavPeople" and hsh.count("=") > 1:
+            if not name.startswith("Studio") and name not in ("FavPeople", "DetailView", "Episode") and hsh.count("=") > 1:
                 # Recorded live (Session 116): leave the category page (clear
                 # arms a 1.2 s fallback fade), come back to another page of
                 # the same category before it fires; the new page's first
@@ -152,11 +162,11 @@ def _serve(route, stubs):
             import json
             route.fulfill(status=200, content_type="application/json", body=json.dumps(payload))
             return
-    if "/Images/" in path or "studio-image" in path or "folder-image" in path:
+    if "/Images/" in path or "studio-image" in path or "folder-image" in path or "custom-image" in path or "episode-image" in path:
         route.fulfill(status=200, content_type="image/png", body=PNG)
         return
     if path.startswith("/web/index.html"):
-        route.fulfill(status=200, content_type="text/html", body="<html><body><div class='backdropContainer'></div><div class='page'></div></body></html>")
+        route.fulfill(status=200, content_type="text/html", body="<html><body><div class='backgroundContainer'></div><div class='backdropContainer'></div><div class='page itemDetailPage'></div></body></html>")
         return
     route.fulfill(status=404, body="")
 
