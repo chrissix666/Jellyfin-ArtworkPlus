@@ -30,7 +30,7 @@ Status: ✅ verified live · ⚠️ gap known · ❓ not yet tested live · ❌ 
 
 | Feature | Renders on | Module | Controller / endpoints | Config prefix | Tab | Status | Fixture |
 |---|---|---|---|---|---|---|---|
-| Case Mod | detail page poster (Movie, BoxSet, Series main) | CaseModModule | `CaseMod`: `{itemId}`, `Texture/{caseType}/{key}` | `CaseMod*` (27), `*CaseTune*` dev fields | casemod | ❓ | |
+| Case Mod | detail page poster (Movie, BoxSet, Series main) | CaseModModule | `CaseMod`: `{itemId}`, `Texture/{caseType}/{key}` | `CaseMod*` (27), `*CaseTune*` dev fields | casemod | ✅ Session 115: 4 types × Movie/Set/TV, 12/12; Set inner case fixed | Movie: Resident Evil `9f8567…` (1080p, disc), Prinz von Ägypten `f792b6…` (480p), Bond Lizenz zum Töten `c4fc87…`; Set: Matrix Filmreihe `319bd8…`, Heavy Metal `4fccd5…`, Austin Powers `4199ae…`; TV: The Animatrix `864581…`, Blood & Chrome `fa0bf8…` (only 2 series / 15 sets have a Disc image) |
 | Animated Poster | detail page main poster (Movie, Series, Set) — replaces image source | AnimatedModule | `AnimatedPoster`: `{itemId}?type=`, `batch`, `{itemId}/image` | `AnimatedPoster*` (14) | animatedposter | ❓ | |
 | Animated Keyart | same, alternate base image | AnimatedModule | same controller, `type=animatedkeyart` | `AnimatedKeyart*` (11) | animatedposter | ❓ | |
 | Postercase (Custom Poster) | detail page main poster; **no library view** (⚠️ never scoped) | CustomModule | `CustomPoster`: `{itemId}?type=`, `batch`, `{itemId}/image` | `Postercase*` (14), `CustomPoster*` (3) | customposter | ❓ | |

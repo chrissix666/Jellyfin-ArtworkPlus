@@ -3147,7 +3147,15 @@
                 // on fast page changes while front+poster are already
                 // visible but inner case/disc have not loaded yet.
                 if (animateOpen) {
-                    var innerImgUrl = '/CaseMod/Texture/vivaelitecases/' + encodeURIComponent(response.BackTextureKey);
+                    // The inside view is always borrowed from the Viva
+                    // Elite folder, which has no Set artwork of its own
+                    // (Sets use "p" there). Found live in Session 115:
+                    // vivaelitecases/back_set 404 -> no inner case on
+                    // BoxSets (lesson E1, an unmapped enumeration). The
+                    // user picked back_tvseries (gold) as the inside for
+                    // the green 3D Set case - back_p is red and clashes.
+                    var innerKey = response.BackTextureKey === 'back_set' ? 'back_tvseries' : response.BackTextureKey;
+                    var innerImgUrl = '/CaseMod/Texture/vivaelitecases/' + encodeURIComponent(innerKey);
                     var discPreviewImgUrl = '/Items/' + encodeURIComponent(itemId) + '/Images/Disc';
                     // Session 66 FIX: posterDecisionSettled is only
                     // actually assigned further down (near Back/Disc) -

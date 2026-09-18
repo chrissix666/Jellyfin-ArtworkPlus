@@ -38,7 +38,7 @@ Parts A–F describe the design as it is today. Parts G–N record the individua
 
 ### Favorites Backdrops
 - 11 subs in the native order of `favorites.js`: Movies, Shows, Episodes, Videos, Collections, Playlists, People, Artists, Albums, Songs, Books. "Subs" means the "show all" full lists with `IsFavorite` filter (technically the same `list.js` page as Genre/Tag).
-- **Manage: General / Individual.** General uses one shared Order/Traversal pair (`BackdropsFavoritesGeneralSortMode`/`...TraversalMode`) limited to the fields valid for ALL types (Shuffle, Random, Name, Date added); all 10 file-based sub arrows grey out (their Enable stays usable). Individual activates the 10 type-specific pairs (table in Part K).
+- **Manage: General / Individual.** General uses one shared Order/Traversal pair (`BackdropsFavoritesGeneralSortMode`/`...TraversalMode`) limited to the fields valid for ALL types (Shuffle, Random, Name, Date added); in each of the 10 file-based subs only the Order/Traversal rows grey out — the sub headers and their Enable stay active, the types are still shown (corrected in Session 116; the earlier "whole arrow greys out" was a misunderstanding). Individual activates the 10 type-specific pairs (table in Part K).
 - The People sub has its own Source (Wallpapers.com/Appearances) + Appearances filter; it reuses `PeopleBackdropsController`'s cache methods and the Wallpapers.com pool is bounded per visit: up to 25 already cached persons (`MaxCachedSample`, pure disk reads) plus at most 5 not-yet-cached persons (`MaxNewFetchesPerVisit`, real fetches), both drawn at random so the cache fills evenly over many visits. Appearances = movies/shows the favorite persons appear in, shuffled. Endpoints `/Backdrops/favorites-pool`, `/Backdrops/favorites-people-pool`.
 
 ### Naming collision (do not confuse!)
@@ -288,7 +288,7 @@ Extracted from the real `configPage.html` in document order (Session 78, refresh
 | 15 | — | Max images per person | — | — | — | — |
 | 16 | — | Enable text filter | — | — | — | — |
 
-**Favorites' 11 sub-types:** all `Enable → Order → Traversal` — except **People: Enable → Source → Appearances filter**. With Manage=General all 10 file-based sub arrows (collapse headers) grey out, their Enable checkbox stays usable; People is unaffected.
+**Favorites' 11 sub-types:** all `Enable → Order → Traversal` — except **People: Enable → Source → Appearances filter**. With Manage=General only the Order/Traversal rows inside the 10 file-based subs grey out; the sub headers and Enable checkboxes stay active (Session 116 correction); People is unaffected.
 
 **Checked, deliberate deviations — not errors:**
 

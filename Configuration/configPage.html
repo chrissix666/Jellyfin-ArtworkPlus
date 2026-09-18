@@ -5533,42 +5533,48 @@
                                     id: 'backdropsfavorites_kenburns', target: ['BackdropsFavoritesKenBurnsZoomRow', 'BackdropsFavoritesKenBurnsPanRow'],
                                     when: [AllChecked(['BackdropsFavoritesKenBurnsEnabled'])], children: []
                                 },
-                                // Phase C (Session 99): General/Individual-Umschalter.
+                                // Phase C (Session 99): General/Individual switch.
+                                // Session 116 (user correction): Manage=General greys
+                                // ONLY each sub's Order/Traversal rows (General took
+                                // them over) - the sub headers stay active, the types
+                                // are still shown. The header nodes therefore depend on
+                                // their Enable alone; the ManageMode condition lives on
+                                // the _sort/_traversal children only.
                                 { id: 'backdropsfavorites_general_sort', structural: true, target: ['BackdropsFavoritesGeneralSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['General'])], children: [] },
                                 { id: 'backdropsfavorites_general_traversal', structural: true, target: ['BackdropsFavoritesGeneralTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['General']), ValueIn('BackdropsFavoritesGeneralSortMode', ['SortName', 'DateCreated'])], children: [] },
                                 {
                                     id: 'backdropsfavorites_movies', headerTarget: ['backdropsFavoritesMovies'],
-                                    when: [AllChecked(['BackdropsFavoritesMoviesEnabled']), ValueIn('BackdropsFavoritesManageMode', ['Individual'])],
+                                    when: [AllChecked(['BackdropsFavoritesMoviesEnabled'])],
                                     children: [{ id: 'backdropsfavorites_movies_sort', structural: true, target: ['BackdropsFavoritesMoviesSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
                                         { id: 'backdropsfavorites_movies_traversal', structural: true, target: ['BackdropsFavoritesMoviesTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesMoviesSortMode', ['SortName', 'CommunityRating', 'CriticRating', 'DateCreated', 'DatePlayed', 'OfficialRating', 'PlayCount', 'PremiereDate', 'Runtime'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_shows', headerTarget: ['backdropsFavoritesShows'],
-                                    when: [AllChecked(['BackdropsFavoritesShowsEnabled']), ValueIn('BackdropsFavoritesManageMode', ['Individual'])],
+                                    when: [AllChecked(['BackdropsFavoritesShowsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_shows_sort', structural: true, target: ['BackdropsFavoritesShowsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
                                         { id: 'backdropsfavorites_shows_traversal', structural: true, target: ['BackdropsFavoritesShowsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesShowsSortMode', ['SortName', 'CommunityRating', 'DateCreated', 'DateLastContentAdded', 'SeriesDatePlayed', 'OfficialRating', 'PremiereDate'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_episodes', headerTarget: ['backdropsFavoritesEpisodes'],
-                                    when: [AllChecked(['BackdropsFavoritesEpisodesEnabled']), ValueIn('BackdropsFavoritesManageMode', ['Individual'])],
+                                    when: [AllChecked(['BackdropsFavoritesEpisodesEnabled'])],
                                     children: [{ id: 'backdropsfavorites_episodes_sort', structural: true, target: ['BackdropsFavoritesEpisodesSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
                                         { id: 'backdropsfavorites_episodes_traversal', structural: true, target: ['BackdropsFavoritesEpisodesTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesEpisodesSortMode', ['SeriesSortName', 'CommunityRating', 'DateCreated', 'PremiereDate', 'DatePlayed', 'OfficialRating', 'PlayCount', 'Runtime'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_videos', headerTarget: ['backdropsFavoritesVideos'],
-                                    when: [AllChecked(['BackdropsFavoritesVideosEnabled']), ValueIn('BackdropsFavoritesManageMode', ['Individual'])],
+                                    when: [AllChecked(['BackdropsFavoritesVideosEnabled'])],
                                     children: [{ id: 'backdropsfavorites_videos_sort', structural: true, target: ['BackdropsFavoritesVideosSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
                                         { id: 'backdropsfavorites_videos_traversal', structural: true, target: ['BackdropsFavoritesVideosTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesVideosSortMode', ['SortName', 'DateCreated', 'DatePlayed', 'PlayCount', 'Runtime'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_collections', headerTarget: ['backdropsFavoritesCollections'],
-                                    when: [AllChecked(['BackdropsFavoritesCollectionsEnabled']), ValueIn('BackdropsFavoritesManageMode', ['Individual'])],
+                                    when: [AllChecked(['BackdropsFavoritesCollectionsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_collections_sort', structural: true, target: ['BackdropsFavoritesCollectionsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
                                         { id: 'backdropsfavorites_collections_traversal', structural: true, target: ['BackdropsFavoritesCollectionsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesCollectionsSortMode', ['SortName', 'CommunityRating', 'CriticRating', 'DateCreated', 'PremiereDate', 'OfficialRating'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_playlists', headerTarget: ['backdropsFavoritesPlaylists'],
-                                    when: [AllChecked(['BackdropsFavoritesPlaylistsEnabled']), ValueIn('BackdropsFavoritesManageMode', ['Individual'])],
+                                    when: [AllChecked(['BackdropsFavoritesPlaylistsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_playlists_sort', structural: true, target: ['BackdropsFavoritesPlaylistsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
                                         { id: 'backdropsfavorites_playlists_traversal', structural: true, target: ['BackdropsFavoritesPlaylistsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesPlaylistsSortMode', ['SortName'])], children: [] }]
                                 },
@@ -5584,25 +5590,25 @@
                                 },
                                 {
                                     id: 'backdropsfavorites_artists', headerTarget: ['backdropsFavoritesArtists'],
-                                    when: [AllChecked(['BackdropsFavoritesArtistsEnabled']), ValueIn('BackdropsFavoritesManageMode', ['Individual'])],
+                                    when: [AllChecked(['BackdropsFavoritesArtistsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_artists_sort', structural: true, target: ['BackdropsFavoritesArtistsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
                                         { id: 'backdropsfavorites_artists_traversal', structural: true, target: ['BackdropsFavoritesArtistsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesArtistsSortMode', ['SortName'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_albums', headerTarget: ['backdropsFavoritesAlbums'],
-                                    when: [AllChecked(['BackdropsFavoritesAlbumsEnabled']), ValueIn('BackdropsFavoritesManageMode', ['Individual'])],
+                                    when: [AllChecked(['BackdropsFavoritesAlbumsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_albums_sort', structural: true, target: ['BackdropsFavoritesAlbumsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
                                         { id: 'backdropsfavorites_albums_traversal', structural: true, target: ['BackdropsFavoritesAlbumsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesAlbumsSortMode', ['SortName', 'AlbumArtist', 'CommunityRating', 'CriticRating', 'ProductionYear', 'DateCreated'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_songs', headerTarget: ['backdropsFavoritesSongs'],
-                                    when: [AllChecked(['BackdropsFavoritesSongsEnabled']), ValueIn('BackdropsFavoritesManageMode', ['Individual'])],
+                                    when: [AllChecked(['BackdropsFavoritesSongsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_songs_sort', structural: true, target: ['BackdropsFavoritesSongsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
                                         { id: 'backdropsfavorites_songs_traversal', structural: true, target: ['BackdropsFavoritesSongsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesSongsSortMode', ['SortName', 'Album', 'AlbumArtist', 'Artist', 'DateCreated', 'DatePlayed', 'PlayCount', 'PremiereDate', 'Runtime'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_books', headerTarget: ['backdropsFavoritesBooks'],
-                                    when: [AllChecked(['BackdropsFavoritesBooksEnabled']), ValueIn('BackdropsFavoritesManageMode', ['Individual'])],
+                                    when: [AllChecked(['BackdropsFavoritesBooksEnabled'])],
                                     children: [{ id: 'backdropsfavorites_books_sort', structural: true, target: ['BackdropsFavoritesBooksSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
                                         { id: 'backdropsfavorites_books_traversal', structural: true, target: ['BackdropsFavoritesBooksTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesBooksSortMode', ['SortName', 'DateCreated', 'CommunityRating', 'CriticRating', 'OfficialRating', 'PremiereDate'])], children: [] }]
                                 }
