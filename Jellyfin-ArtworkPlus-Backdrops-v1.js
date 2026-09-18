@@ -2192,6 +2192,11 @@ var ArtworkPlusBackdropTransition = {
             var img = document.createElement('img');
             img.className = 'backdropImage displayingBackdropImage';
             img.setAttribute('data-url', url);
+            // Session 116: the src assignment was missing in all four
+            // library-view IIFEs (Genre/Studio/Tag/Favorites) - the image
+            // was preloaded and the element appended, but stayed empty.
+            // Found live: "background turns black, no picture".
+            img.src = url;
             img.style.position = 'absolute';
             img.style.inset = '0';
             img.style.width = '100%';
@@ -2444,6 +2449,11 @@ var ArtworkPlusBackdropTransition = {
             var img = document.createElement('img');
             img.className = 'backdropImage displayingBackdropImage';
             img.setAttribute('data-url', url);
+            // Session 116: the src assignment was missing in all four
+            // library-view IIFEs (Genre/Studio/Tag/Favorites) - the image
+            // was preloaded and the element appended, but stayed empty.
+            // Found live: "background turns black, no picture".
+            img.src = url;
             img.style.position = 'absolute';
             img.style.inset = '0';
             img.style.width = '100%';
@@ -2677,6 +2687,11 @@ var ArtworkPlusBackdropTransition = {
             var img = document.createElement('img');
             img.className = 'backdropImage displayingBackdropImage';
             img.setAttribute('data-url', url);
+            // Session 116: the src assignment was missing in all four
+            // library-view IIFEs (Genre/Studio/Tag/Favorites) - the image
+            // was preloaded and the element appended, but stayed empty.
+            // Found live: "background turns black, no picture".
+            img.src = url;
             img.style.position = 'absolute';
             img.style.inset = '0';
             img.style.width = '100%';
@@ -2916,6 +2931,11 @@ var ArtworkPlusBackdropTransition = {
             var img = document.createElement('img');
             img.className = 'backdropImage displayingBackdropImage';
             img.setAttribute('data-url', url);
+            // Session 116: the src assignment was missing in all four
+            // library-view IIFEs (Genre/Studio/Tag/Favorites) - the image
+            // was preloaded and the element appended, but stayed empty.
+            // Found live: "background turns black, no picture".
+            img.src = url;
             img.style.position = 'absolute';
             img.style.inset = '0';
             img.style.width = '100%';

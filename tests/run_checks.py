@@ -4,6 +4,7 @@ in one go (the manual 7-step checklist from the project guide, steps 1-5):
 
   1. node --check on the page's inline <script> blocks (syntax)
   2. test_configpage.py            (105 regression tests)
+  2b. test_rotation_engine / test_debug_switch / test_backdrops_render (client scripts in a stub page)
   3. test_tree_self_containment.py (no node greys its own trigger)
   4. test_single_grey_level.py     (Fibel rule 14: one grey level only)
   5. diagnostic_duplicate_id_check.py
@@ -36,6 +37,10 @@ GATING = [
     'diagnostic_duplicate_id_check.py',
     'diagnostic_js_cs_defaults_sync.py',
     'diagnostic_nested_collapse_check.py',
+    # Session 113-116: client-engine and render checks (no server needed)
+    'test_rotation_engine.py',
+    'test_debug_switch.py',
+    'test_backdrops_render.py',
 ]
 INFORMATIONAL = [
     'diagnostic_cross_node_check.py',
