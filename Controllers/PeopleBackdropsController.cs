@@ -605,7 +605,7 @@ public class PeopleBackdropsController : ControllerBase
                 var files = Helpers.BackdropFileResolver.ResolveLikeJellyfin(folder, appearanceItem.IsFolder ? null : appearanceItem.FileNameWithoutExtension, appearanceItem.IsInMixedFolder, baseName, allowed);
                 if (files.Count == 0) { continue; }
                 var customIndex = mainOnly ? 0 : random.Next(files.Count);
-                url = "/Backdrops/custom-image?itemId=" + appearanceItem.Id.ToString("N") + "&index=" + customIndex;
+                url = "/Backdrops/custom-image?itemId=" + appearanceItem.Id.ToString("N") + "&index=" + customIndex + "&v=" + Helpers.BackdropFileResolver.VersionTag(files[customIndex]);
             }
             else
             {
@@ -679,7 +679,7 @@ public class PeopleBackdropsController : ControllerBase
 
         for (var i = 0; i < paths.Count; i++)
         {
-            var url = "/PeopleBackdrops/" + person.Id + "/folder-image?index=" + i;
+            var url = "/PeopleBackdrops/" + person.Id + "/folder-image?index=" + i + "&v=" + Helpers.BackdropFileResolver.VersionTag(paths[i]);
             await WriteStreamLineAsync(new PeopleBackdropsStreamLine { Type = "Image", Url = url }).ConfigureAwait(false);
         }
 

@@ -340,7 +340,7 @@ public class BackdropsController : ControllerBase
                     var urls = new List<string>();
                     for (var i = 0; i < files.Count; i++)
                     {
-                        urls.Add("/Backdrops/episode-image?itemId=" + episode.Id.ToString("N") + "&index=" + i);
+                        urls.Add("/Backdrops/episode-image?itemId=" + episode.Id.ToString("N") + "&index=" + i + "&v=" + Helpers.BackdropFileResolver.VersionTag(files[i]));
                     }
 
                     return (urls, "Episode");
@@ -383,12 +383,7 @@ public class BackdropsController : ControllerBase
         var baseName = string.IsNullOrWhiteSpace(config.BackdropsEpisodeBaseName) ? "backdrop" : config.BackdropsEpisodeBaseName.Trim();
         var files = Helpers.BackdropFileResolver.ResolvePrefixed(episode.ContainingFolderPath, episode.FileNameWithoutExtension, baseName, config.BackdropsEpisodeBackdropFiles == "Multiple", Helpers.BackdropFileResolver.ParseAllowedFormats(config.BackdropsAllowedFormats));
         if (index < 0 || index >= files.Count) { return NotFound(); }
-        var path = files[index];
-        var contentType = Path.GetExtension(path).ToLowerInvariant() switch
-        {
-            ".png" => "image/png", ".webp" => "image/webp", ".gif" => "image/gif", ".svg" => "image/svg+xml", _ => "image/jpeg"
-        };
-        return PhysicalFile(path, contentType);
+        return ServeLocalImage(files[index]);
     }
 
     /// <summary>
@@ -973,10 +968,12 @@ public class BackdropsController : ControllerBase
             foreach (var person in favoritePeople)
             {
                 var personFolder = PeopleBackdropsController.GetPersonFolder(person);
-                var paths = PeopleBackdropsController.ResolveFolderBackdropPaths(personFolder, folderMode, config.BackdropsAllowedFormats);
+                // Session 118b: the same base name as the standalone People
+                // setting - GetFolderImage resolves with it, so the list must too.
+                var paths = PeopleBackdropsController.ResolveFolderBackdropPaths(personFolder, folderMode, config.BackdropsAllowedFormats, config.PeopleBackdropsFolderBaseName);
                 for (var i = 0; i < paths.Count; i++)
                 {
-                    folderUrls.Add("/PeopleBackdrops/" + person.Id + "/folder-image?index=" + i + "&mode=" + folderMode);
+                    folderUrls.Add("/PeopleBackdrops/" + person.Id + "/folder-image?index=" + i + "&mode=" + folderMode + "&v=" + Helpers.BackdropFileResolver.VersionTag(paths[i]));
                 }
             }
             result.WallpaperUrls = folderUrls;
@@ -1128,16 +1125,22 @@ public class BackdropsController : ControllerBase
             var files = ResolveCustomFiles(item, config, allowed);
             for (var i = 0; i < files.Count; i++)
             {
-                result.Add(new GenrePoolImageEntry { SourceId = item.Id, Tag = string.Empty, Index = i, Url = "/Backdrops/custom-image?itemId=" + item.Id.ToString("N") + "&index=" + i });
+                result.Add(new GenrePoolImageEntry { SourceId = item.Id, Tag = string.Empty, Index = i, Url = "/Backdrops/custom-image?itemId=" + item.Id.ToString("N") + "&index=" + i + "&v=" + Helpers.BackdropFileResolver.VersionTag(files[i]) });
             }
 
             return result;
         }
 
         var allBackdrops = item.GetImages(ImageType.Backdrop).ToList();
+        // Session 118b: Jellyfin's scan can list one file twice (Small
+        // Soldiers: "-fanart.jpg" at index 0 AND 1 because its stages
+        // overlap for that name) - the same picture would then run twice
+        // per round. Each path once, like the Custom resolver (user decision).
+        var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         for (var i = 0; i < allBackdrops.Count; i++)
         {
             if (allowed is not null && !allowed.Contains(Path.GetExtension(allBackdrops[i].Path), StringComparer.OrdinalIgnoreCase)) { continue; }
+            if (!string.IsNullOrEmpty(allBackdrops[i].Path) && !seenPaths.Add(allBackdrops[i].Path)) { continue; }
             var tag = _imageProcessor.GetImageCacheTag(item, ImageType.Backdrop, i);
             if (tag is null) { continue; }
             result.Add(new GenrePoolImageEntry { SourceId = item.Id, Tag = tag, Index = i });
@@ -1168,15 +1171,32 @@ public class BackdropsController : ControllerBase
     public ActionResult GetCustomImage([FromQuery] Guid itemId, [FromQuery] int index)
     {
         var config = Plugin.Instance!.Configuration;
+        // Session 118b: nothing is reachable "through the back door" while the
+        // Listener is Native - the endpoint only exists for the Custom lists.
+        if (config.BackdropsListener != "Custom") { return NotFound(); }
         var item = _libraryManager.GetItemById(itemId);
         if (item is null) { return NotFound(); }
         var files = ResolveCustomFiles(item, config, Helpers.BackdropFileResolver.ParseAllowedFormats(config.BackdropsAllowedFormats));
         if (index < 0 || index >= files.Count) { return NotFound(); }
-        var path = files[index];
+        return ServeLocalImage(files[index]);
+    }
+
+    /// <summary>
+    /// Session 118b: one local image file with ETag + one-day cache, the
+    /// convention of GetStudioImage/GetFolderImage. The URLs carry the same
+    /// stamp as "v=", so a changed file is a new URL and an unchanged one a
+    /// 304 - never a stale picture after a base-name change.
+    /// </summary>
+    private ActionResult ServeLocalImage(string path)
+    {
         var contentType = Path.GetExtension(path).ToLowerInvariant() switch
         {
             ".png" => "image/png", ".webp" => "image/webp", ".gif" => "image/gif", ".svg" => "image/svg+xml", _ => "image/jpeg"
         };
+        var etag = "\"" + Helpers.BackdropFileResolver.VersionTag(path) + "\"";
+        Response.Headers.ETag = etag;
+        Response.Headers.CacheControl = "public, max-age=86400";
+        if (Request.Headers.IfNoneMatch.ToString() == etag) { return StatusCode(StatusCodes.Status304NotModified); }
         return PhysicalFile(path, contentType);
     }
 

@@ -59,7 +59,8 @@
         ['favorites-pool (Series)', 'Backdrops/favorites-pool', { type: 'Series' }, function (j) { return j && Array.isArray(j.Images); }],
         // If the user has favourite persons (checked via Jellyfin's own /Persons?IsFavorite), the pool must not come back empty
         // (Session 116: an items query found 0 persons while /Persons found 5 - persons live outside the library tree).
-        ['favorites-pool (Person)', 'Backdrops/favorites-people-pool', {}, function (j) { if (!j || typeof j.Enabled !== 'boolean') { return false; } if (!j.Enabled) { return true; } var n = (j.Images || []).length + (j.WallpaperUrls || []).length; return favPersons === 0 || n > 0; }],
+        // Session 118b: honest verdict - without favourite persons the pool cannot be exercised, say so instead of "ok".
+        ['favorites-pool (Person)', 'Backdrops/favorites-people-pool', { _favPersons: favPersons || null }, function (j) { if (!j || typeof j.Enabled !== 'boolean') { return false; } if (!j.Enabled) { return true; } return ((j.Images || []).length + (j.WallpaperUrls || []).length) > 0; }],
         ['people (info)', 'PeopleBackdrops/' + (person && person.Id), { scope: 'info' }, function (j, raw) { return raw.indexOf('"Type":"Header"') !== -1; }]
     ];
     // user-data sorts must not crash a pool: temporarily impossible to switch config here, so at least hit
@@ -67,7 +68,8 @@
     for (var i = 0; i < checks.length; i++) {
         var c = checks[i];
         if (Object.values(c[2]).some(function (v) { return v === undefined || v === null; })) { line(true, c[0], 'skipped - no fixture in this library'); continue; }
-        var r = await getJson(c[1], c[2]);
+        var params = Object.assign({}, c[2]); delete params._favPersons;
+        var r = await getJson(c[1], params);
         var ok = (r.status === 200 || c[0].indexOf('404 ok') !== -1) && c[3](r.json, r.text, r.status);
         var info = 'HTTP ' + r.status + (r.json ? (' Enabled=' + r.json.Enabled + (r.json.Images ? ' images=' + r.json.Images.length : '')) : ' ' + r.text);
         line(ok, c[0], info);

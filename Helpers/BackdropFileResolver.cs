@@ -137,6 +137,22 @@ public static class BackdropFileResolver
         return list.Length == 0 ? null : list;
     }
 
+    /// <summary>
+    /// Session 118b: a short version stamp of one file (last write + length)
+    /// for the "v" URL parameter and the ETag of the plugin's own image
+    /// endpoints - Jellyfin's "?tag=" equivalent, so a replaced file or a
+    /// changed base name never shows a stale browser-cached image.
+    /// </summary>
+    public static string VersionTag(string path)
+    {
+        try
+        {
+            var info = new FileInfo(path);
+            return info.LastWriteTimeUtc.Ticks.ToString("x", System.Globalization.CultureInfo.InvariantCulture) + "-" + info.Length.ToString("x", System.Globalization.CultureInfo.InvariantCulture);
+        }
+        catch (IOException) { return "0"; }
+    }
+
     /// <summary>Drops the cache entry of one folder (tests, or after a known write).</summary>
     public static void Invalidate(string folder) => FolderCache.TryRemove(folder, out _);
 
