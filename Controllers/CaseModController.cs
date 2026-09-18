@@ -332,6 +332,13 @@ public class CaseModController : ControllerBase
                 _ => (config.VivaEliteCaseTuneTop, config.VivaEliteCaseTuneLeft, config.VivaEliteCaseTuneWidth, config.VivaEliteCaseTuneHeight)
             };
 
+            // Session 121: the 3D Case's own Set artwork needs its own width
+            // (user finding: "kleiner Ausreißer, nur case width, nur Sets").
+            if (item is BoxSet && config.CaseModType == "vivaelite3dcases")
+            {
+                widthVw = config.CaseMod3DTuneWidthSets;
+            }
+
             // 📌 REFERENCE VALUES - DO NOT DELETE - hardcoded per-case-
             // type disc geometry (Session 18, explicit user request:
             // "tue dann das hardcoden" - measured values provided by

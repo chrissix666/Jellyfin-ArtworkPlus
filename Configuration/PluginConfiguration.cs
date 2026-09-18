@@ -182,6 +182,15 @@ public class PluginConfiguration : BasePluginConfiguration
     public double CaseMod3DTuneTop { get; set; } = -4.3;
     public double CaseMod3DTuneLeft { get; set; } = 2.8;
     public double CaseMod3DTuneWidth { get; set; } = 27.35;
+
+    /// <summary>
+    /// Session 121: Sets (BoxSet) with the Viva Elite 3D Case have their own
+    /// set.png artwork whose proportions differ slightly from the movie
+    /// case - the case width alone is off there (user finding). Only for
+    /// this case type and only for Sets; default = the movie value until
+    /// the user has tuned it. Developer settings, "Case width Sets (vw)".
+    /// </summary>
+    public double CaseMod3DTuneWidthSets { get; set; } = 27.35;
     public double CaseMod3DTuneHeight { get; set; } = 42.6;
 
     // 📌 TEMPORARY - inner-case position (the view when the case opens;
