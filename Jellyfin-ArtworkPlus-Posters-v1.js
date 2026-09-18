@@ -3081,6 +3081,7 @@
             // variables themselves are still var (function-scoped), so
             // unaffected - only the function itself had to move out.
             var tiltAngle, tiltHingeXPx, tiltScreenW, tiltScreenH, tiltCameraX, tiltCameraY, tiltPosterRect;
+            var tiltTarget = null, tiltFrontRect = null, tiltHingePct = 0, tiltCardScalableEl = null;
             var scheduleInnerCaseDiscPreview = null;
             // Session 65: applyTilt() rotates around the REAL right
             // spine again (as originally, before Session 64) - no
@@ -3096,11 +3097,48 @@
                     tiltAngle, tiltHingeXPx, rect.left, rect.top,
                     tiltScreenW, tiltScreenH, tiltCameraX, tiltCameraY
                 );
+                if (tiltedEls.indexOf(el) === -1) { tiltedEls.push(el); }
+            }
+
+            // Session 121 (user: "manchmal ein Parallelogramm statt Trapez"):
+            // the Kodi matrix bakes ABSOLUTE viewport coordinates in
+            // (rect.left/top, hinge px, screen size, camera centre) measured
+            // ONCE right after the box was appended. If that measurement
+            // was taken before the page settled (poster decode, padder
+            // toggle, scroll restore, late fonts) or the viewport changed
+            // afterwards (resize, scroll), the perspective divide runs
+            // against a wrong Y - the trapezoid degenerates into a sheared
+            // parallelogram. retilt() re-measures every tilted element
+            // UNTRANSFORMED (transform cleared, measured, re-applied inside
+            // one frame - no visible flicker) and re-applies the matrix; it
+            // runs at settle points and on resize/scroll, never while the
+            // Open Case animation holds the rotator.
+            var tiltedEls = [];
+            var retiltQueued = null;
+            function retilt() {
+                retiltQueued = null;
+                if (myGeneration !== currentGeneration()) { return; }
+                if (!tiltTarget || !document.body.contains(tiltTarget)) { return; }
+                if (rotator && rotator.classList.contains(ROTATOR_OPEN_CLASS)) { return; }
+                tiltedEls = tiltedEls.filter(function (el) { return document.body.contains(el); });
+                tiltedEls.forEach(function (el) { el.style.transform = ''; });
+                var rect = tiltTarget.getBoundingClientRect();
+                if (!rect.width || !rect.height) { tiltedEls.forEach(function (el) { applyTilt(el, el.getBoundingClientRect()); }); return; }
+                tiltScreenW = window.innerWidth; tiltScreenH = window.innerHeight;
+                tiltHingeXPx = rect.left + (tiltHingePct / 100) * rect.width;
+                tiltCameraX = tiltScreenW * 0.5; tiltCameraY = tiltScreenH * 0.5;
+                tiltFrontRect = rect;
+                if (tiltCardScalableEl && document.body.contains(tiltCardScalableEl)) { tiltPosterRect = tiltCardScalableEl.getBoundingClientRect(); }
+                tiltedEls.forEach(function (el) { applyTilt(el, el.getBoundingClientRect()); });
+            }
+            function queueRetilt() {
+                if (retiltQueued !== null) { return; }
+                retiltQueued = requestAnimationFrame(retilt);
             }
             if (response.CaseType === 'vivaelite3dcases') {
                 tiltAngle = response.CaseAngleDegrees || 0;
                 var tiltHingeKey = tiltAngle > 0 ? 'vivaelite3dcases_mirrored' : 'vivaelite3dcases';
-                var tiltCardScalableEl = posterEl.closest('.cardScalable');
+                tiltCardScalableEl = posterEl.closest('.cardScalable');
                 // Session 53 FIX (user finding: "front duplicate, not a
                 // back-texture mix-up"): frontBox itself must NOT get
                 // the tilt when Open Case is active - as soon as
@@ -3121,9 +3159,9 @@
                 // moves) - frontBox (the outer, never transformed
                 // wrapper) stays untouched. Without Open Case (rotator
                 // == null) unchanged as before: frontBox directly.
-                var tiltTarget = rotator || frontBox;
-                var tiltFrontRect = tiltTarget.getBoundingClientRect();
-                var tiltHingePct = HINGE_ORIGIN_X_PERCENT[tiltHingeKey] || 0;
+                tiltTarget = rotator || frontBox;
+                tiltFrontRect = tiltTarget.getBoundingClientRect();
+                tiltHingePct = HINGE_ORIGIN_X_PERCENT[tiltHingeKey] || 0;
                 tiltScreenW = window.innerWidth; tiltScreenH = window.innerHeight;
                 tiltHingeXPx = tiltFrontRect.left + (tiltHingePct / 100) * tiltFrontRect.width;
                 tiltCameraX = tiltScreenW * 0.5; tiltCameraY = tiltScreenH * 0.5;
@@ -3147,6 +3185,26 @@
                 }
                 if (response.TuneHidePoster && tiltCardScalableEl) {
                     tiltCardScalableEl.style.opacity = '0';
+                }
+                // Settle passes + viewport listeners (Session 121, see retilt()).
+                navTimers.track(setTimeout(queueRetilt, 250));
+                navTimers.track(setTimeout(queueRetilt, 1200));
+                var onViewportChange = function () {
+                    if (myGeneration !== currentGeneration()) {
+                        window.removeEventListener('resize', onViewportChange);
+                        document.removeEventListener('scroll', onViewportChange, true);
+                        return;
+                    }
+                    queueRetilt();
+                };
+                window.addEventListener('resize', onViewportChange);
+                document.addEventListener('scroll', onViewportChange, true);
+                if (window.ResizeObserver && realCard) {
+                    var tiltRo = new ResizeObserver(function () {
+                        if (myGeneration !== currentGeneration()) { tiltRo.disconnect(); return; }
+                        queueRetilt();
+                    });
+                    tiltRo.observe(realCard);
                 }
 
                 // Session 66 (user finding: "on fast page changes I see
