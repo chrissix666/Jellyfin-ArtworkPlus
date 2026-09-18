@@ -1056,7 +1056,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string CharacterartMoviesTopLeftHorizontalAlign { get; set; } = "Center";
 
-    public double CharacterartMoviesTopLeftOffsetVw { get; set; } = 9;
+    public double CharacterartMoviesTopLeftOffsetVw { get; set; } = 4;
 
     // Per-position fullscreen offset (see the general doc comment on
     // CharacterartMoviesTopRightFullscreenOffsetVw below for the full
@@ -1076,7 +1076,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string CharacterartMoviesTopRightHorizontalAlign { get; set; } = "Center";
 
-    public double CharacterartMoviesTopRightOffsetVw { get; set; } = -9;
+    public double CharacterartMoviesTopRightOffsetVw { get; set; } = -5;
 
     /// <summary>
     /// Extra horizontal offset (in vw) applied on top of the
@@ -1150,7 +1150,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string CharacterartTvShowsTopLeftHorizontalAlign { get; set; } = "Center";
 
-    public double CharacterartTvShowsTopLeftOffsetVw { get; set; } = 9;
+    public double CharacterartTvShowsTopLeftOffsetVw { get; set; } = 4;
 
     // Per-position fullscreen offset - see CharacterartMoviesTopRightFullscreenOffsetVw's own doc comment for the full reasoning.
     public double CharacterartTvShowsTopLeftFullscreenOffsetVw { get; set; }
@@ -1167,7 +1167,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string CharacterartTvShowsTopRightHorizontalAlign { get; set; } = "Center";
 
-    public double CharacterartTvShowsTopRightOffsetVw { get; set; } = -9;
+    public double CharacterartTvShowsTopRightOffsetVw { get; set; } = -5;
 
     // Per-position fullscreen offset - see CharacterartMoviesTopRightFullscreenOffsetVw's own doc comment for the full reasoning.
     public double CharacterartTvShowsTopRightFullscreenOffsetVw { get; set; }
