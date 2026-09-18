@@ -2895,7 +2895,7 @@
                         </div>
 
                         <div class="epTabDescArea">
-                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Overrides Jellyfin's native backdrop rotation on item detail pages only.</div>
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Various backdrop extensions beyond vanilla Jellyfin.</div>
                         <div id="epBackdropsNotice" class="epDesc" style="padding-left:0; height:auto; margin-top:0; margin-bottom:6px; color:#ff6161; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
                         </div>
 
@@ -2918,7 +2918,7 @@
                                 <option value="Native">Native</option>
                                 <option value="Custom">Custom</option>
                             </select>
-                            <div class="epDesc">Native: Jellyfin's own DB backdrops, fastest. Custom: Kodi compatible naming without duplicate files.</div>
+                            <div class="epDesc">Native: Jellyfin's own DB backdrops, fastest. Custom: e.g. Kodi naming without duplicating files.</div>
                         </div>
                         <div class="epRow epRowMerged" id="BackdropsCustomBaseNameRow">
                             <label for="BackdropsCustomBaseName" class="epRowLabelSpan">Base name</label>
@@ -2929,7 +2929,7 @@
                         <div class="epCollapseHeader" data-collapse="backdropsMod"><span class="epChevron">▶</span><span>Detail View Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsMod">
                         <div class="epTabHeaderRow">
-                            <div></div>
+                            <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Overrides Jellyfin's native backdrop rotation on item detail pages only.</div>
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="backdropsmod">Restore defaults</button>
                         </div>
                         <div class="epRow epRowCheckbox" id="BackdropsEnabledRow">
@@ -3284,7 +3284,8 @@
                              all three subs, each sub then only Enable + its own Sort. ═══ -->
                         <div class="epCollapseHeader" data-collapse="backdropsGenre"><span class="epChevron">▶</span><span>Genre Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsGenre">
-                        <div class="epTabHeaderRow" style="justify-content:flex-end;">
+                        <div class="epTabHeaderRow">
+                            <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on genre pages from the titles of that genre.</div>
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="backdropsgenre">Restore defaults</button>
                         </div>
                         <div class="epRow epRowCheckbox" id="BackdropsGenreEnabledRow">
@@ -3392,7 +3393,8 @@
 
                         <div class="epCollapseHeader" data-collapse="backdropsStudio"><span class="epChevron">▶</span><span>Studio Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsStudio">
-                        <div class="epTabHeaderRow" style="justify-content:flex-end;">
+                        <div class="epTabHeaderRow">
+                            <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on studio pages from the Studio image or the studio's titles.</div>
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="backdropsstudio">Restore defaults</button>
                         </div>
                         <div class="epRow epRowCheckbox" id="BackdropsStudioEnabledRow">
@@ -3505,7 +3507,8 @@
 
                         <div class="epCollapseHeader" data-collapse="backdropsTag"><span class="epChevron">▶</span><span>Tag Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsTag">
-                        <div class="epTabHeaderRow" style="justify-content:flex-end;">
+                        <div class="epTabHeaderRow">
+                            <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on tag pages from the titles carrying that tag.</div>
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="backdropstag">Restore defaults</button>
                         </div>
                         <div class="epRow epRowCheckbox" id="BackdropsTagEnabledRow">
@@ -3609,7 +3612,8 @@
                              comment in PluginConfiguration.cs). ═══════════════════════ -->
                         <div class="epCollapseHeader" data-collapse="backdropsFavorites"><span class="epChevron">▶</span><span>Favorites Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsFavorites">
-                        <div class="epTabHeaderRow" style="justify-content:flex-end;">
+                        <div class="epTabHeaderRow">
+                            <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on the Favorites page from your favourite titles and people.</div>
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="backdropsfavorites">Restore defaults</button>
                         </div>
                         <div class="epRow epRowCheckbox" id="BackdropsFavoritesEnabledRow">
