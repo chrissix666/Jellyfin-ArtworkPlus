@@ -345,3 +345,238 @@ receives the finished list in `settings.Images` (+ `ImageSource`,
 the person-folder file name is configurable; Multiple now includes the plain
 `name.ext` as index 0 before `name1…20` (same rule as the episode files and
 Jellyfin's backdrop stage). Favorites-People-Folder inherits it.
+
+## Part R — The transition system: one model for all six implementations (Session 120)
+
+### R1. Why
+
+Session 119 finding (user: "Tag → Film: alte Slideshow läuft 1–2 s weiter, harter
+Abbruch, Pause, dann erst das Filmbild"). Root cause is not one bug but the
+architecture: six IIFEs (Detail View, People, Genre, Studio, Tag, Favorites) each
+carry their own copy of "detect page → fetch → fade in → on leaving fade out",
+coordinated only by a two-function bus (`notifyIncomingReady` /
+`onNextIncomingReady`) plus a guessed 1.2 s timeout. Nobody knows WHO is
+responsible for the next page, so the outgoing side guesses. This part defines
+the model every implementation must follow; Part R4 lists where the code deviates.
+
+### R2. States — checked against jellyfin-web 10.10.7
+
+Jellyfin facts the model rests on (`scripts/autoBackdrops.js`,
+`components/backdrop/backdrop.js`, `controllers/itemDetails/index.js`,
+`controllers/playback/video/index.js`):
+
+- **List pages paint nothing in vanilla.** `list.html` is neither `backdropPage`
+  nor `selfBackdropPage`, so autoBackdrops calls `clearBackdrop()` on every
+  `pageshow` there. Genre/Studio/Tag/Favorites/People-list pages are therefore
+  OURS or NONE - never VANILLA.
+- **Library home pages** (movies.html, tvrecommended.html, music.html, Home =
+  `backdropPage`) rotate 20 random library backdrops every 24 s when the user's
+  "Backdrops" display setting is on - that is VANILLA, we never touch it.
+- **Detail pages** (`selfBackdropPage`): `renderBackdrop()` paints the item's
+  own backdrops only when desktop layout AND width ≥ 1000 px AND (user's
+  "Details banner" setting OR "Backdrops" setting). Rotation 24 s, none on
+  Firefox/TV. Fade-in = the 800 ms `backdrop-fadein` keyframe on the NEW layer,
+  the old layer is removed when that animation ends (a crossfade, new on top).
+  Our FADE_MS = 800 matches by design.
+- **Video page**: `setBackdropTransparency(Full)` → `clearBackdrop(true)` +
+  `.hide` on Jellyfin's container; on return `None` → container shown, empty,
+  and the detail page's next `viewshow` calls `renderBackdrop()` again.
+- **Dimming**: `.backgroundContainer.withBackdrop` (theme css, e.g. dark
+  rgba 0.86) is set by `internalBackdrop(true)` when Jellyfin's image loaded and
+  cleared by `clearBackdrop()`.
+- **Container lookup**: `getBackdropContainer()` caches
+  `document.querySelector('.backdropContainer')` on first use (R4-6).
+
+Every page has exactly one backdrop state, decided BEFORE any network request,
+from (hash, plugin switches, browser, Jellyfin user settings):
+
+| State | Who paints | Jellyfin's native container | `body.artworkplus-backdrops-override` |
+|---|---|---|---|
+| **OURS(x)** | implementation x (exactly one) | hidden | on |
+| **VANILLA** | Jellyfin (only detail + library-home pages) | visible | off |
+| **NONE** | nobody | visible but empty | off |
+
+Responsibility (x) per page, first match wins:
+
+| Page (hash) | Responsible | Vanilla alternative |
+|---|---|---|
+| `details?id=<Person>` | People (if enabled) - never Detail View | VANILLA only if the person has backdrops (rare) |
+| `details?id=<Movie/Series/Season/Episode/Set/Video>` | Detail View (enabled + type in Show on + Details banner on + width ≥ 1000, like vanilla) | VANILLA |
+| `list.html?personId=…&type=…` | People (Show on Movies/TV/Episodes lists) | NONE |
+| `list.html?genreId=…` / `studioId=…` / `tag=…` / `IsFavorite=true&type=…` | Genre / Studio / Tag / Favorites | NONE |
+| library home / Home | — | VANILLA (Jellyfin's random rotation) |
+| `video` | (owner pauses) | Jellyfin hides everything |
+| anything else | — | NONE |
+
+A responsible implementation that ends up EMPTY (deeper switch off, no images,
+error) leaves the page in the vanilla alternative of that row - never a black
+OURS.
+
+### R3. Transitions
+
+Three fades exist and must not be confused:
+
+1. **Fade-in on entering a page** - the incoming implementation's first image
+   fades in (800 ms) once it is DECODED. How long "until decoded" takes depends
+   on the source: Native/Custom files and pools ≈ 0.3–2 s; People
+   **Wallpapers.com** = an external stream, often several seconds. That wait
+   cannot be hidden; the user accepts a blank moment there ("ist halt so").
+2. **Crossfade inside a slideshow** - owner-internal (cycle, order, Ken Burns),
+   not the bus's business. Same owner + different item (movie A → B, person A →
+   B) is also owner-internal.
+3. **Fade-out on leaving a page** - the outgoing container. THIS is where
+   seamlessness is decided, and it depends on the INCOMING side: fast incoming →
+   keep the old image until the new one is decoded, then crossfade; slow or
+   absent incoming → fade out now, accept blank.
+
+The bus (Core, `ArtworkPlusBackdropTransition`) therefore becomes:
+
+- `claim(owner, {source})` - synchronous on the `hashchange` event (new Core
+  listener; `viewshow` + the 1 s poll stay as backup), before any fetch, by the
+  responsible implementation. `source: 'wallpapers'` marks the People/Favorites
+  Wallpapers.com stream. A new claim replaces the old one.
+- `ready(owner)` - first image decoded and appended; waiting outgoing
+  containers fade out now (crossfade). Bus sets the body class + `.withBackdrop`.
+- `empty(owner)` - nothing to show; waiting outgoing containers fade out now,
+  bus clears the body class + `.withBackdrop` (vanilla alternative applies).
+- `release(fadeFn)` - by an outgoing container on leaving. Decided by the bus
+  from the claim state (user decisions, Session 120):
+  - **no claim** (Home, settings, library home - nobody of ours is responsible)
+    → fade out **immediately** (just the 800 ms fade); no grace, the old
+    "wait 1.2 s in case someone comes" is gone because the bus now knows;
+  - **claim, source Wallpapers.com** → wait at most **600 ms** for `ready`
+    (cache hit → crossfade), otherwise fade out; the incoming fades in from
+    blank whenever its stream delivers;
+  - **claim, any other source** → wait at most **1200 ms** for `ready`
+    (→ crossfade) or `empty` (→ fade out at once), otherwise fade out.
+  Two constants in Core (`HANDOVER_SLOW_MS = 600`, `HANDOVER_MS = 1200`), not
+  in the admin UI. Rationale: ~1 s is the perception limit for "still flowing";
+  a wrong backdrop lingering longer reads as "stuck". Wallpapers gets less
+  because a hit inside the window is unlikely - waiting longer would mostly
+  mean clinging and fading anyway.
+
+Transition matrix (from → to), what the user sees:
+
+| From \ To | OURS(y), fast | OURS(y), slow (Wallpapers) | OURS(y) empty | VANILLA / NONE |
+|---|---|---|---|---|
+| **OURS(x)** | x runs on until y decoded (≤1200 ms), crossfade x→y, no gap | x waits ≤600 ms (cache hit → crossfade), else fades out; y fades in from blank when its stream delivers | x fades out at `empty`, Jellyfin visible at once | x fades out immediately; class off |
+| **VANILLA** | y fades in over Jellyfin's image; class on at `ready` | y fades in when decoded; class on at `ready` | nothing changes | nothing changes |
+| **NONE** | y fades in from black | y fades in from black | nothing changes | nothing changes |
+
+Rules that follow:
+1. Body class and `.withBackdrop` are set/cleared by the bus at `ready`/`empty`
+   only - never by an implementation from its own settings (R4-1, R4-7).
+2. An implementation removes only its own container. Crossfade = incoming on
+   top, outgoing underneath (z-order).
+3. Fast navigation: a new claim by another owner does not cancel a pending
+   fade-out; the outgoing simply waits for the new claimant instead.
+4. `video`: the owner pauses its engine, nothing fades; on return it resumes
+   (Detail View today; the five list owners must do the same, R4-4).
+5. Same owner, different item: owner-internal crossfade, bus not involved.
+6. FADE_MS 800 everywhere = Jellyfin's keyframe.
+
+### R4. Deviations found in the code (to fix in this order)
+
+1. `resolveOverrideState()` (Detail View) toggles the body class from its OWN
+   settings - on a person page it switches the class off although People will
+   paint; on a movie page it switches it on before any image exists (black gap
+   over Jellyfin's image).
+2. Six private copies of `clearOwnRotation` + `MAX_WAIT_FOR_INCOMING_MS = 1200`
+   with no notion of a claim → the Tag→Movie hard cut.
+3. Detail View starts its work 300 ms after `viewshow`; the claim must be
+   synchronous on the hash change, the 300 ms may stay for the fetch.
+4. Only Detail View pauses on `video`; the five list implementations keep
+   cycling (and pay for images) while a video plays from their page.
+5. Person page: Detail View and People both run (Detail's server answer
+   "type not allowed" is the only thing that prevents a double paint).
+6. Own Detail View container carries Jellyfin's `.backdropContainer` class as
+   `body.firstChild`; Jellyfin caches `querySelector('.backdropContainer')` on
+   first use - if that happens after ours exists, Jellyfin's `clearBackdrop()`
+   empties OUR container. Fix: own class + the three copied CSS rules.
+7. `setBackgroundContainerWithBackdrop(true)` (Jellyfin's `.withBackdrop`
+   dimming) is toggled by four implementations separately with a MutationObserver
+   in People re-asserting it; belongs to the bus (`ready` → on, `empty` → off).
+8. Detail View ignores Jellyfin's width ≥ 1000 / desktop-layout condition
+   (vanilla clears the backdrop below that); minor, align for parity.
+9. (withdrawn after reading the controller: for a Person the server answers
+   Enabled=true, the class stays ON, Jellyfin's person backdrop is hidden -
+   correct by accident, not by design; R4-1 still applies.)
+10. **Body class ON on every page.** `refresh()` runs on every navigation; without
+    an itemId the server answers Enabled=true (`typeAllowed` defaults to true), so
+    `body.artworkplus-backdrops-override` is set on Home and the library home
+    pages too - Jellyfin's own random library rotation (user setting "Backdrops")
+    is hidden there. Verified live (Home: class on, native container
+    visibility:hidden). The user has that setting off, other users do not. The
+    admin text promises "on item detail pages only".
+11. Navigation is detected by `viewshow` plus a 1 s hash poll; no `hashchange`
+    listener. A claim must be synchronous with the hash change.
+12. Two render styles: Detail/People paint `<div>` layers with
+    `background-image` and remove the OLD layer after the new one's fade
+    (vanilla style: new fades in on top, old stays opaque underneath);
+    Genre/Studio/Tag/Favorites paint `<img object-fit:cover>` and fade the old
+    layer OUT at the same time (true crossfade - both half-transparent for
+    800 ms, the dark page shows through). Vanilla is the former.
+13. Two Ken Burns parameter sets: Detail/People 1.10→1.30, pan 15 px,
+    cubic-bezier(0.645,0.045,0.355,1); Genre/Studio/Tag/Favorites 1.00→1.12,
+    pan 30 px, ease-in-out. Same feature, different motion.
+14. Genre/Studio/Tag/Favorites re-create their rotation engine per page and
+    keep no `setPaused`; Detail/People reuse one engine. People has the
+    "quiet frames" wait (45 calm frames or 3.5 s before the first fade-in, to
+    dodge the page's own layout jank) that no other implementation has.
+15. Studio Appearances and Favorites-People Wallpapers/Folder reach the bus with
+    pool URLs but never signal `slow`; Studio image is one static file (no
+    rotation) - the only "single image" owner besides Red Carpet.
+
+### R5. Verification
+
+`tests/test_backdrops_transitions.py` drives the matrix with the real scripts:
+for each (from, to) pair with images / empty / vanilla, and with a deliberately
+slow incoming image (2.5 s), it samples both containers every 100 ms and asserts:
+no moment with all our layers < 0.5 while a claim is active (no black gap), the
+outgoing reaches 0 only after the incoming reached ≥ 0.9 (crossfade), outgoing
+gone after grace when nobody claims, body class on only while OURS is showing.
+Then the live variance run: random Tag/Genre/Studio/Favorites list → random
+movie/series/episode/person and back, plus list → Home.
+
+### R6. Inventory of the six implementations (as read, Session 120)
+
+| | Detail View | People | Genre | Studio | Tag | Favorites |
+|---|---|---|---|---|---|---|
+| Page | `details?id` (non-person) | `details?id` (person), `list.html?personId&type` | `list.html?genreId` | `list.html?studioId` | `list.html?tag` | `list.html?IsFavorite=true&type` |
+| Endpoint | `Backdrops/settings` (server-resolved Images) | `PeopleBackdrops/{id}?scope` NDJSON stream | `genre-pool` | `studio-settings` (+`studio-pool`) | `tag-pool` | `favorites-pool` / `favorites-people-pool` |
+| Container | `.backdropContainer.artworkplus-own-backdrop` (Jellyfin's class!) | `.artworkplus-people-backdrop` | `.artworkplus-genre-backdrop` | `.artworkplus-studio-backdrop` | `.artworkplus-tag-backdrop` | `.artworkplus-favorites-backdrop` |
+| Layer | div bg-image, old removed after new fade | div bg-image, quiet-frames wait | img cover, old faded out | img cover | img cover | img cover |
+| Ken Burns | 1.10→1.30 / 15 px / bezier | same | 1→1.12 / 30 px / ease-in-out | same | same | same |
+| Engine | one, `setPaused` on video | one per visit, `addImages` while streaming | new per page | new per page (Appearances) / none (image) | new per page | new per page |
+| Leaving | own `clearOwnRotation`, 1.2 s wait | own, with cancel of pending fade | own, generation-guarded | own | own | own |
+| Body class | toggles from its own settings (R4-1/10) | — | — | — | — | — |
+| `.withBackdrop` | on at render | on at render, MutationObserver re-assert, off at destroy | on/off | on/off | on/off | on/off |
+| Special | Episode chain, Listener, detailsBanner check, Firefox off, video pause | three sources, per-scope continuation on the same person, abort controllers | Global/Movie/TV pool | image vs Appearances | — | 11 sub-types incl. People (Wallpapers/Folder/Appearances) |
+
+Shared by all six today: `Core.preloadImage`, `Core.createBackdropRotationEngine`,
+`Core.scheduleNavigationBurst`, `Core.watchForNavigation`, `FADE_MS = 800`.
+
+### R7. Consolidation target
+
+One Core module `createBackdropOwner(name, options)` that owns for one
+implementation: its container (own class, the three copied CSS rules), the Ken
+Burns frame (one parameter set), the layer render (vanilla style: new on top,
+old removed after the fade, generation-guarded, `ready` to the bus on the first
+decoded image of a visit), the rotation engine (shared code, `setPaused`),
+`addImages` (People stream), `release()` = fade-out through the bus, and the
+quiet-frames option (People). Each IIFE keeps only: page detection, endpoint
+fetch/stream, source-specific URL building, and `claim(...)` on navigation. The
+bus (R3) lives next to it in Core and owns the body class and `.withBackdrop`
+(one MutationObserver for all).
+
+Decisions taken with the user (Session 120):
+- D1 Ken Burns constants stay per implementation as today (works well).
+- D2 Layer fade: vanilla style everywhere (new fades in over the opaque old,
+  old removed after the fade); deviations only where technically forced and
+  announced beforehand.
+- D3 Body class (hide Jellyfin's container) only while one of ours is actually
+  showing; everywhere else Jellyfin behaves as the user configured it.
+- D4 Handover: no claim → immediate fade-out; Wallpapers.com ≤600 ms; all other
+  sources ≤1200 ms; `empty` → fade-out at once.
+- D5 `hashchange` listener in Core for the synchronous claim (no cost, no
+  polling; lesson B18: check what the platform offers before adding a fallback).
