@@ -2129,6 +2129,7 @@ var ArtworkPlusBackdropTransition = {
     // has already superseded it.
     var renderGeneration = 0;
     var rotationEngine = null;
+    var preloadNextHook = null; // Session 116: set by the loader, warms the next image on idle
 
     // Session 86, fade concept: the same value as in People/Detail View -
     // see MAX_WAIT_FOR_INCOMING_MS's own detailed comment there
@@ -2154,12 +2155,28 @@ var ArtworkPlusBackdropTransition = {
         // time), with a timeout fallback in case nothing takes over
         // (e.g. going back to the home page).
         var fired = false;
+        // Session 116 (live recording): this deferred fade used to wipe
+        // the container unconditionally. Leaving category page A and
+        // entering page B of the SAME category within ~1.2 s let A's
+        // fallback delete B's freshly appended first image ("removed
+        // ... imgs=2" 17 ms after "img+"), leaving the page black until
+        // the next rotation tick a full cycle later. Now the fade only
+        // runs if no newer render has taken the container over since.
+        var clearGeneration = renderGeneration;
         function startFadeNow() {
             if (fired) { return; }
             fired = true;
+            if (renderGeneration !== clearGeneration) { return; } // a newer render owns the container
             container.style.transition = 'opacity ' + FADE_MS + 'ms ease';
             container.style.opacity = '0';
             setTimeout(function () {
+                if (renderGeneration !== clearGeneration) {
+                    // A render started during the fade-out: keep its
+                    // content, just restore the container's opacity.
+                    container.style.opacity = '';
+                    container.style.transition = '';
+                    return;
+                }
                 container.innerHTML = '';
                 container.style.opacity = '';
                 container.style.transition = '';
@@ -2205,6 +2222,19 @@ var ArtworkPlusBackdropTransition = {
             img.style.opacity = '0';
             img.style.transition = 'opacity ' + FADE_MS + 'ms';
             frame.appendChild(img);
+            // Session 116: force the initial opacity:0 to be computed
+            // before switching to 1 - without this flush the transition
+            // has no start value and the image pops in hard.
+            void img.offsetWidth;
+            // If a clear() fade-out is in flight on this container, the
+            // render above has bumped renderGeneration, so the clear
+            // keeps the content - but the container may already be at
+            // opacity 0 (or transitioning there). Restore it here.
+            var ownContainer = frame.closest('[class*="artworkplus-"][class*="backdrop"]');
+            if (ownContainer && ownContainer.style.opacity === '0') {
+                ownContainer.style.transition = '';
+                ownContainer.style.opacity = '';
+            }
             requestAnimationFrame(function () {
                 // Session 86, Fade-Konzept: Genre nimmt jetzt am
                 // gemeinsamen, projektweiten Signal teil.
@@ -2213,6 +2243,7 @@ var ArtworkPlusBackdropTransition = {
             });
             setBackgroundContainerWithBackdrop(true);
             rotationEngine.imageShown();
+            if (typeof preloadNextHook === 'function') { preloadNextHook(); }
 
             var previous = existing;
             if (previous) {
@@ -2298,15 +2329,28 @@ var ArtworkPlusBackdropTransition = {
             });
         });
 
-        for (var i = 1; i < urls.length; i++) {
-            Core.preloadImage(urls[i], { priority: 'low' }).catch(function () { /* not a verdict, see setBackdropImage's own real attempt */ });
-        }
+        // Session 116: no bulk preload of the whole pool any more (99
+        // requests + decoding per page view, measured live as 1.4 s long
+        // tasks while the grid's own tiles were still loading). Backdrops
+        // come last on every page: only the next image is warmed, and
+        // only when the browser is idle.
+        var preloadNext = function () {
+            var next = rotationEngine && rotationEngine.peekNext ? rotationEngine.peekNext() : null;
+            if (!next) { return; }
+            Core.preloadImage(next, { priority: 'low' }).catch(function () { /* not a verdict, see setBackdropImage's own real attempt */ });
+        };
+        var scheduleIdle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1500); };
 
         var orderMode = (settings.SortMode === 'Shuffle' || settings.SortMode === 'Random') ? settings.SortMode : 'Sequential';
         var effectiveCycleMs = Math.max(settings.CycleTimeMs, Math.ceil(FADE_MS * 1.5));
 
         if (rotationEngine) { rotationEngine.clear(); }
+        // Session 116: a new render takes ownership of the container -
+        // any clear() fade still pending from the page we just left
+        // compares against this and leaves our content alone.
+        renderGeneration++;
         rotationEngine = Core.createBackdropRotationEngine();
+        preloadNextHook = function () { scheduleIdle(preloadNext); };
         rotationEngine.start(urls, orderMode, effectiveCycleMs, function (imgUrl) {
             setBackdropImage(imgUrl, settings.KenBurnsEnabled, settings.KenBurnsZoomMs, settings.KenBurnsPanMs, function (failedUrl) {
                 rotationEngine.removeFailedImage(failedUrl);
@@ -2421,12 +2465,28 @@ var ArtworkPlusBackdropTransition = {
             return;
         }
         var fired = false;
+        // Session 116 (live recording): this deferred fade used to wipe
+        // the container unconditionally. Leaving category page A and
+        // entering page B of the SAME category within ~1.2 s let A's
+        // fallback delete B's freshly appended first image ("removed
+        // ... imgs=2" 17 ms after "img+"), leaving the page black until
+        // the next rotation tick a full cycle later. Now the fade only
+        // runs if no newer render has taken the container over since.
+        var clearGeneration = renderGeneration;
         function startFadeNow() {
             if (fired) { return; }
             fired = true;
+            if (renderGeneration !== clearGeneration) { return; } // a newer render owns the container
             container.style.transition = 'opacity ' + FADE_MS + 'ms ease';
             container.style.opacity = '0';
             setTimeout(function () {
+                if (renderGeneration !== clearGeneration) {
+                    // A render started during the fade-out: keep its
+                    // content, just restore the container's opacity.
+                    container.style.opacity = '';
+                    container.style.transition = '';
+                    return;
+                }
                 container.innerHTML = '';
                 container.style.opacity = '';
                 container.style.transition = '';
@@ -2462,6 +2522,19 @@ var ArtworkPlusBackdropTransition = {
             img.style.opacity = '0';
             img.style.transition = 'opacity ' + FADE_MS + 'ms';
             frame.appendChild(img);
+            // Session 116: force the initial opacity:0 to be computed
+            // before switching to 1 - without this flush the transition
+            // has no start value and the image pops in hard.
+            void img.offsetWidth;
+            // If a clear() fade-out is in flight on this container, the
+            // render above has bumped renderGeneration, so the clear
+            // keeps the content - but the container may already be at
+            // opacity 0 (or transitioning there). Restore it here.
+            var ownContainer = frame.closest('[class*="artworkplus-"][class*="backdrop"]');
+            if (ownContainer && ownContainer.style.opacity === '0') {
+                ownContainer.style.transition = '';
+                ownContainer.style.opacity = '';
+            }
             requestAnimationFrame(function () {
                 // Session 86, fade concept: Studio now takes part in the
                 // shared, project-wide signal (see its own comment at the
@@ -2643,6 +2716,7 @@ var ArtworkPlusBackdropTransition = {
 
     var renderGeneration = 0;
     var rotationEngine = null;
+    var preloadNextHook = null; // Session 116: set by the loader, warms the next image on idle
     var MAX_WAIT_FOR_INCOMING_MS = 1200;
 
     function clearOwnRotation() {
@@ -2656,12 +2730,28 @@ var ArtworkPlusBackdropTransition = {
             return;
         }
         var fired = false;
+        // Session 116 (live recording): this deferred fade used to wipe
+        // the container unconditionally. Leaving category page A and
+        // entering page B of the SAME category within ~1.2 s let A's
+        // fallback delete B's freshly appended first image ("removed
+        // ... imgs=2" 17 ms after "img+"), leaving the page black until
+        // the next rotation tick a full cycle later. Now the fade only
+        // runs if no newer render has taken the container over since.
+        var clearGeneration = renderGeneration;
         function startFadeNow() {
             if (fired) { return; }
             fired = true;
+            if (renderGeneration !== clearGeneration) { return; } // a newer render owns the container
             container.style.transition = 'opacity ' + FADE_MS + 'ms ease';
             container.style.opacity = '0';
             setTimeout(function () {
+                if (renderGeneration !== clearGeneration) {
+                    // A render started during the fade-out: keep its
+                    // content, just restore the container's opacity.
+                    container.style.opacity = '';
+                    container.style.transition = '';
+                    return;
+                }
                 container.innerHTML = '';
                 container.style.opacity = '';
                 container.style.transition = '';
@@ -2700,6 +2790,19 @@ var ArtworkPlusBackdropTransition = {
             img.style.opacity = '0';
             img.style.transition = 'opacity ' + FADE_MS + 'ms';
             frame.appendChild(img);
+            // Session 116: force the initial opacity:0 to be computed
+            // before switching to 1 - without this flush the transition
+            // has no start value and the image pops in hard.
+            void img.offsetWidth;
+            // If a clear() fade-out is in flight on this container, the
+            // render above has bumped renderGeneration, so the clear
+            // keeps the content - but the container may already be at
+            // opacity 0 (or transitioning there). Restore it here.
+            var ownContainer = frame.closest('[class*="artworkplus-"][class*="backdrop"]');
+            if (ownContainer && ownContainer.style.opacity === '0') {
+                ownContainer.style.transition = '';
+                ownContainer.style.opacity = '';
+            }
             requestAnimationFrame(function () {
                 // Session 86, Fade-Konzept: Tag nimmt jetzt am
                 // gemeinsamen, projektweiten Signal teil.
@@ -2708,6 +2811,7 @@ var ArtworkPlusBackdropTransition = {
             });
             setBackgroundContainerWithBackdrop(true);
             rotationEngine.imageShown();
+            if (typeof preloadNextHook === 'function') { preloadNextHook(); }
 
             if (existing) {
                 existing.style.opacity = '0';
@@ -2772,15 +2876,28 @@ var ArtworkPlusBackdropTransition = {
             });
         });
 
-        for (var i = 1; i < urls.length; i++) {
-            Core.preloadImage(urls[i], { priority: 'low' }).catch(function () { /* not a verdict */ });
-        }
+        // Session 116: no bulk preload of the whole pool any more (99
+        // requests + decoding per page view, measured live as 1.4 s long
+        // tasks while the grid's own tiles were still loading). Backdrops
+        // come last on every page: only the next image is warmed, and
+        // only when the browser is idle.
+        var preloadNext = function () {
+            var next = rotationEngine && rotationEngine.peekNext ? rotationEngine.peekNext() : null;
+            if (!next) { return; }
+            Core.preloadImage(next, { priority: 'low' }).catch(function () { /* not a verdict, see setBackdropImage's own real attempt */ });
+        };
+        var scheduleIdle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1500); };
 
         var orderMode = (settings.SortMode === 'Shuffle' || settings.SortMode === 'Random') ? settings.SortMode : 'Sequential';
         var effectiveCycleMs = Math.max(settings.CycleTimeMs, Math.ceil(FADE_MS * 1.5));
 
         if (rotationEngine) { rotationEngine.clear(); }
+        // Session 116: a new render takes ownership of the container -
+        // any clear() fade still pending from the page we just left
+        // compares against this and leaves our content alone.
+        renderGeneration++;
         rotationEngine = Core.createBackdropRotationEngine();
+        preloadNextHook = function () { scheduleIdle(preloadNext); };
         rotationEngine.start(urls, orderMode, effectiveCycleMs, function (imgUrl) {
             setBackdropImage(imgUrl, settings.KenBurnsEnabled, settings.KenBurnsZoomMs, settings.KenBurnsPanMs, function (failedUrl) {
                 rotationEngine.removeFailedImage(failedUrl);
@@ -2887,6 +3004,7 @@ var ArtworkPlusBackdropTransition = {
 
     var renderGeneration = 0;
     var rotationEngine = null;
+    var preloadNextHook = null; // Session 116: set by the loader, warms the next image on idle
     var MAX_WAIT_FOR_INCOMING_MS = 1200;
 
     function clearOwnRotation() {
@@ -2900,12 +3018,28 @@ var ArtworkPlusBackdropTransition = {
             return;
         }
         var fired = false;
+        // Session 116 (live recording): this deferred fade used to wipe
+        // the container unconditionally. Leaving category page A and
+        // entering page B of the SAME category within ~1.2 s let A's
+        // fallback delete B's freshly appended first image ("removed
+        // ... imgs=2" 17 ms after "img+"), leaving the page black until
+        // the next rotation tick a full cycle later. Now the fade only
+        // runs if no newer render has taken the container over since.
+        var clearGeneration = renderGeneration;
         function startFadeNow() {
             if (fired) { return; }
             fired = true;
+            if (renderGeneration !== clearGeneration) { return; } // a newer render owns the container
             container.style.transition = 'opacity ' + FADE_MS + 'ms ease';
             container.style.opacity = '0';
             setTimeout(function () {
+                if (renderGeneration !== clearGeneration) {
+                    // A render started during the fade-out: keep its
+                    // content, just restore the container's opacity.
+                    container.style.opacity = '';
+                    container.style.transition = '';
+                    return;
+                }
                 container.innerHTML = '';
                 container.style.opacity = '';
                 container.style.transition = '';
@@ -2944,6 +3078,19 @@ var ArtworkPlusBackdropTransition = {
             img.style.opacity = '0';
             img.style.transition = 'opacity ' + FADE_MS + 'ms';
             frame.appendChild(img);
+            // Session 116: force the initial opacity:0 to be computed
+            // before switching to 1 - without this flush the transition
+            // has no start value and the image pops in hard.
+            void img.offsetWidth;
+            // If a clear() fade-out is in flight on this container, the
+            // render above has bumped renderGeneration, so the clear
+            // keeps the content - but the container may already be at
+            // opacity 0 (or transitioning there). Restore it here.
+            var ownContainer = frame.closest('[class*="artworkplus-"][class*="backdrop"]');
+            if (ownContainer && ownContainer.style.opacity === '0') {
+                ownContainer.style.transition = '';
+                ownContainer.style.opacity = '';
+            }
             requestAnimationFrame(function () {
                 // Session 86, Fade-Konzept: Favorites nimmt jetzt am
                 // gemeinsamen, projektweiten Signal teil.
@@ -2952,6 +3099,7 @@ var ArtworkPlusBackdropTransition = {
             });
             setBackgroundContainerWithBackdrop(true);
             rotationEngine.imageShown();
+            if (typeof preloadNextHook === 'function') { preloadNextHook(); }
 
             if (existing) {
                 existing.style.opacity = '0';
@@ -3034,15 +3182,28 @@ var ArtworkPlusBackdropTransition = {
             return;
         }
 
-        for (var i = 1; i < urls.length; i++) {
-            Core.preloadImage(urls[i], { priority: 'low' }).catch(function () { /* not a verdict */ });
-        }
+        // Session 116: no bulk preload of the whole pool any more (99
+        // requests + decoding per page view, measured live as 1.4 s long
+        // tasks while the grid's own tiles were still loading). Backdrops
+        // come last on every page: only the next image is warmed, and
+        // only when the browser is idle.
+        var preloadNext = function () {
+            var next = rotationEngine && rotationEngine.peekNext ? rotationEngine.peekNext() : null;
+            if (!next) { return; }
+            Core.preloadImage(next, { priority: 'low' }).catch(function () { /* not a verdict, see setBackdropImage's own real attempt */ });
+        };
+        var scheduleIdle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1500); };
 
         var orderMode = (settings.SortMode === 'Shuffle' || settings.SortMode === 'Random') ? settings.SortMode : 'Sequential';
         var effectiveCycleMs = Math.max(settings.CycleTimeMs, Math.ceil(FADE_MS * 1.5));
 
         if (rotationEngine) { rotationEngine.clear(); }
+        // Session 116: a new render takes ownership of the container -
+        // any clear() fade still pending from the page we just left
+        // compares against this and leaves our content alone.
+        renderGeneration++;
         rotationEngine = Core.createBackdropRotationEngine();
+        preloadNextHook = function () { scheduleIdle(preloadNext); };
         rotationEngine.start(urls, orderMode, effectiveCycleMs, function (imgUrl) {
             setBackdropImage(imgUrl, settings.KenBurnsEnabled, settings.KenBurnsZoomMs, settings.KenBurnsPanMs, function (failedUrl) {
                 rotationEngine.removeFailedImage(failedUrl);

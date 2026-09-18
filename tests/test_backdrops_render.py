@@ -77,6 +77,7 @@ def main():
             page.route(f"{ORIGIN}/**", lambda route, request, stubs=stubs: _serve(route, stubs))
             page.goto(f"{ORIGIN}/web/index.html{hsh}")
             page.add_script_tag(content=APICLIENT_STUB)
+            page.add_script_tag(content="window.__apFades=0; document.addEventListener('transitionend', e => { if (e.propertyName==='opacity' && e.target.tagName==='IMG') window.__apFades++; }, true);")
             page.add_script_tag(content=core)
             page.add_script_tag(content=bd)
             page.evaluate("document.dispatchEvent(new CustomEvent('viewshow'))")
@@ -94,17 +95,48 @@ def main():
                 problems.append("img has no src")
             elif not ok:
                 problems.append(f"image not decoded/visible: {r}")
+            # (b) the shown image must have FADED in (transitionend fired), not popped
+            if ok and r.get("imgs"):
+                faded = page.evaluate("() => window.__apFades || 0")
+                if faded < 1:
+                    ok = False
+                    problems.append("no opacity transitionend - image popped in hard")
+            # (c) backdrops come last: no bulk preload of the pool
+            img_requests = [q for q in REQUEST_LOG if "/Images/" in q or "studio-image" in q]
+            if len(img_requests) > 3:
+                ok = False
+                problems.append(f"{len(img_requests)} image requests on entry - pool bulk-preloaded")
             fails += 0 if ok else 1
             print(("ok  " if ok else "FAIL"), f"{name:9s}", "" if ok else "; ".join(problems))
+            # (a) rapid switch to a second page of the same category must never end empty
+            if name != "Studio" and hsh.count("=") > 1:
+                # Recorded live (Session 116): leave the category page (clear
+                # arms a 1.2 s fallback fade), come back to another page of
+                # the same category before it fires; the new page's first
+                # image was appended and then wiped by the old fade 17 ms
+                # later. Reproduce exactly that: away -> back within 300 ms.
+                page.evaluate("() => { location.hash = '#/home.html'; document.dispatchEvent(new CustomEvent('viewshow')); }")
+                page.wait_for_timeout(300)
+                page.evaluate("(h) => { location.hash = h; document.dispatchEvent(new CustomEvent('viewshow')); }", hsh.replace("g1", "g3").replace("Horror", "Comedy").replace("type=Movie", "type=Episode"))
+                page.wait_for_timeout(3000)
+                r2 = page.evaluate(PROBE, sel)
+                vis2 = r2.get("container") and any(i["src"] and i["nat"] > 0 and float(i["op"]) > 0.5 for i in r2.get("imgs", []))
+                fails += 0 if vis2 else 1
+                print(("ok  " if vis2 else "FAIL"), f"{name:9s}", "rapid switch" if vis2 else f"rapid switch left the page black: {r2}")
+            REQUEST_LOG.clear()
             page.close()
         browser.close()
-    print("RESULT", "FAILED" if fails else "OK", f"({len(CASES) - fails}/{len(CASES)})")
+    print("RESULT", "FAILED" if fails else "OK", f"({fails} failure(s))")
     sys.exit(1 if fails else 0)
+
+
+REQUEST_LOG = []
 
 
 def _serve(route, stubs):
     url = route.request.url
     path = url[len(ORIGIN):]
+    REQUEST_LOG.append(path)
     for key, payload in stubs.items():
         if path.startswith(key):
             import json

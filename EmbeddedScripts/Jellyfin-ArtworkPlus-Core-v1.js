@@ -1137,6 +1137,23 @@
             advance: function () {
                 if (state._lastRenderImage) { tick(state._lastRenderImage); }
             },
+            // Session 116: which URL the NEXT tick will render, without
+            // advancing anything - lets a caller warm exactly that one
+            // image instead of bulk-preloading the whole pool. Shuffle:
+            // the head of the current bag (or, with an empty bag, unknown
+            // until the next refill - returns null then, which the caller
+            // treats as "nothing to warm"). Random: unknowable, null.
+            // Sequential: the next index.
+            peekNext: function () {
+                if (state.images.length === 0) { return null; }
+                if (state._orderMode === 'Shuffle') {
+                    return state._randomBag.length ? state.images[state._randomBag[0]] : null;
+                }
+                if (state._orderMode === 'Random') { return null; }
+                var i = state.index + 1;
+                if (i >= state.images.length) { i = 0; }
+                return state.images[i];
+            },
             // REAL, CRITICAL BUG FOUND AND FIXED via a full audit (not a
             // reported symptom - found by deliberately testing "what if
             // every image in the rotation fails to load"): the old
