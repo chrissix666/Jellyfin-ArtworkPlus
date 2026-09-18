@@ -385,29 +385,53 @@
         if (observer) { coord.arbiterProtectionObservers.push(observer); }
     }
 
-    // Session 121 (user: "bei der Detail Page zeigt er das Poster erst
-    // flach, dann erst die Neigung"): the poster arbiter decides (and
-    // reveals the poster) independently of Case Mod's own /CaseMod fetch.
-    // With the Viva Elite 3D Case that fetch also brings the TILT - if it
-    // lands later than the arbiter's decision the poster is seen flat
-    // first. Case Mod therefore HOLDS the view-level pending class (poster
-    // opacity 0) from its check() start until the tilt is applied (or it
-    // knows there is nothing to tilt); the arbiter's own reveal keeps
-    // working, it just does not lift that one class while the hold is on.
-    var caseModPosterHold = { view: null, generation: -1, timer: null };
-    function caseModHoldPoster(view, generation) {
-        caseModReleasePoster();
-        caseModPosterHold.view = view;
-        caseModPosterHold.generation = generation;
-        caseModPosterHold.timer = setTimeout(function () { caseModReleasePoster(); }, 3000); // safety net
+    // Session 121 (user: "das Lazy Image lädt bei 0 Grad und rotiert
+    // hinterher"): with the Viva Elite 3D Case the tilt of the whole
+    // .cardScalable arrives with Case Mod's own /CaseMod answer. Until then
+    // Jellyfin has already rendered the card: the blurhash placeholder
+    // (<canvas>, a SIBLING of the image container) and the padder icon are
+    // visible and FLAT - none of the poster-pending rules covers them -
+    // and they jump into the rotation when the tilt lands. Verified in
+    // jellyfin-web 10.10.7 (imageLoader.js drawBlurhash inserts the canvas
+    // before the element; itemDetails renderDetailImage rebuilds the card
+    // after viewshow). Therefore, ONLY when the 3D case with a non-zero
+    // angle is in use (remembered from the last /CaseMod answer, so the
+    // hold can start at viewshow - before the card even exists), the whole
+    // .cardScalable stays visibility:hidden until the tilt is applied; the
+    // answer "not applicable / flat case / angle 0" releases at once.
+    // Safety net 3 s. Nothing changes for the three flat cases.
+    var TILT_HOLD_CLASS = 'artworkplus-case-tilt-pending';
+    var TILT_HOLD_STORAGE_KEY = 'ArtworkPlusCase3DTilt';
+    var caseTiltHold = { view: null, timer: null, styleInjected: false };
+    function caseTiltExpected() {
+        try { return localStorage.getItem(TILT_HOLD_STORAGE_KEY) === '1'; } catch (e) { return false; }
     }
-    function caseModReleasePoster() {
-        if (caseModPosterHold.timer) { clearTimeout(caseModPosterHold.timer); caseModPosterHold.timer = null; }
-        var view = caseModPosterHold.view;
-        caseModPosterHold.view = null;
-        if (view && caseModPosterHold.arbiterDone) { view.classList.remove('artworkplus-poster-pending'); }
-        caseModPosterHold.arbiterDone = false;
+    function caseTiltRemember(is3DWithAngle) {
+        try { localStorage.setItem(TILT_HOLD_STORAGE_KEY, is3DWithAngle ? '1' : '0'); } catch (e) { /* private mode */ }
     }
+    function caseTiltHoldView(view) {
+        if (!view) { return; }
+        if (!caseTiltHold.styleInjected) {
+            caseTiltHold.styleInjected = true;
+            var st = document.createElement('style');
+            st.id = 'artworkplus-case-tilt-pending';
+            st.textContent = '.itemDetailPage.' + TILT_HOLD_CLASS + ' .detailImageContainer .cardScalable{visibility:hidden!important}';
+            document.head.appendChild(st);
+        }
+        caseTiltRelease();
+        caseTiltHold.view = view;
+        view.classList.add(TILT_HOLD_CLASS);
+        caseTiltHold.timer = setTimeout(caseTiltRelease, 3000);
+    }
+    function caseTiltRelease() {
+        if (caseTiltHold.timer) { clearTimeout(caseTiltHold.timer); caseTiltHold.timer = null; }
+        var view = caseTiltHold.view;
+        caseTiltHold.view = null;
+        if (view) { view.classList.remove(TILT_HOLD_CLASS); }
+    }
+    // Compatibility names used by CaseModModule.check() and the tests.
+    function caseModHoldPoster(view) { caseTiltHoldView(view); }
+    function caseModReleasePoster() { caseTiltRelease(); }
 
     // Centralizes the visibility restore - guarantees it happens exactly
     // once, regardless of which source ends up winning.
@@ -423,13 +447,7 @@
         // finishes - which may never happen once we've replaced its image.
         coord.posterEl.classList.remove('lazy-hidden');
         var view = coord.posterEl.closest ? coord.posterEl.closest('.itemDetailPage') : null;
-        if (view) {
-            if (caseModPosterHold.view === view) {
-                caseModPosterHold.arbiterDone = true; // Case Mod lifts the class when the tilt is on
-            } else {
-                view.classList.remove('artworkplus-poster-pending');
-            }
-        }
+        if (view) { view.classList.remove('artworkplus-poster-pending'); }
         var hidePlaceholder = function () {
             var parent = coord.posterEl.parentNode;
             var canvas = coord.posterEl.previousSibling;
@@ -760,6 +778,7 @@
             var view = e && e.target;
             if (!view || !view.classList || !view.classList.contains('itemDetailPage')) { return; }
             view.classList.add('artworkplus-poster-pending');
+            if (caseTiltExpected()) { caseTiltHoldView(view); } // Session 121: whole card hidden until the 3D tilt is on
             // Cleanup MUST happen before the reference is dropped - the
             // outgoing coord (and its own observers/Extra runtime) is
             // still reachable here, one line before it stops being so.
@@ -2857,7 +2876,7 @@
         async function check(coord, itemId, posterEl, myGeneration) {
             removeExistingOverlay();
             var holdView = posterEl.closest ? posterEl.closest('.itemDetailPage') : null;
-            if (holdView) { caseModHoldPoster(holdView, myGeneration); }
+            if (holdView && caseTiltExpected() && caseTiltHold.view !== holdView) { caseModHoldPoster(holdView); }
 
             var response;
             try {
@@ -2873,12 +2892,14 @@
 
             if (!response || !response.IsApplicable) {
                 log('Not applicable for', itemId);
-                caseModReleasePoster();
+                caseModReleasePoster(); // (the remembered "3D expected" stays - Show-on/type exclusions are per item, not a config change)
                 return;
             }
 
             if (!document.body.contains(posterEl)) { caseModReleasePoster(); return; }
-            if (response.CaseType !== 'vivaelite3dcases') { caseModReleasePoster(); } // nothing to tilt: the arbiter reveals as always
+            var tiltComing = response.CaseType === 'vivaelite3dcases' && !!(response.CaseAngleDegrees || 0);
+            caseTiltRemember(tiltComing);
+            if (!tiltComing) { caseModReleasePoster(); } // nothing to tilt: the card shows as always
 
             // The real poster CARD (position:absolute, vw/vh/%-based,
             // z-index:3) - NOT .cardImageContainer itself (that's deeper

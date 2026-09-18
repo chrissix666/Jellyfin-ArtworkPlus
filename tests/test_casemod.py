@@ -70,8 +70,11 @@ var Core = {
 // shared file scope in production); stubs here, plus a probe of the hold state.
 var navTimers = { track: function (h) { return h; }, clearTimers: function () {} };
 var __caseModHoldCalls = [];
-function caseModHoldPoster(view, gen) { __caseModHoldCalls.push('hold'); window.__caseModHeld = true; }
-function caseModReleasePoster() { __caseModHoldCalls.push('release'); window.__caseModHeld = false; }
+var caseTiltHold = { view: null };
+function caseTiltExpected() { return window.__tiltExpected !== false; }
+function caseTiltRemember(v) { window.__tiltRemembered = v; }
+function caseModHoldPoster(view, gen) { __caseModHoldCalls.push('hold'); caseTiltHold.view = view; view.classList.add('artworkplus-case-tilt-pending'); window.__caseModHeld = true; }
+function caseModReleasePoster() { __caseModHoldCalls.push('release'); if (caseTiltHold.view) { caseTiltHold.view.classList.remove('artworkplus-case-tilt-pending'); } caseTiltHold.view = null; window.__caseModHeld = false; }
 var __origFetch = window.fetch;
 window.fetch = function (url, opts) {
     if (typeof url === 'string' && url.indexOf('/CaseMod/') === 0 && url.indexOf('/Texture/') === -1) {
@@ -1442,9 +1445,9 @@ def run():
             var tilted = !!front && (front.style.transform || '').indexOf('matrix3d') === 0;
             return { calls: __caseModHoldCalls.slice(), heldDuringFetch, releasedAfter: window.__caseModHeld === false, tilted };
         }""", [top, left, w, h, dtop, dleft, dsize])
-        check('Poster hold (3D): held while /CaseMod is in flight',
+        check('Tilt hold (3D): whole card held while /CaseMod is in flight',
               hold_3d['heldDuringFetch'], f"{hold_3d}")
-        check('Poster hold (3D): released after the tilt was applied (hold -> release, tilt on the front)',
+        check('Tilt hold (3D): released after the tilt was applied (hold -> release, tilt on the front)',
               hold_3d['calls'] == ['hold', 'release'] and hold_3d['releasedAfter'] and hold_3d['tilted'], f"{hold_3d}")
         hold_flat = page.evaluate("""async ([top, left, w, h, dtop, dleft, dsize]) => {
             __caseModHoldCalls.length = 0;
@@ -1460,8 +1463,11 @@ def run():
             await __caseMod.check(null, 'hold-na', posterEl, window.__bumpGen());
             return { flat: a, notApplicable: __caseModHoldCalls.slice() };
         }""", [top, left, w, h, dtop, dleft, dsize])
-        check('Poster hold: flat case and not-applicable release immediately',
+        check('Tilt hold: flat case and not-applicable release immediately',
               hold_flat['flat'] == ['hold', 'release'] and hold_flat['notApplicable'] == ['hold', 'release'], f"{hold_flat}")
+        remembered = page.evaluate("() => window.__tiltRemembered")
+        check('Tilt hold: a flat-case answer is remembered as "no tilt expected" (next viewshow will not hold)',
+              remembered is False, f"{remembered}")
 
         check('No page JS errors (after the new trigger tests)', not page_errors, str(page_errors[:2]))
 
