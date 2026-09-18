@@ -1616,6 +1616,13 @@
             return panEl;
         }
 
+        /** Puts this container after every other owner container in <body>, so a crossfade paints the incoming ON TOP of the outgoing. */
+        function raiseToTop(c) {
+            var owners = document.body.querySelectorAll(':scope > .artworkplus-backdrop-owner');
+            var last = owners[owners.length - 1];
+            if (last && last !== c) { document.body.insertBefore(c, last.nextSibling); }
+        }
+
         function emptyContainer() {
             frameEl = null;
             if (!containerEl) { return; }
@@ -1660,8 +1667,9 @@
                 div.style.backgroundImage = cssUrl(url);
                 if (existing) { existing.classList.remove('displayingBackdropImage'); }
                 frame.appendChild(div);
-                // A container that was mid-fade-out (fast return to the same page) comes back.
                 var c = getContainer();
+                if (!visitShown) { raiseToTop(c); }
+                // A container that was mid-fade-out (fast return to the same page) comes back.
                 if (c.style.opacity === '0') { c.style.transition = ''; c.style.opacity = ''; }
 
                 var begin = function () {
@@ -1691,6 +1699,9 @@
                     // decode, long tasks); starting the fade during that jank makes
                     // it stutter. Wait for calm frames (cap 3.5 s), then fade.
                     var QUIET_FRAMES_NEEDED = 45, QUIET_WAIT_CAP_MS = 3500;
+                    // The image is decoded - the outgoing owner's handover window
+                    // restarts now, so the calm-frames wait does not eat it.
+                    busClaim(name, bus.claims[name] || 'normal');
                     var t0 = performance.now(), prev = null, run = 0, raf = null, cancelled = false;
                     var step = function (ts) {
                         if (cancelled) { return; }
@@ -1765,7 +1776,15 @@
         return {
             name: name,
             claim: function (source) { return busClaim(name, source); },
-            empty: function () { busEmpty(name); },
+            empty: function () {
+                // The owner claimed this page but has nothing for it. If its
+                // container still shows the PREVIOUS page (movie -> person:
+                // Detail View claimed, the server said "no images"), that
+                // content is outgoing now - it fades through the bus like a
+                // release (crossfade if another owner is ready in time).
+                if (hasContent()) { release(); }
+                busEmpty(name);
+            },
             beginVisit: beginVisit,
             start: start,
             render: render,

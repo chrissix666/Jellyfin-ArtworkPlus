@@ -170,6 +170,9 @@ SCENARIOS = [
     ("Movie -> Person Wallpapers (2 s stream)", "#/details?id=m1&serverId=s1", "#/details?id=pw1&serverId=s1", 0, "artworkplus-people-backdrop", True),
     ("Favorites -> Genre", "#/list.html?type=Movie&IsFavorite=true&serverId=s1", "#/list.html?genreId=g1&parentId=p1&serverId=s1", 600, "artworkplus-genre-backdrop", True),
     ("Home stays vanilla", "#/home.html", "#/home.html", 0, None, False),
+    # live-found (Session 120): the owner that claimed the new page but got "no images" must fade its OLD content
+    ("Movie -> Person (Detail's old image must go)", "#/details?id=m1&serverId=s1", "#/details?id=pa2&serverId=s1", 300, "artworkplus-people-backdrop", "exclusive"),
+    ("Person -> Movie (People's old image must go)", "#/details?id=pa2&serverId=s1", "#/details?id=m2&serverId=s1", 300, "artworkplus-own-backdrop", "exclusive"),
 ]
 
 
@@ -225,6 +228,10 @@ def run(baseline=False):
                     t_out0 = next((s['t'] for s in samples if s['per'].get(from_owner, 1) < 0.05), None)
                     if t_in is not None and t_out0 is not None and t_out0 < t_in - 50:
                         problems.append(f"order: outgoing gone at +{int(t_out0 - samples[0]['t'])} ms before incoming visible at +{int(t_in - samples[0]['t'])} ms")
+                if expect_cls == "exclusive":
+                    others = {k: v for k, v in final['per'].items() if k != expect_owner and v > 0.05}
+                    if others:
+                        problems.append(f"exclusive: other owners still visible at the end: {others}")
                 # body class at end
                 if not final['cls']:
                     problems.append("class: override class off although ours is showing")
