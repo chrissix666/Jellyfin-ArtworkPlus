@@ -1062,7 +1062,7 @@ public class PluginConfiguration : BasePluginConfiguration
     // CharacterartMoviesTopRightFullscreenOffsetVw below for the full
     // reasoning) - added on top of the OffsetVw above ONLY while the
     // browser tab is in fullscreen.
-    public double CharacterartMoviesTopLeftFullscreenOffsetVw { get; set; }
+    public double CharacterartMoviesTopLeftFullscreenOffsetVw { get; set; } = -2;
 
     public string CharacterartMoviesTopRightScaleMode { get; set; } = "Height";
 
@@ -1099,7 +1099,7 @@ public class PluginConfiguration : BasePluginConfiguration
     /// default; the field stays for fine-tuning (applied via a body class
     /// the client toggles, see Core.installFullscreenClass()).
     /// </summary>
-    public double CharacterartMoviesTopRightFullscreenOffsetVw { get; set; }
+    public double CharacterartMoviesTopRightFullscreenOffsetVw { get; set; } = 2;
 
     public string CharacterartMoviesBottomLeftScaleMode { get; set; } = "Height";
 
@@ -1153,7 +1153,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public double CharacterartTvShowsTopLeftOffsetVw { get; set; } = 4;
 
     // Per-position fullscreen offset - see CharacterartMoviesTopRightFullscreenOffsetVw's own doc comment for the full reasoning.
-    public double CharacterartTvShowsTopLeftFullscreenOffsetVw { get; set; }
+    public double CharacterartTvShowsTopLeftFullscreenOffsetVw { get; set; } = -2;
 
     public string CharacterartTvShowsTopRightScaleMode { get; set; } = "Height";
 
@@ -1170,7 +1170,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public double CharacterartTvShowsTopRightOffsetVw { get; set; } = -5;
 
     // Per-position fullscreen offset - see CharacterartMoviesTopRightFullscreenOffsetVw's own doc comment for the full reasoning.
-    public double CharacterartTvShowsTopRightFullscreenOffsetVw { get; set; }
+    public double CharacterartTvShowsTopRightFullscreenOffsetVw { get; set; } = 2;
 
     public string CharacterartTvShowsBottomLeftScaleMode { get; set; } = "Height";
 
