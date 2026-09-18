@@ -40,6 +40,7 @@
     var tag = tagItems.length ? tagItems[0].Tags[0] : null;
     var movie = await first('Users/' + uid + '/Items', { Recursive: true, IncludeItemTypes: 'Movie', ImageTypes: 'Backdrop', Limit: 1 });
     var person = await first('Persons', { Limit: 1 });
+    var favPersons = (await api.getJSON(api.getUrl('Persons', { UserId: uid, IsFavorite: true, Limit: 1 }))).TotalRecordCount || 0;
 
     var checks = [
         ['settings', 'Backdrops/settings', { itemId: movie && movie.Id }, function (j) { return j && typeof j.Enabled === 'boolean'; }],
@@ -51,7 +52,9 @@
         ['tag-pool', 'Backdrops/tag-pool', { tag: tag }, function (j) { return j && Array.isArray(j.Images); }],
         ['favorites-pool (Movie)', 'Backdrops/favorites-pool', { type: 'Movie' }, function (j) { return j && Array.isArray(j.Images); }],
         ['favorites-pool (Series)', 'Backdrops/favorites-pool', { type: 'Series' }, function (j) { return j && Array.isArray(j.Images); }],
-        ['favorites-pool (Person)', 'Backdrops/favorites-people-pool', {}, function (j) { return j && typeof j.Enabled === 'boolean'; }],
+        // If the user has favourite persons (checked via Jellyfin's own /Persons?IsFavorite), the pool must not come back empty
+        // (Session 116: an items query found 0 persons while /Persons found 5 - persons live outside the library tree).
+        ['favorites-pool (Person)', 'Backdrops/favorites-people-pool', {}, function (j) { if (!j || typeof j.Enabled !== 'boolean') { return false; } if (!j.Enabled) { return true; } var n = (j.Images || []).length + (j.WallpaperUrls || []).length; return favPersons === 0 || n > 0; }],
         ['people (info)', 'PeopleBackdrops/' + (person && person.Id), { scope: 'info' }, function (j, raw) { return raw.indexOf('"Type":"Header"') !== -1; }]
     ];
     // user-data sorts must not crash a pool: temporarily impossible to switch config here, so at least hit

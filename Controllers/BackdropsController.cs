@@ -824,12 +824,17 @@ public class BackdropsController : ControllerBase
             return Ok(result);
         }
 
-        var favoritePeople = _libraryManager.GetItemList(new InternalItemsQuery(requestUser)
+        // Session 116: favourite persons are NOT reachable through an
+        // items query (Person items hang under no library, Recursive=true
+        // finds none - verified live: 0 results while /Persons?IsFavorite
+        // returned 5). Jellyfin's own PersonsController resolves them via
+        // GetPeopleItems(InternalPeopleQuery { User, IsFavorite }) - the
+        // People table joined with UserData - so do we.
+        var favoritePeople = _libraryManager.GetPeopleItems(new InternalPeopleQuery
         {
-            IsFavorite = true,
-            IncludeItemTypes = new[] { BaseItemKind.Person },
-            Recursive = true
-        }).OfType<Person>().ToList();
+            User = requestUser,
+            IsFavorite = true
+        }).Where(person => person is not null).ToList();
 
         if (favoritePeople.Count == 0)
         {
