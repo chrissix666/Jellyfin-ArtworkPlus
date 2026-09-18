@@ -38,7 +38,7 @@ Status: ✅ verified live · ⚠️ gap known · ❓ not yet tested live · ❌ 
 | Extraposter | detail page + library grid tiles, overlay slideshow (Session 122: page-wide batch, 50 % activation window, layers inside `.cardImageContainer` under Jellyfin's hover menu, tile ownership priority 3, Sets admitted server-side) | ExtraModule | `Extraposter`: `{itemId}/quickcheck`, `{itemId}?type=`, `batch`, `{itemId}/image/{fileName}` | `Extraposter*` (14) | extraposter | ❓ library rebuilt, user test pending | |
 | Extrakeyart | same, alternate base | ExtraModule | same controller, `type=extrakeyart` | `Extrakeyart*` (22) | extraposter | ❓ | |
 
-Priority when several want the poster slot: the HIGHEST number wins — Extra (3) > Animated (2) > Custom (1) > Main (0) (`posterArbiterRecomputeDecision` walks 3→1); the lower ones are Extra's backdrop during its Delay. Library tiles use the same order via `libraryTileOwners` (Session 122); the full chain (fallback on load error, order independence, flash prevention) is still open.
+Priority when several want the poster slot: the HIGHEST number wins — Extra (3) > Animated (2) > Custom (1) > Main (0) (`posterArbiterRecomputeDecision` walks 3→1); the lower ones are Extra's backdrop during its Delay. Library tiles: `LibraryTiles` arbiter in Posters-v1.js (Session 122 step 4) - same order, decision after all expected participants answered (server flags `window.ArtworkPlusLibraryTiles`), tile pending from before the first paint (blurhash kept), winner via `data-src`/override + guard, Extra base underneath, load-error fallback, 2 s safety net; gated by `tests/test_library_tiles.py`.
 Sets (BoxSets): supported by Animated/Custom/Extra since Sessions 87–92 (Movies' settings reused, naming Standalone).
 
 ### Positioned art (`RenderArt-v1.js`)
@@ -65,7 +65,7 @@ Sets (BoxSets): supported by Animated/Custom/Extra since Sessions 87–92 (Movie
 
 - **Gate system** (`EP_TREE`/`EP_FIELDS` in configPage.html): every Show-on/Enable/greying rule — Fibel rules 0–26, `tests/run_checks.py`.
 - **Naming modes**: Movies Standalone/Prefixed/Folder; TV Standalone/Folder (series main folder); Sets always Standalone.
-- **Known gaps**: library-tile wiring step 4 open (order dependence Extra/Animated, no load-error fallback, underlying image flashes on the first screen until ours is decoded); Keyart/Extrakeyart logo not drawn on tiles; Import button lacks `.raised`; no dedicated tests for Animated Poster/Keyart and the Sets checkboxes. Batch maps must be keyed like the tile `data-id` (no dashes) — `tests/diagnostic_batch_key_format.py`.
+- **Known gaps**: Keyart/Extrakeyart logo not drawn on tiles; Extra tiles have no real synchronized clock (parked user idea, see curriculum Session 122); step-4 live look is the user's; Import button lacks `.raised`; no dedicated tests for Animated Poster/Keyart and the Sets checkboxes. Batch maps must be keyed like the tile `data-id` (no dashes) — `tests/diagnostic_batch_key_format.py`.
 - **Client logging**: every module logs through `Core.makeLogger`; silent by default, enabled per page with `localStorage.ArtworkPlusDebug` = `all` or a tag list (`ArtworkPlusCore.setDebug('CaseMod,Backdrops')`, reload). Server side: `config\logging.json` overrides `Jellyfin.Plugin.ArtworkPlus` to Debug.
 
 ## Live-test order (Session 114+)

@@ -275,6 +275,45 @@ public static class FileTransformCallback
 
 
     /// <summary>
+    /// Library tiles (Session 122): the tile arbiter in Posters-v1.js marks
+    /// every poster tile `artworkplus-tile-pending` in the MutationObserver
+    /// that sees the cards being inserted (a microtask, before the first
+    /// paint) and releases it once Custom/Animated/Extra have answered for
+    /// that tile and the winner's image is in place. While pending, the
+    /// tile's own image is hidden and Jellyfin's blurhash canvas is kept
+    /// visible (imageLoader.js hides it with `lazy-hidden` after its own
+    /// fade-in) - the viewer sees the blurhash a moment longer, never the
+    /// wrong image. `:has()` needs Chromium 105+/Firefox 121+; without it
+    /// the canvas may hide early (a blank instead of the blurhash, still
+    /// never the wrong image). The fade-in class is added when the arbiter
+    /// swaps an already-painted tile itself.
+    /// </summary>
+    private const string LibraryTilesStyleTag =
+        "<style id=\"artworkplus-library-tiles\">.cardImageContainer.artworkplus-tile-pending{opacity:0!important}.cardScalable:has(>.artworkplus-tile-pending)>.blurhash-canvas{opacity:1!important}.cardImageContainer.artworkplus-tile-fadein{animation:artworkplus-tile-fadein .5s!important}@keyframes artworkplus-tile-fadein{from{opacity:0}to{opacity:1}}</style>";
+
+    /// <summary>
+    /// Tells the tile arbiter which of the three library features are on
+    /// (tab + feature + at least one Library switch), so it only waits for
+    /// the answers that can come and pends nothing at all when none is on.
+    /// A page served by an older build has no flag object - the arbiter
+    /// then expects all three (each answers empty when disabled).
+    /// </summary>
+    private static string BuildLibraryTilesFlagsScriptTag(Configuration.PluginConfiguration config)
+    {
+        var custom = config.CustomPosterEnabled && (
+            (config.PostercaseEnabled && (config.PostercaseMoviesLibraryEnabled || config.PostercaseTvShowsLibraryEnabled))
+            || (config.KeyartEnabled && (config.KeyartMoviesLibraryEnabled || config.KeyartTvShowsLibraryEnabled)));
+        var animated = config.AnimatedPosterTabEnabled && (
+            (config.AnimatedPosterEnabled && (config.AnimatedPosterMoviesLibraryEnabled || config.AnimatedPosterTvShowsLibraryEnabled))
+            || (config.AnimatedKeyartEnabled && (config.AnimatedKeyartMoviesLibraryEnabled || config.AnimatedKeyartTvShowsLibraryEnabled)));
+        var extra = config.ExtraposterTabEnabled && (
+            (config.ExtraposterEnabled && (config.ExtraposterMoviesLibraryEnabled || config.ExtraposterTvShowsLibraryEnabled))
+            || (config.ExtrakeyartEnabled && (config.ExtrakeyartMoviesLibraryEnabled || config.ExtrakeyartTvShowsLibraryEnabled)));
+        static string B(bool b) => b ? "true" : "false";
+        return "<script id=\"artworkplus-library-tiles-flags\">window.ArtworkPlusLibraryTiles={custom:" + B(custom) + ",animated:" + B(animated) + ",extra:" + B(extra) + "};</script>";
+    }
+
+    /// <summary>
     /// Backdrops' own static prehiding rule - same underlying principle as
     /// PrehidingStyleTag above (a static CSS rule, present before any
     /// script runs, applying the instant its target element exists,
@@ -473,6 +512,14 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
         else
         {
             logger?.LogInformation("ArtworkPlus: TransformIndexHtml - FOOC prehiding skipped, both AnimatedPoster and ExtraPoster are disabled");
+        }
+
+        // Library tiles (Session 122): style + feature flags, always
+        // injected - the flags say whether the arbiter has anything to
+        // wait for; with all three off it pends nothing.
+        if (config is not null && contents.Contains("</head>", StringComparison.Ordinal) && !result.Contains("artworkplus-library-tiles", StringComparison.Ordinal))
+        {
+            result = result.Replace("</head>", LibraryTilesStyleTag + BuildLibraryTilesFlagsScriptTag(config) + "</head>", StringComparison.Ordinal);
         }
 
         // Backdrops' own static prehiding rule - independent of the FOOC

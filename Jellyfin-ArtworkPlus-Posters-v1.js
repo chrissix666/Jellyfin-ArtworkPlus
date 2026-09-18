@@ -857,141 +857,303 @@
     installPosterPendingByDefault();
 
     // =====================================================================
-    // LIBRARY TILE SWAPPER (Session 122) - shared by Custom and Animated
-    // Mirrors Jellyfin's own tile behaviour (cardBuilder.js +
-    // imageLoader.js): Jellyfin knows for the WHOLE page which tile has a
-    // poster (the Items answer carries ImageTags, the URL sits in
-    // data-src) and only loads the image at 50% viewport margin. Each
-    // instance does the same for its files: every tile is asked in one
-    // batch as soon as it is in the DOM, and an applicable tile gets the
-    // instance's URL written into its data-src so Jellyfin's own lazy
-    // loader fetches the file itself (blurhash -> ours, its own fade-in).
-    // A tile Jellyfin has already filled (the first screen) is overridden
-    // after a preload, and a per-tile guard re-applies the URL if
-    // Jellyfin's in-flight poster lands after ours (race). Jellyfin's
-    // emptyImageElement() keeps our URL: it copies the current
-    // background-image back into data-src when a tile scrolls away.
+    // LIBRARY TILE ARBITER (Session 122, step 4) - the library-view
+    // counterpart of the detail-page poster arbiter above. Same
+    // participants, same order: Extra 3 > Animated 2 > Custom 1 > Main 0.
     //
-    // Tile ownership: several instances may answer for the same tile
-    // (an item with both a Custom Poster and an Animated Poster). The
-    // HIGHEST priority number owns the tile - the same order as the
-    // detail-page arbiter (posterArbiterRecomputeDecision walks 3 -> 1:
-    // Extra 3 > Animated 2 > Custom 1). A lower-ranked instance never
-    // touches an owned tile; a higher-ranked instance arriving later
-    // takes it over, and the previous guard steps down the moment it
-    // sees it is no longer the owner. The full chain
-    // (fallback on a load error, Extra's overlay, flash prevention) is
-    // a later step - this is only the minimum that keeps two guards from
-    // fighting over one tile.
+    // Jellyfin's tiles (cardBuilder.js + imageLoader.js): all 500 cards of
+    // a page are built at once with the poster URL in data-src; the lazy
+    // loader fills a tile at 50% viewport margin (preload, then
+    // background-image + a fade-in), hides the blurhash canvas after that
+    // fade (`lazy-hidden`), and on scroll-out copies the current
+    // background-image back into data-src and empties the tile.
+    //
+    // Flash prevention (the curriculum's "Main flashing" class, now for
+    // tiles): the MutationObserver that sees the cards being inserted
+    // runs as a microtask, BEFORE the first paint - every poster tile is
+    // marked `artworkplus-tile-pending` right there (image hidden, the
+    // blurhash canvas kept visible by the CSS the server injects). A tile
+    // is released when every enabled participant has answered for it
+    // and the winner's image is in place; a 2 s safety net releases it
+    // no matter what.
+    //
+    // Winner 1/2 (one image): the URL goes into data-src, so Jellyfin
+    // loads it itself at its own margin with its own fade-in (blurhash ->
+    // ours). A tile Jellyfin already filled or is filling (first screen)
+    // is overridden after our preload, in the same frame as the release;
+    // a per-tile guard re-applies our URL if Jellyfin's in-flight poster
+    // lands afterwards (microtask, before paint - no visible frame).
+    // Winner 3 (Extra overlay): the next-lower available image (or
+    // Jellyfin's poster) is set as the base underneath - with a Delay it
+    // is meant to show and the tile is released at once; without a Delay
+    // the tile stays pending until Extra's first image is decoded, which
+    // then appears in the same frame (the detail page's own rule).
+    // Load error: the participant withdraws, the decision is recomputed,
+    // the next one wins, Jellyfin's poster is the floor.
+    //
+    // Which participants are expected comes from
+    // window.ArtworkPlusLibraryTiles (FileTransformationRegistrar.cs:
+    // tab + feature + a Library switch); an older server build injects
+    // no flags - then all three are expected (a disabled one answers
+    // empty) and the CSS is injected here.
     // =====================================================================
 
-    var libraryTileOwners = new WeakMap(); // .cardImageContainer -> { priority, url }
-
-    function createLibraryTileSwapper(options) {
-        var FETCH_DEBOUNCE_MS = 150;
+    var LibraryTiles = (function () {
+        var PENDING_CLASS = 'artworkplus-tile-pending';
+        var FADEIN_CLASS = 'artworkplus-tile-fadein';
+        var SAFETY_MS = 2000;
         var PRELOAD_TIMEOUT_MS = 8000;
-        var BATCH_CHUNK = 200; // the servers cap one batch at 200 ids
-        var priority = options.priority;
-        var log = options.log;
+        var NAMES = { 1: 'custom', 2: 'animated', 3: 'extra' };
+        var log = Core.makeLogger('[PostersPlus/LibraryTiles]', DEBUG);
 
-        var resultCache = {};
-        var pendingIds = [];
-        var fetchTimer = null;
-        var appliedElements = new WeakSet();
-        var observedElements = new WeakSet();
+        var flags = window.ArtworkPlusLibraryTiles || null;
+        var expected = [1, 2, 3].filter(function (p) { return !flags || !!flags[NAMES[p]]; });
 
-        function findCardImageContainer(cardEl) {
+        function ensureStyles() {
+            if (document.getElementById('artworkplus-library-tiles')) { return; }
+            var style = document.createElement('style');
+            style.id = 'artworkplus-library-tiles';
+            style.textContent = '.cardImageContainer.artworkplus-tile-pending{opacity:0!important}'
+                + '.cardScalable:has(>.artworkplus-tile-pending)>.blurhash-canvas{opacity:1!important}'
+                + '.cardImageContainer.artworkplus-tile-fadein{animation:artworkplus-tile-fadein .5s!important}'
+                + '@keyframes artworkplus-tile-fadein{from{opacity:0}to{opacity:1}}';
+            document.head.appendChild(style);
+        }
+        ensureStyles();
+
+        var participants = {}; // priority -> { collect(card, itemId), apply(state), revoke(state) }
+        var states = new WeakMap(); // cardEl -> state
+        var seenCards = new WeakSet();
+
+        function register(priority, handlers) { participants[priority] = handlers; }
+        function isEnabled(priority) { return expected.indexOf(priority) !== -1; }
+
+        function findContainer(cardEl) {
             return cardEl.querySelector('.cardImageContainer') || cardEl.querySelector('.cardContent');
         }
 
-        function isOurUrl(value, url) {
-            return typeof value === 'string' && value.indexOf(url) !== -1;
+        function stateFor(cardEl) {
+            var st = states.get(cardEl);
+            if (st) { return st; }
+            var container = findContainer(cardEl);
+            var itemId = cardEl.dataset.id;
+            if (!container || !itemId) { return null; }
+            st = {
+                card: cardEl, container: container, itemId: itemId, type: cardEl.dataset.type,
+                answers: {}, decided: false, winner: 0, baseUrl: null,
+                pending: false, safetyTimer: null, guard: null,
+                holdForOverlay: false, overlayNear: false, extra: null
+            };
+            states.set(cardEl, st);
+            return st;
         }
 
-        function ownsTile(imageContainer, url) {
-            var owner = libraryTileOwners.get(imageContainer);
-            return !!owner && owner.priority === priority && owner.url === url;
+        function setPending(st) {
+            if (!expected.length) { return; }
+            st.container.classList.add(PENDING_CLASS);
+            st.pending = true;
+            armSafety(st);
         }
 
-        // Jellyfin's imageLoader writes background-image after ITS preload
-        // finished - if that lands after our override, put ours back.
-        // Steps down as soon as a higher-ranked instance owns the tile.
-        function installTileGuard(imageContainer, url) {
-            var guard = new MutationObserver(function () {
-                if (!ownsTile(imageContainer, url)) { guard.disconnect(); return; }
-                var bg = imageContainer.style.backgroundImage;
-                if (!bg || bg === 'none' || isOurUrl(bg, url)) { return; }
-                imageContainer.style.backgroundImage = cssUrl(url);
-                log('re-applied to tile after Jellyfin\'s own poster landed');
-            });
-            guard.observe(imageContainer, { attributes: true, attributeFilter: ['style'] });
+        function armSafety(st) {
+            if (st.safetyTimer) { clearTimeout(st.safetyTimer); }
+            st.safetyTimer = setTimeout(function () {
+                st.safetyTimer = null;
+                if (!st.pending) { return; }
+                // An Extra tile without Delay outside the 50% window keeps
+                // its blurhash until it comes near - re-armed on activation.
+                if (st.holdForOverlay && !st.overlayNear) { return; }
+                log('safety net released tile', st.itemId, '| answers:', JSON.stringify(Object.keys(st.answers)), '| winner:', st.winner);
+                release(st);
+            }, SAFETY_MS);
         }
 
-        function applyToCard(cardEl, itemId, result) {
-            if (appliedElements.has(cardEl)) { return; }
-            if (!result || !result.IsApplicable) { return; }
-            var imageContainer = findCardImageContainer(cardEl);
-            if (!imageContainer) { return; }
-            appliedElements.add(cardEl);
+        function release(st) {
+            if (st.safetyTimer) { clearTimeout(st.safetyTimer); st.safetyTimer = null; }
+            if (!st.pending) { return; }
+            st.pending = false;
+            st.container.classList.remove(PENDING_CLASS);
+        }
 
-            var owner = libraryTileOwners.get(imageContainer);
-            if (owner && owner.priority > priority) {
-                log('tile', itemId, 'already owned by priority', owner.priority, '- not touched');
+        function allAnswered(st) {
+            return expected.every(function (p) { return p in st.answers; });
+        }
+
+        // answer: null/false = not applicable; { url } for 1/2; Extra's
+        // own object ({ urls, delayMs, ... }) for 3.
+        function report(cardEl, priority, answer) {
+            if (!isEnabled(priority)) { return; }
+            var st = stateFor(cardEl);
+            if (!st) { return; }
+            st.answers[priority] = answer || false;
+            if (allAnswered(st)) { decide(st); }
+        }
+
+        function withdraw(cardEl, priority) {
+            var st = states.get(cardEl);
+            if (!st || !st.answers[priority]) { return; }
+            log('participant', priority, 'withdrew for tile', st.itemId);
+            st.answers[priority] = false;
+            if (st.decided) { decide(st); }
+        }
+
+        function decide(st) {
+            var winner = 0;
+            for (var p = 3; p >= 1; p--) {
+                if (isEnabled(p) && st.answers[p]) { winner = p; break; }
+            }
+            var previous = st.decided ? st.winner : 0;
+            st.decided = true;
+            st.winner = winner;
+            if (previous && previous !== winner && participants[previous] && participants[previous].revoke) {
+                participants[previous].revoke(st);
+            }
+            if (winner === 0) {
+                st.holdForOverlay = false;
+                st.baseUrl = null;
+                release(st);
                 return;
             }
-            var url = options.imageUrl(itemId, result);
-            libraryTileOwners.set(imageContainer, { priority: priority, url: url });
-            var currentBg = imageContainer.style.backgroundImage;
-            var alreadyFilled = !!currentBg && currentBg !== 'none';
-
-            // Not loaded yet (or emptied by Jellyfin after scrolling away):
-            // point data-src at our file, Jellyfin loads it at its own 50%
-            // margin with its own fade-in. The guard covers an in-flight
-            // vanilla load that still lands afterwards.
-            if (imageContainer.hasAttribute('data-src')) {
-                imageContainer.setAttribute('data-src', url);
-            }
-            installTileGuard(imageContainer, url);
-            if (!alreadyFilled) {
-                log('queued for tile via data-src', itemId, '(resolved:', result.ResolvedType + ')');
+            if (winner === 3) {
+                var base = null;
+                for (var q = 2; q >= 1; q--) { if (isEnabled(q) && st.answers[q]) { base = st.answers[q].url; break; } }
+                var hasDelay = st.answers[3].delayMs > 0;
+                st.holdForOverlay = !hasDelay;
+                if (base) {
+                    applyBase(st, base, hasDelay);
+                } else if (hasDelay) {
+                    release(st); // Jellyfin's own poster is the Delay backdrop
+                }
+                if (participants[3] && participants[3].apply) { participants[3].apply(st); }
                 return;
             }
+            st.holdForOverlay = false;
+            applyBase(st, st.answers[winner].url, true);
+        }
 
-            // Jellyfin (or a lower-ranked instance) already shows an image:
-            // override once our file is decoded.
+        function ownerOfUrl(st, url) {
+            for (var p = 2; p >= 1; p--) { if (st.answers[p] && st.answers[p].url === url) { return p; } }
+            return 0;
+        }
+
+        // The one-image path shared by winners 1/2 and Extra's base.
+        function applyBase(st, url, releaseWhenShown) {
+            st.baseUrl = url;
+            var c = st.container;
+            var bg = c.style.backgroundImage;
+            var filled = !!bg && bg !== 'none';
+            // imageLoader.fillImageElement(): `lazy-hidden` goes on at the
+            // start of ITS preload, background-image stays '' until the
+            // load lands. An emptied tile has background-image 'none'.
+            var inFlight = !filled && bg === '' && c.classList.contains('lazy-hidden') && c.hasAttribute('data-src');
+            if (c.hasAttribute('data-src') && c.getAttribute('data-src') !== url) { c.setAttribute('data-src', url); }
+            installGuard(st);
+            if (bg.indexOf(url) !== -1) { if (releaseWhenShown) { release(st); } return; }
+            if (!filled && !inFlight) {
+                // Fresh or emptied tile: Jellyfin loads our URL itself at
+                // its own margin, blurhash -> ours with its own fade-in.
+                if (releaseWhenShown) { release(st); }
+                return;
+            }
             Core.preloadImage(url, { timeoutMs: PRELOAD_TIMEOUT_MS }).then(function () {
-                if (!document.body.contains(cardEl) || !ownsTile(imageContainer, url)) { return; }
-                imageContainer.style.backgroundImage = cssUrl(url);
-                log('set for tile', itemId, '(resolved:', result.ResolvedType + ')');
+                if (st.baseUrl !== url || !document.body.contains(c)) { return; }
+                c.style.backgroundImage = cssUrl(url);
+                c.classList.add(FADEIN_CLASS);
+                if (releaseWhenShown) { release(st); }
+                log('base image set on tile', st.itemId, filled ? '(over Jellyfin\'s poster)' : '(Jellyfin\'s load was in flight)');
             }).catch(function (e) {
-                log('skipped for tile (load error)', itemId, e);
+                log('base image failed for tile', st.itemId, e);
+                var owner = ownerOfUrl(st, url);
+                if (owner) { withdraw(st.card, owner); }
             });
         }
 
-        function scheduleFetch() {
-            if (fetchTimer) { return; }
-            fetchTimer = setTimeout(function () { fetchTimer = null; flushFetch(); }, FETCH_DEBOUNCE_MS);
+        // Re-asserts the base URL if Jellyfin paints something else onto
+        // the tile (its in-flight vanilla poster landing after ours);
+        // MutationObserver callbacks are microtasks - the wrong image
+        // never reaches a frame.
+        function installGuard(st) {
+            if (st.guard) { return; }
+            var c = st.container;
+            st.guard = new MutationObserver(function () {
+                var url = st.baseUrl;
+                if (!url) { return; }
+                var bg = c.style.backgroundImage;
+                if (bg === 'none' && c.hasAttribute('data-src') && c.getAttribute('data-src') !== url) {
+                    c.setAttribute('data-src', url); // emptied with a foreign URL stored - keep ours for the refill
+                    return;
+                }
+                if (!bg || bg === 'none' || bg.indexOf(url) !== -1) { return; }
+                c.style.backgroundImage = cssUrl(url);
+                log('re-applied base image on tile', st.itemId, 'after Jellyfin\'s own poster landed');
+            });
+            st.guard.observe(c, { attributes: true, attributeFilter: ['style', 'data-src'] });
         }
 
-        function flushFetch() {
+        // Card intake - the pending mark happens here, before the first paint.
+        function scan() {
+            document.querySelectorAll('.card[data-type="Movie"], .card[data-type="Series"], .card[data-type="BoxSet"]').forEach(function (card) {
+                if (seenCards.has(card)) { return; }
+                seenCards.add(card);
+                var st = stateFor(card);
+                if (!st) { return; }
+                if (st.container.hasAttribute('data-src') || st.container.style.backgroundImage) { setPending(st); }
+                Object.keys(participants).forEach(function (p) {
+                    if (isEnabled(+p) && participants[p].collect) { participants[p].collect(card, st.itemId); }
+                });
+            });
+        }
+
+        var mutationObserver = new MutationObserver(function () { scan(); });
+        mutationObserver.observe(document.body, { childList: true, subtree: true });
+        document.addEventListener('viewshow', function () { setTimeout(scan, 300); });
+        setTimeout(scan, 1200);
+
+        log('library tile arbiter ready | expected participants:', JSON.stringify(expected), flags ? '(server flags)' : '(no server flags - older build)');
+
+        return { register: register, report: report, withdraw: withdraw, stateFor: stateFor, setPending: setPending, armSafety: armSafety, release: release, isEnabled: isEnabled };
+    })();
+
+    // One-image participants (Custom 1, Animated 2): page-wide batch,
+    // one answer per tile into the arbiter - the arbiter does the rest.
+    function createLibraryReporter(options) {
+        var FETCH_DEBOUNCE_MS = 20; // the 500 cards of a page arrive in one DOM insertion
+        var BATCH_CHUNK = 200;     // the servers cap one batch at 200 ids
+        var priority = options.priority;
+        var log = options.log;
+        var resultCache = {};
+        var pendingIds = [];
+        var pendingCards = {};
+        var fetchTimer = null;
+
+        function answerFor(itemId) {
+            var result = resultCache[itemId];
+            return (result && result.IsApplicable) ? { url: options.imageUrl(itemId, result), resolvedType: result.ResolvedType } : null;
+        }
+
+        function collect(card, itemId) {
+            if (itemId in resultCache) { LibraryTiles.report(card, priority, answerFor(itemId)); return; }
+            (pendingCards[itemId] = pendingCards[itemId] || []).push(card);
+            if (pendingIds.indexOf(itemId) === -1) { pendingIds.push(itemId); }
+            if (!fetchTimer) { fetchTimer = setTimeout(function () { fetchTimer = null; flush(); }, FETCH_DEBOUNCE_MS); }
+        }
+
+        function reportAll(ids) {
+            ids.forEach(function (id) {
+                var cards = pendingCards[id] || [];
+                delete pendingCards[id];
+                var answer = answerFor(id);
+                cards.forEach(function (card) { LibraryTiles.report(card, priority, answer); });
+                if (answer) { log('applicable for tile', id, '(resolved:', answer.resolvedType + ')'); }
+            });
+        }
+
+        function flush() {
             var ids = pendingIds;
             pendingIds = [];
-            if (ids.length === 0) { return; }
-            var idsToFetch = ids.filter(function (id) { return !(id in resultCache); });
-            idsToFetch = idsToFetch.filter(function (id, idx) { return idsToFetch.indexOf(id) === idx; });
-
-            function applyAll() {
-                ids.forEach(function (id) {
-                    var result = resultCache[id];
-                    if (!result) { return; }
-                    document.querySelectorAll('.card[data-id="' + id + '"]').forEach(function (cardEl) { applyToCard(cardEl, id, result); });
-                });
-            }
-
-            if (idsToFetch.length === 0) { applyAll(); return; }
-
+            if (!ids.length) { return; }
             var chunks = [];
-            for (var i = 0; i < idsToFetch.length; i += BATCH_CHUNK) { chunks.push(idsToFetch.slice(i, i + BATCH_CHUNK)); }
+            for (var i = 0; i < ids.length; i += BATCH_CHUNK) { chunks.push(ids.slice(i, i + BATCH_CHUNK)); }
             Promise.all(chunks.map(function (chunk) {
                 return fetch(options.batchUrl(chunk))
                     .then(function (r) { return r.json(); })
@@ -1002,32 +1164,16 @@
                         // dashed Guids, which never matched a tile (Session 122).
                         Object.keys(items).forEach(function (id) { resultCache[id.replace(/-/g, '')] = items[id]; });
                         chunk.forEach(function (id) { if (!(id in resultCache)) { resultCache[id] = null; } });
+                    })
+                    .catch(function (e) {
+                        log('Error during the library batch request', e);
+                        chunk.forEach(function (id) { if (!(id in resultCache)) { resultCache[id] = null; } });
                     });
-            })).then(applyAll).catch(function (e) { log('Error during the library batch request', e); });
+            })).then(function () { reportAll(ids); });
         }
 
-        // Every tile on the page is asked as soon as it exists - like
-        // Jellyfin, which knows all its posters from the Items answer.
-        function observeLibraryCards() {
-            document.querySelectorAll('.card[data-type="Movie"], .card[data-type="Series"], .card[data-type="BoxSet"]').forEach(function (card) {
-                if (observedElements.has(card)) { return; }
-                observedElements.add(card);
-                var itemId = card.dataset.id;
-                if (!itemId) { return; }
-                if (itemId in resultCache) {
-                    var result = resultCache[itemId];
-                    if (result) { applyToCard(card, itemId, result); }
-                } else if (pendingIds.indexOf(itemId) === -1) {
-                    pendingIds.push(itemId);
-                    scheduleFetch();
-                }
-            });
-        }
-
-        var mutationObserver = new MutationObserver(function () { observeLibraryCards(); });
-        mutationObserver.observe(document.body, { childList: true, subtree: true });
-
-        return { observeLibraryCards: observeLibraryCards };
+        LibraryTiles.register(priority, { collect: collect });
+        return {};
     }
 
     // =====================================================================
@@ -1108,13 +1254,12 @@
             posterArbiterSetFallbackUrl(coord, 1, url);
         }
 
-        // Library view (Session 122): the shared tile swapper, priority 1
-        // (the lowest - Animated and Extra outrank it, as on the detail
-        // page). Postercase vs. Keyart is the server's own "auto"
-        // resolution (CustomPosterPriority), same as the detail page. The
-        // Keyart logo overlay of the detail page is deliberately not drawn
-        // on tiles.
-        var library = createLibraryTileSwapper({
+        // Library view (Session 122): reporter into the tile arbiter,
+        // priority 1 (the lowest - Animated and Extra outrank it, as on
+        // the detail page). Postercase vs. Keyart is the server's own
+        // "auto" resolution (CustomPosterPriority). The Keyart logo overlay
+        // of the detail page is deliberately not drawn on tiles.
+        createLibraryReporter({
             priority: 1,
             log: Core.makeLogger('[PostersPlus/Custom/Library]', DEBUG),
             batchUrl: function (ids) { return '/CustomPoster/batch?ids=' + ids.map(encodeURIComponent).join(',') + '&scope=library'; },
@@ -1123,14 +1268,14 @@
             }
         });
 
-        return { check: check, priority: 1, observeLibraryCards: library.observeLibraryCards };
+        return { check: check, priority: 1 };
     })();
 
     // =====================================================================
     // ANIMATED MODULE - priority 2
     // Detail-page check() reports into the shared controller, same shape
-    // as CustomModule. The library view is an instance of the shared
-    // tile swapper above (Session 122) - independent of the arbiter.
+    // as CustomModule. The library view reports into the tile arbiter
+    // above (Session 122) - independent of the detail-page arbiter.
     // =====================================================================
 
     var AnimatedModule = (function () {
@@ -1183,8 +1328,8 @@
             log('Animated poster/keyart reported for', itemId, '(resolved:', result.ResolvedType + ')');
         }
 
-        // Library view (Session 122): the shared tile swapper, priority 2.
-        var library = createLibraryTileSwapper({
+        // Library view (Session 122): reporter into the tile arbiter, priority 2.
+        createLibraryReporter({
             priority: 2,
             log: Core.makeLogger('[PostersPlus/Animated/Library]', DEBUG),
             batchUrl: function (ids) { return '/AnimatedPoster/batch?ids=' + ids.map(encodeURIComponent).join(',') + '&scope=library'; },
@@ -1193,7 +1338,7 @@
             }
         });
 
-        return { check: check, priority: 2, observeLibraryCards: library.observeLibraryCards };
+        return { check: check, priority: 2 };
     })();
 
     // =====================================================================
@@ -1456,43 +1601,93 @@
         }
 
         // -----------------------------------------------------------------
-        // Library view (Session 122) - arbiter-independent, priority 3 in
-        // the tile ownership (libraryTileOwners: Extra outranks Animated
-        // and Custom, as on the detail page - their image, or Jellyfin's
-        // own poster, is what shows underneath during Extra's Delay).
-        //
-        // Knowledge like Jellyfin: every tile of the page is asked in one
-        // batch as soon as it is in the DOM. Activation like Jellyfin's
-        // lazy loader: a tile within 50% viewport margin gets its overlay
-        // layers and preloads its first image; on leaving that margin the
-        // layers are removed (a re-entry restarts Delay and rotation, as
-        // a detail page re-entry does). One synchronized clock per tile
-        // type keeps all visible tiles changing together.
+        // Library view (Session 122) - participant 3 of the tile arbiter
+        // (LibraryTiles above). The overlay slideshow itself is unchanged
+        // in principle (two layers, crossfade, Delay, Single Pass, one
+        // synchronized clock per tile type); what the arbiter decides:
+        // whether this tile is Extra's at all, what lies underneath (the
+        // next-lower participant's image or Jellyfin's poster) and when
+        // the tile is revealed (Delay: at once; no Delay: with the first
+        // overlay image, in the same frame).
         //
         // Layers live INSIDE .cardImageContainer as its first children,
         // without z-index (card.scss/cardBuilder.js, verified): Jellyfin's
         // indicators and progress bar (z-index 1, later children) and the
         // hover menu (.cardOverlayContainer, a later sibling) keep painting
         // above them, the blurhash canvas (an earlier sibling) below.
+        // Activation window = Jellyfin's own lazy-load window (50%).
         // -----------------------------------------------------------------
 
-        var FETCH_DEBOUNCE_MS = 150;
-        var BATCH_CHUNK = 200;
         var libLog = Core.makeLogger('[PostersPlus/Extra/Library]', DEBUG);
         var LIB_PRIORITY = 3;
+        var LIB_FETCH_DEBOUNCE_MS = 20;
+        var LIB_BATCH_CHUNK = 200;
 
         function libPreloadImage(url) {
             return Core.preloadImage(url, { timeoutMs: PRELOAD_TIMEOUT_MS });
         }
 
         var resultCache = {};
+        var pendingIds = [];
+        var pendingCards = {};
+        var pendingFetchTimer = null;
         var activeTiles = new Map();
         var conductors = {};
-        var pendingIds = [];
-        var pendingFetchTimer = null;
 
-        function findCardImageContainer(cardEl) {
-            return cardEl.querySelector('.cardImageContainer') || cardEl.querySelector('.cardContent');
+        function libAnswerFor(itemId) {
+            var result = resultCache[itemId];
+            if (!result || !result.IsMovie || !Array.isArray(result.Posters) || result.Posters.length < 1) { return null; }
+            var resolvedType = result.ResolvedType || 'extraposter';
+            return {
+                urls: result.Posters.map(function (entry) {
+                    return '/Extraposter/' + encodeURIComponent(itemId) + '/image/' + encodeURIComponent(entry.FileName)
+                        + '?type=' + encodeURIComponent(resolvedType) + '&v=' + encodeURIComponent(entry.Version);
+                }),
+                delayMs: result.DelayEnabled ? result.DelayMs : 0,
+                cycleMs: result.CycleTimeMs,
+                fadeMs: result.FadeTimeMs,
+                singlePass: !!result.SinglePass,
+                resolvedType: resolvedType
+            };
+        }
+
+        function libCollect(card, itemId) {
+            if (itemId in resultCache) { LibraryTiles.report(card, LIB_PRIORITY, libAnswerFor(itemId)); return; }
+            (pendingCards[itemId] = pendingCards[itemId] || []).push(card);
+            if (pendingIds.indexOf(itemId) === -1) { pendingIds.push(itemId); }
+            if (!pendingFetchTimer) { pendingFetchTimer = setTimeout(function () { pendingFetchTimer = null; libFlush(); }, LIB_FETCH_DEBOUNCE_MS); }
+        }
+
+        function libReportAll(ids) {
+            ids.forEach(function (id) {
+                var cards = pendingCards[id] || [];
+                delete pendingCards[id];
+                var answer = libAnswerFor(id);
+                cards.forEach(function (card) { LibraryTiles.report(card, LIB_PRIORITY, answer); });
+                if (answer) { libLog('applicable for tile', id, '| images:', answer.urls.length, '| delay:', answer.delayMs); }
+            });
+        }
+
+        function libFlush() {
+            var ids = pendingIds;
+            pendingIds = [];
+            if (!ids.length) { return; }
+            var chunks = [];
+            for (var i = 0; i < ids.length; i += LIB_BATCH_CHUNK) { chunks.push(ids.slice(i, i + LIB_BATCH_CHUNK)); }
+            Promise.all(chunks.map(function (chunk) {
+                return fetch('/Extraposter/batch?ids=' + chunk.map(encodeURIComponent).join(',') + '&scope=library')
+                    .then(function (r) { return r.json(); })
+                    .then(function (batchResponse) {
+                        var items = batchResponse.Items || {};
+                        // Same key normalisation as the Animated library path (Session 122).
+                        Object.keys(items).forEach(function (id) { resultCache[id.replace(/-/g, '')] = items[id]; });
+                        chunk.forEach(function (id) { if (!(id in resultCache)) { resultCache[id] = null; } });
+                    })
+                    .catch(function (e) {
+                        libLog('Error during the batch request', e);
+                        chunk.forEach(function (id) { if (!(id in resultCache)) { resultCache[id] = null; } });
+                    });
+            })).then(function () { libReportAll(ids); });
         }
 
         function libCreateOverlayLayers(imageContainer, fadeMs) {
@@ -1515,7 +1710,10 @@
             return [a, b];
         }
 
-        function showLayer(tile, url) {
+        // instant=true: the first image of a held (no-Delay) tile appears in
+        // the same frame the arbiter reveals the tile - no crossfade over a
+        // base that was never meant to be seen.
+        function showLayer(tile, url, instant) {
             return libPreloadImage(url).then(function () {
                 if (!tile.active) { return; }
                 var nextLayerIndex = tile.visibleIndex === 0 ? 1 : 0;
@@ -1523,22 +1721,34 @@
                 var prevLayer = tile.visibleIndex === -1 ? null : tile.layers[tile.visibleIndex];
                 var myGeneration = ++tile.fadeInGeneration;
                 nextLayer.style.backgroundImage = cssUrl(url);
-                nextLayer.style.opacity = '0';
                 // The incoming layer must paint above the outgoing one:
                 // both are position:absolute without z-index, so DOM order
                 // decides - move the incoming layer after the outgoing one.
                 if (prevLayer && prevLayer.nextSibling !== nextLayer) { prevLayer.parentNode.insertBefore(nextLayer, prevLayer.nextSibling); }
+                if (instant) {
+                    nextLayer.style.transition = 'none';
+                    nextLayer.style.opacity = '1';
+                    void nextLayer.offsetWidth;
+                    nextLayer.style.transition = 'opacity ' + tile.fadeMs + 'ms ease';
+                    if (prevLayer) { prevLayer.style.opacity = '0'; }
+                    tile.visibleIndex = nextLayerIndex;
+                    return;
+                }
+                nextLayer.style.opacity = '0';
                 void nextLayer.offsetWidth;
-                if (prevLayer) { prevLayer.style.opacity = '0'; }
+                // Fade-out and fade-in start in the SAME frame: with equal
+                // easing their opacities always sum to ~1, so the base image
+                // underneath never shows through a crossfade.
                 requestAnimationFrame(function () {
                     requestAnimationFrame(function () {
                         if (!tile.active) { return; }
                         if (myGeneration !== tile.fadeInGeneration) { return; }
+                        if (prevLayer) { prevLayer.style.opacity = '0'; }
                         nextLayer.style.opacity = '1';
                     });
                 });
                 tile.visibleIndex = nextLayerIndex;
-            }).catch(function (e) { libLog('Image skipped (load error)', tile.id, e); });
+            });
         }
 
         function ensureConductor(type, cycleMs) {
@@ -1549,6 +1759,11 @@
         }
 
         function tickConductor(type) {
+            var alive = 0;
+            activeTiles.forEach(function (tile) {
+                if (tile && tile.type === type && document.body.contains(tile.el)) { alive++; }
+            });
+            if (!alive) { clearInterval(conductors[type].intervalHandle); delete conductors[type]; }
             activeTiles.forEach(function (tile) {
                 if (!tile || tile.type !== type || !tile.joined) { return; }
                 if (!document.body.contains(tile.el)) { deactivateTile(tile.el); return; }
@@ -1562,39 +1777,44 @@
                 if (tile.finished) { return; }
                 var url = tile.urls[tile.slideIndex % tile.urls.length];
                 tile.slideIndex++;
-                showLayer(tile, url);
+                showLayer(tile, url, false).catch(function (e) { libLog('Image skipped (load error)', tile.id, e); });
             });
         }
 
-        function activateTile(cardEl, itemId, result) {
+        function activateTile(st) {
+            var cardEl = st.card;
             if (activeTiles.has(cardEl)) { return; }
-            // Library like the detail page: one image is enough (Session 122).
-            if (!result || !result.IsMovie || !Array.isArray(result.Posters) || result.Posters.length < 1) { return; }
-            var imageContainer = findCardImageContainer(cardEl);
-            if (!imageContainer) { return; }
-            var type = cardEl.dataset.type;
-            var resolvedType = result.ResolvedType || 'extraposter';
-            var urls = result.Posters.map(function (entry) {
-                return '/Extraposter/' + encodeURIComponent(itemId) + '/image/' + encodeURIComponent(entry.FileName)
-                    + '?type=' + encodeURIComponent(resolvedType) + '&v=' + encodeURIComponent(entry.Version);
-            });
-            // Tile ownership: Extra outranks the swappers - whatever they
-            // (or Jellyfin) painted stays underneath as the Delay backdrop.
-            libraryTileOwners.set(imageContainer, { priority: LIB_PRIORITY, url: urls[0] });
-            var layers = libCreateOverlayLayers(imageContainer, result.FadeTimeMs);
+            var answer = st.answers[LIB_PRIORITY];
+            if (!answer) { return; }
+            var imageContainer = st.container;
+            var layers = libCreateOverlayLayers(imageContainer, answer.fadeMs);
             var tile = {
-                id: itemId, el: cardEl, type: type, layers: layers, urls: urls,
-                slideIndex: 0, visibleIndex: -1, singlePass: !!result.SinglePass,
+                id: st.itemId, el: cardEl, type: st.type, layers: layers, urls: answer.urls, fadeMs: answer.fadeMs,
+                slideIndex: 0, visibleIndex: -1, singlePass: answer.singlePass,
                 finished: false, joined: false, active: true, fadeInGeneration: 0
             };
             activeTiles.set(cardEl, tile);
-            ensureConductor(type, result.CycleTimeMs);
-            var delayMs = result.DelayEnabled ? result.DelayMs : 0;
+            ensureConductor(st.type, answer.cycleMs);
+            var hold = st.holdForOverlay;
+            if (hold) {
+                // No Delay: nothing underneath is meant to show - keep (or
+                // put back) the blurhash until the first image is decoded.
+                LibraryTiles.setPending(st);
+                LibraryTiles.armSafety(st);
+            }
             setTimeout(function () {
                 if (!tile.active) { return; }
                 tile.slideIndex = 1;
-                showLayer(tile, urls[0]).then(function () { tile.joined = true; });
-            }, delayMs);
+                showLayer(tile, answer.urls[0], hold).then(function () {
+                    if (!tile.active) { return; }
+                    tile.joined = true;
+                    if (hold) { LibraryTiles.release(st); }
+                }).catch(function (e) {
+                    libLog('First image failed for tile', tile.id, '- withdrawing', e);
+                    deactivateTile(cardEl);
+                    LibraryTiles.withdraw(cardEl, LIB_PRIORITY);
+                });
+            }, answer.delayMs);
         }
 
         function deactivateTile(cardEl) {
@@ -1605,91 +1825,29 @@
             activeTiles.delete(cardEl);
         }
 
-        function scheduleBatchFetch() {
-            if (pendingFetchTimer) { return; }
-            pendingFetchTimer = setTimeout(function () { pendingFetchTimer = null; flushBatchFetch(); }, FETCH_DEBOUNCE_MS);
-        }
-
-        function flushBatchFetch() {
-            var allIds = pendingIds;
-            pendingIds = [];
-            if (allIds.length === 0) { return; }
-            var idsToFetch = allIds.filter(function (id) { return !(id in resultCache); });
-            idsToFetch = idsToFetch.filter(function (id, idx) { return idsToFetch.indexOf(id) === idx; });
-
-            function activateKnownVisible() {
-                allIds.forEach(function (id) {
-                    var result = resultCache[id];
-                    if (!result) { return; }
-                    document.querySelectorAll('.card[data-id="' + id + '"]').forEach(function (cardEl) {
-                        if (nearViewport.has(cardEl)) { activateTile(cardEl, id, result); }
-                    });
-                });
-            }
-
-            if (idsToFetch.length === 0) { activateKnownVisible(); return; }
-
-            var chunks = [];
-            for (var i = 0; i < idsToFetch.length; i += BATCH_CHUNK) { chunks.push(idsToFetch.slice(i, i + BATCH_CHUNK)); }
-            Promise.all(chunks.map(function (chunk) {
-                return fetch('/Extraposter/batch?ids=' + chunk.map(encodeURIComponent).join(',') + '&scope=library')
-                    .then(function (r) { return r.json(); })
-                    .then(function (batchResponse) {
-                        var items = batchResponse.Items || {};
-                        // Same key normalisation as the Animated library path (Session 122).
-                        Object.keys(items).forEach(function (id) { resultCache[id.replace(/-/g, '')] = items[id]; });
-                        chunk.forEach(function (id) { if (!(id in resultCache)) { resultCache[id] = null; } });
-                    });
-            })).then(activateKnownVisible).catch(function (e) { libLog('Error during the batch request', e); });
-        }
-
-        // Activation window = Jellyfin's own lazy-load window (50% margin).
-        var nearViewport = new WeakSet();
         var libObserver = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
-                var cardEl = entry.target;
-                var itemId = cardEl.dataset.id;
-                if (!itemId) { return; }
+                var st = LibraryTiles.stateFor(entry.target);
+                if (!st) { return; }
+                st.overlayNear = entry.isIntersecting;
                 if (entry.isIntersecting) {
-                    nearViewport.add(cardEl);
-                    var result = resultCache[itemId];
-                    if (result) { activateTile(cardEl, itemId, result); }
+                    if (st.decided && st.winner === LIB_PRIORITY) { activateTile(st); }
                 } else {
-                    nearViewport.delete(cardEl);
-                    deactivateTile(cardEl);
+                    deactivateTile(entry.target);
                 }
             });
         }, { root: null, rootMargin: '50%', threshold: 0 });
 
-        var libObservedElements = new WeakSet();
+        LibraryTiles.register(LIB_PRIORITY, {
+            collect: function (card, itemId) { libObserver.observe(card); libCollect(card, itemId); },
+            apply: function (st) { if (st.overlayNear) { activateTile(st); } },
+            revoke: function (st) { deactivateTile(st.card); }
+        });
 
-        // Every tile is asked as soon as it exists (knowledge for the whole
-        // page, like Jellyfin's ImageTags) and watched for the 50% window.
-        function observeNewCards() {
-            document.querySelectorAll('.card[data-type="Movie"], .card[data-type="Series"], .card[data-type="BoxSet"]').forEach(function (card) {
-                if (libObservedElements.has(card)) { return; }
-                libObservedElements.add(card);
-                var itemId = card.dataset.id;
-                if (!itemId) { return; }
-                if (!(itemId in resultCache) && pendingIds.indexOf(itemId) === -1) {
-                    pendingIds.push(itemId);
-                    scheduleBatchFetch();
-                }
-                libObserver.observe(card);
-            });
-        }
-
-        function resetForNavigation() {
-            Array.from(activeTiles.keys()).forEach(deactivateTile);
-            Object.keys(conductors).forEach(function (type) { clearInterval(conductors[type].intervalHandle); delete conductors[type]; });
-            observeNewCards();
-        }
-
-        var libMutationObserver = new MutationObserver(function () { observeNewCards(); });
-        libMutationObserver.observe(document.body, { childList: true, subtree: true });
-
-        document.addEventListener('viewshow', function () { setTimeout(resetForNavigation, 300); });
-        setTimeout(observeNewCards, 1200);
+        // No viewshow reset: a view Jellyfin restores from its cache keeps
+        // its tiles (and their overlays); tiles of a discarded view are
+        // dropped by the clock's own document.body check, and a clock
+        // with no tiles left stops itself.
 
         return { check: check, priority: 3 };
     })();
@@ -4054,16 +4212,8 @@
         }, navTimers.track);
     }
 
-    // Library view: both tile swappers scan the page (each has its own
-    // MutationObserver too - this is the viewshow/hard-refresh kick).
-    function observeLibraryCards() {
-        CustomModule.observeLibraryCards();
-        AnimatedModule.observeLibraryCards();
-    }
-
     document.addEventListener('viewshow', function () {
         scheduleDetail();
-        setTimeout(observeLibraryCards, 300);
     });
 
     // Continuous poll as a backup - see Core's watchForNavigation doc
@@ -4076,5 +4226,4 @@
         if (contentReady || !isDetailsPage()) { return; }
         startDetail(navGeneration);
     }, 1200);
-    setTimeout(observeLibraryCards, 1200);
 })();
