@@ -33,7 +33,7 @@ window.ApiClient = {
   getUrl: (p) => location.origin + '/' + p,
   getScaledImageUrl: (id, o) => location.origin + '/Items/' + id + '/Images/' + (o.type||'Backdrop') + '/' + (o.index||0) + '?tag=' + (o.tag||''),
   getImageUrl: (id, o) => location.origin + '/Items/' + id + '/Images/' + (o.type||'Backdrop') + '/' + (o.index||0),
-  getJSON: async (u) => ({ Items: [] }),
+  getJSON: async (u) => { const r = await fetch(u, { headers: { Authorization: 'MediaBrowser Token="x"' } }); return r.json(); },
   getItem: async () => ({ Id: 'i1', Type: 'Movie', BackdropImageTags: ['t1','t2'], ImageTags: {} }),
   getAuthorizationHeader: () => 'MediaBrowser Token="x"',
   accessToken: () => 'x',
@@ -49,6 +49,10 @@ CASES = [
     ("Genre", "#/list.html?genreId=g1&parentId=p1&serverId=s1", {"/Backdrops/genre-pool": POOL}, ".artworkplus-genre-backdrop"),
     ("Studio", "#/list.html?studioId=st1&parentId=p1&serverId=s1",
      {"/Backdrops/studio-settings": {"Enabled": True, "HasImage": True, "KenBurnsEnabled": False, "KenBurnsZoomMs": 1000, "KenBurnsPanMs": 500}},
+     ".artworkplus-studio-backdrop"),
+    ("StudioApp", "#/list.html?studioId=st2&parentId=p1&serverId=s1",
+     {"/Backdrops/studio-settings": {"Enabled": True, "HasImage": False, "SourceMode": "Appearances", "KenBurnsEnabled": False, "KenBurnsZoomMs": 1000, "KenBurnsPanMs": 500},
+      "/Backdrops/studio-pool": POOL},
      ".artworkplus-studio-backdrop"),
     ("Tag", "#/list.html?tag=Horror&parentId=p1&serverId=s1", {"/Backdrops/tag-pool": POOL}, ".artworkplus-tag-backdrop"),
     ("Favorites", "#/list.html?type=Movie&IsFavorite=true&serverId=s1", {"/Backdrops/favorites-pool": POOL}, ".artworkplus-favorites-backdrop"),
@@ -109,7 +113,7 @@ def main():
             fails += 0 if ok else 1
             print(("ok  " if ok else "FAIL"), f"{name:9s}", "" if ok else "; ".join(problems))
             # (a) rapid switch to a second page of the same category must never end empty
-            if name != "Studio" and hsh.count("=") > 1:
+            if not name.startswith("Studio") and hsh.count("=") > 1:
                 # Recorded live (Session 116): leave the category page (clear
                 # arms a 1.2 s fallback fade), come back to another page of
                 # the same category before it fires; the new page's first

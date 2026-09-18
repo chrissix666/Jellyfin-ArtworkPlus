@@ -31,7 +31,7 @@ Parts A–F describe the design as it is today. Parts G–N record the individua
 - Library-view pages (genre grid). Pool loaded once per navigation, rotated locally. One shared Order/Traversal pair (`BackdropsGenreSortMode`/`BackdropsGenreTraversalMode`) and a flat "Apply to" multi-checkbox (Global / Movies / TV shows: `BackdropsGenreGlobalEnabled`/`MoviesEnabled`/`TvShowsEnabled`). Movies/TV shows are bound to their own library (`ParentId`, confirmed in `moviegenres.js`/`tvgenres.js`), Global is unbound. Endpoint `/Backdrops/genre-pool`.
 
 ### Studio Backdrops
-- Single image per studio — no rotation, no Order, no Backdrops-per-item. Image from `metadata\Studio\<exact studio name>\landscape.jpg` (fallback `.png`), folder name 1:1 like the studio name incl. special characters/brackets, no escaping needed (424 real folders checked). Two checkboxes (Global / TV shows), both off → Enable unticks itself. Endpoints `/Backdrops/studio-settings` + `/studio-image`.
+- **Source** (Session 116): **Appearances** rotates the backdrops of the titles the studio appears in (`/Backdrops/studio-pool`, StudioIds filter, same pool mechanics/sort fields/cap as Genre); **Studio image** (default, the original behaviour) shows the single image from `metadata\Studio\<exact studio name>\landscape.jpg` (fallback `.png`), folder name 1:1 like the studio name incl. special characters/brackets, no escaping needed (424 real folders checked). Two checkboxes (Global / TV shows), both off → Enable unticks itself. Endpoints `/Backdrops/studio-settings` + `/studio-image`.
 
 ### Tag Backdrops
 - One global pool (deliberately mixes movies/series, no further filter — tags are global, no library separation found in the code). Endpoint `/Backdrops/tag-pool`.
@@ -267,20 +267,25 @@ Sandbox test caveat (kept for the record): the replica had its own embedded `win
 
 ## Part P — Field-order reference of the whole Backdrops tab
 
-Extracted from the real `configPage.html` in document order (Session 78, refreshed after Session 105).
+Uniform grid since Session 116 (user decision "greatest possible consistency"):
+**Enable → where it applies → Source (if any) → Backdrops per item → Cycle time →
+Ken Burns effect → Zoom speed → Pan speed → Order → Traversal → category-specific rest.**
+"Where it applies" is Show on for the detail-view categories, Apply to for the
+library categories, the 11 sub-Enables for Favorites; Tag has no Apply to (tags
+are global by design).
 
-| # | Detail View | People Backdrops | Genre | Studio | Tag | Favorites (general) |
+| # | Detail View | People | Genre | Studio | Tag | Favorites |
 |---|---|---|---|---|---|---|
-| 1 | Enable *("native Backdrops override")* | Enable | Enable | Enable | Enable | Enable |
-| 2 | Show on (multi) | Show on (multi) | Backdrops per item | Ken Burns effect | Backdrops per item | Backdrops per item |
-| 3 | Cycle time | Cycle time | Cycle time | Zoom speed | Cycle time | Cycle time |
-| 4 | Order | Ken Burns effect | Ken Burns effect | Pan speed | Ken Burns effect | Ken Burns effect |
-| 5 | Ken Burns effect | Zoom speed | Zoom speed | Global *(checkbox)* | Zoom speed | Zoom speed |
-| 6 | Zoom speed | Pan speed | Pan speed | TV shows *(checkbox)* | Pan speed | Pan speed |
-| 7 | Pan speed | Source [Wipe cache] | **Order** | — | **Order** | Manage |
-| 8 | — | Appearances filter | **Traversal** | — | **Traversal** | **Order** |
-| 9 | — | **Order** *(Appearances)* | Apply to (multi) | — | — | **Traversal** |
-| 10 | — | Backdrops per item | — | — | — | — |
+| 1 | Enable *(native override)* | Enable | Enable | Enable | Enable | Enable |
+| 2 | Show on (multi) | Show on (multi) | Apply to (Global/Movies/TV shows) | Apply to (Global/TV shows) | — | Backdrops per item |
+| 3 | Cycle time | Cycle time | Backdrops per item | **Source** (Appearances / Studio image) | Backdrops per item | Cycle time |
+| 4 | Ken Burns effect | Ken Burns effect | Cycle time | Backdrops per item *(Appearances)* | Cycle time | Ken Burns effect |
+| 5 | Zoom speed | Zoom speed | Ken Burns effect | Cycle time *(Appearances)* | Ken Burns effect | Zoom speed |
+| 6 | Pan speed | Pan speed | Zoom speed | Ken Burns effect | Zoom speed | Pan speed |
+| 7 | **Order** | Source [Wipe cache] | Pan speed | Zoom speed | Pan speed | Manage |
+| 8 | — | Appearances filter | **Order** | Pan speed | **Order** | **Order** *(General)* |
+| 9 | — | Backdrops per item *(Appearances)* | **Traversal** | **Order** *(Appearances)* | **Traversal** | **Traversal** *(General)* |
+| 10 | — | **Order** *(Appearances)* | — | **Traversal** *(Appearances)* | — | 11 sub-types |
 | 11 | — | Backdrop files *(Folder)* | — | — | — | — |
 | 12 | — | **Order** *(Folder)* | — | — | — | — |
 | 13 | — | API Key [Test API Key] | — | — | — | — |
@@ -288,15 +293,9 @@ Extracted from the real `configPage.html` in document order (Session 78, refresh
 | 15 | — | Max images per person | — | — | — | — |
 | 16 | — | Enable text filter | — | — | — | — |
 
+People keeps its Source on row 7 with the three source blocks after it (a field
+cannot be gated by a control below it); inside the Appearances block the order is
+filter → Backdrops per item → Order, matching the grid. Studio's Source greys
+rows 4, 5, 9, 10 when Studio image is selected; Ken Burns applies to both sources.
+
 **Favorites' 11 sub-types:** all `Enable → Order → Traversal` — except **People: Enable → Source → Appearances filter**. With Manage=General only the Order/Traversal rows inside the 10 file-based subs grey out; the sub headers and Enable checkboxes stay active (Session 116 correction); People is unaffected.
-
-**Checked, deliberate deviations — not errors:**
-
-| Observation | Explanation |
-|---|---|
-| Studio has neither Cycle time nor Order/Traversal nor Backdrops per item | Single-image design (one image per studio folder, no rotation, no pool) |
-| People Backdrops has "Backdrops per item" in the middle, not at the top | Applies only to Appearances, so it sits correctly in the Appearances block |
-| People Backdrops has three fields named "Order" | Deliberate decision (Appearances / Folder / Wallpapers.com order, never visible at once) |
-| Detail View has "Order" before Ken Burns instead of after | **Not an outlier** — Detail View rotates within a SINGLE, already determined item (its own backdrops), no pool of several items like Genre/Tag/Favorites. Structurally different function. |
-
-All field labels are identical across the pool categories ("Ken Burns effect", "Zoom speed", "Pan speed", "Backdrops per item", "Order", "Traversal").

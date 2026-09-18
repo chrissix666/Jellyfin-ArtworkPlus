@@ -98,6 +98,9 @@ public class StudioSettingsResult
 
     public bool HasImage { get; set; }
 
+    /// <summary>Session 116: "Appearances" or "StudioImage" - tells the client which branch to run.</summary>
+    public string SourceMode { get; set; } = "StudioImage";
+
     public bool KenBurnsEnabled { get; set; }
 
     public int KenBurnsZoomMs { get; set; } = 10000;
@@ -151,7 +154,11 @@ public class FavoritesPeoplePoolResult
 /// </summary>
 [ApiController]
 [Route("Backdrops")]
-[AllowAnonymous]
+// Session 116: no class-level [AllowAnonymous] any more - it would
+// override the [Authorize] the two Favorites endpoints need (a class-
+// level [AllowAnonymous] wins over every method-level [Authorize], see
+// PeopleBackdropsController's own comment). Every other endpoint keeps
+// [AllowAnonymous] individually, exactly as before.
 public class BackdropsController : ControllerBase
 {
     private readonly ILogger<BackdropsController> _logger;
@@ -159,9 +166,11 @@ public class BackdropsController : ControllerBase
     private readonly IImageProcessor _imageProcessor;
     private readonly IServerApplicationPaths _appPaths;
     private readonly PeopleBackdropsController _peopleBackdropsController;
+    private readonly IUserManager _userManager;
 
-    public BackdropsController(ILogger<BackdropsController> logger, ILibraryManager libraryManager, IImageProcessor imageProcessor, IServerApplicationPaths appPaths, PeopleBackdropsController peopleBackdropsController)
+    public BackdropsController(ILogger<BackdropsController> logger, ILibraryManager libraryManager, IImageProcessor imageProcessor, IServerApplicationPaths appPaths, PeopleBackdropsController peopleBackdropsController, IUserManager userManager)
     {
+        _userManager = userManager;
         _logger = logger;
         _libraryManager = libraryManager;
         _imageProcessor = imageProcessor;
@@ -179,6 +188,7 @@ public class BackdropsController : ControllerBase
     /// known), no per-type filtering happens, matching this endpoint's
     /// own previous, uniform-for-everyone behavior exactly.
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("settings")]
     public ActionResult<BackdropsSettingsResult> GetSettings([FromQuery] Guid? itemId)
     {
@@ -281,6 +291,7 @@ public class BackdropsController : ControllerBase
     /// file with a checkable extension, so there is nothing here for
     /// that feature to filter by.
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("allowed-indices")]
     public ActionResult<int[]> GetAllowedIndices([FromQuery] Guid sourceId)
     {
@@ -330,6 +341,7 @@ public class BackdropsController : ControllerBase
     /// back to the Movies sub, since only Movies/TV libraries can
     /// realistically reach a Genre Backdrops-relevant page at all.
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("genre-pool")]
     public ActionResult<GenrePoolResult> GetGenrePool([FromQuery] Guid genreId, [FromQuery] Guid? parentId)
     {
@@ -389,7 +401,7 @@ public class BackdropsController : ControllerBase
             return Ok(result);
         }
 
-        var query = new InternalItemsQuery
+        var query = new InternalItemsQuery(GetRequestUser())
         {
             GenreIds = new[] { genreId },
             IncludeItemTypes = includeTypes,
@@ -468,6 +480,87 @@ public class BackdropsController : ControllerBase
     }
 
     /// <summary>
+    /// GET /Backdrops/studio-pool?studioId=X[&amp;parentId=Y] - the pool
+    /// for Studio Backdrops with Source=Appearances (Session 116): the
+    /// backdrops of the titles the studio appears in, exactly like
+    /// GetGenrePool with a StudioIds filter. Studio has only the
+    /// Global/TvShows subs (see BackdropsStudioTvShowsEnabled).
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("studio-pool")]
+    public ActionResult<GenrePoolResult> GetStudioPool([FromQuery] Guid studioId, [FromQuery] Guid? parentId)
+    {
+        var config = Plugin.Instance!.Configuration;
+        var tabAndRootEnabled = config.BackdropsTabEnabled && config.BackdropsStudioEnabled;
+
+        string subName;
+        bool subEnabled;
+        BaseItemKind[] includeTypes;
+        if (parentId.HasValue && _libraryManager.GetItemById(parentId.Value) is CollectionFolder folder && folder.CollectionType == CollectionType.tvshows)
+        {
+            subName = "TvShows";
+            subEnabled = config.BackdropsStudioTvShowsEnabled;
+            includeTypes = new[] { BaseItemKind.Series };
+        }
+        else
+        {
+            subName = "Global";
+            subEnabled = config.BackdropsStudioGlobalEnabled;
+            includeTypes = new[] { BaseItemKind.Movie, BaseItemKind.Series };
+        }
+
+        var sortMode = config.BackdropsStudioSortMode;
+        var traversalMode = config.BackdropsStudioTraversalMode;
+        var finalEnabled = tabAndRootEnabled && subEnabled && config.BackdropsStudioSourceMode == "Appearances";
+        var result = new GenrePoolResult
+        {
+            Enabled = finalEnabled,
+            SortMode = sortMode,
+            MainOnly = config.BackdropsStudioMainOnly == "Main",
+            CycleTimeMs = config.BackdropsStudioCycleTimeMs,
+            KenBurnsEnabled = config.BackdropsStudioKenBurnsEnabled,
+            KenBurnsZoomMs = config.BackdropsStudioKenBurnsZoomMs,
+            KenBurnsPanMs = config.BackdropsStudioKenBurnsPanMs
+        };
+
+        if (!finalEnabled)
+        {
+            _logger.LogInformation(
+                "Backdrops: GetStudioPool - studioId={StudioId}, sub={Sub}, not enabled (tabAndRoot={TabAndRoot}, subEnabled={SubEnabled}, source={Source})",
+                studioId, subName, tabAndRootEnabled, subEnabled, config.BackdropsStudioSourceMode);
+            return Ok(result);
+        }
+
+        var query = new InternalItemsQuery(GetRequestUser())
+        {
+            StudioIds = new[] { studioId },
+            IncludeItemTypes = includeTypes,
+            Recursive = true
+        };
+        if (parentId.HasValue)
+        {
+            query.ParentId = parentId.Value;
+        }
+
+        var (resolvedOrderBy, resolvedOrder, resolvedStartIndex, resolvedLimit) = ResolveRotationQuery(sortMode, traversalMode, query);
+        query.OrderBy = new[] { (resolvedOrderBy, resolvedOrder) };
+        query.Limit = resolvedLimit;
+        if (resolvedStartIndex.HasValue)
+        {
+            query.StartIndex = resolvedStartIndex.Value;
+        }
+
+        var items = _libraryManager.GetItemList(query);
+        result.Images = CollectPoolImages(items, config.BackdropsStudioMainOnly == "Main", config.BackdropsAllowedFormats);
+
+        _logger.LogInformation(
+            "Backdrops: GetStudioPool - studioId={StudioId}, sub={Sub}, sortMode={SortMode}, itemsFound={ItemCount}, imagesReturned={ImageCount}",
+            studioId, subName, sortMode, items.Count, result.Images.Count);
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// GET /Backdrops/tag-pool?tag=X - the pool for Tag Backdrops. Only
     /// one variant exists (see BackdropsTagMainOnly's own doc comment in
     /// PluginConfiguration.cs) - no parentId/CollectionType resolution
@@ -477,6 +570,7 @@ public class BackdropsController : ControllerBase
     /// own resolution (Tags: params.tag, no separate lookup item at
     /// all), unlike Genre/Studio which resolve an actual item first.
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("tag-pool")]
     public ActionResult<GenrePoolResult> GetTagPool([FromQuery] string tag)
     {
@@ -507,7 +601,7 @@ public class BackdropsController : ControllerBase
         // alles was im tag ist", explicit user decision, mixing
         // movies/series/etc. by design (see this field's own doc
         // comment in PluginConfiguration.cs).
-        var query = new InternalItemsQuery
+        var query = new InternalItemsQuery(GetRequestUser())
         {
             Tags = new[] { tag },
             Recursive = true
@@ -559,6 +653,27 @@ public class BackdropsController : ControllerBase
         return Ok(result);
     }
 
+
+    /// <summary>
+    /// Session 116: the user behind the request, from Jellyfin's own
+    /// auth claim ("Jellyfin-UserId", InternalClaimTypes.UserId in
+    /// Jellyfin.Api). IsFavorite is per-user data: Jellyfin only joins
+    /// UserDatas when InternalItemsQuery.User is set
+    /// (SqliteItemRepository.EnableJoinUserData), otherwise the
+    /// IsFavorite filter is a bare "no such column" SQLite error -
+    /// exactly what the Favorites endpoints threw before this fix
+    /// (log: SQLite Error 1: 'no such column: IsFavorite').
+    /// </summary>
+    private Jellyfin.Data.Entities.User? GetRequestUser()
+    {
+        var claim = User?.FindFirst("Jellyfin-UserId")?.Value;
+        if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
+        {
+            return null;
+        }
+        return _userManager.GetUserById(userId);
+    }
+
     /// <summary>
     /// GET /Backdrops/favorites-pool?type=X - the pool for one of the
     /// ten generic Favorites sections (everything except People, which
@@ -571,6 +686,7 @@ public class BackdropsController : ControllerBase
     /// KenBurns are shared across all ten (and People) - only Enable
     /// and SortMode differ per section.
     /// </summary>
+    [Authorize]
     [HttpGet("favorites-pool")]
     public ActionResult<GenrePoolResult> GetFavoritesPool([FromQuery] string type)
     {
@@ -605,7 +721,8 @@ public class BackdropsController : ControllerBase
         var sortMode = isGeneral ? config.BackdropsFavoritesGeneralSortMode : perTypeSortMode;
         var traversalMode = isGeneral ? config.BackdropsFavoritesGeneralTraversalMode : perTypeTraversalMode;
 
-        var finalEnabled = tabAndRootEnabled && subEnabled;
+        var requestUser = GetRequestUser();
+        var finalEnabled = tabAndRootEnabled && subEnabled && requestUser is not null;
         var result = new GenrePoolResult
         {
             Enabled = finalEnabled,
@@ -623,7 +740,7 @@ public class BackdropsController : ControllerBase
             return Ok(result);
         }
 
-        var query = new InternalItemsQuery
+        var query = new InternalItemsQuery(requestUser)
         {
             IsFavorite = true,
             IncludeItemTypes = new[] { includeType },
@@ -682,11 +799,13 @@ public class BackdropsController : ControllerBase
     /// FavoritesPeoplePoolResult's own doc comment for the two mutually
     /// exclusive source shapes).
     /// </summary>
+    [Authorize]
     [HttpGet("favorites-people-pool")]
     public async Task<ActionResult<FavoritesPeoplePoolResult>> GetFavoritesPeoplePool()
     {
         var config = Plugin.Instance!.Configuration;
-        var finalEnabled = config.BackdropsTabEnabled && config.BackdropsFavoritesEnabled && config.BackdropsFavoritesPeopleEnabled;
+        var requestUser = GetRequestUser();
+        var finalEnabled = config.BackdropsTabEnabled && config.BackdropsFavoritesEnabled && config.BackdropsFavoritesPeopleEnabled && requestUser is not null;
         var sourceMode = config.BackdropsFavoritesPeopleSourceMode;
 
         var result = new FavoritesPeoplePoolResult
@@ -705,7 +824,7 @@ public class BackdropsController : ControllerBase
             return Ok(result);
         }
 
-        var favoritePeople = _libraryManager.GetItemList(new InternalItemsQuery
+        var favoritePeople = _libraryManager.GetItemList(new InternalItemsQuery(requestUser)
         {
             IsFavorite = true,
             IncludeItemTypes = new[] { BaseItemKind.Person },
@@ -857,6 +976,7 @@ public class BackdropsController : ControllerBase
     /// outcomes exist for Studio (Global/TvShows - no Movies sub, see
     /// BackdropsStudioTvShowsEnabled's own doc comment for why).
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("studio-settings")]
     public ActionResult<StudioSettingsResult> GetStudioSettings([FromQuery] Guid studioId, [FromQuery] Guid? parentId)
     {
@@ -878,7 +998,8 @@ public class BackdropsController : ControllerBase
 
         var finalEnabled = tabAndRootEnabled && subEnabled;
         var studioItem = _libraryManager.GetItemById(studioId);
-        var hasImage = finalEnabled && studioItem is not null && ResolveStudioImagePath(studioItem.Name) is not null;
+        var hasImage = finalEnabled && config.BackdropsStudioSourceMode != "Appearances"
+            && studioItem is not null && ResolveStudioImagePath(studioItem.Name) is not null;
 
         _logger.LogInformation(
             "Backdrops: GetStudioSettings - studioId={StudioId}, enabled={Enabled}, hasImage={HasImage}",
@@ -888,6 +1009,7 @@ public class BackdropsController : ControllerBase
         {
             Enabled = finalEnabled,
             HasImage = hasImage,
+            SourceMode = config.BackdropsStudioSourceMode == "Appearances" ? "Appearances" : "StudioImage",
             KenBurnsEnabled = config.BackdropsStudioKenBurnsEnabled,
             KenBurnsZoomMs = config.BackdropsStudioKenBurnsZoomMs,
             KenBurnsPanMs = config.BackdropsStudioKenBurnsPanMs
@@ -903,6 +1025,47 @@ public class BackdropsController : ControllerBase
     /// (ServerApplicationPaths.cs: Path.Combine(InternalMetadataPath,
     /// "Studio")) - reused rather than reconstructed by hand.
     /// </summary>
+    /// <summary>
+    /// Session 116: the per-item backdrop pick shared by every pool
+    /// endpoint (Genre/Tag/Favorites/Studio). Indices stay the ORIGINAL,
+    /// unfiltered ones - GetImageCacheTag looks up by that index (bug
+    /// caught before shipping in Session 63). Main = original index 0,
+    /// only if it passed the format filter; otherwise random among the
+    /// allowed indices.
+    /// </summary>
+    private List<GenrePoolImageEntry> CollectPoolImages(IReadOnlyList<BaseItem> items, bool mainOnly, string? allowedFormatsCsv)
+    {
+        var extensions = (allowedFormatsCsv ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(f => "." + f.ToLowerInvariant())
+            .Distinct()
+            .ToArray();
+        var random = new Random();
+        var images = new List<GenrePoolImageEntry>();
+        foreach (var item in items)
+        {
+            var allBackdrops = item.GetImages(ImageType.Backdrop).ToList();
+            var allowedIndices = new List<int>();
+            for (var i = 0; i < allBackdrops.Count; i++)
+            {
+                if (extensions.Length == 0 || extensions.Contains(Path.GetExtension(allBackdrops[i].Path), StringComparer.OrdinalIgnoreCase))
+                {
+                    allowedIndices.Add(i);
+                }
+            }
+            if (allowedIndices.Count == 0) { continue; }
+
+            var chosenIndex = mainOnly && allowedIndices.Contains(0)
+                ? 0
+                : allowedIndices[random.Next(allowedIndices.Count)];
+            var tag = _imageProcessor.GetImageCacheTag(item, ImageType.Backdrop, chosenIndex);
+            if (tag is null) { continue; }
+
+            images.Add(new GenrePoolImageEntry { SourceId = item.Id, Tag = tag, Index = chosenIndex });
+        }
+        return images;
+    }
+
     /// <summary>
     /// Shared by GetGenrePool/GetTagPool/GetFavoritesPool - resolves
     /// SortMode+TraversalMode into the actual OrderBy/Order/StartIndex/
@@ -924,6 +1087,12 @@ public class BackdropsController : ControllerBase
     ///   GetCount ignores those anyway, but keeping baseQuery clean
     ///   avoids relying on that.
     /// </summary>
+    private static readonly HashSet<ItemSortBy> UserDataSorts = new()
+    {
+        ItemSortBy.PlayCount, ItemSortBy.DatePlayed, ItemSortBy.SeriesDatePlayed,
+        ItemSortBy.IsPlayed, ItemSortBy.IsUnplayed, ItemSortBy.IsFavoriteOrLiked
+    };
+
     private (ItemSortBy OrderBy, SortOrder Order, int? StartIndex, int Limit) ResolveRotationQuery(string sortMode, string traversalMode, InternalItemsQuery baseQuery)
     {
         const int PoolLimit = 100;
@@ -937,6 +1106,17 @@ public class BackdropsController : ControllerBase
         if (Enum.TryParse<ItemSortBy>(sortMode, out var parsedSort))
         {
             orderBy = parsedSort;
+        }
+        // Session 116: PlayCount/DatePlayed/IsPlayed/IsUnplayed/
+        // IsFavoriteOrLiked sort on UserDatas columns, which Jellyfin
+        // only joins when the query carries a user
+        // (SqliteItemRepository.EnableJoinUserData). Without one the
+        // query dies with "no such column" - fall back to SortName
+        // instead of failing the whole pool.
+        if (baseQuery.User is null && UserDataSorts.Contains(orderBy))
+        {
+            _logger.LogInformation("Backdrops: sort {Sort} needs a user, request is anonymous - using SortName", sortMode);
+            orderBy = ItemSortBy.SortName;
         }
 
         var order = (traversalMode == "BeginDescending" || traversalMode == "RandomStartDescending")
@@ -970,6 +1150,7 @@ public class BackdropsController : ControllerBase
     /// CustomPosterController's own GetPosterImage (local file serving
     /// convention, replicated rather than reinvented).
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("studio-image")]
     public ActionResult GetStudioImage([FromQuery] Guid studioId)
     {
@@ -1004,6 +1185,7 @@ public class BackdropsController : ControllerBase
     /// GET /Backdrops/script.js - serves backdrops.js, analogous to the
     /// other controllers.
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("script.js")]
     public ActionResult GetScript()
     {

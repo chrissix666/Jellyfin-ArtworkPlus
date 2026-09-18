@@ -2302,12 +2302,13 @@ var ArtworkPlusBackdropTransition = {
         var myToken = ++loadToken;
         activeGenreId = detected.genreId;
 
-        var url = '/Backdrops/genre-pool?genreId=' + encodeURIComponent(detected.genreId);
-        if (detected.parentId) { url += '&parentId=' + encodeURIComponent(detected.parentId); }
+        var poolParams = { genreId: detected.genreId };
+        if (detected.parentId) { poolParams.parentId = detected.parentId; }
+        var url = window.ApiClient.getUrl('Backdrops/genre-pool', poolParams);
 
         var settings;
         try {
-            settings = await fetch(url, { cache: 'no-store' }).then(function (r) { return r.json(); });
+            settings = await window.ApiClient.getJSON(url);
         } catch (e) {
             log('Could not load genre pool', e);
             return;
@@ -2452,11 +2453,17 @@ var ArtworkPlusBackdropTransition = {
     }
 
     var renderGeneration = 0;
+    // Session 116: Source=Appearances rotates like Genre - own engine
+    // instance (see Core.createBackdropRotationEngine), null while the
+    // Source is the single studio image.
+    var rotationEngine = null;
+    var preloadNextHook = null;
     // Session 86, fade concept: the same value as in the other five
     // categories, deliberately duplicated per IIFE.
     var MAX_WAIT_FOR_INCOMING_MS = 1200;
     function clearOwn() {
         renderGeneration++;
+        if (rotationEngine) { rotationEngine.clear(); rotationEngine = null; }
         var container = document.querySelector('.artworkplus-studio-backdrop');
         if (!container || !container.firstChild || container.style.opacity === '0') {
             if (container) { container.innerHTML = ''; }
@@ -2498,11 +2505,14 @@ var ArtworkPlusBackdropTransition = {
         setTimeout(startFadeNow, MAX_WAIT_FOR_INCOMING_MS);
     }
 
-    function showStudioImage(url, kenBurnsEnabled, zoomMs, panMs) {
+    function showStudioImage(url, kenBurnsEnabled, zoomMs, panMs, onShown, onFailure) {
         var myGeneration = renderGeneration;
         var frame = getKenBurnsFrame(kenBurnsEnabled, zoomMs, panMs);
         var existing = frame.querySelector('.displayingBackdropImage');
-        if (existing && existing.getAttribute('data-url') === url) { return; }
+        if (existing && existing.getAttribute('data-url') === url) {
+            if (onShown) { onShown(); } // same image again (Random order) - the timer still needs its anchor
+            return;
+        }
 
         Core.preloadImage(url).then(function () {
             if (myGeneration !== renderGeneration) { return; }
@@ -2544,6 +2554,7 @@ var ArtworkPlusBackdropTransition = {
                 img.style.opacity = '1';
             });
             setBackgroundContainerWithBackdrop(true);
+            if (onShown) { onShown(); }
 
             // BUG FIXED (Session 86, fade-concept audit): the old image
             // used to ALWAYS be removed hard via clearOwn()/innerHTML=''
@@ -2560,7 +2571,9 @@ var ArtworkPlusBackdropTransition = {
                 }, FADE_MS);
             }
         }).catch(function () {
+            if (myGeneration !== renderGeneration) { return; }
             log('Studio image failed to load', url);
+            if (onFailure) { onFailure(url); }
         });
     }
 
@@ -2602,6 +2615,12 @@ var ArtworkPlusBackdropTransition = {
         }
         if (myToken !== loadToken) { return; }
 
+        if (settings.Enabled && settings.SourceMode === 'Appearances') {
+            await loadStudioAppearances(detected, myToken);
+            return;
+        }
+        if (rotationEngine) { rotationEngine.clear(); rotationEngine = null; }
+
         if (!settings.Enabled || !settings.HasImage) {
             clearOwn();
             log('Studio Backdrops: not enabled or no image for this studio');
@@ -2622,6 +2641,60 @@ var ArtworkPlusBackdropTransition = {
         var imageUrl = '/Backdrops/studio-image?studioId=' + encodeURIComponent(detected.studioId);
         showStudioImage(imageUrl, settings.KenBurnsEnabled, settings.KenBurnsZoomMs, settings.KenBurnsPanMs);
         log('Studio Backdrops shown | studioId:', detected.studioId);
+    }
+
+    // Session 116: Source=Appearances - the backdrops of the titles the
+    // studio appears in, rotated exactly like Genre (same pool shape,
+    // same engine, same next-image-only preload).
+    async function loadStudioAppearances(detected, myToken) {
+        var poolParams = { studioId: detected.studioId };
+        if (detected.parentId) { poolParams.parentId = detected.parentId; }
+        var url = window.ApiClient.getUrl('Backdrops/studio-pool', poolParams);
+        var pool;
+        try {
+            pool = await window.ApiClient.getJSON(url);
+        } catch (e) {
+            log('Could not load studio pool', e);
+            return;
+        }
+        if (myToken !== loadToken) { return; }
+        if (!pool.Enabled || !pool.Images || !pool.Images.length) {
+            clearOwn();
+            log('Studio Backdrops (Appearances): not enabled or no images for this studio');
+            return;
+        }
+        var urls = pool.Images.map(function (entry) {
+            return window.ApiClient.getScaledImageUrl(entry.SourceId, {
+                type: 'Backdrop',
+                tag: entry.Tag,
+                maxWidth: window.innerWidth,
+                index: entry.Index
+            });
+        });
+        var preloadNext = function () {
+            var next = rotationEngine && rotationEngine.peekNext ? rotationEngine.peekNext() : null;
+            if (!next) { return; }
+            Core.preloadImage(next, { priority: 'low' }).catch(function () { /* not a verdict */ });
+        };
+        var scheduleIdle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1500); };
+        var orderMode = (pool.SortMode === 'Shuffle' || pool.SortMode === 'Random') ? pool.SortMode : 'Sequential';
+        var effectiveCycleMs = Math.max(pool.CycleTimeMs, Math.ceil(FADE_MS * 1.5));
+
+        if (rotationEngine) { rotationEngine.clear(); }
+        renderGeneration++;
+        rotationEngine = Core.createBackdropRotationEngine();
+        preloadNextHook = function () { scheduleIdle(preloadNext); };
+        var engine = rotationEngine;
+        engine.start(urls, orderMode, effectiveCycleMs, function (imgUrl) {
+            showStudioImage(imgUrl, pool.KenBurnsEnabled, pool.KenBurnsZoomMs, pool.KenBurnsPanMs, function () {
+                engine.imageShown();
+                if (typeof preloadNextHook === 'function') { preloadNextHook(); }
+            }, function (failedUrl) {
+                engine.removeFailedImage(failedUrl);
+                engine.advance();
+            });
+        });
+        log('Studio Backdrops shown (Appearances) | studioId:', detected.studioId, '| images:', urls.length, '| sort:', pool.SortMode);
     }
 
     var tracker = Core.createTimerTracker();
@@ -2851,10 +2924,10 @@ var ArtworkPlusBackdropTransition = {
         var myToken = ++loadToken;
         activeTag = detected.tag;
 
-        var url = '/Backdrops/tag-pool?tag=' + encodeURIComponent(detected.tag);
+        var url = window.ApiClient.getUrl('Backdrops/tag-pool', { tag: detected.tag });
         var settings;
         try {
-            settings = await fetch(url, { cache: 'no-store' }).then(function (r) { return r.json(); });
+            settings = await window.ApiClient.getJSON(url);
         } catch (e) {
             log('Could not load tag pool', e);
             return;
@@ -3151,10 +3224,17 @@ var ArtworkPlusBackdropTransition = {
         // every other section) - see FavoritesPeoplePoolResult's own
         // doc comment server-side.
         var isPerson = detected.type === 'Person';
-        var url = isPerson ? '/Backdrops/favorites-people-pool' : ('/Backdrops/favorites-pool?type=' + encodeURIComponent(detected.type));
+        // Session 116: the two Favorites endpoints are [Authorize] now -
+        // IsFavorite is per-user data and the server needs to know WHOSE
+        // favorites (it threw "no such column: IsFavorite" without a user).
+        // ApiClient.getJSON sends the session's token like every native
+        // page call does; nothing token-related is handled here.
+        var url = isPerson
+            ? window.ApiClient.getUrl('Backdrops/favorites-people-pool')
+            : window.ApiClient.getUrl('Backdrops/favorites-pool', { type: detected.type });
         var settings;
         try {
-            settings = await fetch(url, { cache: 'no-store' }).then(function (r) { return r.json(); });
+            settings = await window.ApiClient.getJSON(url);
         } catch (e) {
             log('Could not load favorites pool', e);
             return;

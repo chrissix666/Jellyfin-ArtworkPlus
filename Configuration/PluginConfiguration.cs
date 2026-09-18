@@ -413,13 +413,25 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool BackdropsStudioEnabled { get; set; } = true;
 
     /// <summary>
-    /// Studio Backdrops shared Ken Burns block - single image per
-    /// studio (metadata\Studio\&lt;name&gt;\landscape.jpg, confirmed
-    /// against a real library's own Studio folder: 424 folders checked,
-    /// all named exactly like the studio, all containing exactly one
-    /// landscape.jpg), so no CycleTimeMs/MainOnly/sort exist here at
-    /// all - there is never more than one image to rotate through or
-    /// choose between.
+    /// Session 116: Studio gets a Source switch like People.
+    /// "Appearances" rotates the backdrops of the titles the studio
+    /// appears in (studio-pool, same mechanics as Genre); "StudioImage"
+    /// shows the single metadata\Studio\&lt;name&gt;\landscape.jpg
+    /// (the original behaviour, kept as the default so nothing changes
+    /// after the update). Dropdown order: Appearances, Studio image.
+    /// </summary>
+    public string BackdropsStudioSourceMode { get; set; } = "StudioImage";
+
+    /// <summary>Appearances only - see BackdropsGenreMainOnly.</summary>
+    public string BackdropsStudioMainOnly { get; set; } = "Main";
+
+    /// <summary>Appearances only - see BackdropsGenreCycleTimeMs.</summary>
+    public int BackdropsStudioCycleTimeMs { get; set; } = 10000;
+
+    /// <summary>
+    /// Studio Backdrops shared Ken Burns block - applies to both
+    /// sources (the single studio image was Ken-Burns-animated already
+    /// before the Appearances source existed).
     /// </summary>
     public bool BackdropsStudioKenBurnsEnabled { get; set; } = true;
 
@@ -439,6 +451,12 @@ public class PluginConfiguration : BasePluginConfiguration
     /// there is no separate Movies sub for Studio).
     /// </summary>
     public bool BackdropsStudioTvShowsEnabled { get; set; } = true;
+
+    /// <summary>Appearances only - see BackdropsGenreSortMode.</summary>
+    public string BackdropsStudioSortMode { get; set; } = "Shuffle";
+
+    /// <summary>Appearances only - see BackdropsGenreTraversalMode.</summary>
+    public string BackdropsStudioTraversalMode { get; set; } = "BeginAscending";
 
     /// <summary>See BackdropsGenreEnabled's own doc comment.</summary>
     public bool BackdropsTagEnabled { get; set; } = true;

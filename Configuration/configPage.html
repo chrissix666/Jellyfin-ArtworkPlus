@@ -2952,15 +2952,6 @@
                             </div>
                             <div class="epDesc">No artificial upper limit - set freely.</div>
                         </div>
-                        <div class="epRow epRowMerged">
-                            <label for="BackdropsOrderMode" class="epRowLabelSpan">Order</label>
-                            <select is="emby-select" id="BackdropsOrderMode" name="BackdropsOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="Sequential">Sequential</option>
-                                <option value="Shuffle">Shuffle</option>
-                                <option value="Random">Random</option>
-                            </select>
-                            <div class="epDesc">Sequential: native order. Shuffle: no repeats/round. Random: repeats OK.</div>
-                        </div>
                         <div class="epRow epRowCheckbox">
                             <label for="BackdropsKenBurnsEnabled">Ken Burns effect</label>
                             <div class="checkboxContainer" style="margin:0;">
@@ -2986,6 +2977,15 @@
                                 <span class="epUnitLabel">ms</span>
                             </div>
                             <div class="epDesc">Duration of one pan direction, independent of zoom speed. Distance and easing stay fixed.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsOrderModeRow">
+                            <label for="BackdropsOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="BackdropsOrderMode" name="BackdropsOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: native order. Shuffle: no repeats/round. Random: repeats OK.</div>
                         </div>
                         </div>
                         </div>
@@ -3112,6 +3112,14 @@
                              alphabetical like Genre/Tag/Favorites). Never
                              visible at the same time as the Wallpapers.com
                              Order field below. -->
+                        <div class="epRow epRowMerged" id="PeopleBackdropsAppearancesMainOnlyRow">
+                            <label for="PeopleBackdropsAppearancesMainOnly" class="epRowLabelSpan">Backdrops per item</label>
+                            <select is="emby-select" id="PeopleBackdropsAppearancesMainOnly" name="PeopleBackdropsAppearancesMainOnly" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Main">Main Backdrop</option>
+                                <option value="All">All Backdrops</option>
+                            </select>
+                            <div class="epDesc">All picks a random backdrop per item instead of the main one. Only used for Appearances.</div>
+                        </div>
                         <div class="epRow epRowMerged" id="PeopleBackdropsAppearancesSortModeRow">
                             <label for="PeopleBackdropsAppearancesSortMode" class="epRowLabelSpan">Order</label>
                             <select is="emby-select" id="PeopleBackdropsAppearancesSortMode" name="PeopleBackdropsAppearancesSortMode" class="emby-select-withcolor emby-select epSelectCompact">
@@ -3142,15 +3150,6 @@
                              Session 76): ersetzt die anderswo genutzte
                              "Main backdrop only"-Checkbox durch ein
                              Dropdown, wie bei Genre/Tag/Favorites. -->
-                        <div class="epRow epRowMerged" id="PeopleBackdropsAppearancesMainOnlyRow">
-                            <label for="PeopleBackdropsAppearancesMainOnly" class="epRowLabelSpan">Backdrops per item</label>
-                            <select is="emby-select" id="PeopleBackdropsAppearancesMainOnly" name="PeopleBackdropsAppearancesMainOnly" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="Main">Main Backdrop</option>
-                                <option value="All">All Backdrops</option>
-                            </select>
-                            <div class="epDesc">All picks a random backdrop per item instead of the main one. Only used for Appearances.</div>
-                        </div>
-
                         <div class="epRow epRowMerged" id="PeopleBackdropsFolderBackdropFilesRow">
                             <label for="PeopleBackdropsFolderBackdropFiles" class="epRowLabelSpan">Backdrop files</label>
                             <select is="emby-select" id="PeopleBackdropsFolderBackdropFiles" name="PeopleBackdropsFolderBackdropFiles" class="emby-select-withcolor emby-select epSelectCompact">
@@ -3241,6 +3240,15 @@
 
                         <div id="BackdropsGenreDependentFields">
                         <div class="epRow epRowMerged">
+                            <span class="epRowLabelSpan">Apply to</span>
+                            <div class="epFormatGrid epFormatStack">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsGenreGlobalEnabled" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Global Genres</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsGenreMoviesEnabled" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movie Genres</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsGenreTvShowsEnabled" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">TV show Genres</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                        </div>
+
+                        <div class="epRow epRowMerged">
                             <label for="BackdropsGenreMainOnly" class="epRowLabelSpan">Backdrops per item</label>
                             <select is="emby-select" id="BackdropsGenreMainOnly" name="BackdropsGenreMainOnly" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Main">Main Backdrop</option>
@@ -3306,7 +3314,7 @@
                                 <option value="IsFavoriteOrLiked">Favorite</option>
                                 <option value="Studio">Studio</option>
                             </select>
-                            <div class="epDesc">Order items rotate through, applies to Global/Movies/TV shows below. Shuffle: no repeats per round. Random: repeats OK.</div>
+                            <div class="epDesc">Order items rotate through, applies to Global/Movies/TV shows above. Shuffle: no repeats per round. Random: repeats OK.</div>
                         </div>
                         <div class="epRow epRowMerged" id="BackdropsGenreTraversalModeRow">
                             <label for="BackdropsGenreTraversalMode" class="epRowLabelSpan">Traversal</label>
@@ -3319,14 +3327,6 @@
                             <div class="epDesc">Only used when Order above is a real field, not Shuffle/Random.</div>
                         </div>
 
-                        <div class="epRow epRowMerged">
-                            <span class="epRowLabelSpan">Apply to</span>
-                            <div class="epFormatGrid epFormatStack">
-                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsGenreGlobalEnabled" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Global Genres</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
-                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsGenreMoviesEnabled" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movie Genres</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
-                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsGenreTvShowsEnabled" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">TV show Genres</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
-                            </div>
-                        </div>
                         </div>
                         </div>
 
@@ -3347,7 +3347,37 @@
                         </div>
 
                         <div id="BackdropsStudioDependentFields">
-                        <div class="epDesc">Reads metadata\Studio\&lt;name&gt;\landscape.jpg. No image there means no backdrop for that studio.</div>
+                        <div class="epRow epRowMerged">
+                            <span class="epRowLabelSpan">Apply to</span>
+                            <div class="epFormatGrid epFormatStack">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsStudioGlobalEnabled" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Global Studios</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked" aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsStudioTvShowsEnabled" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">TV show Studios</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked" aria-hidden="true"></span></span></label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsStudioSourceModeRow">
+                            <label for="BackdropsStudioSourceMode" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="BackdropsStudioSourceMode" name="BackdropsStudioSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Appearances">Appearances</option>
+                                <option value="StudioImage">Studio image</option>
+                            </select>
+                            <div class="epDesc">Appearances: backdrops of its titles. Studio image: metadata\Studio\&lt;name&gt;\landscape.jpg.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsStudioMainOnlyRow">
+                            <label for="BackdropsStudioMainOnly" class="epRowLabelSpan">Backdrops per item</label>
+                            <select is="emby-select" id="BackdropsStudioMainOnly" name="BackdropsStudioMainOnly" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Main">Main Backdrop</option>
+                                <option value="All">All Backdrops</option>
+                            </select>
+                            <div class="epDesc">Main Backdrop uses only the item's primary backdrop. All Backdrops picks a random one from each item instead.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsStudioCycleTimeRow">
+                            <label for="BackdropsStudioCycleTimeMs" class="epRowLabelSpan">Cycle time</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="1000" class="epNumberCompact" id="BackdropsStudioCycleTimeMs" name="BackdropsStudioCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">No artificial upper limit. Set freely.</div>
+                        </div>
                         <div class="epRow epRowCheckbox">
                             <label for="BackdropsStudioKenBurnsEnabled">Ken Burns effect</label>
                             <div class="checkboxContainer" style="margin:0;">
@@ -3375,25 +3405,40 @@
                             <div class="epDesc">Duration of one pan direction, independent of zoom speed.</div>
                         </div>
 
-                        <div class="epRow epRowCheckbox" id="BackdropsStudioGlobalEnabledRow">
-                            <label for="BackdropsStudioGlobalEnabled">Global</label>
-                            <div class="checkboxContainer" style="margin:0;">
-                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
-                                    <input id="BackdropsStudioGlobalEnabled" name="BackdropsStudioGlobalEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">The studio list reached without a library.</span>
-                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
-                                </label>
-                            </div>
+                        <div class="epRow epRowMerged" id="BackdropsStudioSortModeRow">
+                            <label for="BackdropsStudioSortMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="BackdropsStudioSortMode" name="BackdropsStudioSortMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                                <option value="Name">Name</option>
+                                <option value="SortName">Sort name</option>
+                                <option value="DateCreated">Date added</option>
+                                <option value="PremiereDate">Premiere date</option>
+                                <option value="ProductionYear">Production year</option>
+                                <option value="StartDate">Start date</option>
+                                <option value="CommunityRating">Community rating</option>
+                                <option value="CriticRating">Critic rating</option>
+                                <option value="OfficialRating">Parental rating</option>
+                                <option value="Runtime">Runtime</option>
+                                <option value="PlayCount">Play count</option>
+                                <option value="DatePlayed">Date played</option>
+                                <option value="VideoBitRate">Video bit rate</option>
+                                <option value="IsPlayed">Played</option>
+                                <option value="IsUnplayed">Unplayed</option>
+                                <option value="IsFavoriteOrLiked">Favorite</option>
+                                <option value="Studio">Studio</option>
+                            </select>
+                            <div class="epDesc">Order items rotate through, applies to Global/TV shows above. Shuffle: no repeats per round. Random: repeats OK.</div>
                         </div>
-                        <div class="epRow epRowCheckbox" id="BackdropsStudioTvShowsEnabledRow">
-                            <label for="BackdropsStudioTvShowsEnabled">TV shows</label>
-                            <div class="checkboxContainer" style="margin:0;">
-                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
-                                    <input id="BackdropsStudioTvShowsEnabled" name="BackdropsStudioTvShowsEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">The Studios tab inside a TV shows library. Movies has no equivalent tab.</span>
-                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
-                                </label>
-                            </div>
+                        <div class="epRow epRowMerged" id="BackdropsStudioTraversalModeRow">
+                            <label for="BackdropsStudioTraversalMode" class="epRowLabelSpan">Traversal</label>
+                            <select is="emby-select" id="BackdropsStudioTraversalMode" name="BackdropsStudioTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="BeginAscending">Begin, ascending</option>
+                                <option value="BeginDescending">Begin, descending</option>
+                                <option value="RandomStartAscending">Random start, ascending</option>
+                                <option value="RandomStartDescending">Random start, descending</option>
+                            </select>
+                            <div class="epDesc">Only used when Order above is a real field, not Shuffle/Random.</div>
                         </div>
                         </div>
                         </div>
@@ -4270,11 +4315,16 @@
                 BackdropsGenreMoviesEnabled: { type: 'checkbox', def: true, tab: 'backdropsgenre' },
                 BackdropsGenreTvShowsEnabled: { type: 'checkbox', def: true, tab: 'backdropsgenre' },
                 BackdropsStudioEnabled: { type: 'checkbox', def: true, tab: 'backdropsstudio' },
+                BackdropsStudioSourceMode: { type: 'select', def: 'StudioImage', tab: 'backdropsstudio' },
+                BackdropsStudioMainOnly: { type: 'select', def: 'Main', tab: 'backdropsstudio' },
+                BackdropsStudioCycleTimeMs: { type: 'number', def: 10000, tab: 'backdropsstudio' },
                 BackdropsStudioKenBurnsEnabled: { type: 'checkbox', def: true, tab: 'backdropsstudio' },
                 BackdropsStudioKenBurnsZoomMs: { type: 'number', def: 20000, tab: 'backdropsstudio' },
                 BackdropsStudioKenBurnsPanMs: { type: 'number', def: 10000, tab: 'backdropsstudio' },
                 BackdropsStudioGlobalEnabled: { type: 'checkbox', def: true, tab: 'backdropsstudio' },
                 BackdropsStudioTvShowsEnabled: { type: 'checkbox', def: true, tab: 'backdropsstudio' },
+                BackdropsStudioSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsstudio' },
+                BackdropsStudioTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsstudio' },
                 BackdropsTagEnabled: { type: 'checkbox', def: true, tab: 'backdropstag' },
                 BackdropsTagMainOnly: { type: 'select', def: 'Main', tab: 'backdropstag' },
                 BackdropsTagCycleTimeMs: { type: 'number', def: 10000, tab: 'backdropstag' },
@@ -5489,10 +5539,19 @@
                                 AllChecked(['BackdropsStudioEnabled'])
                             ],
                             children: [
+                                // Session 116: Source switch (Appearances / Studio
+                                // image). The four rotation rows are Appearances-only
+                                // - greyed, never hidden (rule 14 keeps them one level).
+                                // Ken Burns applies to both sources.
+                                { id: 'backdropsstudio_source', structural: true, target: ['BackdropsStudioSourceModeRow'], when: [], children: [] },
+                                { id: 'backdropsstudio_mainonly', structural: true, target: ['BackdropsStudioMainOnlyRow'], when: [ValueIn('BackdropsStudioSourceMode', ['Appearances'])], children: [] },
+                                { id: 'backdropsstudio_cycle', structural: true, target: ['BackdropsStudioCycleTimeRow'], when: [ValueIn('BackdropsStudioSourceMode', ['Appearances'])], children: [] },
                                 {
                                     id: 'backdropsstudio_kenburns', target: ['BackdropsStudioKenBurnsZoomRow', 'BackdropsStudioKenBurnsPanRow'],
                                     when: [AllChecked(['BackdropsStudioKenBurnsEnabled'])], children: []
-                                }
+                                },
+                                { id: 'backdropsstudio_sort', structural: true, target: ['BackdropsStudioSortModeRow'], when: [ValueIn('BackdropsStudioSourceMode', ['Appearances'])], children: [] },
+                                { id: 'backdropsstudio_traversal', structural: true, target: ['BackdropsStudioTraversalModeRow'], when: [ValueIn('BackdropsStudioSourceMode', ['Appearances']), ValueIn('BackdropsStudioSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: [] }
                             ]
                         },
                         // Tag Backdrops - third fully built category.
