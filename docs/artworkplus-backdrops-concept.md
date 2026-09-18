@@ -600,4 +600,7 @@ server with real image delays, 100 ms sampling, 12 scenarios, gated).
 Live-verified Session 120 (see curriculum): 14 matrix scenarios incl. the two
 live-found ones (claimant with no images must fade its previous content;
 releasing owner drops its claim).
+Addendum: the bus also DEFENDS `.withBackdrop` (MutationObserver on
+`.backgroundContainer`) - Jellyfin's `clearBackdrop()` removes it on every list and
+person page and the theme paints the container opaque without it (R4-7 fulfilled).
 
