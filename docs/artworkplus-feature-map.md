@@ -45,8 +45,8 @@ Sets (BoxSets): supported by Animated/Custom/Extra since Sessions 87–92 (Movie
 
 | Feature | Renders on | Controller / endpoints | Config prefix | Tab | Status | Fixture |
 |---|---|---|---|---|---|---|
-| Characterart | detail pages (Movie/Series/Season/Episode/Set), up to 4 screen positions; since Session 119 pure-CSS clearlogo replica (anchor on the ribbon line / logo edges, vw/vh box, `object-fit:contain`) | `Characterart`: `{itemId}`, `{itemId}/image/{fileName}` | `Characterart*` (95) | characterart | ❓ | |
-| Red Carpet | person detail pages, actor-art overlay; since Session 119 pure-CSS box (`position:fixed`, vw/vh) | `RedCarpet`: `{personId}`, `{personId}/image` | `RedCarpet*` (24); master switch on General tab only | redcarpet | ❓ | |
+| Characterart | detail pages (Movie/Series/Season/Episode/Set), up to 4 screen positions; since Session 119 pure-CSS clearlogo replica (anchor on the ribbon line / logo edges, vw/vh box, `object-fit:contain`) | `Characterart`: `{itemId}`, `{itemId}/image/{fileName}` | `Characterart*` (95) | characterart | ✅ live (Session 119: 9 random Movie/TV/Set, MultiImage cycle+fade; F11/small window = user's hand) | random picks via `/Characterart/{id}` Images>1 |
+| Red Carpet | person detail pages, actor-art overlay; since Session 119 pure-CSS box (`position:fixed`, vw/vh) | `RedCarpet`: `{personId}`, `{personId}/image` | `RedCarpet*` (24); master switch on General tab only | redcarpet | ✅ live (Session 119: 5 random persons over person page + Movies/Series/Episodes lists) | `metadata\Red Carpet\<Name>.png` matched via `/Persons` |
 
 ### Backdrops (`Backdrops-v1.js`, six independent IIFEs sharing `ArtworkPlusBackdropTransition`)
 
