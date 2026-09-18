@@ -3121,15 +3121,23 @@
                 if (!tiltTarget || !document.body.contains(tiltTarget)) { return; }
                 if (rotator && rotator.classList.contains(ROTATOR_OPEN_CLASS)) { return; }
                 tiltedEls = tiltedEls.filter(function (el) { return document.body.contains(el); });
-                tiltedEls.forEach(function (el) { el.style.transform = ''; });
+                // The rotator/poster carry a CSS transition on transform (Open
+                // Case) - clearing and re-setting would ANIMATE from flat
+                // (user: "erst 0 Grad flach, dann die Rotation"). Transition
+                // off for the re-measure, reflow, restore afterwards.
+                var savedTransitions = tiltedEls.map(function (el) { return el.style.transition; });
+                tiltedEls.forEach(function (el) { el.style.transition = 'none'; el.style.transform = ''; });
                 var rect = tiltTarget.getBoundingClientRect();
-                if (!rect.width || !rect.height) { tiltedEls.forEach(function (el) { applyTilt(el, el.getBoundingClientRect()); }); return; }
-                tiltScreenW = window.innerWidth; tiltScreenH = window.innerHeight;
-                tiltHingeXPx = rect.left + (tiltHingePct / 100) * rect.width;
-                tiltCameraX = tiltScreenW * 0.5; tiltCameraY = tiltScreenH * 0.5;
-                tiltFrontRect = rect;
-                if (tiltCardScalableEl && document.body.contains(tiltCardScalableEl)) { tiltPosterRect = tiltCardScalableEl.getBoundingClientRect(); }
+                if (rect.width && rect.height) {
+                    tiltScreenW = window.innerWidth; tiltScreenH = window.innerHeight;
+                    tiltHingeXPx = rect.left + (tiltHingePct / 100) * rect.width;
+                    tiltCameraX = tiltScreenW * 0.5; tiltCameraY = tiltScreenH * 0.5;
+                    tiltFrontRect = rect;
+                    if (tiltCardScalableEl && document.body.contains(tiltCardScalableEl)) { tiltPosterRect = tiltCardScalableEl.getBoundingClientRect(); }
+                }
                 tiltedEls.forEach(function (el) { applyTilt(el, el.getBoundingClientRect()); });
+                void document.body.offsetWidth; // commit the untransitioned state before the transition comes back
+                tiltedEls.forEach(function (el, i) { el.style.transition = savedTransitions[i]; });
             }
             function queueRetilt() {
                 if (retiltQueued !== null) { return; }
