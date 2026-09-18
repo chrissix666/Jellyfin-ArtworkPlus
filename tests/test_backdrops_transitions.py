@@ -151,7 +151,8 @@ SAMPLE = """() => {
     per[name] = +m.toFixed(2); maxOp = Math.max(maxOp, m);
   }
   const nat = document.querySelector('.backdropContainer:not([class*="artworkplus-"])');
-  return { t: performance.now(), max: +maxOp.toFixed(2), per, cls: document.body.classList.contains('artworkplus-backdrops-override'), natVis: nat ? getComputedStyle(nat).visibility : 'none', hash: location.hash.slice(2, 30) };
+  const dim = document.querySelector('.backgroundContainer'); const withBackdrop = !!dim && dim.classList.contains('withBackdrop');
+  return { t: performance.now(), max: withBackdrop ? +maxOp.toFixed(2) : 0, rawMax: +maxOp.toFixed(2), withBackdrop, per, cls: document.body.classList.contains('artworkplus-backdrops-override'), natVis: nat ? getComputedStyle(nat).visibility : 'none', hash: location.hash.slice(2, 30) };
 }"""
 
 SCENARIOS = [
@@ -198,8 +199,10 @@ def run(baseline=False):
             page.wait_for_timeout(2500 + delay)
             before = page.evaluate(SAMPLE)
             from_owner = max(before['per'].items(), key=lambda kv: kv[1])[0] if before['per'] else None
-            # navigate like Jellyfin: hash change, viewshow shortly after
-            page.evaluate("(h) => { location.hash = h; setTimeout(() => document.dispatchEvent(new CustomEvent('viewshow')), 60); }", to)
+            # navigate like Jellyfin: hash change, viewshow shortly after; Jellyfin's own viewshow handler
+            # calls clearBackdrop() on list/person pages, which REMOVES .withBackdrop (theme: the
+            # background container is opaque without it) - simulated 120 ms after the hash change
+            page.evaluate("(h) => { location.hash = h; setTimeout(() => document.dispatchEvent(new CustomEvent('viewshow')), 60); setTimeout(() => document.querySelector('.backgroundContainer').classList.remove('withBackdrop'), 120); }", to)
             samples = []
             t_end = 4500 + delay + Stub.people_delay
             t0 = time.time()
@@ -232,6 +235,8 @@ def run(baseline=False):
                     others = {k: v for k, v in final['per'].items() if k != expect_owner and v > 0.05}
                     if others:
                         problems.append(f"exclusive: other owners still visible at the end: {others}")
+                if not final['withBackdrop']:
+                    problems.append("curtain: .withBackdrop missing although ours is showing")
                 # body class at end
                 if not final['cls']:
                     problems.append("class: override class off although ours is showing")

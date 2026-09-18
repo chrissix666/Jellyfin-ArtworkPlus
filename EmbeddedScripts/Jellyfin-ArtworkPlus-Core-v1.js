@@ -1419,6 +1419,7 @@
         return false;
     }
 
+    var withBackdropObserver = null;
     function busApplyClasses() {
         // Hide Jellyfin's container (and dim the page like Jellyfin does
         // with .withBackdrop) exactly while one of ours is showing or a
@@ -1427,7 +1428,24 @@
         var on = !!(bus.showing || claimCount());
         try { document.body.classList.toggle(OVERRIDE_BODY_CLASS, on); } catch (e) { /* no body yet */ }
         var bg = document.querySelector('.backgroundContainer');
-        if (bg) { bg.classList.toggle('withBackdrop', on); }
+        if (!bg) { return; }
+        bg.classList.toggle('withBackdrop', on);
+        if (!withBackdropObserver) {
+            // Without .withBackdrop the theme paints .backgroundContainer OPAQUE
+            // (dark theme: #101010) - everything of ours behind it vanishes.
+            // Jellyfin removes the class itself in clearBackdrop() (every
+            // list page, every person page: internalBackdrop(false)), and
+            // that happened between our claim and our first image: "kurz
+            // nichts, dann das alte Backdrop wieder, dann der Übergang"
+            // (user, Session 120). Re-assert it the moment Jellyfin drops it
+            // while one of ours is showing or claimed (the old People IIFE
+            // had exactly this defense, R4-7 - now it belongs to the bus).
+            withBackdropObserver = new MutationObserver(function () {
+                var wanted = !!(bus.showing || claimCount());
+                if (wanted && !bg.classList.contains('withBackdrop')) { bg.classList.add('withBackdrop'); }
+            });
+            withBackdropObserver.observe(bg, { attributes: true, attributeFilter: ['class'] });
+        }
     }
 
     function busResolveWaiters(reason) {
