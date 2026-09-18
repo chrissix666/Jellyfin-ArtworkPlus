@@ -2333,10 +2333,23 @@
         var sizedClassesInjected = {};
         var discSizedClassesInjected = {};
         var posterOriginClassesInjected = {};
+        // Session 121: one sized class per GEOMETRY, not per case type.
+        // Since "Case width Sets" the same case type has two geometries
+        // (Sets 28.5 vw, everything else 27.35 vw); keyed by type alone,
+        // whichever item came first fixed the width for every later item
+        // of that type (user: "von Set zu Movie bleibt manchmal die alte
+        // Set-Breite"). The key carries the values, so a geometry change
+        // switches to its own class.
+        function sizedClassName(caseType, topVwOffset, leftPct, widthVw, heightVw) {
+            return SIZED_CLASS_PREFIX + caseType + '-' + [topVwOffset, leftPct, widthVw, heightVw].map(function (v) {
+                return String(v).replace(/[^0-9a-z]/gi, '_');
+            }).join('-');
+        }
+
         function ensureSizedStylesInjected(caseType, topVwOffset, leftPct, widthVw, heightVw) {
-            if (sizedClassesInjected[caseType]) { return; }
-            sizedClassesInjected[caseType] = true;
-            var cls = SIZED_CLASS_PREFIX + caseType;
+            var cls = sizedClassName(caseType, topVwOffset, leftPct, widthVw, heightVw);
+            if (sizedClassesInjected[cls]) { return; }
+            sizedClassesInjected[cls] = true;
 
             // Real bug found via user testing: `top` as an absolute
             // PERCENTAGE (matching the poster's own -80% pattern) drifts
@@ -2618,10 +2631,19 @@
         // get the SAME single `sizeVw` value (explicit user correction:
         // "kein Stretch da die disc 1:1 ist" - no independent
         // width/height, or a circular disc would render as an oval).
+        // Session 121: same geometry-keyed class as the case box (sweep of
+        // the same pattern) - the disc geometry does not differ per item
+        // type today, but a per-type cache would fix the first geometry seen.
+        function discSizedClassName(caseType, topVwOffset, leftPct, sizeVw) {
+            return SIZED_DISC_CLASS_PREFIX + caseType + '-' + [topVwOffset, leftPct, sizeVw].map(function (v) {
+                return String(v).replace(/[^0-9a-z]/gi, '_');
+            }).join('-');
+        }
+
         function ensureDiscSizedStylesInjected(caseType, topVwOffset, leftPct, sizeVw) {
-            if (discSizedClassesInjected[caseType]) { return; }
-            discSizedClassesInjected[caseType] = true;
-            var cls = SIZED_DISC_CLASS_PREFIX + caseType;
+            var cls = discSizedClassName(caseType, topVwOffset, leftPct, sizeVw);
+            if (discSizedClassesInjected[cls]) { return; }
+            discSizedClassesInjected[cls] = true;
             var shiftLeftPct = leftPct - 3.3;
 
             var css = [
@@ -2925,7 +2947,7 @@
                 });
             }
 
-            var frontSizedClass = SIZED_CLASS_PREFIX + response.CaseType;
+            var frontSizedClass = sizedClassName(response.CaseType, response.TopPercent, response.LeftPercent, response.WidthVw, response.HeightVw);
 
             // SESSION 19 (performance): Front is now the ONLY thing the
             // visible-case path waits on - Back and Disc are proven, by
@@ -3708,7 +3730,7 @@
                     return Core.preloadImage(discImageUrl);
                 }).then(function () {
                     if (myGeneration !== currentGeneration() || !document.body.contains(posterEl)) { return; }
-                    discBox = buildBox(BOX_DISC_CLASS, SIZED_DISC_CLASS_PREFIX + response.CaseType, discImageUrl);
+                    discBox = buildBox(BOX_DISC_CLASS, discSizedClassName(response.CaseType, response.DiscTopPercent, response.DiscLeftPercent, response.DiscSizeVw), discImageUrl);
                     detailImageContainer.appendChild(discBox);
                     // Session 60 FIX (user finding, same pattern as
                     // backBox in Session 50): discBox NEVER got the
