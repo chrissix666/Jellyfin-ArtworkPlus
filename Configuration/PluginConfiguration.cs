@@ -190,7 +190,7 @@ public class PluginConfiguration : BasePluginConfiguration
     /// this case type and only for Sets; default = the movie value until
     /// the user has tuned it. Developer settings, "Case width Sets (vw)".
     /// </summary>
-    public double CaseMod3DTuneWidthSets { get; set; } = 27.35;
+    public double CaseMod3DTuneWidthSets { get; set; } = 28.5;
     public double CaseMod3DTuneHeight { get; set; } = 42.6;
 
     // 📌 TEMPORARY - inner-case position (the view when the case opens;
