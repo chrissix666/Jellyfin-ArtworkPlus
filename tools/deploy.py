@@ -144,9 +144,21 @@ def main():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     for name in SCRIPTS:
         shutil.copy2(ROOT / name, DATA_DIR / name)
-    tray_start()
+    # Deploy #9: the tray menu click sometimes raises after the click
+    # already landed (menu closes before pywinauto confirms the item).
+    # Never abort on that - check whether the server is coming up anyway.
+    try:
+        tray_start()
+    except Exception as e:  # noqa: BLE001
+        say(f"tray click raised {type(e).__name__} - checking whether the server started anyway")
     if not wait(jellyfin_running, 15, "jellyfin.exe running"):
-        sys.exit(1)
+        say("server not running - retrying the tray menu once")
+        try:
+            tray_start()
+        except Exception as e:  # noqa: BLE001
+            say(f"second tray attempt raised {type(e).__name__}")
+        if not wait(jellyfin_running, 15, "jellyfin.exe running"):
+            sys.exit(1)
     if not wait(lambda: http("/System/Info/Public")[0] == 200, 90, "API up"):
         sys.exit(1)
     wait(lambda: 'Loaded plugin: "ArtworkPlus"' in LOG.read_text(encoding="utf-8", errors="replace")[-200000:], 20, "plugin load line in log")
