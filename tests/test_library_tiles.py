@@ -186,6 +186,7 @@ def run():
         Scenario('S14 sync off: a late tile appears as soon as it is ready', ROWS5, extra={'t01': 2, 't02': 2}, img_delay={'t02/image/e0': 300}, extra_opts={"SyncEnabled": False, "CycleTimeMs": 800, "FadeTimeMs": 100, "DelayEnabled": True, "DelayMs": 100}),
         Scenario('S15 keyart logo on the tile (custom winner), none on an animated tile', ROWS5, custom={'t01': True}, animated={'t02': True}, custom_logo={"ResolvedType": "keyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 80, "LogoSizePercent": 50, "HasLogo": True}),
         Scenario('S17 sync on: tiles ready within the boarding window appear on the same first tick', ROWS5, extra={'t01': 2, 't02': 2, 't03': 2}, img_delay={'t02/image/e0': 60}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
+        Scenario('S18 animated image fails and nothing else is ours -> Jellyfin poster restored, tile never blank for good', ROWS5, animated={'t01': True}, img_fail=['AnimatedPoster']),
         Scenario('S16 extrakeyart logo appears with the first overlay image', ROWS5, extra={'t01': 2}, extra_opts={"ResolvedType": "extrakeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 85, "LogoSizePercent": 40, "HasLogo": True}),
     ]
 
@@ -291,6 +292,11 @@ def run():
                 t = final_tile(rec, 't01')
                 if not (t and vanilla(t['bg']) and t['op'] > 0.99): problems.append(f"vanilla broken {t}")
 
+            if sc.name.split(' ')[0] == 'S18':
+                page.wait_for_timeout(1500)
+                rec = page.evaluate("window.__rec")
+                t = final_tile(rec, 't01')
+                if not (t and vanilla(t['bg']) and t['op'] > 0.99 and not t['pending']): problems.append(f"vanilla not restored: {t}")
             if sc.name.split(' ')[0] == 'S17':
                 page.wait_for_timeout(600)
                 rec = page.evaluate("window.__rec")

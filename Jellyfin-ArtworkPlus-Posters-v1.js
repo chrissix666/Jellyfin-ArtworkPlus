@@ -939,8 +939,11 @@
             var container = findContainer(cardEl);
             var itemId = cardEl.dataset.id;
             if (!container || !itemId) { return null; }
+            var bg0 = container.style.backgroundImage;
             st = {
                 card: cardEl, container: container, itemId: itemId, type: cardEl.dataset.type,
+                // Jellyfin's own poster URL - the floor when every participant withdraws
+                vanillaSrc: container.getAttribute('data-src') || ((bg0 && bg0 !== 'none') ? bg0.slice(4, -1).replace(/"/g, '') : null),
                 answers: {}, decided: false, winner: 0, baseUrl: null,
                 pending: false, safetyTimer: null, guard: null, pendingSince: 0, inFlight: 0,
                 holdForOverlay: false, overlayNear: false, extra: null
@@ -1049,8 +1052,15 @@
             }
             if (winner === 0) {
                 st.holdForOverlay = false;
-                st.baseUrl = null;
                 syncTileLogo(st, null);
+                if (previous && st.baseUrl && st.vanillaSrc) {
+                    // A base we had put into the tile failed (withdrawn): Jellyfin's
+                    // loader never resolves a failing URL, so put its own poster back
+                    // and load it the way it would have.
+                    applyBase(st, st.vanillaSrc, true);
+                    return;
+                }
+                st.baseUrl = null;
                 release(st);
                 return;
             }
@@ -1100,6 +1110,11 @@
             Core.preloadImage(url, { timeoutMs: PRELOAD_TIMEOUT_MS }).then(function () {
                 if (st.baseUrl !== url || !document.body.contains(c)) { return; }
                 c.style.backgroundImage = cssUrl(url);
+                // The same end state Jellyfin's own fill leaves behind (imageLoader.js
+                // fillImageElement): no data-src, not lazy-hidden - so a tile whose
+                // in-flight Jellyfin load never lands (a failed URL) still shows.
+                c.removeAttribute('data-src');
+                c.classList.remove('lazy-hidden');
                 c.classList.add(FADEIN_CLASS);
                 if (releaseWhenShown) { release(st); }
                 log('base image set on tile', st.itemId, filled ? '(over Jellyfin\'s poster)' : '(Jellyfin\'s load was in flight)');
