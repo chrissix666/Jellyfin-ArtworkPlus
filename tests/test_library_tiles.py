@@ -341,7 +341,11 @@ def run():
             if sc.name.split(' ')[0] == 'S25':
                 # the logo must always match the visible slide: child0 -> its logo, child1 -> none
                 samples = page.evaluate("""async () => { var out = []; for (var i = 0; i < 30; i++) { await new Promise(r => setTimeout(r, 100)); var c = document.querySelector('[data-id=t01]'); var vis = [...c.querySelectorAll('.extraposter-lib-layer')].filter(x => +getComputedStyle(x).opacity > 0.9).map(x => x.style.backgroundImage.indexOf('child0') !== -1 ? 0 : 1)[0]; var l = c.querySelector('.artworkplus-tile-logo'); out.push({ vis: vis === undefined ? null : vis, logo: l ? l.firstChild.getAttribute('src') : null, top: l ? l.style.top : null }); } return out; }""")
-                seen0 = [x for x in samples if x['vis'] == 0]; seen1 = [x for x in samples if x['vis'] == 1]
+                # judge only samples whose neighbours show the same slide (a sample next to a change may
+                # straddle the crossfade: the layer's computed opacity and the logo swap land in the same
+                # frame, but two 100 ms samples can bracket it)
+                steady = [samples[i] for i in range(1, len(samples) - 1) if samples[i - 1]['vis'] == samples[i]['vis'] == samples[i + 1]['vis']]
+                seen0 = [x for x in steady if x['vis'] == 0]; seen1 = [x for x in steady if x['vis'] == 1]
                 if not seen0 or not seen1: problems.append(f"both slides not seen: {len(seen0)} / {len(seen1)}")
                 # a sample taken in the crossfade itself (no fully visible layer, vis None) is not judged
                 bad = [x for x in seen0 if not (x['logo'] and '/Items/t01-child0/Images/Logo' in x['logo'] and x['top'] == '70%')] + [x for x in seen1 if x['logo']]

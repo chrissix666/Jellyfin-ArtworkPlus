@@ -821,15 +821,8 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
     public bool ExtraposterMoviesDetailShowOnSets { get; set; } = true;
 
-    // ----- Sources (Session 125): the slideshow of a Set can also be the posters of its movies.
-    /// <summary>Source "Files": the extraposter files of the item itself.</summary>
-    public bool ExtraposterMoviesDetailSourceFiles { get; set; } = true;
-
-    /// <summary>Source "Set movie posters": for a Set, the primary posters of the movies it contains (never the Set's own poster).</summary>
-    public bool ExtraposterMoviesDetailSourceSetPosters { get; set; } = false;
-
-    /// <summary>Files | SetPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
-    public string ExtraposterMoviesDetailSourcePriority { get; set; } = "Files";
+    /// <summary>Sets only (a movie has no children, its files are its only source): FilesFirst | FilesOnly | SetPostersFirst | SetPostersOnly - "first" = the other source only when this one has nothing, "only" = never the other one.</summary>
+    public string ExtraposterMoviesDetailSourcePriority { get; set; } = "FilesOnly";
 
     /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
     public string ExtraposterMoviesDetailSetOrder { get; set; } = "Ascending";
@@ -876,15 +869,8 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
     public bool ExtraposterMoviesLibraryShowOnSets { get; set; } = true;
 
-    // ----- Sources (Session 125): the slideshow of a Set can also be the posters of its movies.
-    /// <summary>Source "Files": the extraposter files of the item itself.</summary>
-    public bool ExtraposterMoviesLibrarySourceFiles { get; set; } = true;
-
-    /// <summary>Source "Set movie posters": for a Set, the primary posters of the movies it contains (never the Set's own poster).</summary>
-    public bool ExtraposterMoviesLibrarySourceSetPosters { get; set; } = false;
-
-    /// <summary>Files | SetPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
-    public string ExtraposterMoviesLibrarySourcePriority { get; set; } = "Files";
+    /// <summary>Sets only (a movie has no children, its files are its only source): FilesFirst | FilesOnly | SetPostersFirst | SetPostersOnly - "first" = the other source only when this one has nothing, "only" = never the other one.</summary>
+    public string ExtraposterMoviesLibrarySourcePriority { get; set; } = "FilesOnly";
 
     /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
     public string ExtraposterMoviesLibrarySetOrder { get; set; } = "Ascending";
@@ -934,15 +920,8 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Show on TV shows in this view (Session 124: Show-on lives per view).</summary>
     public bool ExtraposterTvShowsDetailShowOnTvShows { get; set; } = true;
 
-    // ----- Sources (Session 125): the slideshow of a series can also be its season posters (Extraposter only).
-    /// <summary>Source "Files": the extraposter files of the series itself.</summary>
-    public bool ExtraposterTvShowsDetailSourceFiles { get; set; } = true;
-
-    /// <summary>Source "Season posters": the primary posters of the series' seasons (never the series' own poster).</summary>
-    public bool ExtraposterTvShowsDetailSourceSeasonPosters { get; set; } = false;
-
-    /// <summary>Files | SeasonPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
-    public string ExtraposterTvShowsDetailSourcePriority { get; set; } = "Files";
+    /// <summary>FilesFirst | FilesOnly | SeasonPostersFirst | SeasonPostersOnly - "first" = the other source only when this one has nothing, "only" = never the other one.</summary>
+    public string ExtraposterTvShowsDetailSourcePriority { get; set; } = "FilesOnly";
 
     /// <summary>Ascending | Descending - season number order.</summary>
     public string ExtraposterTvShowsDetailSeasonOrder { get; set; } = "Ascending";
@@ -977,15 +956,8 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Show on TV shows in this view (Session 124: Show-on lives per view).</summary>
     public bool ExtraposterTvShowsLibraryShowOnTvShows { get; set; } = true;
 
-    // ----- Sources (Session 125): the slideshow of a series can also be its season posters (Extraposter only).
-    /// <summary>Source "Files": the extraposter files of the series itself.</summary>
-    public bool ExtraposterTvShowsLibrarySourceFiles { get; set; } = true;
-
-    /// <summary>Source "Season posters": the primary posters of the series' seasons (never the series' own poster).</summary>
-    public bool ExtraposterTvShowsLibrarySourceSeasonPosters { get; set; } = false;
-
-    /// <summary>Files | SeasonPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
-    public string ExtraposterTvShowsLibrarySourcePriority { get; set; } = "Files";
+    /// <summary>FilesFirst | FilesOnly | SeasonPostersFirst | SeasonPostersOnly - "first" = the other source only when this one has nothing, "only" = never the other one.</summary>
+    public string ExtraposterTvShowsLibrarySourcePriority { get; set; } = "FilesOnly";
 
     /// <summary>Ascending | Descending - season number order.</summary>
     public string ExtraposterTvShowsLibrarySeasonOrder { get; set; } = "Ascending";

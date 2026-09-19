@@ -334,6 +334,24 @@ public class ExtraposterController : ControllerBase
         string UnnumberedMode, bool SourceFiles, bool SourceChildren, bool ChildrenFirst, bool ChildOrderDescending, bool IncludeSpecials, bool SkipSingleSeason,
         string SetImage, string SetFallback, bool SetKeyartLogoEnabled, int SetKeyartLogoVerticalPositionPercent, int SetKeyartLogoSizePercent);
 
+    // Session 125: the four-value priority (FilesFirst | FilesOnly | SetPostersFirst | SetPostersOnly,
+    // TV: SeasonPosters…) decides which sources a Set / series uses and in which order. A movie
+    // has no children - its files are always its only source (ResolveEntries falls back to
+    // files when an item has no children at all).
+    // Values of the two-value model of round 3a-3c ("Files" / "SetPosters" / "SeasonPosters") may
+    // still sit in a saved config: "Files" meant files only (children were off by default),
+    // the other two mean "…First".
+    private static string NormalizePriority(string priority) => priority switch
+    {
+        "Files" or "" or null => "FilesOnly",
+        "SetPosters" => "SetPostersFirst",
+        "SeasonPosters" => "SeasonPostersFirst",
+        _ => priority
+    };
+    private static bool SourceUsesFiles(string priority) => !NormalizePriority(priority).EndsWith("PostersOnly", StringComparison.Ordinal);
+    private static bool SourceUsesChildren(string priority) => NormalizePriority(priority) != "FilesOnly";
+    private static bool SourceChildrenFirst(string priority) { var p = NormalizePriority(priority); return p.StartsWith("SetPosters", StringComparison.Ordinal) || p.StartsWith("SeasonPosters", StringComparison.Ordinal); }
+
     private ExtraViewSettings GetViewSettings(PluginConfiguration c, Guid itemId, string resolvedType, bool isLibraryScope)
     {
         var item = _libraryManager.GetItemById(itemId);
@@ -345,15 +363,15 @@ public class ExtraposterController : ControllerBase
             {
                 return isLibraryScope
                     ? new ExtraViewSettings(c.ExtraposterMoviesLibraryOrderMode, c.ExtraposterMoviesLibrarySinglePass, c.ExtraposterMoviesLibraryCycleTimeMs, c.ExtraposterMoviesLibraryFadeTimeMs, c.ExtraposterMoviesLibraryDelayEnabled, c.ExtraposterMoviesLibraryDelayMs, false, 0, 0, c.ExtraposterMoviesLibrarySyncEnabled, c.ExtraposterMoviesLibrarySeamlessEnabled,
-                        "Ignored", c.ExtraposterMoviesLibrarySourceFiles, c.ExtraposterMoviesLibrarySourceSetPosters, c.ExtraposterMoviesLibrarySourcePriority == "SetPosters", c.ExtraposterMoviesLibrarySetOrder == "Descending", false, false, c.ExtraposterMoviesLibrarySetImage, c.ExtraposterMoviesLibrarySetFallback, c.ExtraposterMoviesLibrarySetKeyartLogoEnabled, c.ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesLibrarySetKeyartLogoSizePercent)
+                        "Ignored", SourceUsesFiles(c.ExtraposterMoviesLibrarySourcePriority), SourceUsesChildren(c.ExtraposterMoviesLibrarySourcePriority), SourceChildrenFirst(c.ExtraposterMoviesLibrarySourcePriority), c.ExtraposterMoviesLibrarySetOrder == "Descending", false, false, c.ExtraposterMoviesLibrarySetImage, c.ExtraposterMoviesLibrarySetFallback, c.ExtraposterMoviesLibrarySetKeyartLogoEnabled, c.ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesLibrarySetKeyartLogoSizePercent)
                     : new ExtraViewSettings(c.ExtraposterMoviesDetailOrderMode, c.ExtraposterMoviesDetailSinglePass, c.ExtraposterMoviesDetailCycleTimeMs, c.ExtraposterMoviesDetailFadeTimeMs, c.ExtraposterMoviesDetailDelayEnabled, c.ExtraposterMoviesDetailDelayMs, false, 0, 0, false, true,
-                        "Ignored", c.ExtraposterMoviesDetailSourceFiles, c.ExtraposterMoviesDetailSourceSetPosters, c.ExtraposterMoviesDetailSourcePriority == "SetPosters", c.ExtraposterMoviesDetailSetOrder == "Descending", false, false, c.ExtraposterMoviesDetailSetImage, c.ExtraposterMoviesDetailSetFallback, c.ExtraposterMoviesDetailSetKeyartLogoEnabled, c.ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesDetailSetKeyartLogoSizePercent);
+                        "Ignored", SourceUsesFiles(c.ExtraposterMoviesDetailSourcePriority), SourceUsesChildren(c.ExtraposterMoviesDetailSourcePriority), SourceChildrenFirst(c.ExtraposterMoviesDetailSourcePriority), c.ExtraposterMoviesDetailSetOrder == "Descending", false, false, c.ExtraposterMoviesDetailSetImage, c.ExtraposterMoviesDetailSetFallback, c.ExtraposterMoviesDetailSetKeyartLogoEnabled, c.ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesDetailSetKeyartLogoSizePercent);
             }
             return isLibraryScope
                 ? new ExtraViewSettings(c.ExtraposterTvShowsLibraryOrderMode, c.ExtraposterTvShowsLibrarySinglePass, c.ExtraposterTvShowsLibraryCycleTimeMs, c.ExtraposterTvShowsLibraryFadeTimeMs, c.ExtraposterTvShowsLibraryDelayEnabled, c.ExtraposterTvShowsLibraryDelayMs, false, 0, 0, c.ExtraposterTvShowsLibrarySyncEnabled, c.ExtraposterTvShowsLibrarySeamlessEnabled,
-                        "Ignored", c.ExtraposterTvShowsLibrarySourceFiles, c.ExtraposterTvShowsLibrarySourceSeasonPosters, c.ExtraposterTvShowsLibrarySourcePriority == "SeasonPosters", c.ExtraposterTvShowsLibrarySeasonOrder == "Descending", c.ExtraposterTvShowsLibraryIncludeSpecials, c.ExtraposterTvShowsLibrarySkipSingleSeason, "Poster", "None", false, 0, 0)
+                        "Ignored", SourceUsesFiles(c.ExtraposterTvShowsLibrarySourcePriority), SourceUsesChildren(c.ExtraposterTvShowsLibrarySourcePriority), SourceChildrenFirst(c.ExtraposterTvShowsLibrarySourcePriority), c.ExtraposterTvShowsLibrarySeasonOrder == "Descending", c.ExtraposterTvShowsLibraryIncludeSpecials, c.ExtraposterTvShowsLibrarySkipSingleSeason, "Poster", "None", false, 0, 0)
                 : new ExtraViewSettings(c.ExtraposterTvShowsDetailOrderMode, c.ExtraposterTvShowsDetailSinglePass, c.ExtraposterTvShowsDetailCycleTimeMs, c.ExtraposterTvShowsDetailFadeTimeMs, c.ExtraposterTvShowsDetailDelayEnabled, c.ExtraposterTvShowsDetailDelayMs, false, 0, 0, false, true,
-                        "Ignored", c.ExtraposterTvShowsDetailSourceFiles, c.ExtraposterTvShowsDetailSourceSeasonPosters, c.ExtraposterTvShowsDetailSourcePriority == "SeasonPosters", c.ExtraposterTvShowsDetailSeasonOrder == "Descending", c.ExtraposterTvShowsDetailIncludeSpecials, c.ExtraposterTvShowsDetailSkipSingleSeason, "Poster", "None", false, 0, 0);
+                        "Ignored", SourceUsesFiles(c.ExtraposterTvShowsDetailSourcePriority), SourceUsesChildren(c.ExtraposterTvShowsDetailSourcePriority), SourceChildrenFirst(c.ExtraposterTvShowsDetailSourcePriority), c.ExtraposterTvShowsDetailSeasonOrder == "Descending", c.ExtraposterTvShowsDetailIncludeSpecials, c.ExtraposterTvShowsDetailSkipSingleSeason, "Poster", "None", false, 0, 0);
         }
         if (!tv)
         {
@@ -476,16 +494,17 @@ public class ExtraposterController : ControllerBase
         string folderPath, string namingMode, string folderName, ExtraViewSettings view)
     {
         List<PosterEntry> files = new();
-        if (view.SourceFiles)
+        var item0 = _libraryManager.GetItemById(itemId);
+        var hasChildren = item0 is BoxSet || item0 is Series;
+        if (view.SourceFiles || !hasChildren)
         {
             var candidates = ResolveCandidates(folderPath, namingMode, folderName, view.OrderMode, config.AllowedFormats, resolvedType, view.UnnumberedMode);
             files = BuildPosterEntries(folderPath, candidates);
         }
         List<PosterEntry> children = new();
-        if (view.SourceChildren)
+        if (view.SourceChildren && hasChildren)
         {
-            var item = _libraryManager.GetItemById(itemId);
-            if (item is not null) { children = ResolveChildPosters(config, item, view); }
+            children = ResolveChildPosters(config, item0!, view);
         }
         if (view.ChildrenFirst) { return children.Count > 0 ? children : files; }
         return files.Count > 0 ? files : children;
