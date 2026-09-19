@@ -1169,6 +1169,15 @@ with sync_playwright() as p:
         check(f'S127: {feat} empty Show-on of the last view chains into the feature Enable', apage.evaluate("(a) => [document.getElementById(a[0]).checked, document.getElementById(a[1]).checked]", [views[0] + 'Enabled', feat + 'Enabled']) == [False, False])
         apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
         apage.wait_for_timeout(150)
+    # Session 127c: Set order / Season order offer Shuffle + Random after the sorted values; Delay defaults 5000
+    apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
+    apage.wait_for_timeout(150)
+    for id_, expect in [('ExtraposterMoviesDetailSetOrder', ['Ascending', 'Descending', 'Shuffle', 'Random']), ('ExtraposterMoviesLibrarySetOrder', ['Ascending', 'Descending', 'Shuffle', 'Random']),
+                        ('ExtraposterTvShowsDetailSeasonOrder', ['Ascending', 'Descending', 'Shuffle', 'Random']), ('ExtraposterTvShowsLibrarySeasonOrder', ['Ascending', 'Descending', 'Shuffle', 'Random'])]:
+        vals = apage.evaluate("(id) => Array.prototype.map.call(document.getElementById(id).options, function (o) { return o.value; })", id_)
+        check(f'S127: {id_} options', vals == expect, str(vals))
+    delays = apage.evaluate("() => ['ExtraposterMoviesDetail', 'ExtraposterMoviesLibrary', 'ExtraposterTvShowsDetail', 'ExtraposterTvShowsLibrary', 'ExtrakeyartMoviesDetail', 'ExtrakeyartMoviesLibrary', 'ExtrakeyartTvShowsDetail', 'ExtrakeyartTvShowsLibrary', 'CharacterartMovies', 'CharacterartTvShows'].map(function (p) { return document.getElementById(p + 'DelayMs').value; })")
+    check('S127: every Extra + Characterart Delay defaults to 5000', all(d == '5000' for d in delays), str(delays))
     # Animated Keyart: logo per view (Session 126), mirrors the Keyart tab
     apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="animatedposter"]').click(); }""")
     for view, size in [('Detail', '60'), ('Library', '80')]:

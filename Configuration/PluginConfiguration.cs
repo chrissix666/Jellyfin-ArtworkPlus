@@ -860,7 +860,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ExtraposterMoviesDetailDelayEnabled { get; set; } = false;
 
     /// <summary>Length of that wait (ms).</summary>
-    public int ExtraposterMoviesDetailDelayMs { get; set; } = 3000;
+    public int ExtraposterMoviesDetailDelayMs { get; set; } = 5000;
 
     // ----- Extraposter / movies (and Sets) / library views (Session 123: every view has its own
     // full set; nothing is shared between detail and library any more).
@@ -911,7 +911,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ExtraposterMoviesLibraryDelayEnabled { get; set; } = false;
 
     /// <summary>Length of that wait (ms).</summary>
-    public int ExtraposterMoviesLibraryDelayMs { get; set; } = 3000;
+    public int ExtraposterMoviesLibraryDelayMs { get; set; } = 5000;
 
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtraposterMoviesLibrarySyncEnabled { get; set; } = true;
@@ -953,7 +953,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ExtraposterTvShowsDetailDelayEnabled { get; set; } = false;
 
     /// <summary>Length of that wait (ms).</summary>
-    public int ExtraposterTvShowsDetailDelayMs { get; set; } = 3000;
+    public int ExtraposterTvShowsDetailDelayMs { get; set; } = 5000;
 
     // ----- Extraposter / TV shows / library views (Session 123: every view has its own
     // full set; nothing is shared between detail and library any more).
@@ -989,7 +989,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ExtraposterTvShowsLibraryDelayEnabled { get; set; } = false;
 
     /// <summary>Length of that wait (ms).</summary>
-    public int ExtraposterTvShowsLibraryDelayMs { get; set; } = 3000;
+    public int ExtraposterTvShowsLibraryDelayMs { get; set; } = 5000;
 
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtraposterTvShowsLibrarySyncEnabled { get; set; } = true;
@@ -1067,7 +1067,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ExtrakeyartMoviesDetailDelayEnabled { get; set; } = false;
 
     /// <summary>Length of that wait (ms).</summary>
-    public int ExtrakeyartMoviesDetailDelayMs { get; set; } = 3000;
+    public int ExtrakeyartMoviesDetailDelayMs { get; set; } = 5000;
 
     /// <summary>Jellyfin's Logo image drawn over the keyart (detail pages).</summary>
     public bool ExtrakeyartMoviesDetailLogoEnabled { get; set; } = false;
@@ -1106,7 +1106,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ExtrakeyartMoviesLibraryDelayEnabled { get; set; } = false;
 
     /// <summary>Length of that wait (ms).</summary>
-    public int ExtrakeyartMoviesLibraryDelayMs { get; set; } = 3000;
+    public int ExtrakeyartMoviesLibraryDelayMs { get; set; } = 5000;
 
     /// <summary>Jellyfin's Logo image drawn over the keyart (library views).</summary>
     public bool ExtrakeyartMoviesLibraryLogoEnabled { get; set; } = false;
@@ -1148,7 +1148,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ExtrakeyartTvShowsDetailDelayEnabled { get; set; } = false;
 
     /// <summary>Length of that wait (ms).</summary>
-    public int ExtrakeyartTvShowsDetailDelayMs { get; set; } = 3000;
+    public int ExtrakeyartTvShowsDetailDelayMs { get; set; } = 5000;
 
     /// <summary>Jellyfin's Logo image drawn over the keyart (detail pages).</summary>
     public bool ExtrakeyartTvShowsDetailLogoEnabled { get; set; } = false;
@@ -1184,7 +1184,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ExtrakeyartTvShowsLibraryDelayEnabled { get; set; } = false;
 
     /// <summary>Length of that wait (ms).</summary>
-    public int ExtrakeyartTvShowsLibraryDelayMs { get; set; } = 3000;
+    public int ExtrakeyartTvShowsLibraryDelayMs { get; set; } = 5000;
 
     /// <summary>Jellyfin's Logo image drawn over the keyart (library views).</summary>
     public bool ExtrakeyartTvShowsLibraryLogoEnabled { get; set; } = false;
@@ -1479,7 +1479,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool CharacterartMoviesDelayEnabled { get; set; }
 
-    public int CharacterartMoviesDelayMs { get; set; } = 3000;
+    public int CharacterartMoviesDelayMs { get; set; } = 5000;
 
     public bool CharacterartMoviesSinglePass { get; set; }
 
@@ -1541,7 +1541,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool CharacterartTvShowsDelayEnabled { get; set; }
 
-    public int CharacterartTvShowsDelayMs { get; set; } = 3000;
+    public int CharacterartTvShowsDelayMs { get; set; } = 5000;
 
     public bool CharacterartTvShowsSinglePass { get; set; }
 

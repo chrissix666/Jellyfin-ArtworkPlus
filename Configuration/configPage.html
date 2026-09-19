@@ -1883,8 +1883,10 @@
                             <select is="emby-select" id="ExtraposterMoviesDetailSetOrder" name="ExtraposterMoviesDetailSetOrder" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Ascending">Release date ascending</option>
                                 <option value="Descending">Release date descending</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
                             </select>
-                            <div class="epDesc">Order of a Set's movies. Jellyfin's rule: release date, else year, else first.</div>
+                            <div class="epDesc">Release date per Jellyfin's rule (date, else year), or Shuffle / Random.</div>
                         </div>
                         <div class="epRow epRowMerged" id="ExtraposterMoviesDetailSetImageRow">
                             <label for="ExtraposterMoviesDetailSetImage" class="epRowLabelSpan">Set image</label>
@@ -2037,8 +2039,10 @@
                             <select is="emby-select" id="ExtraposterMoviesLibrarySetOrder" name="ExtraposterMoviesLibrarySetOrder" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Ascending">Release date ascending</option>
                                 <option value="Descending">Release date descending</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
                             </select>
-                            <div class="epDesc">Order of a Set's movies. Jellyfin's rule: release date, else year, else first.</div>
+                            <div class="epDesc">Release date per Jellyfin's rule (date, else year), or Shuffle / Random.</div>
                         </div>
                         <div class="epRow epRowMerged" id="ExtraposterMoviesLibrarySetImageRow">
                             <label for="ExtraposterMoviesLibrarySetImage" class="epRowLabelSpan">Set image</label>
@@ -2227,8 +2231,10 @@
                             <select is="emby-select" id="ExtraposterTvShowsDetailSeasonOrder" name="ExtraposterTvShowsDetailSeasonOrder" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Ascending">Ascending</option>
                                 <option value="Descending">Descending</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
                             </select>
-                            <div class="epDesc">Order of the season posters by season number.</div>
+                            <div class="epDesc">By season number, or Shuffle / Random.</div>
                         </div>
                         <div class="epRow epRowCheckbox" id="ExtraposterTvShowsDetailIncludeSpecialsRow">
                             <label for="ExtraposterTvShowsDetailIncludeSpecials">Include specials</label>
@@ -2339,8 +2345,10 @@
                             <select is="emby-select" id="ExtraposterTvShowsLibrarySeasonOrder" name="ExtraposterTvShowsLibrarySeasonOrder" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Ascending">Ascending</option>
                                 <option value="Descending">Descending</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
                             </select>
-                            <div class="epDesc">Order of the season posters by season number.</div>
+                            <div class="epDesc">By season number, or Shuffle / Random.</div>
                         </div>
                         <div class="epRow epRowCheckbox" id="ExtraposterTvShowsLibraryIncludeSpecialsRow">
                             <label for="ExtraposterTvShowsLibraryIncludeSpecials">Include specials</label>
@@ -5114,7 +5122,7 @@
                 ExtraposterMoviesDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
-                ExtraposterMoviesDetailDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailDelayMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryShowOnMovies: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryShowOnSets: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
@@ -5130,7 +5138,7 @@
                 ExtraposterMoviesLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
-                ExtraposterMoviesLibraryDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibraryDelayMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySeamlessEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailShowOnTvShows: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
@@ -5143,7 +5151,7 @@
                 ExtraposterTvShowsDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
-                ExtraposterTvShowsDetailDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterTvShowsDetailDelayMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryShowOnTvShows: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibrarySourcePriority: { type: 'select', def: 'FilesOnly', tab: 'extraposterfeature' },
@@ -5154,7 +5162,7 @@
                 ExtraposterTvShowsLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
-                ExtraposterTvShowsLibraryDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibraryDelayMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibrarySeamlessEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 // Characterart
@@ -5236,7 +5244,7 @@
                 CharacterartMoviesCycleTimeMs: { type: 'number', def: 5000, tab: 'characterart' },
                 CharacterartMoviesFadeTimeMs: { type: 'number', def: 1000, tab: 'characterart' },
                 CharacterartMoviesDelayEnabled: { type: 'checkbox', def: false, tab: 'characterart' },
-                CharacterartMoviesDelayMs: { type: 'number', def: '', tab: 'characterart' },
+                CharacterartMoviesDelayMs: { type: 'number', def: 5000, tab: 'characterart' },
                 CharacterartMoviesSinglePass: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartMoviesStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartMoviesOrderMode: { type: 'select', def: 'Shuffle', tab: 'characterart' },
@@ -5247,7 +5255,7 @@
                 CharacterartTvShowsCycleTimeMs: { type: 'number', def: 5000, tab: 'characterart' },
                 CharacterartTvShowsFadeTimeMs: { type: 'number', def: 1000, tab: 'characterart' },
                 CharacterartTvShowsDelayEnabled: { type: 'checkbox', def: false, tab: 'characterart' },
-                CharacterartTvShowsDelayMs: { type: 'number', def: '', tab: 'characterart' },
+                CharacterartTvShowsDelayMs: { type: 'number', def: 5000, tab: 'characterart' },
                 CharacterartTvShowsSinglePass: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartTvShowsStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartTvShowsOrderMode: { type: 'select', def: 'Shuffle', tab: 'characterart' },
@@ -5348,7 +5356,7 @@
                 ExtrakeyartMoviesDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
-                ExtrakeyartMoviesDetailDelayMs: { type: 'number', def: 3000, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailDelayMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryLogoSizePercent: { type: 'number', def: 80, tab: 'extrakeyart' },
@@ -5360,7 +5368,7 @@
                 ExtrakeyartMoviesLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
-                ExtrakeyartMoviesLibraryDelayMs: { type: 'number', def: 3000, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryDelayMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibrarySeamlessEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
@@ -5373,7 +5381,7 @@
                 ExtrakeyartTvShowsDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
-                ExtrakeyartTvShowsDetailDelayMs: { type: 'number', def: 3000, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailDelayMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryLogoSizePercent: { type: 'number', def: 80, tab: 'extrakeyart' },
@@ -5384,7 +5392,7 @@
                 ExtrakeyartTvShowsLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
-                ExtrakeyartTvShowsLibraryDelayMs: { type: 'number', def: 3000, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibraryDelayMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibrarySeamlessEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 RedCarpetBottomLeftScaleMode: { type: 'text', def: 'Height', tab: 'redcarpet' },
