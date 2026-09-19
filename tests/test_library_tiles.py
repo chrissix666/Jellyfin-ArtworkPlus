@@ -66,7 +66,7 @@ window.ApiClient = { getCurrentUserId: function(){return 'u';}, serverAddress: f
 
 class Scenario:
     def __init__(self, name, items, custom=None, animated=None, extra=None, flags=None,
-                 batch_delay=None, img_delay=None, img_fail=None, extra_opts=None, viewport_rows=2):
+                 batch_delay=None, img_delay=None, img_fail=None, extra_opts=None, viewport_rows=2, custom_logo=None):
         self.name = name
         self.items = items                     # [(id, type)]
         self.custom = custom or {}             # id -> True
@@ -78,6 +78,7 @@ class Scenario:
         self.img_fail = img_fail or []         # substrings of urls that 404
         self.extra_opts = extra_opts or {}     # DelayEnabled/DelayMs/CycleTimeMs/FadeTimeMs
         self.viewport_rows = viewport_rows
+        self.custom_logo = custom_logo         # dict merged into every applicable Custom answer (LogoEnabled/...)
 
 
 class Stub(BaseHTTPRequestHandler):
@@ -118,7 +119,7 @@ class Stub(BaseHTTPRequestHandler):
             return self._png()
         ids = [i for i in q.get('ids', '').split(',') if i]
         if p == '/CustomPoster/batch':
-            items = {i: {"IsApplicable": True, "ResolvedType": "postercase", "Version": "1", "FileName": "x"} for i in ids if sc.custom.get(i)}
+            items = {i: dict({"IsApplicable": True, "ResolvedType": "postercase", "Version": "1", "FileName": "x"}, **(sc.custom_logo or {})) for i in ids if sc.custom.get(i)}
             return self._json({"Items": items}, sc.batch_delay.get('custom', 0))
         if p == '/AnimatedPoster/batch':
             items = {i: {"IsApplicable": True, "ResolvedType": "animatedposter", "Version": "1", "FileName": "x"} for i in ids if sc.animated.get(i)}
@@ -128,7 +129,7 @@ class Stub(BaseHTTPRequestHandler):
             for i in ids:
                 n = sc.extra.get(i, 0)
                 if n:
-                    items[i] = dict({"IsMovie": True, "OrderMode": "Sequential", "CycleTimeMs": 600, "FadeTimeMs": 200, "DelayEnabled": False, "DelayMs": 0, "SinglePass": False, "ResolvedType": "extraposter",
+                    items[i] = dict({"IsMovie": True, "OrderMode": "Sequential", "CycleTimeMs": 600, "FadeTimeMs": 200, "DelayEnabled": False, "DelayMs": 0, "SinglePass": False, "ResolvedType": "extraposter", "SyncEnabled": False,
                                      "Posters": [{"FileName": "e%d.jpg" % k, "Version": "1"} for k in range(n)]}, **sc.extra_opts)
                 else:
                     items[i] = {"IsMovie": False, "Posters": []}
@@ -176,11 +177,15 @@ def run():
         Scenario('S5 extra without delay: no frame shows the base before the overlay', ROWS5, animated={'t03': True}, extra={'t03': 2}),
         Scenario('S6 extra with delay: base visible during the delay, overlay after', ROWS5, custom={'t04': True}, extra={'t04': 2}, extra_opts={"DelayEnabled": True, "DelayMs": 600}),
         Scenario('S7 animated image fails -> custom takes the tile', ROWS5, custom={'t05': True}, animated={'t05': True}, img_fail=['AnimatedPoster']),
-        Scenario('S8 batch never answers in time -> safety net releases with vanilla', ROWS5, batch_delay={'custom': 4000}),
+        Scenario('S8 batch never answers in time -> safety net releases with vanilla', ROWS5, batch_delay={'custom': 5000}),
         Scenario('S9 server flags: only animated expected, custom batch slow is ignored', ROWS5, animated={'t06': True}, flags={"custom": False, "animated": True, "extra": False}, batch_delay={'custom': 4000}),
         Scenario('S10 scroll out and back keeps the animated poster', ROWS5, animated={'t01': True}),
         Scenario('S11 extra layers sit under the hover menu', ROWS5, extra={'t07': 1}),
         Scenario('S12 all three off via flags: no tile is ever pending', ROWS5, flags={"custom": False, "animated": False, "extra": False}),
+        Scenario('S13 sync on: a late tile waits for the next tick and then changes together', ROWS5, extra={'t01': 2, 't02': 2}, img_delay={'t02/image/e0': 300}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100, "DelayEnabled": True, "DelayMs": 100}),
+        Scenario('S14 sync off: a late tile appears as soon as it is ready', ROWS5, extra={'t01': 2, 't02': 2}, img_delay={'t02/image/e0': 300}, extra_opts={"SyncEnabled": False, "CycleTimeMs": 800, "FadeTimeMs": 100, "DelayEnabled": True, "DelayMs": 100}),
+        Scenario('S15 keyart logo on the tile (custom winner), none on an animated tile', ROWS5, custom={'t01': True}, animated={'t02': True}, custom_logo={"ResolvedType": "keyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 80, "LogoSizePercent": 50, "HasLogo": True}),
+        Scenario('S16 extrakeyart logo appears with the first overlay image', ROWS5, extra={'t01': 2}, extra_opts={"ResolvedType": "extrakeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 85, "LogoSizePercent": 40, "HasLogo": True}),
     ]
 
     fails = 0
@@ -231,7 +236,7 @@ def run():
                 rec = page.evaluate("window.__rec")
                 t = final_tile(rec, 't02')
                 if not (t and 'AnimatedPoster' in t['bg']): problems.append(f"base is not animated: {t and t['bg'][:60]}")
-                if not (t and any(l['op'] > 0.99 and 'Extraposter' in l['bg'] for l in t['layers'])): problems.append(f"no extra overlay: {t and t['layers']}")
+                if not (t and sum(l['op'] for l in t['layers'] if 'Extraposter' in l['bg']) > 0.95): problems.append(f"no extra overlay: {t and t['layers']}")
             if sc.name.split(' ')[0] == 'S5':
                 # a frame counts as wrong when the tile is visible with no fully-opaque overlay layer
                 # wrong = the tile is visible and its overlay does not cover it (a crossfade between
@@ -240,12 +245,12 @@ def run():
                        if x['id'] == 't03' and x['op'] > 0.01 and sum(l['op'] for l in x['layers']) < 0.95]
                 if bad: problems.append(f"base visible before overlay: {bad[:3]}")
                 t = final_tile(rec, 't03')
-                if not (t and any(l['op'] > 0.99 for l in t['layers'])): problems.append(f"no overlay at the end: {t}")
+                if not (t and sum(l['op'] for l in t['layers']) > 0.95): problems.append(f"no overlay at the end: {t}")
             if sc.name.split(' ')[0] == 'S6':
                 base_frames = [s for s in rec for x in s['tiles'] if x['id'] == 't04' and x['op'] > 0.99 and 'CustomPoster' in x['bg'] and not any(l['op'] > 0.5 for l in x['layers'])]
                 if not base_frames: problems.append("custom base never visible during the delay")
                 t = final_tile(rec, 't04')
-                if not (t and any(l['op'] > 0.99 for l in t['layers'])): problems.append(f"overlay missing after the delay: {t}")
+                if not (t and sum(l['op'] for l in t['layers']) > 0.95): problems.append(f"overlay missing after the delay: {t}")
             if sc.name.split(' ')[0] == 'S7':
                 page.wait_for_timeout(600)
                 rec = page.evaluate("window.__rec")
@@ -254,13 +259,13 @@ def run():
                 bad = visible_wrong_frames(rec, 't05', lambda x: 'CustomPoster' in x['bg'])
                 if bad: problems.append(f"wrong frames: {bad[:3]}")
             if sc.name.split(' ')[0] == 'S8':
-                page.wait_for_timeout(1200)
+                page.wait_for_timeout(2400)
                 rec = page.evaluate("window.__rec")
                 t = final_tile(rec, 't01')
                 if not (t and not t['pending'] and vanilla(t['bg']) and t['op'] > 0.99): problems.append(f"safety net failed: {t}")
                 t_cards = next((s['t'] for s in rec if s['tiles']), None)
                 first = next((s['t'] for s in rec if any(x['id'] == 't01' and not x['pending'] for x in s['tiles'])), None)
-                if first is None or first - t_cards > 2400 or first - t_cards < 1800: problems.append(f"safety timing {first - t_cards if first else None}")
+                if first is None or first - t_cards > 3400 or first - t_cards < 2800: problems.append(f"safety timing {first - t_cards if first else None}")
             if sc.name.split(' ')[0] == 'S9':
                 t = final_tile(rec, 't06')
                 if not (t and 'AnimatedPoster' in t['bg'] and t['op'] > 0.99 and not t['pending']): problems.append(f"flags not honoured: {t}")
@@ -284,6 +289,46 @@ def run():
                 if any(x['pending'] for s in rec for x in s['tiles']): problems.append("a tile was pending although nothing is enabled")
                 t = final_tile(rec, 't01')
                 if not (t and vanilla(t['bg']) and t['op'] > 0.99): problems.append(f"vanilla broken {t}")
+
+            if sc.name.split(' ')[0] in ('S13', 'S14'):
+                page.wait_for_timeout(1400)
+                rec = page.evaluate("window.__rec")
+                def first_visible(tid):
+                    for smp in rec:
+                        for x in smp['tiles']:
+                            if x['id'] == tid and any(l['op'] > 0.9 for l in x['layers']):
+                                return smp['t']
+                    return None
+                def switch_times(tid):
+                    out, prev = [], None
+                    for smp in rec:
+                        for x in smp['tiles']:
+                            if x['id'] != tid: continue
+                            vis = [l['bg'] for l in x['layers'] if l['op'] > 0.5]
+                            cur = vis[0] if vis else None
+                            if cur and cur != prev and prev is not None: out.append(smp['t'])
+                            if cur: prev = cur
+                    return out
+                a, b = first_visible('t01'), first_visible('t02')
+                if a is None or b is None:
+                    problems.append(f"first appearance missing: {a} {b}")
+                elif sc.name.startswith('S13'):
+                    if not (700 <= b - a <= 1000): problems.append(f"late tile did not wait for the tick: gap {b - a:.0f} ms (period 800)")
+                    sa, sb = switch_times('t01'), switch_times('t02')
+                    together = [abs(x - y) for x in sa for y in sb if abs(x - y) < 100]
+                    if len(sb) and not together: problems.append(f"changes not together: {sa[:3]} vs {sb[:3]}")
+                else:
+                    if not (150 <= b - a <= 500): problems.append(f"late tile did not appear when ready: gap {b - a:.0f} ms")
+            if sc.name.split(' ')[0] == 'S15':
+                page.wait_for_timeout(300)
+                info = page.evaluate("(()=>{var q=id=>{var c=document.querySelector('[data-id='+id+']');var l=c.querySelector('.artworkplus-tile-logo');return l?{top:l.style.top,width:l.style.width,src:l.firstChild.getAttribute('src'),inContainer:l.parentElement.classList.contains('cardImageContainer')}:null;};return {t01:q('t01'),t02:q('t02')};})()")
+                if not (info['t01'] and info['t01']['top'] == '80%' and info['t01']['width'] == '50%' and '/Items/t01/Images/Logo' in info['t01']['src'] and info['t01']['inContainer']):
+                    problems.append(f"keyart logo wrong: {info['t01']}")
+                if info['t02'] is not None: problems.append(f"animated tile has a logo: {info['t02']}")
+            if sc.name.split(' ')[0] == 'S16':
+                page.wait_for_timeout(300)
+                info = page.evaluate("(()=>{var c=document.querySelector('[data-id=t01]');var l=c.querySelector('.artworkplus-tile-logo');var layer=c.querySelector('.extraposter-lib-layer');return l?{top:l.style.top,afterLayers:!!(layer.compareDocumentPosition(l)&Node.DOCUMENT_POSITION_FOLLOWING)}:null;})()")
+                if not (info and info['top'] == '85%' and info['afterLayers']): problems.append(f"extrakeyart logo wrong: {info}")
 
             errs = page.evaluate("window.__errors || []")
             status = 'ok  ' if not problems else 'FAIL'

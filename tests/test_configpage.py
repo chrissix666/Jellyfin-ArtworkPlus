@@ -926,7 +926,7 @@ with sync_playwright() as p:
     apage2.add_init_script("""
         window.ApiClient = {
             getPluginConfiguration: function () { return Promise.resolve({
-                DelayEnabled: false, SinglePass: true, RedCarpetFolderName: 'MeinOrdner',
+                ExtraposterMoviesDetailDelayEnabled: false, ExtraposterMoviesDetailSinglePass: true, RedCarpetFolderName: 'MeinOrdner',
                 PeopleBackdropsApiKey: 'echterSchluessel'
             }); },
             updatePluginConfiguration: function () { return Promise.resolve({}); }
@@ -939,8 +939,8 @@ with sync_playwright() as p:
     apage2.wait_for_timeout(150)
 
     session36 = apage2.evaluate("""() => ({
-        delayMsDisabled: document.getElementById('DelayMs').disabled,
-        singlePassSelectValue: document.getElementById('SinglePassSelect').value,
+        delayMsDisabled: document.getElementById('ExtraposterMoviesDetailDelayMs').disabled,
+        singlePassSelectValue: document.getElementById('ExtraposterMoviesDetailSinglePassSelect').value,
         redCarpetDescHasFolder: document.getElementById('RedCarpetFolderNameDesc').textContent.includes('MeinOrdner'),
         peopleBackdropsBtnDisabled: document.getElementById('PeopleBackdropsTestApiKeyBtn').disabled
     })""")
@@ -953,6 +953,68 @@ with sync_playwright() as p:
     check('LOAD-FIX: People Backdrops test button usable with a loaded API key',
           session36['peopleBackdropsBtnDisabled'] is False, str(session36))
     apage2.close()
+
+    # ─── Session 123: Extraposter/Extrakeyart split into Movies/TV shows x Detail page/Library views ───
+    apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
+    apage.wait_for_timeout(150)
+    apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="extraposter"]').click(); }""")
+    for fmt in ['jpg', 'jpeg', 'png', 'webp', 'gif', 'tbn', 'svg']:
+        aset('Format_' + fmt + '_chk', fmt == 'jpg')
+    for feature in ['Extraposter', 'Extrakeyart']:
+        for typ in ['Movies', 'TvShows']:
+            for view in ['Detail', 'Library']:
+                p_ = feature + typ + view
+                key = feature.lower() + typ + view
+                # view enable off -> its own fields + header grey, the enable row itself stays usable
+                aset(p_ + 'Enabled', False)
+                check(f'SPLIT: {p_} off greys its fields', agreyed(p_ + 'Fields') is True)
+                check(f'SPLIT: {p_} off greys its header', agreyed(key) is True)
+                own = apage.evaluate("(id) => document.getElementById(id).disabled", p_ + 'Enabled')
+                check(f'SPLIT: {p_}Enabled stays clickable while off', own is False, str(own))
+                aset(p_ + 'Enabled', True)
+                check(f'SPLIT: {p_} on un-greys its fields', agreyed(p_ + 'Fields') is False)
+                # Delay switch greys the Delay field (EP_DELAY_DEPENDENCY_PAIRS)
+                aset(p_ + 'DelayEnabled', False)
+                d = apage.evaluate("(id) => document.getElementById(id).disabled", p_ + 'DelayMs')
+                check(f'SPLIT: {p_}DelayMs disabled while its switch is off', d is True, str(d))
+                aset(p_ + 'DelayEnabled', True)
+                d = apage.evaluate("(id) => document.getElementById(id).disabled", p_ + 'DelayMs')
+                check(f'SPLIT: {p_}DelayMs enabled with its switch on', d is False, str(d))
+                aset(p_ + 'DelayEnabled', False)
+                if feature == 'Extrakeyart':
+                    aset(p_ + 'LogoEnabled', False)
+                    check(f'SPLIT: {p_} logo rows grey while the logo is off', agreyed(p_ + 'LogoVerticalPositionRow') is True and agreyed(p_ + 'LogoSizeRow') is True)
+                    aset(p_ + 'LogoEnabled', True)
+                    check(f'SPLIT: {p_} logo rows active with the logo on', agreyed(p_ + 'LogoVerticalPositionRow') is False)
+                    aset(p_ + 'LogoEnabled', False)
+        # Show on Movies+Sets off -> the Movies body (and both view blocks inside) grey, one grey level
+        aset(feature + 'ShowOnMovies', False); aset(feature + 'ShowOnSets', False)
+        check(f'SPLIT: {feature} Show-on Movies off greys the Movies body', agreyed(feature.lower() + 'Movies') is True)
+        check(f'SPLIT: {feature} Show-on Movies off reaches the Detail block by inheritance', agreyed(feature.lower() + 'MoviesDetail') is True)
+        own_cls = apage.evaluate("""(k) => document.querySelector('.epCollapseBody[data-collapsebody="' + k + '"]').classList.contains('epFieldDisabled')""", feature.lower() + 'MoviesDetail')
+        check(f'SPLIT: {feature} Detail block carries NO own grey class under a greyed Movies body (rule 14)', own_cls is False, str(own_cls))
+        aset(feature + 'ShowOnMovies', True); aset(feature + 'ShowOnSets', True)
+    # both views of both types off -> the feature produces nothing -> tab button greys (rule 12: view nodes are co-requirements)
+    for feature in ['Extraposter', 'Extrakeyart']:
+        for typ in ['Movies', 'TvShows']:
+            for view in ['Detail', 'Library']:
+                aset(feature + typ + view + 'Enabled', False)
+    tab_grey = apage.evaluate("""() => document.querySelector('.epTabBtn[data-tab="extraposter"]').classList.contains('epTabGreyed')""")
+    check('SPLIT: Extraposter tab button greys when every view of every type is off', tab_grey is True, str(tab_grey))
+    # the Detail/Library -> Show-on -> Enable cascade (Session 22/29 sync, one direction only) still
+    # runs through the view enables: both views off unchecks the type's Show-on, all Show-on off unchecks Enable
+    cascade = apage.evaluate("""() => ({ m: document.getElementById('ExtraposterShowOnMovies').checked, t: document.getElementById('ExtraposterShowOnTvShows').checked, e: document.getElementById('ExtraposterEnabled').checked })""")
+    check('SPLIT: both view enables off cascade into Show-on and Enable (sync direction unchanged)', cascade == {'m': False, 't': False, 'e': False}, str(cascade))
+    apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
+    apage.wait_for_timeout(150)
+    # Keyart (Custom Poster): logo per view
+    apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="customposter"]').click(); }""")
+    for view in ['Detail', 'Library']:
+        aset('Keyart' + view + 'LogoEnabled', False)
+        check(f'SPLIT: Keyart {view} logo rows grey while off', agreyed('Keyart' + view + 'LogoVerticalPositionRow') is True)
+        aset('Keyart' + view + 'LogoEnabled', True)
+        check(f'SPLIT: Keyart {view} logo rows active while on', agreyed('Keyart' + view + 'LogoSizeRow') is False)
+        aset('Keyart' + view + 'LogoEnabled', False)
 
     check('Session 22 tabs: no JS errors across all 8 tabs', not aerrors, str(aerrors[:3]))
     apage.close()

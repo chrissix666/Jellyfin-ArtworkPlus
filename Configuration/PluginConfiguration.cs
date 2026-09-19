@@ -810,48 +810,6 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Same as <see cref="ExtraposterShowOnMovies"/>, but for TV shows.</summary>
     public bool ExtraposterShowOnTvShows { get; set; } = true;
 
-    /// <summary>
-    /// "Sequential" (sorted numerically, e.g. poster2 before poster11) or
-    /// "Random" (shuffled once, no repeats). Shared across Movies and TV
-    /// shows, detail and library.
-    /// </summary>
-    public string OrderMode { get; set; } = "Sequential";
-
-    /// <summary>
-    /// Display duration per poster in milliseconds before switching to the
-    /// next one. Shared across Movies and TV shows, detail and library.
-    /// Default 5000ms, a best-practice rule of thumb researched as 5-7
-    /// seconds for automatically switching carousels/slideshows.
-    /// </summary>
-    public int CycleTimeMs { get; set; } = 5000;
-
-    /// <summary>
-    /// Duration of the crossfade transition in milliseconds. 0 = hard cut.
-    /// Must ALWAYS be smaller than CycleTimeMs - clamped live in the
-    /// config page, additionally checked defensively in the backend too
-    /// (see ExtraposterController.GetPosterList). Shared across Movies and
-    /// TV shows, detail and library.
-    /// </summary>
-    public int FadeTimeMs { get; set; } = 1000;
-
-    /// <summary>
-    /// Whether a delay exists before the very first switch at all. When
-    /// false, the scripts ignore DelayMs entirely and start immediately.
-    /// Shared across Movies and TV shows, detail and library.
-    /// </summary>
-    public bool DelayEnabled { get; set; } = false;
-
-    /// <summary>Delay before the very first poster switch, in milliseconds. Shared, see DelayEnabled.</summary>
-    public int DelayMs { get; set; } = 3000;
-
-    /// <summary>
-    /// true = the slideshow runs through exactly once, then shows the
-    /// normal original poster again (with the same fade transition back).
-    /// false = runs forever (infinite). Shared across Movies and TV
-    /// shows, detail and library.
-    /// </summary>
-    public bool SinglePass { get; set; } = false;
-
     /// <summary>Independent on/off switch for the movie detail page.</summary>
     public bool ExtraposterMoviesDetailEnabled { get; set; } = true;
 
@@ -873,6 +831,96 @@ public class PluginConfiguration : BasePluginConfiguration
     /// exclusively to the series' main level, not season/episode.
     /// </summary>
     public bool ExtraposterTvShowsLibraryEnabled { get; set; } = true;
+
+    // ----- Extraposter / movies (and Sets) / detail pages (Session 123: every view has its own
+    // full set; nothing is shared between detail and library any more).
+    // ExtraposterMoviesDetailEnabled is the view switch and predates the split.
+    /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    public string ExtraposterMoviesDetailOrderMode { get; set; } = "Sequential";
+
+    /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
+    public bool ExtraposterMoviesDetailSinglePass { get; set; } = false;
+
+    /// <summary>How long each image is shown (ms).</summary>
+    public int ExtraposterMoviesDetailCycleTimeMs { get; set; } = 5000;
+
+    /// <summary>Crossfade duration (ms); clamped to CycleTimeMs.</summary>
+    public int ExtraposterMoviesDetailFadeTimeMs { get; set; } = 1000;
+
+    /// <summary>Wait before the slideshow starts (the original poster shows meanwhile).</summary>
+    public bool ExtraposterMoviesDetailDelayEnabled { get; set; } = false;
+
+    /// <summary>Length of that wait (ms).</summary>
+    public int ExtraposterMoviesDetailDelayMs { get; set; } = 3000;
+
+    // ----- Extraposter / movies (and Sets) / library views (Session 123: every view has its own
+    // full set; nothing is shared between detail and library any more).
+    // ExtraposterMoviesLibraryEnabled is the view switch and predates the split.
+    /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    public string ExtraposterMoviesLibraryOrderMode { get; set; } = "Sequential";
+
+    /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
+    public bool ExtraposterMoviesLibrarySinglePass { get; set; } = false;
+
+    /// <summary>How long each image is shown (ms).</summary>
+    public int ExtraposterMoviesLibraryCycleTimeMs { get; set; } = 5000;
+
+    /// <summary>Crossfade duration (ms); clamped to CycleTimeMs.</summary>
+    public int ExtraposterMoviesLibraryFadeTimeMs { get; set; } = 1000;
+
+    /// <summary>Wait before the slideshow starts (the original poster shows meanwhile).</summary>
+    public bool ExtraposterMoviesLibraryDelayEnabled { get; set; } = false;
+
+    /// <summary>Length of that wait (ms).</summary>
+    public int ExtraposterMoviesLibraryDelayMs { get; set; } = 3000;
+
+    /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
+    public bool ExtraposterMoviesLibrarySyncEnabled { get; set; } = true;
+
+    // ----- Extraposter / TV shows / detail pages (Session 123: every view has its own
+    // full set; nothing is shared between detail and library any more).
+    // ExtraposterTvShowsDetailEnabled is the view switch and predates the split.
+    /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    public string ExtraposterTvShowsDetailOrderMode { get; set; } = "Sequential";
+
+    /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
+    public bool ExtraposterTvShowsDetailSinglePass { get; set; } = false;
+
+    /// <summary>How long each image is shown (ms).</summary>
+    public int ExtraposterTvShowsDetailCycleTimeMs { get; set; } = 5000;
+
+    /// <summary>Crossfade duration (ms); clamped to CycleTimeMs.</summary>
+    public int ExtraposterTvShowsDetailFadeTimeMs { get; set; } = 1000;
+
+    /// <summary>Wait before the slideshow starts (the original poster shows meanwhile).</summary>
+    public bool ExtraposterTvShowsDetailDelayEnabled { get; set; } = false;
+
+    /// <summary>Length of that wait (ms).</summary>
+    public int ExtraposterTvShowsDetailDelayMs { get; set; } = 3000;
+
+    // ----- Extraposter / TV shows / library views (Session 123: every view has its own
+    // full set; nothing is shared between detail and library any more).
+    // ExtraposterTvShowsLibraryEnabled is the view switch and predates the split.
+    /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    public string ExtraposterTvShowsLibraryOrderMode { get; set; } = "Sequential";
+
+    /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
+    public bool ExtraposterTvShowsLibrarySinglePass { get; set; } = false;
+
+    /// <summary>How long each image is shown (ms).</summary>
+    public int ExtraposterTvShowsLibraryCycleTimeMs { get; set; } = 5000;
+
+    /// <summary>Crossfade duration (ms); clamped to CycleTimeMs.</summary>
+    public int ExtraposterTvShowsLibraryFadeTimeMs { get; set; } = 1000;
+
+    /// <summary>Wait before the slideshow starts (the original poster shows meanwhile).</summary>
+    public bool ExtraposterTvShowsLibraryDelayEnabled { get; set; } = false;
+
+    /// <summary>Length of that wait (ms).</summary>
+    public int ExtraposterTvShowsLibraryDelayMs { get; set; } = 3000;
+
+    /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
+    public bool ExtraposterTvShowsLibrarySyncEnabled { get; set; } = true;
 
     /// <summary>
     /// Which of Extraposter/Extrakeyart wins when BOTH are enabled and
@@ -900,8 +948,6 @@ public class PluginConfiguration : BasePluginConfiguration
     // tab-level AllowedFormats above (explicit user request - detached
     // from both Extraposter and Extrakeyart, now covers both).
 
-    public string ExtrakeyartOrderMode { get; set; } = "Sequential";
-
     /// <summary>
     /// "Counts" or "Ignored". Whether the unnumbered file (e.g.
     /// "keyart.jpg", no "1"/"2"/... suffix) is picked up as the
@@ -912,16 +958,6 @@ public class PluginConfiguration : BasePluginConfiguration
     /// upgrade must not silently start picking one up.
     /// </summary>
     public string ExtrakeyartUnnumberedMode { get; set; } = "Ignored";
-
-    public int ExtrakeyartCycleTimeMs { get; set; } = 5000;
-
-    public int ExtrakeyartFadeTimeMs { get; set; } = 500;
-
-    public bool ExtrakeyartDelayEnabled { get; set; }
-
-    public int ExtrakeyartDelayMs { get; set; } = 3000;
-
-    public bool ExtrakeyartSinglePass { get; set; }
 
     public bool ExtrakeyartShowOnMovies { get; set; } = true;
 
@@ -946,25 +982,131 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool ExtrakeyartTvShowsLibraryEnabled { get; set; } = true;
 
-    // --- Optional logo overlay (explicit user request) ---
-    // 1:1 replica of Keyart's own logo overlay above (see
-    // KeyartLogoEnabled's own doc comment for the full "klebend"/native
-    // Logo image reasoning, not repeated here) - deliberately its OWN,
-    // entirely independent set of three fields rather than reusing
-    // Keyart's own, since the user explicitly wants Extrakeyart's own
-    // overlay configurable separately (own enable switch, own position,
-    // own size), not tied to Keyart's own settings in any way.
-    public bool ExtrakeyartLogoEnabled { get; set; } = false;
+    // ----- Extrakeyart / movies (and Sets) / detail pages (Session 123: every view has its own
+    // full set; nothing is shared between detail and library any more).
+    // ExtrakeyartMoviesDetailEnabled is the view switch and predates the split.
+    /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    public string ExtrakeyartMoviesDetailOrderMode { get; set; } = "Sequential";
 
-    /// <summary>
-    /// Vertical position as a percentage of the poster box's own height,
-    /// measured from the top. Horizontal is always centered (fixed, not
-    /// configurable - matches Keyart's own identical decision).
-    /// </summary>
-    public int ExtrakeyartLogoVerticalPositionPercent { get; set; } = 87;
+    /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
+    public bool ExtrakeyartMoviesDetailSinglePass { get; set; } = false;
 
-    /// <summary>Logo width as a percentage of the poster box's own width. Height follows automatically (aspect ratio preserved).</summary>
-    public int ExtrakeyartLogoSizePercent { get; set; } = 60;
+    /// <summary>How long each image is shown (ms).</summary>
+    public int ExtrakeyartMoviesDetailCycleTimeMs { get; set; } = 5000;
+
+    /// <summary>Crossfade duration (ms); clamped to CycleTimeMs.</summary>
+    public int ExtrakeyartMoviesDetailFadeTimeMs { get; set; } = 1000;
+
+    /// <summary>Wait before the slideshow starts (the original poster shows meanwhile).</summary>
+    public bool ExtrakeyartMoviesDetailDelayEnabled { get; set; } = false;
+
+    /// <summary>Length of that wait (ms).</summary>
+    public int ExtrakeyartMoviesDetailDelayMs { get; set; } = 3000;
+
+    /// <summary>Jellyfin's Logo image drawn over the keyart (detail pages).</summary>
+    public bool ExtrakeyartMoviesDetailLogoEnabled { get; set; } = false;
+
+    /// <summary>Logo centre from the top of the poster box, 0-100 %.</summary>
+    public int ExtrakeyartMoviesDetailLogoVerticalPositionPercent { get; set; } = 87;
+
+    /// <summary>Logo width as a percentage of the poster box width.</summary>
+    public int ExtrakeyartMoviesDetailLogoSizePercent { get; set; } = 60;
+
+    // ----- Extrakeyart / movies (and Sets) / library views (Session 123: every view has its own
+    // full set; nothing is shared between detail and library any more).
+    // ExtrakeyartMoviesLibraryEnabled is the view switch and predates the split.
+    /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    public string ExtrakeyartMoviesLibraryOrderMode { get; set; } = "Sequential";
+
+    /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
+    public bool ExtrakeyartMoviesLibrarySinglePass { get; set; } = false;
+
+    /// <summary>How long each image is shown (ms).</summary>
+    public int ExtrakeyartMoviesLibraryCycleTimeMs { get; set; } = 5000;
+
+    /// <summary>Crossfade duration (ms); clamped to CycleTimeMs.</summary>
+    public int ExtrakeyartMoviesLibraryFadeTimeMs { get; set; } = 1000;
+
+    /// <summary>Wait before the slideshow starts (the original poster shows meanwhile).</summary>
+    public bool ExtrakeyartMoviesLibraryDelayEnabled { get; set; } = false;
+
+    /// <summary>Length of that wait (ms).</summary>
+    public int ExtrakeyartMoviesLibraryDelayMs { get; set; } = 3000;
+
+    /// <summary>Jellyfin's Logo image drawn over the keyart (library views).</summary>
+    public bool ExtrakeyartMoviesLibraryLogoEnabled { get; set; } = false;
+
+    /// <summary>Logo centre from the top of the poster box, 0-100 %.</summary>
+    public int ExtrakeyartMoviesLibraryLogoVerticalPositionPercent { get; set; } = 87;
+
+    /// <summary>Logo width as a percentage of the poster box width.</summary>
+    public int ExtrakeyartMoviesLibraryLogoSizePercent { get; set; } = 60;
+
+    /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
+    public bool ExtrakeyartMoviesLibrarySyncEnabled { get; set; } = true;
+
+    // ----- Extrakeyart / TV shows / detail pages (Session 123: every view has its own
+    // full set; nothing is shared between detail and library any more).
+    // ExtrakeyartTvShowsDetailEnabled is the view switch and predates the split.
+    /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    public string ExtrakeyartTvShowsDetailOrderMode { get; set; } = "Sequential";
+
+    /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
+    public bool ExtrakeyartTvShowsDetailSinglePass { get; set; } = false;
+
+    /// <summary>How long each image is shown (ms).</summary>
+    public int ExtrakeyartTvShowsDetailCycleTimeMs { get; set; } = 5000;
+
+    /// <summary>Crossfade duration (ms); clamped to CycleTimeMs.</summary>
+    public int ExtrakeyartTvShowsDetailFadeTimeMs { get; set; } = 1000;
+
+    /// <summary>Wait before the slideshow starts (the original poster shows meanwhile).</summary>
+    public bool ExtrakeyartTvShowsDetailDelayEnabled { get; set; } = false;
+
+    /// <summary>Length of that wait (ms).</summary>
+    public int ExtrakeyartTvShowsDetailDelayMs { get; set; } = 3000;
+
+    /// <summary>Jellyfin's Logo image drawn over the keyart (detail pages).</summary>
+    public bool ExtrakeyartTvShowsDetailLogoEnabled { get; set; } = false;
+
+    /// <summary>Logo centre from the top of the poster box, 0-100 %.</summary>
+    public int ExtrakeyartTvShowsDetailLogoVerticalPositionPercent { get; set; } = 87;
+
+    /// <summary>Logo width as a percentage of the poster box width.</summary>
+    public int ExtrakeyartTvShowsDetailLogoSizePercent { get; set; } = 60;
+
+    // ----- Extrakeyart / TV shows / library views (Session 123: every view has its own
+    // full set; nothing is shared between detail and library any more).
+    // ExtrakeyartTvShowsLibraryEnabled is the view switch and predates the split.
+    /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    public string ExtrakeyartTvShowsLibraryOrderMode { get; set; } = "Sequential";
+
+    /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
+    public bool ExtrakeyartTvShowsLibrarySinglePass { get; set; } = false;
+
+    /// <summary>How long each image is shown (ms).</summary>
+    public int ExtrakeyartTvShowsLibraryCycleTimeMs { get; set; } = 5000;
+
+    /// <summary>Crossfade duration (ms); clamped to CycleTimeMs.</summary>
+    public int ExtrakeyartTvShowsLibraryFadeTimeMs { get; set; } = 1000;
+
+    /// <summary>Wait before the slideshow starts (the original poster shows meanwhile).</summary>
+    public bool ExtrakeyartTvShowsLibraryDelayEnabled { get; set; } = false;
+
+    /// <summary>Length of that wait (ms).</summary>
+    public int ExtrakeyartTvShowsLibraryDelayMs { get; set; } = 3000;
+
+    /// <summary>Jellyfin's Logo image drawn over the keyart (library views).</summary>
+    public bool ExtrakeyartTvShowsLibraryLogoEnabled { get; set; } = false;
+
+    /// <summary>Logo centre from the top of the poster box, 0-100 %.</summary>
+    public int ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent { get; set; } = 87;
+
+    /// <summary>Logo width as a percentage of the poster box width.</summary>
+    public int ExtrakeyartTvShowsLibraryLogoSizePercent { get; set; } = 60;
+
+    /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
+    public bool ExtrakeyartTvShowsLibrarySyncEnabled { get; set; } = true;
 
     // ───────────────────────── Characterart tab ─────────────────────────
     // Curriculum section E. A completely separate feature block,
@@ -1563,6 +1705,26 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool KeyartTvShowsLibraryEnabled { get; set; } = true;
 
+    // ----- Keyart logo overlay, detail pages (Session 123: separate per view).
+    /// <summary>Jellyfin's Logo image drawn over the keyart on detail pages.</summary>
+    public bool KeyartDetailLogoEnabled { get; set; } = false;
+
+    /// <summary>Logo centre from the top of the poster box, 0-100 %.</summary>
+    public int KeyartDetailLogoVerticalPositionPercent { get; set; } = 87;
+
+    /// <summary>Logo width as a percentage of the poster box width.</summary>
+    public int KeyartDetailLogoSizePercent { get; set; } = 60;
+
+    // ----- Keyart logo overlay, library views (Session 123: separate per view).
+    /// <summary>Jellyfin's Logo image drawn over the keyart on library views.</summary>
+    public bool KeyartLibraryLogoEnabled { get; set; } = false;
+
+    /// <summary>Logo centre from the top of the poster box, 0-100 %.</summary>
+    public int KeyartLibraryLogoVerticalPositionPercent { get; set; } = 87;
+
+    /// <summary>Logo width as a percentage of the poster box width.</summary>
+    public int KeyartLibraryLogoSizePercent { get; set; } = 60;
+
     // --- Optional logo overlay ---
     // Independent of KeyartEnabled itself (user's own explicit
     // distinction: the overlay is a separate on/off, not implied by
@@ -1578,18 +1740,6 @@ public class PluginConfiguration : BasePluginConfiguration
     // fetched directly via Jellyfin's own existing image API
     // (apiClient.getScaledImageUrl with type:'Logo'), not a new file
     // convention of this plugin's own.
-
-    public bool KeyartLogoEnabled { get; set; } = false;
-
-    /// <summary>
-    /// Vertical position as a percentage of the poster box's own height,
-    /// measured from the top. Horizontal is always centered (fixed, not
-    /// configurable - concept-session decision).
-    /// </summary>
-    public int KeyartLogoVerticalPositionPercent { get; set; } = 87;
-
-    /// <summary>Logo width as a percentage of the poster box's own width. Height follows automatically (aspect ratio preserved).</summary>
-    public int KeyartLogoSizePercent { get; set; } = 60;
 
     // ───────────────────────── Red Carpet tab ─────────────────────────
     // Curriculum section H. A fundamentally different storage structure

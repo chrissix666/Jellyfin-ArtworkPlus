@@ -60,6 +60,27 @@ with sync_playwright() as p:
             walk(root, false, false, []);
         });
 
+        // Session 123 (rule 19, second step): the DOM depth decides. A
+        // collapse header inside ONE .epCollapseBody needs epCollapseNested,
+        // inside TWO (Extraposter/Extrakeyart > Movies/TV shows > Detail page/
+        // Library views) additionally epCollapseNested2; a header inside none
+        // (tab level, Characterart's own Movies/TV shows) must carry neither.
+        document.querySelectorAll('.epCollapseHeader').forEach(function (header) {
+            checked++;
+            var key = header.getAttribute('data-collapse');
+            var body = document.querySelector('.epCollapseBody[data-collapsebody="' + key + '"]');
+            var depth = 0, el = header.parentElement;
+            while (el) { if (el.classList && el.classList.contains('epCollapseBody')) { depth++; } el = el.parentElement; }
+            [header, body].forEach(function (node, i) {
+                if (!node) { return; }
+                var what = (i === 0 ? 'header' : 'body') + ' "' + key + '" (depth ' + depth + ')';
+                var n1 = node.classList.contains('epCollapseNested'), n2 = node.classList.contains('epCollapseNested2');
+                if (depth === 0 && (n1 || n2)) { problems.push(what + ': must carry no nested class'); }
+                if (depth === 1 && (!n1 || n2)) { problems.push(what + ': needs epCollapseNested only'); }
+                if (depth >= 2 && (!n1 || !n2)) { problems.push(what + ': needs epCollapseNested AND epCollapseNested2'); }
+            });
+        });
+
         return { problems: problems, checked: checked };
     }""")
 

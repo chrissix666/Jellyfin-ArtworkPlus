@@ -874,7 +874,7 @@
     // marked `artworkplus-tile-pending` right there (image hidden, the
     // blurhash canvas kept visible by the CSS the server injects). A tile
     // is released when every enabled participant has answered for it
-    // and the winner's image is in place; a 2 s safety net releases it
+    // and the winner's image is in place; a 3 s safety net releases it
     // no matter what.
     //
     // Winner 1/2 (one image): the URL goes into data-src, so Jellyfin
@@ -901,7 +901,7 @@
     var LibraryTiles = (function () {
         var PENDING_CLASS = 'artworkplus-tile-pending';
         var FADEIN_CLASS = 'artworkplus-tile-fadein';
-        var SAFETY_MS = 2000;
+        var SAFETY_MS = 3000; // Session 123: 2 s was beaten by a cold Extraposter batch on external drives
         var PRELOAD_TIMEOUT_MS = 8000;
         var NAMES = { 1: 'custom', 2: 'animated', 3: 'extra' };
         var log = Core.makeLogger('[PostersPlus/LibraryTiles]', DEBUG);
@@ -955,7 +955,7 @@
             armSafety(st);
         }
 
-        function armSafety(st) {
+        function armSafety(st, ms) {
             if (st.safetyTimer) { clearTimeout(st.safetyTimer); }
             st.safetyTimer = setTimeout(function () {
                 st.safetyTimer = null;
@@ -965,7 +965,34 @@
                 if (st.holdForOverlay && !st.overlayNear) { return; }
                 log('safety net released tile', st.itemId, '| answers:', JSON.stringify(Object.keys(st.answers)), '| winner:', st.winner);
                 release(st);
-            }, SAFETY_MS);
+            }, ms || SAFETY_MS);
+        }
+
+        // Session 123 (Phase 3): Jellyfin's Logo image over a Keyart /
+        // Extrakeyart tile - the same overlay the detail page draws
+        // (applySharedLogoOverlay), sized in percent of the tile. Lives
+        // inside .cardImageContainer after the Extra layers (paints above
+        // them by DOM order) and below Jellyfin's indicators (z-index 1);
+        // hidden with the container while Jellyfin has it emptied.
+        // logo = { vertical, size, hasLogo } or null (remove).
+        function syncTileLogo(st, logo) {
+            var c = st.container;
+            var el = c.querySelector('.artworkplus-tile-logo');
+            if (!logo || !logo.hasLogo) { if (el) { el.remove(); } return; }
+            if (!el) {
+                el = document.createElement('div');
+                el.className = 'artworkplus-tile-logo';
+                el.style.cssText = 'position:absolute;left:50%;transform:translate(-50%,-50%);pointer-events:none;';
+                var img = document.createElement('img');
+                img.alt = '';
+                img.style.cssText = 'width:100%;height:auto;display:block;';
+                el.appendChild(img);
+                c.appendChild(el);
+            }
+            el.style.top = logo.vertical + '%';
+            el.style.width = logo.size + '%';
+            var url = '/Items/' + encodeURIComponent(st.itemId) + '/Images/Logo?maxWidth=400';
+            if (el.firstChild.getAttribute('src') !== url) { el.firstChild.src = url; }
         }
 
         function release(st) {
@@ -1011,6 +1038,7 @@
             if (winner === 0) {
                 st.holdForOverlay = false;
                 st.baseUrl = null;
+                syncTileLogo(st, null);
                 release(st);
                 return;
             }
@@ -1024,11 +1052,13 @@
                 } else if (hasDelay) {
                     release(st); // Jellyfin's own poster is the Delay backdrop
                 }
+                syncTileLogo(st, null); // Extra draws its own (Extrakeyart) logo once its first image is up
                 if (participants[3] && participants[3].apply) { participants[3].apply(st); }
                 return;
             }
             st.holdForOverlay = false;
             applyBase(st, st.answers[winner].url, true);
+            syncTileLogo(st, st.answers[winner].logo || null);
         }
 
         function ownerOfUrl(st, url) {
@@ -1111,7 +1141,7 @@
 
         log('library tile arbiter ready | expected participants:', JSON.stringify(expected), flags ? '(server flags)' : '(no server flags - older build)');
 
-        return { register: register, report: report, withdraw: withdraw, stateFor: stateFor, setPending: setPending, armSafety: armSafety, release: release, isEnabled: isEnabled };
+        return { register: register, report: report, withdraw: withdraw, stateFor: stateFor, setPending: setPending, armSafety: armSafety, release: release, isEnabled: isEnabled, syncTileLogo: syncTileLogo };
     })();
 
     // One-image participants (Custom 1, Animated 2): page-wide batch,
@@ -1128,7 +1158,13 @@
 
         function answerFor(itemId) {
             var result = resultCache[itemId];
-            return (result && result.IsApplicable) ? { url: options.imageUrl(itemId, result), resolvedType: result.ResolvedType } : null;
+            if (!result || !result.IsApplicable) { return null; }
+            return {
+                url: options.imageUrl(itemId, result),
+                resolvedType: result.ResolvedType,
+                // Keyart's per-view logo (Session 123): the server already says whether the item has one
+                logo: result.LogoEnabled ? { vertical: result.LogoVerticalPositionPercent, size: result.LogoSizePercent, hasLogo: !!result.HasLogo } : null
+            };
         }
 
         function collect(card, itemId) {
@@ -1632,7 +1668,6 @@
         var pendingCards = {};
         var pendingFetchTimer = null;
         var activeTiles = new Map();
-        var conductors = {};
 
         function libAnswerFor(itemId) {
             var result = resultCache[itemId];
@@ -1647,6 +1682,8 @@
                 cycleMs: result.CycleTimeMs,
                 fadeMs: result.FadeTimeMs,
                 singlePass: !!result.SinglePass,
+                sync: !!result.SyncEnabled,
+                logo: result.LogoEnabled ? { vertical: result.LogoVerticalPositionPercent, size: result.LogoSizePercent, hasLogo: !!result.HasLogo } : null,
                 resolvedType: resolvedType
             };
         }
@@ -1751,34 +1788,117 @@
             });
         }
 
-        function ensureConductor(type, cycleMs) {
-            if (conductors[type]) { return; }
-            conductors[type] = { intervalHandle: null, cycleMs: cycleMs };
-            conductors[type].intervalHandle = setInterval(function () { tickConductor(type); }, cycleMs);
-            libLog('Synchronized clock for', type, 'started, cycle:', cycleMs, 'ms');
+        // -----------------------------------------------------------------
+        // Two clock modes (Session 123, Phase 2 - user decision, the old
+        // per-type conductor is gone):
+        //   sync off: every tile runs on its own - first image as soon as
+        //             it is decoded (after its Delay), then its own interval.
+        //   sync on:  ONE page clock per (feature type, tile type) with the
+        //             Display duration as its period. EVERY change - the
+        //             first appearance included - happens on a tick; a tile
+        //             whose first image is decoded between two ticks waits
+        //             for the next one (its base or blurhash shows until
+        //             then). The clock starts with the first tile that is
+        //             ready, stops when no tile of its key is left.
+        // The next image is prefetched right after each change, so at the
+        // tick every tile's preload resolves from the cache in the same
+        // microtask checkpoint and all fades start in the same frame.
+        // -----------------------------------------------------------------
+
+        var clocks = {}; // key -> { periodMs, epoch, timer, n }
+
+        function clockKey(tile) { return tile.resolvedType + '|' + tile.type; }
+
+        function prefetchNext(tile) {
+            if (tile.urls.length < 2) { return; }
+            var url = tile.urls[tile.slideIndex % tile.urls.length];
+            Core.preloadImage(url, { timeoutMs: PRELOAD_TIMEOUT_MS }).catch(function () { /* the tick handles a failure */ });
         }
 
-        function tickConductor(type) {
+        // One rotation step of a joined tile (Loop / Play once semantics).
+        function advanceTile(tile) {
+            if (!tile.active || !tile.joined || tile.finished) { return; }
+            if (!document.body.contains(tile.el)) { deactivateTile(tile.el); return; }
+            if (tile.urls.length < 2) { return; } // one image: static overlay, nothing to rotate
+            if (tile.singlePass && tile.slideIndex >= tile.urls.length) {
+                var visibleLayer = tile.visibleIndex === -1 ? null : tile.layers[tile.visibleIndex];
+                if (visibleLayer) { visibleLayer.style.opacity = '0'; }
+                tile.finished = true;
+                if (tile.timer) { clearInterval(tile.timer); tile.timer = null; }
+                return;
+            }
+            var url = tile.urls[tile.slideIndex % tile.urls.length];
+            tile.slideIndex++;
+            showLayer(tile, url, false).then(function () { prefetchNext(tile); }).catch(function (e) { libLog('Image skipped (load error)', tile.id, e); });
+        }
+
+        // The first appearance of a tile (its Delay has passed and the
+        // first image is decoded). instant = the tile was held pending.
+        function firstShow(tile) {
+            var st = tile.st;
+            var hold = st.holdForOverlay;
+            tile.slideIndex = 1;
+            return showLayer(tile, tile.urls[0], hold).then(function () {
+                if (!tile.active) { return; }
+                tile.joined = true;
+                if (hold) { LibraryTiles.release(st); }
+                LibraryTiles.syncTileLogo(st, tile.logo);
+                prefetchNext(tile);
+                if (!tile.sync && tile.urls.length > 1) {
+                    tile.timer = setInterval(function () { advanceTile(tile); }, tile.cycleMs);
+                }
+            });
+        }
+
+        function ensureClock(key, periodMs) {
+            if (clocks[key]) { return clocks[key]; }
+            var clock = { periodMs: periodMs, epoch: performance.now(), n: 0, timer: null };
+            clocks[key] = clock;
+            libLog('Page clock', key, 'started, period:', periodMs, 'ms');
+            scheduleTick(key);
+            return clock;
+        }
+
+        function scheduleTick(key) {
+            var clock = clocks[key];
+            if (!clock) { return; }
+            clock.n++;
+            var due = clock.epoch + clock.n * clock.periodMs - performance.now();
+            clock.timer = setTimeout(function () { tick(key); }, Math.max(0, due));
+        }
+
+        function tick(key) {
+            var clock = clocks[key];
+            if (!clock) { return; }
+            var now = performance.now();
             var alive = 0;
             activeTiles.forEach(function (tile) {
-                if (tile && tile.type === type && document.body.contains(tile.el)) { alive++; }
-            });
-            if (!alive) { clearInterval(conductors[type].intervalHandle); delete conductors[type]; }
-            activeTiles.forEach(function (tile) {
-                if (!tile || tile.type !== type || !tile.joined) { return; }
+                if (!tile.sync || clockKey(tile) !== key) { return; }
                 if (!document.body.contains(tile.el)) { deactivateTile(tile.el); return; }
-                if (tile.urls.length < 2) { return; } // one image: static overlay, nothing to rotate
-                if (tile.singlePass && tile.slideIndex >= tile.urls.length) {
-                    var visibleLayer = tile.visibleIndex === -1 ? null : tile.layers[tile.visibleIndex];
-                    if (visibleLayer) { visibleLayer.style.opacity = '0'; }
-                    tile.finished = true;
-                    return;
-                }
-                if (tile.finished) { return; }
-                var url = tile.urls[tile.slideIndex % tile.urls.length];
-                tile.slideIndex++;
-                showLayer(tile, url, false).catch(function (e) { libLog('Image skipped (load error)', tile.id, e); });
+                alive++;
+                if (tile.joined) { advanceTile(tile); return; }
+                if (tile.firstReady && now >= tile.readyAt - 1) { firstShow(tile).catch(function () { /* handled in preload */ }); }
             });
+            if (!alive) { delete clocks[key]; libLog('Page clock', key, 'stopped (no tiles)'); return; }
+            scheduleTick(key);
+        }
+
+        // Sync mode: called when a tile's first image is decoded. Starts the
+        // clock with THIS tile if none runs (it shows at once and sets the
+        // epoch); otherwise the tile waits for the next tick.
+        function onFirstReady(tile) {
+            tile.firstReady = true;
+            var key = clockKey(tile);
+            if (clocks[key]) { return; } // the running clock picks it up on its next tick
+            var wait = tile.readyAt - performance.now();
+            if (wait > 1) {
+                // Its Delay is not over: the clock starts when it is (unless
+                // another tile starts it first - then this one waits for a tick).
+                setTimeout(function () { if (tile.active && !tile.joined) { onFirstReady(tile); } }, wait);
+                return;
+            }
+            ensureClock(key, tile.cycleMs); // epoch = now = this tile's first appearance
+            firstShow(tile).catch(function () { /* handled by the preload's own catch */ });
         }
 
         function activateTile(st) {
@@ -1786,34 +1906,37 @@
             if (activeTiles.has(cardEl)) { return; }
             var answer = st.answers[LIB_PRIORITY];
             if (!answer) { return; }
-            var imageContainer = st.container;
-            var layers = libCreateOverlayLayers(imageContainer, answer.fadeMs);
+            var layers = libCreateOverlayLayers(st.container, answer.fadeMs);
             var tile = {
-                id: st.itemId, el: cardEl, type: st.type, layers: layers, urls: answer.urls, fadeMs: answer.fadeMs,
+                id: st.itemId, el: cardEl, st: st, type: st.type, resolvedType: answer.resolvedType, layers: layers, urls: answer.urls,
+                fadeMs: answer.fadeMs, cycleMs: answer.cycleMs, sync: answer.sync, logo: answer.logo,
                 slideIndex: 0, visibleIndex: -1, singlePass: answer.singlePass,
-                finished: false, joined: false, active: true, fadeInGeneration: 0
+                finished: false, joined: false, active: true, fadeInGeneration: 0,
+                timer: null, firstReady: false, readyAt: performance.now() + answer.delayMs
             };
             activeTiles.set(cardEl, tile);
-            ensureConductor(st.type, answer.cycleMs);
             var hold = st.holdForOverlay;
             if (hold) {
                 // No Delay: nothing underneath is meant to show - keep (or
-                // put back) the blurhash until the first image is decoded.
+                // put back) the blurhash until the first image is decoded
+                // (sync: until the tick that shows it - one period longer).
                 LibraryTiles.setPending(st);
-                LibraryTiles.armSafety(st);
+                LibraryTiles.armSafety(st, tile.sync ? tile.cycleMs + 2000 : undefined);
+            }
+            function firstFailed(e) {
+                libLog('First image failed for tile', tile.id, '- withdrawing', e);
+                deactivateTile(cardEl);
+                LibraryTiles.withdraw(cardEl, LIB_PRIORITY);
+            }
+            if (tile.sync) {
+                Core.preloadImage(answer.urls[0], { timeoutMs: PRELOAD_TIMEOUT_MS })
+                    .then(function () { if (tile.active) { onFirstReady(tile); } })
+                    .catch(firstFailed);
+                return;
             }
             setTimeout(function () {
                 if (!tile.active) { return; }
-                tile.slideIndex = 1;
-                showLayer(tile, answer.urls[0], hold).then(function () {
-                    if (!tile.active) { return; }
-                    tile.joined = true;
-                    if (hold) { LibraryTiles.release(st); }
-                }).catch(function (e) {
-                    libLog('First image failed for tile', tile.id, '- withdrawing', e);
-                    deactivateTile(cardEl);
-                    LibraryTiles.withdraw(cardEl, LIB_PRIORITY);
-                });
+                firstShow(tile).catch(firstFailed);
             }, answer.delayMs);
         }
 
@@ -1821,7 +1944,9 @@
             var tile = activeTiles.get(cardEl);
             if (!tile) { return; }
             tile.active = false;
+            if (tile.timer) { clearInterval(tile.timer); tile.timer = null; }
             tile.layers.forEach(function (l) { l.remove(); });
+            LibraryTiles.syncTileLogo(tile.st, null);
             activeTiles.delete(cardEl);
         }
 
@@ -1846,8 +1971,8 @@
 
         // No viewshow reset: a view Jellyfin restores from its cache keeps
         // its tiles (and their overlays); tiles of a discarded view are
-        // dropped by the clock's own document.body check, and a clock
-        // with no tiles left stops itself.
+        // dropped by the document.body checks in advanceTile()/tick(),
+        // and a page clock with no tiles left stops itself.
 
         return { check: check, priority: 3 };
     })();

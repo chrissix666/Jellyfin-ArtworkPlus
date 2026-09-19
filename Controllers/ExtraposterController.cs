@@ -91,6 +91,12 @@ public class PosterListResult
 
     public string ResolvedType { get; set; } = string.Empty;
 
+    /// <summary>Library views only (Session 123): one shared clock per page for all tiles of this type.</summary>
+    public bool SyncEnabled { get; set; }
+
+    /// <summary>Session 123: the item has a Jellyfin Logo image (the tile logo overlay needs no extra item request).</summary>
+    public bool HasLogo { get; set; }
+
     /// <summary>
     /// 1:1 replica of CustomPosterResult's own identical three fields
     /// (explicit user request - see PluginConfiguration.cs's own
@@ -293,6 +299,45 @@ public class ExtraposterController : ControllerBase
     /// else (including missing/empty) becomes "auto" - same convention as
     /// CustomPosterController's own NormalizeType.
     /// </summary>
+
+    /// <summary>
+    /// The per-view slideshow settings of one feature for one content type
+    /// (Session 123: Extraposter/Extrakeyart are split into Movies/TV shows
+    /// x Detail page/Library views, nothing is shared between the views any
+    /// more). Sets use the Movies set, as everywhere else in this project.
+    /// </summary>
+    private sealed record ExtraViewSettings(
+        string OrderMode, bool SinglePass, int CycleTimeMs, int FadeTimeMs, bool DelayEnabled, int DelayMs,
+        bool LogoEnabled, int LogoVerticalPositionPercent, int LogoSizePercent, bool SyncEnabled);
+
+    private ExtraViewSettings GetViewSettings(PluginConfiguration c, Guid itemId, string resolvedType, bool isLibraryScope)
+    {
+        var item = _libraryManager.GetItemById(itemId);
+        var tv = item is Series;
+        var keyart = resolvedType == "extrakeyart";
+        if (!keyart)
+        {
+            if (!tv)
+            {
+                return isLibraryScope
+                    ? new ExtraViewSettings(c.ExtraposterMoviesLibraryOrderMode, c.ExtraposterMoviesLibrarySinglePass, c.ExtraposterMoviesLibraryCycleTimeMs, c.ExtraposterMoviesLibraryFadeTimeMs, c.ExtraposterMoviesLibraryDelayEnabled, c.ExtraposterMoviesLibraryDelayMs, false, 0, 0, c.ExtraposterMoviesLibrarySyncEnabled)
+                    : new ExtraViewSettings(c.ExtraposterMoviesDetailOrderMode, c.ExtraposterMoviesDetailSinglePass, c.ExtraposterMoviesDetailCycleTimeMs, c.ExtraposterMoviesDetailFadeTimeMs, c.ExtraposterMoviesDetailDelayEnabled, c.ExtraposterMoviesDetailDelayMs, false, 0, 0, false);
+            }
+            return isLibraryScope
+                ? new ExtraViewSettings(c.ExtraposterTvShowsLibraryOrderMode, c.ExtraposterTvShowsLibrarySinglePass, c.ExtraposterTvShowsLibraryCycleTimeMs, c.ExtraposterTvShowsLibraryFadeTimeMs, c.ExtraposterTvShowsLibraryDelayEnabled, c.ExtraposterTvShowsLibraryDelayMs, false, 0, 0, c.ExtraposterTvShowsLibrarySyncEnabled)
+                : new ExtraViewSettings(c.ExtraposterTvShowsDetailOrderMode, c.ExtraposterTvShowsDetailSinglePass, c.ExtraposterTvShowsDetailCycleTimeMs, c.ExtraposterTvShowsDetailFadeTimeMs, c.ExtraposterTvShowsDetailDelayEnabled, c.ExtraposterTvShowsDetailDelayMs, false, 0, 0, false);
+        }
+        if (!tv)
+        {
+            return isLibraryScope
+                ? new ExtraViewSettings(c.ExtrakeyartMoviesLibraryOrderMode, c.ExtrakeyartMoviesLibrarySinglePass, c.ExtrakeyartMoviesLibraryCycleTimeMs, c.ExtrakeyartMoviesLibraryFadeTimeMs, c.ExtrakeyartMoviesLibraryDelayEnabled, c.ExtrakeyartMoviesLibraryDelayMs, c.ExtrakeyartMoviesLibraryLogoEnabled, c.ExtrakeyartMoviesLibraryLogoVerticalPositionPercent, c.ExtrakeyartMoviesLibraryLogoSizePercent, c.ExtrakeyartMoviesLibrarySyncEnabled)
+                : new ExtraViewSettings(c.ExtrakeyartMoviesDetailOrderMode, c.ExtrakeyartMoviesDetailSinglePass, c.ExtrakeyartMoviesDetailCycleTimeMs, c.ExtrakeyartMoviesDetailFadeTimeMs, c.ExtrakeyartMoviesDetailDelayEnabled, c.ExtrakeyartMoviesDetailDelayMs, c.ExtrakeyartMoviesDetailLogoEnabled, c.ExtrakeyartMoviesDetailLogoVerticalPositionPercent, c.ExtrakeyartMoviesDetailLogoSizePercent, false);
+        }
+        return isLibraryScope
+            ? new ExtraViewSettings(c.ExtrakeyartTvShowsLibraryOrderMode, c.ExtrakeyartTvShowsLibrarySinglePass, c.ExtrakeyartTvShowsLibraryCycleTimeMs, c.ExtrakeyartTvShowsLibraryFadeTimeMs, c.ExtrakeyartTvShowsLibraryDelayEnabled, c.ExtrakeyartTvShowsLibraryDelayMs, c.ExtrakeyartTvShowsLibraryLogoEnabled, c.ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent, c.ExtrakeyartTvShowsLibraryLogoSizePercent, c.ExtrakeyartTvShowsLibrarySyncEnabled)
+            : new ExtraViewSettings(c.ExtrakeyartTvShowsDetailOrderMode, c.ExtrakeyartTvShowsDetailSinglePass, c.ExtrakeyartTvShowsDetailCycleTimeMs, c.ExtrakeyartTvShowsDetailFadeTimeMs, c.ExtrakeyartTvShowsDetailDelayEnabled, c.ExtrakeyartTvShowsDetailDelayMs, c.ExtrakeyartTvShowsDetailLogoEnabled, c.ExtrakeyartTvShowsDetailLogoVerticalPositionPercent, c.ExtrakeyartTvShowsDetailLogoSizePercent, false);
+    }
+
     private static string NormalizeType(string? type)
     {
         if (string.Equals(type, "extraposter", StringComparison.OrdinalIgnoreCase)) { return "extraposter"; }
@@ -330,7 +375,7 @@ public class ExtraposterController : ControllerBase
             if (!explicitApplicable || explicitFolderPath is null) { return null; }
 
             var explicitAllowedFormats = config.AllowedFormats;
-            var explicitOrderMode = requestedType == "extrakeyart" ? config.ExtrakeyartOrderMode : config.OrderMode;
+            var explicitOrderMode = GetViewSettings(config, itemId, requestedType, isLibraryScope).OrderMode;
             var explicitCandidates = ResolveCandidates(explicitFolderPath, explicitNamingMode, explicitFolderName, explicitOrderMode, explicitAllowedFormats, requestedType, config.ExtrakeyartUnnumberedMode);
             return explicitCandidates.Count > 0 ? requestedType : null;
         }
@@ -345,7 +390,7 @@ public class ExtraposterController : ControllerBase
             if (!applicable || folderPath is null) { continue; }
 
             var allowedFormats = config.AllowedFormats; // CHANGED: shared, tab-level now (explicit user request), no longer per-sub
-            var orderMode = candidateType == "extrakeyart" ? config.ExtrakeyartOrderMode : config.OrderMode;
+            var orderMode = GetViewSettings(config, itemId, candidateType, isLibraryScope).OrderMode;
             var candidates = ResolveCandidates(folderPath, namingMode, folderName, orderMode, allowedFormats, candidateType, config.ExtrakeyartUnnumberedMode);
             if (candidates.Count > 0) { return candidateType; }
         }
@@ -396,11 +441,11 @@ public class ExtraposterController : ControllerBase
                 return Ok(new QuickCheckResult { IsApplicable = false });
             }
 
-            var isExtrakeyart = resolvedType == "extrakeyart";
-            var orderMode = isExtrakeyart ? config.ExtrakeyartOrderMode : config.OrderMode;
+            var view = GetViewSettings(config, itemId, resolvedType, isLibraryScope: false);
+            var orderMode = view.OrderMode;
             var allowedFormats = config.AllowedFormats; // CHANGED: shared, tab-level now (explicit user request), no longer per-sub
-            var delayEnabled = isExtrakeyart ? config.ExtrakeyartDelayEnabled : config.DelayEnabled;
-            var delayMs = isExtrakeyart ? config.ExtrakeyartDelayMs : config.DelayMs;
+            var delayEnabled = view.DelayEnabled;
+            var delayMs = view.DelayMs;
 
             var candidates = ResolveCandidates(folderPath, namingMode, folderName, orderMode, allowedFormats, resolvedType, config.ExtrakeyartUnnumberedMode);
             var hasAny = candidates.Count > 0;
@@ -461,13 +506,14 @@ public class ExtraposterController : ControllerBase
             }
 
             var isExtrakeyart = resolvedType == "extrakeyart";
-            var orderMode = isExtrakeyart ? config.ExtrakeyartOrderMode : config.OrderMode;
+            var view = GetViewSettings(config, itemId, resolvedType, isLibraryScope: false);
+            var orderMode = view.OrderMode;
             var allowedFormats = config.AllowedFormats; // CHANGED: shared, tab-level now (explicit user request), no longer per-sub
-            var cycleTimeMs = isExtrakeyart ? config.ExtrakeyartCycleTimeMs : config.CycleTimeMs;
-            var fadeTimeMs = isExtrakeyart ? config.ExtrakeyartFadeTimeMs : config.FadeTimeMs;
-            var delayEnabled = isExtrakeyart ? config.ExtrakeyartDelayEnabled : config.DelayEnabled;
-            var delayMs = isExtrakeyart ? config.ExtrakeyartDelayMs : config.DelayMs;
-            var singlePass = isExtrakeyart ? config.ExtrakeyartSinglePass : config.SinglePass;
+            var cycleTimeMs = view.CycleTimeMs;
+            var fadeTimeMs = view.FadeTimeMs;
+            var delayEnabled = view.DelayEnabled;
+            var delayMs = view.DelayMs;
+            var singlePass = view.SinglePass;
 
             // ETag-based browser caching (curriculum section B) - same
             // reasoning as before, fingerprint now also includes
@@ -513,7 +559,7 @@ public class ExtraposterController : ControllerBase
             // own, entirely independent config (ExtrakeyartLogoEnabled,
             // not KeyartLogoEnabled), so the two overlays never affect
             // each other.
-            var logoEnabled = isExtrakeyart && config.ExtrakeyartLogoEnabled;
+            var logoEnabled = isExtrakeyart && view.LogoEnabled;
 
             return Ok(new PosterListResult
             {
@@ -527,8 +573,8 @@ public class ExtraposterController : ControllerBase
                 SinglePass = singlePass,
                 ResolvedType = resolvedType,
                 LogoEnabled = logoEnabled,
-                LogoVerticalPositionPercent = logoEnabled ? config.ExtrakeyartLogoVerticalPositionPercent : 0,
-                LogoSizePercent = logoEnabled ? config.ExtrakeyartLogoSizePercent : 0
+                LogoVerticalPositionPercent = logoEnabled ? view.LogoVerticalPositionPercent : 0,
+                LogoSizePercent = logoEnabled ? view.LogoSizePercent : 0
             });
         }
         catch (Exception ex)
@@ -595,14 +641,31 @@ public class ExtraposterController : ControllerBase
             "Extraposter: === GetPosterListBatch START, {Count} unique itemIds requested: [{Ids}]",
             itemIds.Count, string.Join(", ", itemIds));
 
-        foreach (var itemId in itemIds)
+        // Session 123: resolved in parallel and cached per item for 30 s.
+        // Measured before: 200 series = 1.6 s, 200 movies = 0.9-2.3 s
+        // (folder stats on external drives + ~8 log lines per item), which
+        // beat the client's 2 s safety net - the tiles were released with
+        // Jellyfin's poster and the overlay came afterwards, the very flash
+        // the tile arbiter exists to prevent. The cache key carries the
+        // config object's identity: Jellyfin replaces it on every save, so
+        // a saved change is seen at once; new files are seen after 30 s.
+        var configStamp = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(config);
+        var resolved = new System.Collections.Concurrent.ConcurrentDictionary<string, PosterListResult>();
+        System.Threading.Tasks.Parallel.ForEach(itemIds, new System.Threading.Tasks.ParallelOptions { MaxDegreeOfParallelism = 8 }, itemId =>
         {
+            var key = "Extraposter:LibResult|" + itemId.ToString("N") + "|" + configStamp;
+            if (!_cache.TryGetValue(key, out PosterListResult? cachedResult) || cachedResult is null)
+            {
+                cachedResult = ResolveLibraryItemResult(itemId, config);
+                _cache.Set(key, cachedResult, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(30)));
+            }
             // "N" (no dashes): the client looks the answer up by the tile's
             // data-id, which Jellyfin serialises via JsonGuidConverter as the
             // 32-hex form. Dictionary keys are strings and bypass that
             // converter - Guid.ToString() (dashed) never matched (Session 122).
-            result.Items[itemId.ToString("N")] = ResolveLibraryItemResult(itemId, config);
-        }
+            resolved[itemId.ToString("N")] = cachedResult;
+        });
+        foreach (var kv in resolved) { result.Items[kv.Key] = kv.Value; }
 
         _logger.LogInformation(
             "Extraposter: === GetPosterListBatch END, {Count} entries answered, {WithPosters} of them with IsMovie=true",
@@ -621,7 +684,7 @@ public class ExtraposterController : ControllerBase
     private PosterListResult ResolveLibraryItemResult(Guid itemId, PluginConfiguration config)
     {
         var item = _libraryManager.GetItemById(itemId);
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Extraposter: ResolveLibraryItemResult - {ItemId} resolved as type \"{Type}\"",
             itemId, item?.GetType().FullName ?? "null (not found)");
 
@@ -644,14 +707,14 @@ public class ExtraposterController : ControllerBase
         // never show a Set's Extraposter.
         if (item is not Movie && item is not Series && item is not BoxSet)
         {
-            _logger.LogInformation("Extraposter: ResolveLibraryItemResult - {ItemId} is neither a Movie, a Series nor a BoxSet, skipping", itemId);
+            _logger.LogDebug("Extraposter: ResolveLibraryItemResult - {ItemId} is neither a Movie, a Series nor a BoxSet, skipping", itemId);
             return new PosterListResult { IsMovie = false };
         }
 
         var resolvedType = ResolvePosterType(itemId, config, "auto", isLibraryScope: true);
         if (resolvedType is null)
         {
-            _logger.LogInformation("Extraposter: ResolveLibraryItemResult - {ItemId} not applicable (Enable/Show-on/LibraryEnabled off, or no matching file)", itemId);
+            _logger.LogDebug("Extraposter: ResolveLibraryItemResult - {ItemId} not applicable (Enable/Show-on/LibraryEnabled off, or no matching file)", itemId);
             return new PosterListResult { IsMovie = false };
         }
 
@@ -663,21 +726,27 @@ public class ExtraposterController : ControllerBase
 
         var isExtrakeyart = resolvedType == "extrakeyart";
         var allowedFormats = config.AllowedFormats;
-        var orderMode = isExtrakeyart ? config.ExtrakeyartOrderMode : config.OrderMode;
-        var candidates = ResolveCandidates(folderPath, namingMode, folderName, orderMode, allowedFormats, resolvedType, config.ExtrakeyartUnnumberedMode);
-        var effectiveFade = Math.Min(config.FadeTimeMs, config.CycleTimeMs);
+        var view = GetViewSettings(config, itemId, resolvedType, isLibraryScope: true);
+        var candidates = ResolveCandidates(folderPath, namingMode, folderName, view.OrderMode, allowedFormats, resolvedType, config.ExtrakeyartUnnumberedMode);
+        var effectiveFade = Math.Min(view.FadeTimeMs, view.CycleTimeMs);
+        var logoEnabled = isExtrakeyart && view.LogoEnabled;
 
         return new PosterListResult
         {
             IsMovie = true, // the field name is historically "IsMovie", here it means "is a valid, enabled item"
-            OrderMode = orderMode,
+            OrderMode = view.OrderMode,
             Posters = BuildPosterEntries(folderPath, candidates),
-            CycleTimeMs = config.CycleTimeMs,
+            CycleTimeMs = view.CycleTimeMs,
             FadeTimeMs = effectiveFade,
-            DelayEnabled = isExtrakeyart ? config.ExtrakeyartDelayEnabled : config.DelayEnabled,
-            DelayMs = isExtrakeyart ? config.ExtrakeyartDelayMs : config.DelayMs,
-            SinglePass = config.SinglePass,
-            ResolvedType = resolvedType
+            DelayEnabled = view.DelayEnabled,
+            DelayMs = view.DelayMs,
+            SinglePass = view.SinglePass,
+            ResolvedType = resolvedType,
+            LogoEnabled = logoEnabled,
+            LogoVerticalPositionPercent = logoEnabled ? view.LogoVerticalPositionPercent : 0,
+            LogoSizePercent = logoEnabled ? view.LogoSizePercent : 0,
+            SyncEnabled = view.SyncEnabled,
+            HasLogo = logoEnabled && (item?.HasImage(MediaBrowser.Model.Entities.ImageType.Logo, 0) ?? false)
         };
     }
 
@@ -782,9 +851,11 @@ public class ExtraposterController : ControllerBase
             List<string>? candidates = null;
             if (folderPath is not null)
             {
-                var orderMode = isExtrakeyart ? config.ExtrakeyartOrderMode : config.OrderMode;
+                // Order does not change WHICH files are candidates - only their
+                // order - and this endpoint checks membership only (Session 123:
+                // the order is per view, the image URL carries no scope).
                 var allowedFormats = config.AllowedFormats; // CHANGED: shared, tab-level now (explicit user request), no longer per-sub
-                candidates = ResolveCandidates(folderPath, namingMode, folderName, orderMode, allowedFormats, resolvedType, config.ExtrakeyartUnnumberedMode);
+                candidates = ResolveCandidates(folderPath, namingMode, folderName, "Sequential", allowedFormats, resolvedType, config.ExtrakeyartUnnumberedMode);
             }
 
             if (folderPath is null || candidates is null)
@@ -1173,7 +1244,7 @@ public class ExtraposterController : ControllerBase
         List<string> naturallyOrdered;
         if (_cache.TryGetValue(cacheKey, out List<string>? cached) && cached is not null)
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: ResolveCandidates - cache hit, no disk access needed. Key: \"{Key}\"",
                 cacheKey);
             naturallyOrdered = cached;

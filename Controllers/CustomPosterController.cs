@@ -44,7 +44,7 @@ public class CustomPosterResult
     public string ResolvedType { get; set; } = string.Empty;
 
     /// <summary>
-    /// Set only when ResolvedType is "keyart" AND KeyartLogoEnabled is
+    /// Set only when ResolvedType is "keyart" AND the view's Keyart logo is
     /// true - the client has no other way to know the server's own
     /// config. Postercase never sets this (Postercase has no logo
     /// overlay concept at all).
@@ -54,6 +54,9 @@ public class CustomPosterResult
     public int LogoVerticalPositionPercent { get; set; }
 
     public int LogoSizePercent { get; set; }
+
+    /// <summary>Session 123: the item has a Jellyfin Logo image (library tiles draw the logo without an extra item request).</summary>
+    public bool HasLogo { get; set; }
 }
 
 /// <summary>
@@ -131,12 +134,7 @@ public class CustomPosterController : ControllerBase
             var isLibraryScope = string.Equals(scope, "library", StringComparison.OrdinalIgnoreCase);
             var result = ResolveItemResult(itemId, config, posterType, isLibraryScope);
 
-            if (result is not null && result.IsApplicable && result.ResolvedType == "keyart" && config.KeyartLogoEnabled)
-            {
-                result.LogoEnabled = true;
-                result.LogoVerticalPositionPercent = config.KeyartLogoVerticalPositionPercent;
-                result.LogoSizePercent = config.KeyartLogoSizePercent;
-            }
+            ApplyKeyartLogo(result, config, isLibraryScope, itemId);
 
             var etag = ComputeETag(itemId, posterType, isLibraryScope, result?.FileName ?? "none");
             if (IsETagStillValid(etag))
@@ -191,10 +189,28 @@ public class CustomPosterController : ControllerBase
             // data-id, which Jellyfin serialises via JsonGuidConverter as the
             // 32-hex form. Dictionary keys are strings and bypass that
             // converter - Guid.ToString() (dashed) never matched (Session 122).
-            result.Items[itemId.ToString("N")] = ResolveItemResult(itemId, config, posterType, isLibraryScope) ?? new CustomPosterResult { IsApplicable = false };
+            var itemResult = ResolveItemResult(itemId, config, posterType, isLibraryScope) ?? new CustomPosterResult { IsApplicable = false };
+            ApplyKeyartLogo(itemResult, config, isLibraryScope, itemId);
+            result.Items[itemId.ToString("N")] = itemResult;
         }
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Keyart's logo overlay values for the requested view (Session 123:
+    /// detail pages and library views have their own set). Postercase never
+    /// gets a logo.
+    /// </summary>
+    private void ApplyKeyartLogo(CustomPosterResult? result, PluginConfiguration config, bool isLibraryScope, Guid itemId)
+    {
+        if (result is null || !result.IsApplicable || result.ResolvedType != "keyart") { return; }
+        var enabled = isLibraryScope ? config.KeyartLibraryLogoEnabled : config.KeyartDetailLogoEnabled;
+        if (!enabled) { return; }
+        result.LogoEnabled = true;
+        result.LogoVerticalPositionPercent = isLibraryScope ? config.KeyartLibraryLogoVerticalPositionPercent : config.KeyartDetailLogoVerticalPositionPercent;
+        result.LogoSizePercent = isLibraryScope ? config.KeyartLibraryLogoSizePercent : config.KeyartDetailLogoSizePercent;
+        result.HasLogo = _libraryManager.GetItemById(itemId)?.HasImage(MediaBrowser.Model.Entities.ImageType.Logo, 0) ?? false;
     }
 
     /// <summary>

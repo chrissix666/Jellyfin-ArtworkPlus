@@ -500,6 +500,13 @@
                     #ArtworkPlusConfigPage .epCollapseBody.epCollapseNested {
                         margin-left: 10px;
                     }
+                    /* Session 123: a second nesting step ("Detail page"/
+                       "Library views" INSIDE Movies/TV shows of Extraposter/
+                       Extrakeyart) - one more 10px, same idea. */
+                    #ArtworkPlusConfigPage .epCollapseHeader.epCollapseNested2,
+                    #ArtworkPlusConfigPage .epCollapseBody.epCollapseNested2 {
+                        margin-left: 20px;
+                    }
                     #ArtworkPlusConfigPage .epCollapseHeader .epChevron {
                         font-size: 10px; transition: transform 0.15s; display: inline-block;
                     }
@@ -1559,31 +1566,63 @@
                         </div>
 
                         <div id="KeyartDependentFields">
+                            <div class="epCollapseHeader epCollapseNested" data-collapse="keyartDetailLogo"><span class="epChevron">▶</span><span>Detail page</span></div>
+                            <div class="epCollapseBody epCollapseNested" data-collapsebody="keyartDetailLogo">
                             <div class="epRow epRowCheckbox">
-                                <label for="KeyartLogoEnabled">Enable logo overlay</label>
+                                <label for="KeyartDetailLogoEnabled">Enable logo overlay</label>
                                 <div class="checkboxContainer" style="margin:0;">
                                     <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
-                                        <input id="KeyartLogoEnabled" name="KeyartLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                        <input id="KeyartDetailLogoEnabled" name="KeyartDetailLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
                                         <span class="epDescInline checkboxLabel">Only shown when Jellyfin already has a Logo image for the title.</span>
                                         <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                     </label>
                                 </div>
                             </div>
-                            <div class="epRow epRowMerged" id="KeyartLogoVerticalPositionRow">
-                                <label for="KeyartLogoVerticalPositionPercent" class="epRowLabelSpan">Vertical position</label>
+                            <div class="epRow epRowMerged" id="KeyartDetailLogoVerticalPositionRow">
+                                <label for="KeyartDetailLogoVerticalPositionPercent" class="epRowLabelSpan">Vertical position</label>
                                 <div style="display:flex; align-items:center; gap:6px;">
-                                    <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="KeyartLogoVerticalPositionPercent" name="KeyartLogoVerticalPositionPercent" />
+                                    <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="KeyartDetailLogoVerticalPositionPercent" name="KeyartDetailLogoVerticalPositionPercent" />
                                     <span class="epUnitLabel">%</span>
                                 </div>
                                 <div class="epDesc">From the top of the poster box, 0-100. Horizontal is always centered.</div>
                             </div>
-                            <div class="epRow epRowMerged" id="KeyartLogoSizeRow">
-                                <label for="KeyartLogoSizePercent" class="epRowLabelSpan">Logo size</label>
+                            <div class="epRow epRowMerged" id="KeyartDetailLogoSizeRow">
+                                <label for="KeyartDetailLogoSizePercent" class="epRowLabelSpan">Logo size</label>
                                 <div style="display:flex; align-items:center; gap:6px;">
-                                    <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="KeyartLogoSizePercent" name="KeyartLogoSizePercent" />
+                                    <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="KeyartDetailLogoSizePercent" name="KeyartDetailLogoSizePercent" />
                                     <span class="epUnitLabel">%</span>
                                 </div>
                                 <div class="epDesc">Width as a percentage of the poster box's own width. Height follows automatically.</div>
+                            </div>
+                            </div>
+                            <div class="epCollapseHeader epCollapseNested" data-collapse="keyartLibraryLogo"><span class="epChevron">▶</span><span>Library views</span></div>
+                            <div class="epCollapseBody epCollapseNested" data-collapsebody="keyartLibraryLogo">
+                            <div class="epRow epRowCheckbox">
+                                <label for="KeyartLibraryLogoEnabled">Enable logo overlay</label>
+                                <div class="checkboxContainer" style="margin:0;">
+                                    <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                        <input id="KeyartLibraryLogoEnabled" name="KeyartLibraryLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                        <span class="epDescInline checkboxLabel">Only shown when Jellyfin already has a Logo image for the title.</span>
+                                        <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="epRow epRowMerged" id="KeyartLibraryLogoVerticalPositionRow">
+                                <label for="KeyartLibraryLogoVerticalPositionPercent" class="epRowLabelSpan">Vertical position</label>
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="KeyartLibraryLogoVerticalPositionPercent" name="KeyartLibraryLogoVerticalPositionPercent" />
+                                    <span class="epUnitLabel">%</span>
+                                </div>
+                                <div class="epDesc">From the top of the poster box, 0-100. Horizontal is always centered.</div>
+                            </div>
+                            <div class="epRow epRowMerged" id="KeyartLibraryLogoSizeRow">
+                                <label for="KeyartLibraryLogoSizePercent" class="epRowLabelSpan">Logo size</label>
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="KeyartLibraryLogoSizePercent" name="KeyartLibraryLogoSizePercent" />
+                                    <span class="epUnitLabel">%</span>
+                                </div>
+                                <div class="epDesc">Width as a percentage of the poster box's own width. Height follows automatically.</div>
+                            </div>
                             </div>
 
                             <div class="epCollapseHeader epCollapseNested" data-collapse="keyartMovies"><span class="epChevron">▶</span><span>Movies</span></div>
@@ -1739,58 +1778,6 @@
                         </div>
 
                         <div id="ExtraposterDependentFields">
-                        <div class="epRow epRowMerged">
-                            <label for="OrderMode" class="epRowLabelSpan">Order</label>
-                            <select is="emby-select" id="OrderMode" name="OrderMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="Sequential">Sequential</option>
-                                <option value="Shuffle">Shuffle</option>
-                                <option value="Random">Random</option>
-                            </select>
-                            <div class="epDesc">Sequential: in order. Shuffle: no repeats per round. Random: repeats OK. Shared setting.</div>
-                        </div>
-                        <div class="epRow epRowMerged">
-                            <label for="SinglePassSelect" class="epRowLabelSpan">Playback</label>
-                            <select id="SinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="false">Loop</option>
-                                <option value="true">Play once</option>
-                            </select>
-                            <input type="checkbox" id="SinglePass" name="SinglePass" style="display:none;" />
-                            <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass. Shared setting.</div>
-                        </div>
-                        <div class="epRow epRowMerged">
-                            <label for="CycleTimeMs" class="epRowLabelSpan">Display duration</label>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="0" step="100" class="epNumberCompact" id="CycleTimeMs" name="CycleTimeMs" />
-                                <span class="epUnitLabel">ms</span>
-                            </div>
-                            <div class="epDesc">How long each poster is shown before switching. Shared setting.</div>
-                        </div>
-                        <div class="epRow epRowMerged">
-                            <label for="FadeTimeMs" class="epRowLabelSpan">Transition duration</label>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="0" step="50" class="epNumberCompact" id="FadeTimeMs" name="FadeTimeMs" />
-                                <span class="epUnitLabel">ms</span>
-                            </div>
-                            <div class="epDesc">0 = instant switch. Never exceeds the display duration above. Shared setting.</div>
-                        </div>
-                        <div class="epRow epRowCheckbox">
-                            <label for="DelayEnabled">Delay before first shown</label>
-                            <div class="checkboxContainer" style="margin:0;">
-                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
-                                    <input id="DelayEnabled" name="DelayEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Wait before starting the slideshow. Shared setting.</span>
-                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="epRow epRowMerged">
-                            <label for="DelayMs" class="epRowLabelSpan">Delay</label>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="0" step="100" class="epNumberCompact" id="DelayMs" name="DelayMs" />
-                                <span class="epUnitLabel">ms</span>
-                            </div>
-                            <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
-                        </div>
 
                         <div class="epCollapseHeader epCollapseNested" data-collapse="extraposterMovies"><span class="epChevron">▶</span><span>Movies</span></div>
                         <div class="epCollapseBody epCollapseNested" data-collapsebody="extraposterMovies">
@@ -1808,23 +1795,149 @@
                             <input type="text" class="epTextCompact" id="ExtraposterMoviesFolderName" name="ExtraposterMoviesFolderName" />
                             <div class="epDesc">Only used when naming mode is "Folder".</div>
                         </div>
+                        <div class="epCollapseHeader epCollapseNested epCollapseNested2" data-collapse="extraposterMoviesDetail"><span class="epChevron">▶</span><span>Detail page</span></div>
+                        <div class="epCollapseBody epCollapseNested epCollapseNested2" data-collapsebody="extraposterMoviesDetail">
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtraposterMoviesDetailEnabled">Detail page</label>
+                            <label for="ExtraposterMoviesDetailEnabled">Enable</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtraposterMoviesDetailEnabled" name="ExtraposterMoviesDetailEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                    <span class="epDescInline checkboxLabel">Extraposter poster slideshow on item detail pages.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
                         </div>
+                        <div id="ExtraposterMoviesDetailFields">
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterMoviesDetailOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="ExtraposterMoviesDetailOrderMode" name="ExtraposterMoviesDetailOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: in order. Shuffle: no repeats per round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterMoviesDetailSinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="ExtraposterMoviesDetailSinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="ExtraposterMoviesDetailSinglePass" name="ExtraposterMoviesDetailSinglePass" style="display:none;" />
+                            <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterMoviesDetailCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtraposterMoviesDetailCycleTimeMs" name="ExtraposterMoviesDetailCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">How long each poster is shown before switching.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterMoviesDetailFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="50" class="epNumberCompact" id="ExtraposterMoviesDetailFadeTimeMs" name="ExtraposterMoviesDetailFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">0 = instant switch. Never exceeds the display duration above.</div>
+                        </div>
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtraposterMoviesLibraryEnabled">Library views</label>
+                            <label for="ExtraposterMoviesDetailDelayEnabled">Delay before first shown</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterMoviesDetailDelayEnabled" name="ExtraposterMoviesDetailDelayEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Wait before starting the slideshow.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterMoviesDetailDelayMs" class="epRowLabelSpan">Delay</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtraposterMoviesDetailDelayMs" name="ExtraposterMoviesDetailDelayMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
+                        </div>
+                        </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested epCollapseNested2" data-collapse="extraposterMoviesLibrary"><span class="epChevron">▶</span><span>Library views</span></div>
+                        <div class="epCollapseBody epCollapseNested epCollapseNested2" data-collapsebody="extraposterMoviesLibrary">
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtraposterMoviesLibraryEnabled">Enable</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtraposterMoviesLibraryEnabled" name="ExtraposterMoviesLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                    <span class="epDescInline checkboxLabel">Extraposter poster slideshow on library grid tiles.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div id="ExtraposterMoviesLibraryFields">
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterMoviesLibraryOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="ExtraposterMoviesLibraryOrderMode" name="ExtraposterMoviesLibraryOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: in order. Shuffle: no repeats per round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterMoviesLibrarySinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="ExtraposterMoviesLibrarySinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="ExtraposterMoviesLibrarySinglePass" name="ExtraposterMoviesLibrarySinglePass" style="display:none;" />
+                            <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterMoviesLibraryCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtraposterMoviesLibraryCycleTimeMs" name="ExtraposterMoviesLibraryCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">How long each poster is shown before switching.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterMoviesLibraryFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="50" class="epNumberCompact" id="ExtraposterMoviesLibraryFadeTimeMs" name="ExtraposterMoviesLibraryFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">0 = instant switch. Never exceeds the display duration above.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtraposterMoviesLibraryDelayEnabled">Delay before first shown</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterMoviesLibraryDelayEnabled" name="ExtraposterMoviesLibraryDelayEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Wait before starting the slideshow.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterMoviesLibraryDelayMs" class="epRowLabelSpan">Delay</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtraposterMoviesLibraryDelayMs" name="ExtraposterMoviesLibraryDelayMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtraposterMoviesLibrarySyncEnabled">Synchronize</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterMoviesLibrarySyncEnabled" name="ExtraposterMoviesLibrarySyncEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">All tiles of a page change together; a tile whose image is late joins at the next change.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        </div>
                         </div>
                         </div>
 
@@ -1843,25 +1956,149 @@
                             <input type="text" class="epTextCompact" id="ExtraposterTvShowsFolderName" name="ExtraposterTvShowsFolderName" />
                             <div class="epDesc">Only used when naming mode is "Folder".</div>
                         </div>
+                        <div class="epCollapseHeader epCollapseNested epCollapseNested2" data-collapse="extraposterTvShowsDetail"><span class="epChevron">▶</span><span>Detail page</span></div>
+                        <div class="epCollapseBody epCollapseNested epCollapseNested2" data-collapsebody="extraposterTvShowsDetail">
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtraposterTvShowsDetailEnabled">Detail page</label>
+                            <label for="ExtraposterTvShowsDetailEnabled">Enable</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtraposterTvShowsDetailEnabled" name="ExtraposterTvShowsDetailEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Main show page only.</span>
+                                    <span class="epDescInline checkboxLabel">Extraposter poster slideshow on item detail pages.</span>
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
                         </div>
+                        <div id="ExtraposterTvShowsDetailFields">
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterTvShowsDetailOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="ExtraposterTvShowsDetailOrderMode" name="ExtraposterTvShowsDetailOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: in order. Shuffle: no repeats per round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterTvShowsDetailSinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="ExtraposterTvShowsDetailSinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="ExtraposterTvShowsDetailSinglePass" name="ExtraposterTvShowsDetailSinglePass" style="display:none;" />
+                            <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterTvShowsDetailCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtraposterTvShowsDetailCycleTimeMs" name="ExtraposterTvShowsDetailCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">How long each poster is shown before switching.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterTvShowsDetailFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="50" class="epNumberCompact" id="ExtraposterTvShowsDetailFadeTimeMs" name="ExtraposterTvShowsDetailFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">0 = instant switch. Never exceeds the display duration above.</div>
+                        </div>
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtraposterTvShowsLibraryEnabled">Library views</label>
+                            <label for="ExtraposterTvShowsDetailDelayEnabled">Delay before first shown</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
-                                    <input id="ExtraposterTvShowsLibraryEnabled" name="ExtraposterTvShowsLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Main show page only.</span>
+                                    <input id="ExtraposterTvShowsDetailDelayEnabled" name="ExtraposterTvShowsDetailDelayEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Wait before starting the slideshow.</span>
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterTvShowsDetailDelayMs" class="epRowLabelSpan">Delay</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtraposterTvShowsDetailDelayMs" name="ExtraposterTvShowsDetailDelayMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
+                        </div>
+                        </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested epCollapseNested2" data-collapse="extraposterTvShowsLibrary"><span class="epChevron">▶</span><span>Library views</span></div>
+                        <div class="epCollapseBody epCollapseNested epCollapseNested2" data-collapsebody="extraposterTvShowsLibrary">
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtraposterTvShowsLibraryEnabled">Enable</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterTvShowsLibraryEnabled" name="ExtraposterTvShowsLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Extraposter poster slideshow on library grid tiles.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="ExtraposterTvShowsLibraryFields">
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterTvShowsLibraryOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="ExtraposterTvShowsLibraryOrderMode" name="ExtraposterTvShowsLibraryOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: in order. Shuffle: no repeats per round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterTvShowsLibrarySinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="ExtraposterTvShowsLibrarySinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="ExtraposterTvShowsLibrarySinglePass" name="ExtraposterTvShowsLibrarySinglePass" style="display:none;" />
+                            <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterTvShowsLibraryCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtraposterTvShowsLibraryCycleTimeMs" name="ExtraposterTvShowsLibraryCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">How long each poster is shown before switching.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterTvShowsLibraryFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="50" class="epNumberCompact" id="ExtraposterTvShowsLibraryFadeTimeMs" name="ExtraposterTvShowsLibraryFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">0 = instant switch. Never exceeds the display duration above.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtraposterTvShowsLibraryDelayEnabled">Delay before first shown</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterTvShowsLibraryDelayEnabled" name="ExtraposterTvShowsLibraryDelayEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Wait before starting the slideshow.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtraposterTvShowsLibraryDelayMs" class="epRowLabelSpan">Delay</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtraposterTvShowsLibraryDelayMs" name="ExtraposterTvShowsLibraryDelayMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtraposterTvShowsLibrarySyncEnabled">Synchronize</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterTvShowsLibrarySyncEnabled" name="ExtraposterTvShowsLibrarySyncEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">All tiles of a page change together; a tile whose image is late joins at the next change.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
@@ -1896,42 +2133,7 @@
                         </div>
 
                         <div id="ExtrakeyartDependentFields">
-                        <div class="epRow epRowCheckbox">
-                            <label for="ExtrakeyartLogoEnabled">Enable logo overlay</label>
-                            <div class="checkboxContainer" style="margin:0;">
-                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
-                                    <input id="ExtrakeyartLogoEnabled" name="ExtrakeyartLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Only shown when Jellyfin already has a Logo image for the title.</span>
-                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="epRow epRowMerged" id="ExtrakeyartLogoVerticalPositionRow">
-                            <label for="ExtrakeyartLogoVerticalPositionPercent" class="epRowLabelSpan">Vertical position</label>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="ExtrakeyartLogoVerticalPositionPercent" name="ExtrakeyartLogoVerticalPositionPercent" />
-                                <span class="epUnitLabel">%</span>
-                            </div>
-                            <div class="epDesc">From the top of the poster box, 0-100. Horizontal is always centered.</div>
-                        </div>
-                        <div class="epRow epRowMerged" id="ExtrakeyartLogoSizeRow">
-                            <label for="ExtrakeyartLogoSizePercent" class="epRowLabelSpan">Logo size</label>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="ExtrakeyartLogoSizePercent" name="ExtrakeyartLogoSizePercent" />
-                                <span class="epUnitLabel">%</span>
-                            </div>
-                            <div class="epDesc">Width as a percentage of the poster box's own width. Height follows automatically.</div>
-                        </div>
 
-                        <div class="epRow epRowMerged">
-                            <label for="ExtrakeyartOrderMode" class="epRowLabelSpan">Order</label>
-                            <select is="emby-select" id="ExtrakeyartOrderMode" name="ExtrakeyartOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="Sequential">Sequential</option>
-                                <option value="Shuffle">Shuffle</option>
-                                <option value="Random">Random</option>
-                            </select>
-                            <div class="epDesc">Sequential: in order. Shuffle: no repeats per round. Random: repeats OK.</div>
-                        </div>
                         <div class="epRow epRowMerged">
                             <label for="ExtrakeyartUnnumberedMode" class="epRowLabelSpan">Unnumbered file</label>
                             <select is="emby-select" id="ExtrakeyartUnnumberedMode" name="ExtrakeyartUnnumberedMode" class="emby-select-withcolor emby-select epSelectCompact">
@@ -1939,49 +2141,6 @@
                                 <option value="Counts">Counts as #1</option>
                             </select>
                             <div class="epDesc">Whether a file without a number (e.g. "keyart.jpg") is picked up as the first image.</div>
-                        </div>
-                        <div class="epRow epRowMerged">
-                            <label for="ExtrakeyartSinglePassSelect" class="epRowLabelSpan">Playback</label>
-                            <select id="ExtrakeyartSinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="false">Loop</option>
-                                <option value="true">Play once</option>
-                            </select>
-                            <input type="checkbox" id="ExtrakeyartSinglePass" name="ExtrakeyartSinglePass" style="display:none;" />
-                            <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
-                        </div>
-                        <div class="epRow epRowMerged">
-                            <label for="ExtrakeyartCycleTimeMs" class="epRowLabelSpan">Display duration</label>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtrakeyartCycleTimeMs" name="ExtrakeyartCycleTimeMs" />
-                                <span class="epUnitLabel">ms</span>
-                            </div>
-                            <div class="epDesc">How long each image is shown before switching.</div>
-                        </div>
-                        <div class="epRow epRowMerged">
-                            <label for="ExtrakeyartFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="0" step="50" class="epNumberCompact" id="ExtrakeyartFadeTimeMs" name="ExtrakeyartFadeTimeMs" />
-                                <span class="epUnitLabel">ms</span>
-                            </div>
-                            <div class="epDesc">0 = instant switch. Never exceeds the display duration above.</div>
-                        </div>
-                        <div class="epRow epRowCheckbox">
-                            <label for="ExtrakeyartDelayEnabled">Delay before first shown</label>
-                            <div class="checkboxContainer" style="margin:0;">
-                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
-                                    <input id="ExtrakeyartDelayEnabled" name="ExtrakeyartDelayEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Wait before starting the slideshow.</span>
-                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="epRow epRowMerged">
-                            <label for="ExtrakeyartDelayMs" class="epRowLabelSpan">Delay</label>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtrakeyartDelayMs" name="ExtrakeyartDelayMs" />
-                                <span class="epUnitLabel">ms</span>
-                            </div>
-                            <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
                         </div>
 
                         <div class="epCollapseHeader epCollapseNested" data-collapse="extrakeyartMovies"><span class="epChevron">▶</span><span>Movies</span></div>
@@ -2000,24 +2159,201 @@
                             <input type="text" class="epTextCompact" id="ExtrakeyartMoviesFolderName" name="ExtrakeyartMoviesFolderName" />
                             <div class="epDesc">Only used when naming mode is "Folder".</div>
                         </div>
+                        <div class="epCollapseHeader epCollapseNested epCollapseNested2" data-collapse="extrakeyartMoviesDetail"><span class="epChevron">▶</span><span>Detail page</span></div>
+                        <div class="epCollapseBody epCollapseNested epCollapseNested2" data-collapsebody="extrakeyartMoviesDetail">
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtrakeyartMoviesDetailEnabled">Detail page</label>
+                            <label for="ExtrakeyartMoviesDetailEnabled">Enable</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtrakeyartMoviesDetailEnabled" name="ExtrakeyartMoviesDetailEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                    <span class="epDescInline checkboxLabel">Extrakeyart keyart slideshow on item detail pages.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
                         </div>
+                        <div id="ExtrakeyartMoviesDetailFields">
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtrakeyartMoviesLibraryEnabled">Library views</label>
+                            <label for="ExtrakeyartMoviesDetailLogoEnabled">Enable logo overlay</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartMoviesDetailLogoEnabled" name="ExtrakeyartMoviesDetailLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Only shown when Jellyfin already has a Logo image for the title.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartMoviesDetailLogoVerticalPositionRow">
+                            <label for="ExtrakeyartMoviesDetailLogoVerticalPositionPercent" class="epRowLabelSpan">Vertical position</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="ExtrakeyartMoviesDetailLogoVerticalPositionPercent" name="ExtrakeyartMoviesDetailLogoVerticalPositionPercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">From the top of the poster box, 0-100. Horizontal is always centered.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartMoviesDetailLogoSizeRow">
+                            <label for="ExtrakeyartMoviesDetailLogoSizePercent" class="epRowLabelSpan">Logo size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="ExtrakeyartMoviesDetailLogoSizePercent" name="ExtrakeyartMoviesDetailLogoSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Width as a percentage of the poster box's own width. Height follows automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartMoviesDetailOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="ExtrakeyartMoviesDetailOrderMode" name="ExtrakeyartMoviesDetailOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: in order. Shuffle: no repeats per round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartMoviesDetailSinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="ExtrakeyartMoviesDetailSinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="ExtrakeyartMoviesDetailSinglePass" name="ExtrakeyartMoviesDetailSinglePass" style="display:none;" />
+                            <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartMoviesDetailCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtrakeyartMoviesDetailCycleTimeMs" name="ExtrakeyartMoviesDetailCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">How long each poster is shown before switching.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartMoviesDetailFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="50" class="epNumberCompact" id="ExtrakeyartMoviesDetailFadeTimeMs" name="ExtrakeyartMoviesDetailFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">0 = instant switch. Never exceeds the display duration above.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartMoviesDetailDelayEnabled">Delay before first shown</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartMoviesDetailDelayEnabled" name="ExtrakeyartMoviesDetailDelayEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Wait before starting the slideshow.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartMoviesDetailDelayMs" class="epRowLabelSpan">Delay</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtrakeyartMoviesDetailDelayMs" name="ExtrakeyartMoviesDetailDelayMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
+                        </div>
+                        </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested epCollapseNested2" data-collapse="extrakeyartMoviesLibrary"><span class="epChevron">▶</span><span>Library views</span></div>
+                        <div class="epCollapseBody epCollapseNested epCollapseNested2" data-collapsebody="extrakeyartMoviesLibrary">
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartMoviesLibraryEnabled">Enable</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtrakeyartMoviesLibraryEnabled" name="ExtrakeyartMoviesLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Not yet implemented client-side (config field only for now).</span>
-                                <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                    <span class="epDescInline checkboxLabel">Extrakeyart keyart slideshow on library grid tiles.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div id="ExtrakeyartMoviesLibraryFields">
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartMoviesLibraryLogoEnabled">Enable logo overlay</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartMoviesLibraryLogoEnabled" name="ExtrakeyartMoviesLibraryLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Only shown when Jellyfin already has a Logo image for the title.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartMoviesLibraryLogoVerticalPositionRow">
+                            <label for="ExtrakeyartMoviesLibraryLogoVerticalPositionPercent" class="epRowLabelSpan">Vertical position</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="ExtrakeyartMoviesLibraryLogoVerticalPositionPercent" name="ExtrakeyartMoviesLibraryLogoVerticalPositionPercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">From the top of the poster box, 0-100. Horizontal is always centered.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartMoviesLibraryLogoSizeRow">
+                            <label for="ExtrakeyartMoviesLibraryLogoSizePercent" class="epRowLabelSpan">Logo size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="ExtrakeyartMoviesLibraryLogoSizePercent" name="ExtrakeyartMoviesLibraryLogoSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Width as a percentage of the poster box's own width. Height follows automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartMoviesLibraryOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="ExtrakeyartMoviesLibraryOrderMode" name="ExtrakeyartMoviesLibraryOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: in order. Shuffle: no repeats per round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartMoviesLibrarySinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="ExtrakeyartMoviesLibrarySinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="ExtrakeyartMoviesLibrarySinglePass" name="ExtrakeyartMoviesLibrarySinglePass" style="display:none;" />
+                            <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartMoviesLibraryCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtrakeyartMoviesLibraryCycleTimeMs" name="ExtrakeyartMoviesLibraryCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">How long each poster is shown before switching.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartMoviesLibraryFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="50" class="epNumberCompact" id="ExtrakeyartMoviesLibraryFadeTimeMs" name="ExtrakeyartMoviesLibraryFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">0 = instant switch. Never exceeds the display duration above.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartMoviesLibraryDelayEnabled">Delay before first shown</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartMoviesLibraryDelayEnabled" name="ExtrakeyartMoviesLibraryDelayEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Wait before starting the slideshow.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartMoviesLibraryDelayMs" class="epRowLabelSpan">Delay</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtrakeyartMoviesLibraryDelayMs" name="ExtrakeyartMoviesLibraryDelayMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartMoviesLibrarySyncEnabled">Synchronize</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartMoviesLibrarySyncEnabled" name="ExtrakeyartMoviesLibrarySyncEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">All tiles of a page change together; a tile whose image is late joins at the next change.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        </div>
                         </div>
                         </div>
 
@@ -2036,25 +2372,201 @@
                             <input type="text" class="epTextCompact" id="ExtrakeyartTvShowsFolderName" name="ExtrakeyartTvShowsFolderName" />
                             <div class="epDesc">Only used when naming mode is "Folder".</div>
                         </div>
+                        <div class="epCollapseHeader epCollapseNested epCollapseNested2" data-collapse="extrakeyartTvShowsDetail"><span class="epChevron">▶</span><span>Detail page</span></div>
+                        <div class="epCollapseBody epCollapseNested epCollapseNested2" data-collapsebody="extrakeyartTvShowsDetail">
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtrakeyartTvShowsDetailEnabled">Detail page</label>
+                            <label for="ExtrakeyartTvShowsDetailEnabled">Enable</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtrakeyartTvShowsDetailEnabled" name="ExtrakeyartTvShowsDetailEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Main show page only.</span>
+                                    <span class="epDescInline checkboxLabel">Extrakeyart keyart slideshow on item detail pages.</span>
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
                         </div>
+                        <div id="ExtrakeyartTvShowsDetailFields">
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtrakeyartTvShowsLibraryEnabled">Library views</label>
+                            <label for="ExtrakeyartTvShowsDetailLogoEnabled">Enable logo overlay</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
-                                    <input id="ExtrakeyartTvShowsLibraryEnabled" name="ExtrakeyartTvShowsLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Not yet implemented client-side (config field only for now).</span>
+                                    <input id="ExtrakeyartTvShowsDetailLogoEnabled" name="ExtrakeyartTvShowsDetailLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Only shown when Jellyfin already has a Logo image for the title.</span>
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartTvShowsDetailLogoVerticalPositionRow">
+                            <label for="ExtrakeyartTvShowsDetailLogoVerticalPositionPercent" class="epRowLabelSpan">Vertical position</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="ExtrakeyartTvShowsDetailLogoVerticalPositionPercent" name="ExtrakeyartTvShowsDetailLogoVerticalPositionPercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">From the top of the poster box, 0-100. Horizontal is always centered.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartTvShowsDetailLogoSizeRow">
+                            <label for="ExtrakeyartTvShowsDetailLogoSizePercent" class="epRowLabelSpan">Logo size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="ExtrakeyartTvShowsDetailLogoSizePercent" name="ExtrakeyartTvShowsDetailLogoSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Width as a percentage of the poster box's own width. Height follows automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartTvShowsDetailOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="ExtrakeyartTvShowsDetailOrderMode" name="ExtrakeyartTvShowsDetailOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: in order. Shuffle: no repeats per round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartTvShowsDetailSinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="ExtrakeyartTvShowsDetailSinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="ExtrakeyartTvShowsDetailSinglePass" name="ExtrakeyartTvShowsDetailSinglePass" style="display:none;" />
+                            <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartTvShowsDetailCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtrakeyartTvShowsDetailCycleTimeMs" name="ExtrakeyartTvShowsDetailCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">How long each poster is shown before switching.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartTvShowsDetailFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="50" class="epNumberCompact" id="ExtrakeyartTvShowsDetailFadeTimeMs" name="ExtrakeyartTvShowsDetailFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">0 = instant switch. Never exceeds the display duration above.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartTvShowsDetailDelayEnabled">Delay before first shown</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartTvShowsDetailDelayEnabled" name="ExtrakeyartTvShowsDetailDelayEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Wait before starting the slideshow.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartTvShowsDetailDelayMs" class="epRowLabelSpan">Delay</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtrakeyartTvShowsDetailDelayMs" name="ExtrakeyartTvShowsDetailDelayMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
+                        </div>
+                        </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested epCollapseNested2" data-collapse="extrakeyartTvShowsLibrary"><span class="epChevron">▶</span><span>Library views</span></div>
+                        <div class="epCollapseBody epCollapseNested epCollapseNested2" data-collapsebody="extrakeyartTvShowsLibrary">
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartTvShowsLibraryEnabled">Enable</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartTvShowsLibraryEnabled" name="ExtrakeyartTvShowsLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Extrakeyart keyart slideshow on library grid tiles.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="ExtrakeyartTvShowsLibraryFields">
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartTvShowsLibraryLogoEnabled">Enable logo overlay</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartTvShowsLibraryLogoEnabled" name="ExtrakeyartTvShowsLibraryLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Only shown when Jellyfin already has a Logo image for the title.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartTvShowsLibraryLogoVerticalPositionRow">
+                            <label for="ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent" class="epRowLabelSpan">Vertical position</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent" name="ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">From the top of the poster box, 0-100. Horizontal is always centered.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartTvShowsLibraryLogoSizeRow">
+                            <label for="ExtrakeyartTvShowsLibraryLogoSizePercent" class="epRowLabelSpan">Logo size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="ExtrakeyartTvShowsLibraryLogoSizePercent" name="ExtrakeyartTvShowsLibraryLogoSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Width as a percentage of the poster box's own width. Height follows automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartTvShowsLibraryOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="ExtrakeyartTvShowsLibraryOrderMode" name="ExtrakeyartTvShowsLibraryOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: in order. Shuffle: no repeats per round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartTvShowsLibrarySinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="ExtrakeyartTvShowsLibrarySinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="ExtrakeyartTvShowsLibrarySinglePass" name="ExtrakeyartTvShowsLibrarySinglePass" style="display:none;" />
+                            <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartTvShowsLibraryCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtrakeyartTvShowsLibraryCycleTimeMs" name="ExtrakeyartTvShowsLibraryCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">How long each poster is shown before switching.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartTvShowsLibraryFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="50" class="epNumberCompact" id="ExtrakeyartTvShowsLibraryFadeTimeMs" name="ExtrakeyartTvShowsLibraryFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">0 = instant switch. Never exceeds the display duration above.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartTvShowsLibraryDelayEnabled">Delay before first shown</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartTvShowsLibraryDelayEnabled" name="ExtrakeyartTvShowsLibraryDelayEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Wait before starting the slideshow.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="ExtrakeyartTvShowsLibraryDelayMs" class="epRowLabelSpan">Delay</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="ExtrakeyartTvShowsLibraryDelayMs" name="ExtrakeyartTvShowsLibraryDelayMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartTvShowsLibrarySyncEnabled">Synchronize</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartTvShowsLibrarySyncEnabled" name="ExtrakeyartTvShowsLibrarySyncEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">All tiles of a page change together; a tile whose image is late joins at the next change.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
@@ -4183,12 +4695,6 @@
                 ExtraposterMoviesFolderName: { type: 'text', def: 'extraposter', tab: 'extraposterfeature' },
                 ExtraposterTvShowsNamingMode: { type: 'select', def: 'Standalone', tab: 'extraposterfeature' },
                 ExtraposterTvShowsFolderName: { type: 'text', def: 'extraposter', tab: 'extraposterfeature' },
-                OrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
-                CycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
-                FadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
-                DelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
-                DelayMs: { type: 'number', def: '', tab: 'extraposterfeature' },
-                SinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 // Four independent enable switches (Movies/TV shows x Detail/Library)
                 ExtraposterShowOnMovies: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterShowOnSets: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
@@ -4197,6 +4703,32 @@
                 ExtraposterMoviesLibraryEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailSinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
+                ExtraposterMoviesLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibraryDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
+                ExtraposterTvShowsDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
+                ExtraposterTvShowsDetailSinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterTvShowsDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
+                ExtraposterTvShowsDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
+                ExtraposterTvShowsDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterTvShowsDetailDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibraryDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 // Characterart
                 CharacterartShowOnMovies: { type: 'checkbox', def: true, tab: 'characterart' },
                 CharacterartShowOnSets: { type: 'checkbox', def: true, tab: 'characterart' },
@@ -4348,12 +4880,12 @@
                 KeyartTvShowsFolderName: { type: 'text', def: 'keyart', tab: 'keyart' },
                 KeyartTvShowsDetailEnabled: { type: 'checkbox', def: true, tab: 'keyart' },
                 KeyartTvShowsLibraryEnabled: { type: 'checkbox', def: true, tab: 'keyart' },
-                KeyartLogoEnabled: { type: 'checkbox', def: false, tab: 'keyart' },
-                KeyartLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'keyart' },
-                KeyartLogoSizePercent: { type: 'number', def: 60, tab: 'keyart' },
-                ExtrakeyartLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
-                ExtrakeyartLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extrakeyart' },
-                ExtrakeyartLogoSizePercent: { type: 'number', def: 60, tab: 'extrakeyart' },
+                KeyartDetailLogoEnabled: { type: 'checkbox', def: false, tab: 'keyart' },
+                KeyartDetailLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'keyart' },
+                KeyartDetailLogoSizePercent: { type: 'number', def: 60, tab: 'keyart' },
+                KeyartLibraryLogoEnabled: { type: 'checkbox', def: false, tab: 'keyart' },
+                KeyartLibraryLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'keyart' },
+                KeyartLibraryLogoSizePercent: { type: 'number', def: 60, tab: 'keyart' },
                 // Red Carpet - no format group of its own needed (always just .png, fixed in the backend)
                 RedCarpetFolderName: { type: 'text', def: 'Red Carpet', tab: 'redcarpet' },
                 RedCarpetShowOnInfoPage: { type: 'checkbox', def: true, tab: 'redcarpet' },
@@ -4363,13 +4895,7 @@
                 RedCarpetPosition: { type: 'select', def: 'BottomRight', tab: 'redcarpet' },
                 ExtraposterPriority: { type: 'select', def: 'Extraposter', tab: 'extraposter' },
                 ExtrakeyartEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
-                ExtrakeyartOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
                 ExtrakeyartUnnumberedMode: { type: 'select', def: 'Ignored', tab: 'extrakeyart' },
-                ExtrakeyartSinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
-                ExtrakeyartCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
-                ExtrakeyartFadeTimeMs: { type: 'number', def: 500, tab: 'extrakeyart' },
-                ExtrakeyartDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
-                ExtrakeyartDelayMs: { type: 'number', def: 3000, tab: 'extrakeyart' },
                 ExtrakeyartShowOnMovies: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartShowOnSets: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartShowOnTvShows: { type: 'checkbox', def: true, tab: 'extrakeyart' },
@@ -4381,6 +4907,44 @@
                 ExtrakeyartTvShowsFolderName: { type: 'text', def: 'keyart', tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailLogoSizePercent: { type: 'number', def: 60, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailSinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailDelayMs: { type: 'number', def: 3000, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryLogoSizePercent: { type: 'number', def: 60, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryDelayMs: { type: 'number', def: 3000, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailLogoSizePercent: { type: 'number', def: 60, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailSinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailDelayMs: { type: 'number', def: 3000, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibraryLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibraryLogoSizePercent: { type: 'number', def: 60, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibraryDelayMs: { type: 'number', def: 3000, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 RedCarpetBottomLeftScaleMode: { type: 'text', def: 'Height', tab: 'redcarpet' },
                 RedCarpetBottomLeftHeightVh: { type: 'number', def: 45, tab: 'redcarpet' },
                 RedCarpetBottomLeftMaxWidthVw: { type: 'number', def: 45, tab: 'redcarpet' },
@@ -5337,8 +5901,12 @@
                             children: [
                                 { id: 'keyart_showon', structural: true, target: ['KeyartShowOnRow'], when: [], children: [] },
                                 {
-                                    id: 'keyart_logo', target: ['KeyartLogoVerticalPositionRow', 'KeyartLogoSizeRow'],
-                                    when: [AllChecked(['KeyartLogoEnabled'])], children: []
+                                    id: 'keyart_logo_detail', target: ['KeyartDetailLogoVerticalPositionRow', 'KeyartDetailLogoSizeRow'],
+                                    when: [AllChecked(['KeyartDetailLogoEnabled'])], children: []
+                                },
+                                {
+                                    id: 'keyart_logo_library', target: ['KeyartLibraryLogoVerticalPositionRow', 'KeyartLibraryLogoSizeRow'],
+                                    when: [AllChecked(['KeyartLibraryLogoEnabled'])], children: []
                                 },
                                 {
                                     id: 'keyart_movies', terminal: true, target: ['keyartMovies'], when: [AnyChecked(['KeyartShowOnMovies', 'KeyartShowOnSets'])],
@@ -5380,17 +5948,39 @@
                             children: [
                                 { id: 'extraposterfeature_showon', structural: true, target: ['ExtraposterShowOnRow'], when: [], children: [] },
                                 {
-                                    id: 'extraposterfeature_movies', terminal: true, target: ['extraposterMovies'], when: [AnyChecked(['ExtraposterShowOnMovies', 'ExtraposterShowOnSets'])],
+                                    // Session 123: no longer terminal - the two view blocks below are
+                                    // real co-requirements (both off = no output for this type); the
+                                    // Folder refinement is structural so it never counts (rule 12).
+                                    id: 'extraposterfeature_movies', target: ['extraposterMovies'], when: [AnyChecked(['ExtraposterShowOnMovies', 'ExtraposterShowOnSets'])],
                                     children: [{
-                                        id: 'extraposterfeature_movies_folder', target: ['ExtraposterMoviesFolderNameRow'],
+                                        id: 'extraposterfeature_movies_folder', structural: true, target: ['ExtraposterMoviesFolderNameRow'],
                                         when: [ValueIn('ExtraposterMoviesNamingMode', ['Folder'])], children: []
+                                    },
+                                    {
+                                        id: 'extraposterfeature_movies_detail', terminal: true, target: ['ExtraposterMoviesDetailFields'], headerTarget: ['extraposterMoviesDetail'],
+                                        when: [AllChecked(['ExtraposterMoviesDetailEnabled'])], children: []
+                                    },
+                                    {
+                                        id: 'extraposterfeature_movies_library', terminal: true, target: ['ExtraposterMoviesLibraryFields'], headerTarget: ['extraposterMoviesLibrary'],
+                                        when: [AllChecked(['ExtraposterMoviesLibraryEnabled'])], children: []
                                     }]
                                 },
                                 {
-                                    id: 'extraposterfeature_tvshows', terminal: true, target: ['extraposterTvShows'], when: [AllChecked(['ExtraposterShowOnTvShows'])],
+                                    // Session 123: no longer terminal - the two view blocks below are
+                                    // real co-requirements (both off = no output for this type); the
+                                    // Folder refinement is structural so it never counts (rule 12).
+                                    id: 'extraposterfeature_tvshows', target: ['extraposterTvShows'], when: [AllChecked(['ExtraposterShowOnTvShows'])],
                                     children: [{
-                                        id: 'extraposterfeature_tvshows_folder', target: ['ExtraposterTvShowsFolderNameRow'],
+                                        id: 'extraposterfeature_tvshows_folder', structural: true, target: ['ExtraposterTvShowsFolderNameRow'],
                                         when: [ValueIn('ExtraposterTvShowsNamingMode', ['Folder'])], children: []
+                                    },
+                                    {
+                                        id: 'extraposterfeature_tvshows_detail', terminal: true, target: ['ExtraposterTvShowsDetailFields'], headerTarget: ['extraposterTvShowsDetail'],
+                                        when: [AllChecked(['ExtraposterTvShowsDetailEnabled'])], children: []
+                                    },
+                                    {
+                                        id: 'extraposterfeature_tvshows_library', terminal: true, target: ['ExtraposterTvShowsLibraryFields'], headerTarget: ['extraposterTvShowsLibrary'],
+                                        when: [AllChecked(['ExtraposterTvShowsLibraryEnabled'])], children: []
                                     }]
                                 }
                             ]
@@ -5404,21 +5994,51 @@
                             children: [
                                 { id: 'extrakeyart_showon', structural: true, target: ['ExtrakeyartShowOnRow'], when: [], children: [] },
                                 {
-                                    id: 'extrakeyart_logo', target: ['ExtrakeyartLogoVerticalPositionRow', 'ExtrakeyartLogoSizeRow'],
-                                    when: [AllChecked(['ExtrakeyartLogoEnabled'])], children: []
-                                },
-                                {
-                                    id: 'extrakeyart_movies', terminal: true, target: ['extrakeyartMovies'], when: [AnyChecked(['ExtrakeyartShowOnMovies', 'ExtrakeyartShowOnSets'])],
+                                    // Session 123: no longer terminal - the two view blocks below are
+                                    // real co-requirements (both off = no output for this type); the
+                                    // Folder refinement is structural so it never counts (rule 12).
+                                    id: 'extrakeyart_movies', target: ['extrakeyartMovies'], when: [AnyChecked(['ExtrakeyartShowOnMovies', 'ExtrakeyartShowOnSets'])],
                                     children: [{
-                                        id: 'extrakeyart_movies_folder', target: ['ExtrakeyartMoviesFolderNameRow'],
+                                        id: 'extrakeyart_movies_folder', structural: true, target: ['ExtrakeyartMoviesFolderNameRow'],
                                         when: [ValueIn('ExtrakeyartMoviesNamingMode', ['Folder'])], children: []
+                                    },
+                                    {
+                                        id: 'extrakeyart_movies_detail', terminal: true, target: ['ExtrakeyartMoviesDetailFields'], headerTarget: ['extrakeyartMoviesDetail'],
+                                        when: [AllChecked(['ExtrakeyartMoviesDetailEnabled'])], children: [{
+                                            id: 'extrakeyart_movies_detail_logo', target: ['ExtrakeyartMoviesDetailLogoVerticalPositionRow', 'ExtrakeyartMoviesDetailLogoSizeRow'],
+                                            when: [AllChecked(['ExtrakeyartMoviesDetailLogoEnabled'])], children: []
+                                        }]
+                                    },
+                                    {
+                                        id: 'extrakeyart_movies_library', terminal: true, target: ['ExtrakeyartMoviesLibraryFields'], headerTarget: ['extrakeyartMoviesLibrary'],
+                                        when: [AllChecked(['ExtrakeyartMoviesLibraryEnabled'])], children: [{
+                                            id: 'extrakeyart_movies_library_logo', target: ['ExtrakeyartMoviesLibraryLogoVerticalPositionRow', 'ExtrakeyartMoviesLibraryLogoSizeRow'],
+                                            when: [AllChecked(['ExtrakeyartMoviesLibraryLogoEnabled'])], children: []
+                                        }]
                                     }]
                                 },
                                 {
-                                    id: 'extrakeyart_tvshows', terminal: true, target: ['extrakeyartTvShows'], when: [AllChecked(['ExtrakeyartShowOnTvShows'])],
+                                    // Session 123: no longer terminal - the two view blocks below are
+                                    // real co-requirements (both off = no output for this type); the
+                                    // Folder refinement is structural so it never counts (rule 12).
+                                    id: 'extrakeyart_tvshows', target: ['extrakeyartTvShows'], when: [AllChecked(['ExtrakeyartShowOnTvShows'])],
                                     children: [{
-                                        id: 'extrakeyart_tvshows_folder', target: ['ExtrakeyartTvShowsFolderNameRow'],
+                                        id: 'extrakeyart_tvshows_folder', structural: true, target: ['ExtrakeyartTvShowsFolderNameRow'],
                                         when: [ValueIn('ExtrakeyartTvShowsNamingMode', ['Folder'])], children: []
+                                    },
+                                    {
+                                        id: 'extrakeyart_tvshows_detail', terminal: true, target: ['ExtrakeyartTvShowsDetailFields'], headerTarget: ['extrakeyartTvShowsDetail'],
+                                        when: [AllChecked(['ExtrakeyartTvShowsDetailEnabled'])], children: [{
+                                            id: 'extrakeyart_tvshows_detail_logo', target: ['ExtrakeyartTvShowsDetailLogoVerticalPositionRow', 'ExtrakeyartTvShowsDetailLogoSizeRow'],
+                                            when: [AllChecked(['ExtrakeyartTvShowsDetailLogoEnabled'])], children: []
+                                        }]
+                                    },
+                                    {
+                                        id: 'extrakeyart_tvshows_library', terminal: true, target: ['ExtrakeyartTvShowsLibraryFields'], headerTarget: ['extrakeyartTvShowsLibrary'],
+                                        when: [AllChecked(['ExtrakeyartTvShowsLibraryEnabled'])], children: [{
+                                            id: 'extrakeyart_tvshows_library_logo', target: ['ExtrakeyartTvShowsLibraryLogoVerticalPositionRow', 'ExtrakeyartTvShowsLibraryLogoSizeRow'],
+                                            when: [AllChecked(['ExtrakeyartTvShowsLibraryLogoEnabled'])], children: []
+                                        }]
                                     }]
                                 }
                             ]
@@ -6108,8 +6728,14 @@
             // a feature's own tab.
 
             var EP_BOOL_SELECT_PAIRS = [
-                ['SinglePass', 'SinglePassSelect'],
-                ['ExtrakeyartSinglePass', 'ExtrakeyartSinglePassSelect'],
+                ['ExtraposterMoviesDetailSinglePass', 'ExtraposterMoviesDetailSinglePassSelect'],
+                ['ExtraposterMoviesLibrarySinglePass', 'ExtraposterMoviesLibrarySinglePassSelect'],
+                ['ExtraposterTvShowsDetailSinglePass', 'ExtraposterTvShowsDetailSinglePassSelect'],
+                ['ExtraposterTvShowsLibrarySinglePass', 'ExtraposterTvShowsLibrarySinglePassSelect'],
+                ['ExtrakeyartMoviesDetailSinglePass', 'ExtrakeyartMoviesDetailSinglePassSelect'],
+                ['ExtrakeyartMoviesLibrarySinglePass', 'ExtrakeyartMoviesLibrarySinglePassSelect'],
+                ['ExtrakeyartTvShowsDetailSinglePass', 'ExtrakeyartTvShowsDetailSinglePassSelect'],
+                ['ExtrakeyartTvShowsLibrarySinglePass', 'ExtrakeyartTvShowsLibrarySinglePassSelect'],
                 ['CharacterartMoviesMultiImage', 'CharacterartMoviesMultiImageSelect'],
                 ['CharacterartMoviesSinglePass', 'CharacterartMoviesSinglePassSelect'],
                 ['CharacterartTvShowsMultiImage', 'CharacterartTvShowsMultiImageSelect'],
@@ -6601,7 +7227,7 @@
             // state on a fresh page load until the user touches
             // something, since this loop only ever attaches 'change'/
             // 'input' listeners, never calls the function directly.
-            var EP_DELAY_DEPENDENCY_PAIRS = [['DelayEnabled', 'DelayMs'], ['ExtrakeyartDelayEnabled', 'ExtrakeyartDelayMs'], ['CharacterartMoviesDelayEnabled', 'CharacterartMoviesDelayMs'], ['CharacterartTvShowsDelayEnabled', 'CharacterartTvShowsDelayMs']];
+            var EP_DELAY_DEPENDENCY_PAIRS = [['ExtraposterMoviesDetailDelayEnabled', 'ExtraposterMoviesDetailDelayMs'], ['ExtraposterMoviesLibraryDelayEnabled', 'ExtraposterMoviesLibraryDelayMs'], ['ExtraposterTvShowsDetailDelayEnabled', 'ExtraposterTvShowsDetailDelayMs'], ['ExtraposterTvShowsLibraryDelayEnabled', 'ExtraposterTvShowsLibraryDelayMs'], ['ExtrakeyartMoviesDetailDelayEnabled', 'ExtrakeyartMoviesDetailDelayMs'], ['ExtrakeyartMoviesLibraryDelayEnabled', 'ExtrakeyartMoviesLibraryDelayMs'], ['ExtrakeyartTvShowsDetailDelayEnabled', 'ExtrakeyartTvShowsDetailDelayMs'], ['ExtrakeyartTvShowsLibraryDelayEnabled', 'ExtrakeyartTvShowsLibraryDelayMs'], ['CharacterartMoviesDelayEnabled', 'CharacterartMoviesDelayMs'], ['CharacterartTvShowsDelayEnabled', 'CharacterartTvShowsDelayMs']];
             EP_DELAY_DEPENDENCY_PAIRS
                 .forEach(function (pair) {
                     var enabledEl = document.getElementById(pair[0]);
@@ -7137,7 +7763,14 @@
                     // brings FadeTimeMs down to CycleTimeMs's value if it
                     // would otherwise exceed it, without ever touching
                     // either field while the user is still editing.
-                    epUpdateFadeCycleClamp('CycleTimeMs', 'FadeTimeMs');
+                    epUpdateFadeCycleClamp('ExtraposterMoviesDetailCycleTimeMs', 'ExtraposterMoviesDetailFadeTimeMs');
+                    epUpdateFadeCycleClamp('ExtraposterMoviesLibraryCycleTimeMs', 'ExtraposterMoviesLibraryFadeTimeMs');
+                    epUpdateFadeCycleClamp('ExtraposterTvShowsDetailCycleTimeMs', 'ExtraposterTvShowsDetailFadeTimeMs');
+                    epUpdateFadeCycleClamp('ExtraposterTvShowsLibraryCycleTimeMs', 'ExtraposterTvShowsLibraryFadeTimeMs');
+                    epUpdateFadeCycleClamp('ExtrakeyartMoviesDetailCycleTimeMs', 'ExtrakeyartMoviesDetailFadeTimeMs');
+                    epUpdateFadeCycleClamp('ExtrakeyartMoviesLibraryCycleTimeMs', 'ExtrakeyartMoviesLibraryFadeTimeMs');
+                    epUpdateFadeCycleClamp('ExtrakeyartTvShowsDetailCycleTimeMs', 'ExtrakeyartTvShowsDetailFadeTimeMs');
+                    epUpdateFadeCycleClamp('ExtrakeyartTvShowsLibraryCycleTimeMs', 'ExtrakeyartTvShowsLibraryFadeTimeMs');
                     epUpdateFadeCycleClamp('CharacterartMoviesCycleTimeMs', 'CharacterartMoviesFadeTimeMs');
                     epUpdateFadeCycleClamp('CharacterartTvShowsCycleTimeMs', 'CharacterartTvShowsFadeTimeMs');
                     ApiClient.getPluginConfiguration(ArtworkPlusConfig.pluginUniqueId).then(function (config) {
