@@ -6405,7 +6405,9 @@
                                     // Folder refinement is structural so it never counts (rule 12).
                                     // Session 124: Show-on lives per view - Movies/TV shows are containers
                                     // without a condition of their own; their view children carry Enable + Show-on.
-                                    id: 'extraposterfeature_movies', target: ['extraposterMovies'], when: [],
+                                    // Session 127: header-only dimming - both views off = this type has no effect; the body
+                                    // (Naming mode, Folder name, the view Enable rows = escape route) is never a target.
+                                    id: 'extraposterfeature_movies', target: [], headerTarget: ['extraposterMovies'], when: [AnyChecked(['ExtraposterMoviesDetailEnabled', 'ExtraposterMoviesLibraryEnabled'])],
                                     children: [{
                                         id: 'extraposterfeature_movies_folder', structural: true, target: ['ExtraposterMoviesFolderNameRow'],
                                         when: [ValueIn('ExtraposterMoviesNamingMode', ['Folder'])], children: []
@@ -6423,7 +6425,9 @@
                                     // Session 123: no longer terminal - the two view blocks below are
                                     // real co-requirements (both off = no output for this type); the
                                     // Folder refinement is structural so it never counts (rule 12).
-                                    id: 'extraposterfeature_tvshows', target: ['extraposterTvShows'], when: [],
+                                    // Session 127: header-only dimming - both views off = this type has no effect; the body
+                                    // (Naming mode, Folder name, the view Enable rows = escape route) is never a target.
+                                    id: 'extraposterfeature_tvshows', target: [], headerTarget: ['extraposterTvShows'], when: [AnyChecked(['ExtraposterTvShowsDetailEnabled', 'ExtraposterTvShowsLibraryEnabled'])],
                                     children: [{
                                         id: 'extraposterfeature_tvshows_folder', structural: true, target: ['ExtraposterTvShowsFolderNameRow'],
                                         when: [ValueIn('ExtraposterTvShowsNamingMode', ['Folder'])], children: []
@@ -6452,7 +6456,9 @@
                                     // Folder refinement is structural so it never counts (rule 12).
                                     // Session 124: Show-on lives per view - Movies/TV shows are containers
                                     // without a condition of their own; their view children carry Enable + Show-on.
-                                    id: 'extrakeyart_movies', target: ['extrakeyartMovies'], when: [],
+                                    // Session 127: header-only dimming - both views off = this type has no effect; the body
+                                    // (Naming mode, Folder name, the view Enable rows = escape route) is never a target.
+                                    id: 'extrakeyart_movies', target: [], headerTarget: ['extrakeyartMovies'], when: [AnyChecked(['ExtrakeyartMoviesDetailEnabled', 'ExtrakeyartMoviesLibraryEnabled'])],
                                     children: [{
                                         id: 'extrakeyart_movies_folder', structural: true, target: ['ExtrakeyartMoviesFolderNameRow'],
                                         when: [ValueIn('ExtrakeyartMoviesNamingMode', ['Folder'])], children: []
@@ -6476,7 +6482,9 @@
                                     // Session 123: no longer terminal - the two view blocks below are
                                     // real co-requirements (both off = no output for this type); the
                                     // Folder refinement is structural so it never counts (rule 12).
-                                    id: 'extrakeyart_tvshows', target: ['extrakeyartTvShows'], when: [],
+                                    // Session 127: header-only dimming - both views off = this type has no effect; the body
+                                    // (Naming mode, Folder name, the view Enable rows = escape route) is never a target.
+                                    id: 'extrakeyart_tvshows', target: [], headerTarget: ['extrakeyartTvShows'], when: [AnyChecked(['ExtrakeyartTvShowsDetailEnabled', 'ExtrakeyartTvShowsLibraryEnabled'])],
                                     children: [{
                                         id: 'extrakeyart_tvshows_folder', structural: true, target: ['ExtrakeyartTvShowsFolderNameRow'],
                                         when: [ValueIn('ExtrakeyartTvShowsNamingMode', ['Folder'])], children: []

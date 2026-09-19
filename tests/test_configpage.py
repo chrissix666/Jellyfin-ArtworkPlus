@@ -1132,6 +1132,21 @@ with sync_playwright() as p:
         aset('Keyart' + view + 'LogoEnabled', True)
         check(f'SPLIT: Keyart {view} logo rows active while on', agreyed('Keyart' + view + 'LogoSizeRow') is False)
         aset('Keyart' + view + 'LogoEnabled', False)
+    # Session 127: Movies/TV shows container header dims when both views are off, body untouched
+    apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="extraposter"]').click(); }""")
+    for key, pre in [('extraposterMovies', 'ExtraposterMovies'), ('extraposterTvShows', 'ExtraposterTvShows'), ('extrakeyartMovies', 'ExtrakeyartMovies'), ('extrakeyartTvShows', 'ExtrakeyartTvShows')]:
+        def hdr_state(k=key, p=pre):
+            return apage.evaluate("(a) => { var h = document.querySelector('.epCollapseHeader[data-collapse=\"' + a[0] + '\"]'); var b = document.querySelector('.epCollapseBody[data-collapsebody=\"' + a[0] + '\"]'); return { hdr: h.classList.contains('epFieldDisabled'), body: b.classList.contains('epFieldDisabled'), naming: document.getElementById(a[1] + 'NamingMode').disabled, enable: document.getElementById(a[1] + 'DetailEnabled').disabled }; }", [k, p])
+        aset(pre + 'DetailEnabled', False)
+        st = hdr_state()
+        check(f'S127: {key} header normal with one view still on', st['hdr'] is False, str(st))
+        aset(pre + 'LibraryEnabled', False)
+        st = hdr_state()
+        check(f'S127: {key} header dims with both views off, body / Naming mode / Enable rows untouched', st['hdr'] is True and st['body'] is False and st['naming'] is False and st['enable'] is False, str(st))
+        aset(pre + 'LibraryEnabled', True)
+        st = hdr_state()
+        check(f'S127: {key} header back to normal when a view returns', st['hdr'] is False, str(st))
+        aset(pre + 'DetailEnabled', True)
     # Animated Keyart: logo per view (Session 126), mirrors the Keyart tab
     apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="animatedposter"]').click(); }""")
     for view, size in [('Detail', '60'), ('Library', '80')]:
