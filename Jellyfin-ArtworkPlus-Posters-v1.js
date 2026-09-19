@@ -902,6 +902,7 @@
         var PENDING_CLASS = 'artworkplus-tile-pending';
         var FADEIN_CLASS = 'artworkplus-tile-fadein';
         var SAFETY_MS = 3000; // Session 123: 2 s was beaten by a cold Extraposter batch on external drives
+        var SAFETY_HARD_MAX_MS = 12000; // ... and while a batch is still in flight the net waits, up to this
         var PRELOAD_TIMEOUT_MS = 8000;
         var NAMES = { 1: 'custom', 2: 'animated', 3: 'extra' };
         var log = Core.makeLogger('[PostersPlus/LibraryTiles]', DEBUG);
@@ -941,7 +942,7 @@
             st = {
                 card: cardEl, container: container, itemId: itemId, type: cardEl.dataset.type,
                 answers: {}, decided: false, winner: 0, baseUrl: null,
-                pending: false, safetyTimer: null, guard: null,
+                pending: false, safetyTimer: null, guard: null, pendingSince: 0, inFlight: 0,
                 holdForOverlay: false, overlayNear: false, extra: null
             };
             states.set(cardEl, st);
@@ -952,6 +953,7 @@
             if (!expected.length) { return; }
             st.container.classList.add(PENDING_CLASS);
             st.pending = true;
+            if (!st.pendingSince) { st.pendingSince = performance.now(); }
             armSafety(st);
         }
 
@@ -963,6 +965,10 @@
                 // An Extra tile without Delay outside the 50% window keeps
                 // its blurhash until it comes near - re-armed on activation.
                 if (st.holdForOverlay && !st.overlayNear) { return; }
+                // A batch that is still on its way is not a hang: a cold
+                // Extraposter batch on external drives takes 1-3 s. Wait for
+                // it (re-check every second) up to the hard maximum.
+                if (st.inFlight > 0 && performance.now() - st.pendingSince < SAFETY_HARD_MAX_MS) { armSafety(st, 1000); return; }
                 log('safety net released tile', st.itemId, '| answers:', JSON.stringify(Object.keys(st.answers)), '| winner:', st.winner);
                 release(st);
             }, ms || SAFETY_MS);
@@ -1014,6 +1020,12 @@
             if (!st) { return; }
             st.answers[priority] = answer || false;
             if (allAnswered(st)) { decide(st); }
+        }
+
+        // Reporters mark a tile while their batch request is in flight.
+        function markInFlight(cardEl, delta) {
+            var st = states.get(cardEl);
+            if (st) { st.inFlight = Math.max(0, st.inFlight + delta); }
         }
 
         function withdraw(cardEl, priority) {
@@ -1141,7 +1153,7 @@
 
         log('library tile arbiter ready | expected participants:', JSON.stringify(expected), flags ? '(server flags)' : '(no server flags - older build)');
 
-        return { register: register, report: report, withdraw: withdraw, stateFor: stateFor, setPending: setPending, armSafety: armSafety, release: release, isEnabled: isEnabled, syncTileLogo: syncTileLogo };
+        return { register: register, report: report, withdraw: withdraw, stateFor: stateFor, setPending: setPending, armSafety: armSafety, release: release, isEnabled: isEnabled, syncTileLogo: syncTileLogo, markInFlight: markInFlight };
     })();
 
     // One-image participants (Custom 1, Animated 2): page-wide batch,
@@ -1170,6 +1182,7 @@
         function collect(card, itemId) {
             if (itemId in resultCache) { LibraryTiles.report(card, priority, answerFor(itemId)); return; }
             (pendingCards[itemId] = pendingCards[itemId] || []).push(card);
+            LibraryTiles.markInFlight(card, +1);
             if (pendingIds.indexOf(itemId) === -1) { pendingIds.push(itemId); }
             if (!fetchTimer) { fetchTimer = setTimeout(function () { fetchTimer = null; flush(); }, FETCH_DEBOUNCE_MS); }
         }
@@ -1179,7 +1192,7 @@
                 var cards = pendingCards[id] || [];
                 delete pendingCards[id];
                 var answer = answerFor(id);
-                cards.forEach(function (card) { LibraryTiles.report(card, priority, answer); });
+                cards.forEach(function (card) { LibraryTiles.markInFlight(card, -1); LibraryTiles.report(card, priority, answer); });
                 if (answer) { log('applicable for tile', id, '(resolved:', answer.resolvedType + ')'); }
             });
         }
@@ -1691,6 +1704,7 @@
         function libCollect(card, itemId) {
             if (itemId in resultCache) { LibraryTiles.report(card, LIB_PRIORITY, libAnswerFor(itemId)); return; }
             (pendingCards[itemId] = pendingCards[itemId] || []).push(card);
+            LibraryTiles.markInFlight(card, +1);
             if (pendingIds.indexOf(itemId) === -1) { pendingIds.push(itemId); }
             if (!pendingFetchTimer) { pendingFetchTimer = setTimeout(function () { pendingFetchTimer = null; libFlush(); }, LIB_FETCH_DEBOUNCE_MS); }
         }
@@ -1700,7 +1714,7 @@
                 var cards = pendingCards[id] || [];
                 delete pendingCards[id];
                 var answer = libAnswerFor(id);
-                cards.forEach(function (card) { LibraryTiles.report(card, LIB_PRIORITY, answer); });
+                cards.forEach(function (card) { LibraryTiles.markInFlight(card, -1); LibraryTiles.report(card, LIB_PRIORITY, answer); });
                 if (answer) { libLog('applicable for tile', id, '| images:', answer.urls.length, '| delay:', answer.delayMs); }
             });
         }

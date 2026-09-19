@@ -177,7 +177,7 @@ def run():
         Scenario('S5 extra without delay: no frame shows the base before the overlay', ROWS5, animated={'t03': True}, extra={'t03': 2}),
         Scenario('S6 extra with delay: base visible during the delay, overlay after', ROWS5, custom={'t04': True}, extra={'t04': 2}, extra_opts={"DelayEnabled": True, "DelayMs": 600}),
         Scenario('S7 animated image fails -> custom takes the tile', ROWS5, custom={'t05': True}, animated={'t05': True}, img_fail=['AnimatedPoster']),
-        Scenario('S8 batch never answers in time -> safety net releases with vanilla', ROWS5, batch_delay={'custom': 5000}),
+        Scenario('S8 slow batch: the safety net waits for the in-flight answer, then vanilla', ROWS5, batch_delay={'custom': 4500}),
         Scenario('S9 server flags: only animated expected, custom batch slow is ignored', ROWS5, animated={'t06': True}, flags={"custom": False, "animated": True, "extra": False}, batch_delay={'custom': 4000}),
         Scenario('S10 scroll out and back keeps the animated poster', ROWS5, animated={'t01': True}),
         Scenario('S11 extra layers sit under the hover menu', ROWS5, extra={'t07': 1}),
@@ -259,13 +259,13 @@ def run():
                 bad = visible_wrong_frames(rec, 't05', lambda x: 'CustomPoster' in x['bg'])
                 if bad: problems.append(f"wrong frames: {bad[:3]}")
             if sc.name.split(' ')[0] == 'S8':
-                page.wait_for_timeout(2400)
+                page.wait_for_timeout(4200)
                 rec = page.evaluate("window.__rec")
                 t = final_tile(rec, 't01')
                 if not (t and not t['pending'] and vanilla(t['bg']) and t['op'] > 0.99): problems.append(f"safety net failed: {t}")
                 t_cards = next((s['t'] for s in rec if s['tiles']), None)
                 first = next((s['t'] for s in rec if any(x['id'] == 't01' and not x['pending'] for x in s['tiles'])), None)
-                if first is None or first - t_cards > 3400 or first - t_cards < 2800: problems.append(f"safety timing {first - t_cards if first else None}")
+                if first is None or first - t_cards > 5300 or first - t_cards < 4300: problems.append(f"release timing {first - t_cards if first else None} (expected right after the 4.5 s answer, not at the 3 s net)")
             if sc.name.split(' ')[0] == 'S9':
                 t = final_tile(rec, 't06')
                 if not (t and 'AnimatedPoster' in t['bg'] and t['op'] > 0.99 and not t['pending']): problems.append(f"flags not honoured: {t}")
