@@ -405,7 +405,7 @@ Jellyfin's backdrop stage). Favorites-People-Folder inherits it.
    read Jellyfin's own per-user localStorage keys and show only while the
    category's Enable is on. Every category collapse reserves one fixed 15 px
    line for the hint (in a column with the intro, left of the Restore button,
-   2 px above and below - the user's choice after three rounds) so nothing
+   2 px above, 4 px below - the user's choice after four rounds) so nothing
    jumps. `epVanillaNoticePreview` (false) can force all three visible for a look.
 
 ### S3. Interplay (both directions)
