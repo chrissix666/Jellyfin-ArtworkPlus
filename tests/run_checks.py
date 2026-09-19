@@ -38,6 +38,7 @@ GATING = [
     'diagnostic_js_cs_defaults_sync.py',
     'diagnostic_nested_collapse_check.py',
     'diagnostic_batch_key_format.py',   # Session 122: batch maps keyed like the tile data-id (no dashes)
+    'diagnostic_casemod_design_frame.py',  # Session 129: case geometry measured only in the design frame (no raw rects, no scroll listener)
     # Session 113-116: client-engine and render checks (no server needed)
     'test_rotation_engine.py',
     'test_debug_switch.py',

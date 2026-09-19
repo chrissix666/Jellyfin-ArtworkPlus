@@ -128,3 +128,15 @@ investigation but do NOT belong to the 3D case list:
 - **Dropdown label:** "Viva Elite 3D Case"
 - **`CaseModType` value:** `vivaelite3dcases`
 - The `.csproj` copies `CaseTextures\**\*.png` next to the DLL on every build (`plugins/ArtworkPlus_x.x.x.x/CaseTextures/...`), so the textures ship with the code, not with the data folder.
+
+## Coordinate frame of the tilt matrix (Session 129)
+
+The Kodi matrix (`computeKodiMatrix3dString`) projects with a camera fixed at the screen
+centre (`buildCameraMatrices`, screen = viewport size). Object position and hinge are taken in
+the **design frame**: the element's layout position at scroll 0 (`measureDesignRect` =
+viewport rect + scroll offsets of inner scrollers + window). This is the plugin's equivalent
+of the skin position in Kodi, which never scrolls. Consequences: scrolling never changes the
+tilt; a re-tilt happens only at settle points, on resize and when the card changes size; the
+open-case geometry is measured in the same frame, so opening while scrolled does not jump.
+No element carries CSS `perspective` - the camera lives in the matrix alone
+(`tests/diagnostic_casemod_design_frame.py` guards both facts).

@@ -854,40 +854,22 @@ def run():
         check('Perspective regression: .detailImageContainer has NO own perspective (Session 12 bug, still valid)',
               perspective_state['detailImageContainer'] == 'none', f"{perspective_state}")
 
-        # ═══ Test 19b: perspective-origin of poster and front case hit the same world-coordinate point ═══
-        # (User finding: horizontal drift + "wrong" depth effect came from
-        # both elements having their own default vanishing point (own box
-        # centre) instead of aiming at the hinge axis together.)
+        # ═══ Test 19b (rewritten Session 129): the camera lives in the matrix, not in CSS ═══
+        # Test 19 above proves no element carries `perspective`; the perspective-origin rules
+        # that used to be injected (Session 16, "camera at the screen centre") were therefore
+        # dead CSS and are gone - nothing may inject one again, the Kodi matrix
+        # (buildCameraMatrices, camera = screen centre) is the single source of the camera.
         for ctype in ['vivaelitecases', 'clearcases', 'vortexcases']:
             apply_case(ctype, True, True)
-            persp_match = page.evaluate("""([ctype]) => {
+            persp = page.evaluate("""() => {
+                var injected = Array.prototype.some.call(document.querySelectorAll('style'), function (s) { return s.textContent.indexOf('perspective-origin') !== -1; });
                 var box = document.querySelector('.artworkplus-casemod-box-front');
                 var card = document.querySelector('.card');
-                var boxRect = box.getBoundingClientRect();
-                var cardRect = card.getBoundingClientRect();
-                var boxOriginPx = parseFloat(getComputedStyle(box).perspectiveOrigin.split(' ')[0]);
-                var cardOriginPx = parseFloat(getComputedStyle(card).perspectiveOrigin.split(' ')[0]);
-                return {
-                    boxDefault: getComputedStyle(box).perspectiveOrigin,
-                    cardDefault: getComputedStyle(card).perspectiveOrigin,
-                    boxAbs: boxRect.left + boxOriginPx,
-                    cardAbs: cardRect.left + cardOriginPx
-                };
-            }""", [ctype])
-            check(f'Perspective origin {ctype}: front case NO longer at the default box centre',
-                  '50%' not in persp_match['boxDefault'].split(' ')[0] or persp_match['boxAbs'] != 0,
-                  f"{persp_match['boxDefault']}")
-            check(f'Perspective origin {ctype}: poster (.card) and front case hit the same vanishing point (hinge axis)',
-                  abs(persp_match['boxAbs'] - persp_match['cardAbs']) < 0.51,
-                  f"box={persp_match['boxAbs']:.2f} card={persp_match['cardAbs']:.2f}")
-            # Session 16: perspective-origin now deliberately aims at the
-            # SCREEN CENTRE (Kodi's own, source-verified default camera
-            # behaviour: `0.5 * screenWidth` without a <camera> tag), NO
-            # longer at the hinge - the hinge stays exclusive to
-            # transform-origin (rotation axis).
-            check(f'Perspective origin {ctype}: sits at the screen centre (Kodi camera behaviour), no longer at the hinge',
-                  abs(persp_match['boxAbs'] - VW/2) < 1.0,
-                  f"perspOrigin={persp_match['boxAbs']:.2f} expected screen centre={VW/2}")
+                return { injected, boxPersp: getComputedStyle(box).perspective, cardPersp: getComputedStyle(card).perspective,
+                         boxMatrix: (box.style.transform || (box.querySelector('.artworkplus-casemod-rotator') || {}).style || {}).transform || box.style.transform };
+            }""")
+            check(f'Camera in the matrix {ctype}: no perspective-origin CSS injected, no CSS perspective on box/card',
+                  not persp['injected'] and persp['boxPersp'] == 'none' and persp['cardPersp'] == 'none', str(persp))
 
         # ═══ Test 20: position regression - card/case box position unchanged by the perspective fixes ═══
         # (that was the actual Session 12 bug: everything shifted as soon
@@ -1468,6 +1450,43 @@ def run():
         remembered = page.evaluate("() => window.__tiltRemembered")
         check('Tilt hold: a flat-case answer is remembered as "no tilt expected" (next viewshow will not hold)',
               remembered is False, f"{remembered}")
+
+        # ═══ Tests 37-39 (Session 129): the design frame - the 3D tilt matrix does not depend on the
+        # scroll position (first tilt while scrolled, re-tilt while scrolled, open-case geometry) ═══
+        frame = page.evaluate("""async ([top, left, w, h, dtop, dleft, dsize]) => {
+            document.body.style.minHeight = '4000px';
+            var resp = { IsApplicable: true, CaseType: 'vivaelite3dcases', CaseAngleDegrees: -6,
+                TextureKey: '1080p', BackTextureKey: 'back_1080p', HasDiscart: false,
+                OpenCaseDelayEnabled: true, OpenCaseDelayMs: 5000, OpenCaseOnClickEnabled: true,
+                OpenAngleDegrees: 90, TopPercent: top, LeftPercent: left, WidthVw: w, HeightVw: h,
+                DiscTopPercent: dtop, DiscLeftPercent: dleft, DiscSizeVw: dsize };
+            var posterEl = document.querySelector('.card .cardImageContainer');
+            var front = () => document.querySelector('.artworkplus-casemod-box-front');
+            var tilted = () => document.querySelector('.artworkplus-casemod-box-front .artworkplus-casemod-rotator') || front();
+            window.scrollTo(0, 0);
+            __setResponse(resp); await __caseMod.check(null, 'frame-a', posterEl, window.__bumpGen());
+            await new Promise(r => setTimeout(r, 50));
+            var atTop = tilted().style.transform;
+            // 1. first tilt while the page is scrolled (reload mid-page)
+            window.scrollTo(0, 900);
+            __setResponse(resp); await __caseMod.check(null, 'frame-b', posterEl, window.__bumpGen());
+            await new Promise(r => setTimeout(r, 50));
+            var firstWhileScrolled = tilted().style.transform;
+
+            // 2. a re-tilt (resize) while scrolled
+            window.dispatchEvent(new Event('resize'));
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+            var retiltWhileScrolled = tilted().style.transform;
+            // 3. scrolling itself changes nothing (no scroll listener any more)
+            window.scrollTo(0, 300); document.dispatchEvent(new Event('scroll'));
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+            var afterScroll = tilted().style.transform;
+            window.scrollTo(0, 0); document.body.style.minHeight = '';
+            return { atTop, firstWhileScrolled, retiltWhileScrolled, afterScroll, scrollable: document.documentElement.scrollHeight > window.innerHeight };
+        }""", [top, left, w, h, dtop, dleft, dsize])
+        check('Design frame: page is scrollable in the harness (precondition)', frame['scrollable'], str(frame))
+        check('Design frame: first tilt while scrolled equals the tilt at the top', frame['atTop'].startswith('matrix3d') and frame['firstWhileScrolled'] == frame['atTop'], f"top={frame['atTop'][:60]} scrolled={frame['firstWhileScrolled'][:60]}")
+        check('Design frame: re-tilt (resize) and a scroll event while scrolled keep the same matrix', frame['retiltWhileScrolled'] == frame['atTop'] and frame['afterScroll'] == frame['atTop'], f"retilt={frame['retiltWhileScrolled'][:60]} afterScroll={frame['afterScroll'][:60]}")
 
         check('No page JS errors (after the new trigger tests)', not page_errors, str(page_errors[:2]))
 

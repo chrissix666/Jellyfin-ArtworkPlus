@@ -3039,26 +3039,10 @@
                 '.' + cls + ' .' + ROTATOR_CLASS + ' {',
                 '    transform-origin: 0 0;',
                 '}',
-                // CORRECTED SESSION 16 (see ensurePosterOriginStylesInjected's
-                // own doc comment for the full derivation and Kodi-
-                // source citation): the front box's own perspective-
-                // origin now targets the VIEWPORT'S OWN horizontal
-                // center (50vw) too, matching the real Kodi engine's
-                // screen-fixed default camera instead of the hinge.
-                // Expressed here as a PERCENTAGE OF THIS BOX'S OWN
-                // WIDTH (this rule's own existing convention, since
-                // `perspective-origin` on `.` + cls always resolves
-                // against that box's own dimensions) - `leftPct` is
-                // vw-equivalent (same container-width reasoning as
-                // ensurePosterOriginStylesInjected), so
-                // `(50 - leftPct) / widthVw * 100` gives the same real-
-                // world screen-center point, just re-expressed in this
-                // box's own coordinate space. `transform-origin`
-                // (the rotation axis, one rule above) stays at the
-                // hinge, unchanged - only the camera moved.
-                '.detailImageContainer .' + BOX_FRONT_CLASS + '.' + cls + ' {',
-                '    perspective-origin: ' + ((50 - leftPct) / widthVw * 100) + '% 50vh;',
-                '}'
+                // Session 129: the front box's perspective-origin rule (Session 16,
+                // "camera at the screen centre") is gone - it was dead CSS: no
+                // element carries `perspective`, the Kodi matrix projects with
+                // its own screen-centred camera (buildCameraMatrices).
             ].join('\n');
 
             var styleEl = document.createElement('style');
@@ -3173,11 +3157,9 @@
                 '.layout-desktop .detailImageContainer .cardScalable.' + cls + ',',
                 '.layout-tv .detailImageContainer .cardScalable.' + cls + ' {',
                 '    transform-origin: 0 0;',
-                '    perspective-origin: calc(' + desktopTvCameraVw + 'vw) 50vh;',
                 '}',
                 '.layout-mobile .detailImageContainer .cardScalable.' + cls + ' {',
                 '    transform-origin: 0 0;',
-                '    perspective-origin: calc(' + mobileCameraVw + 'vw) 50vh;',
                 '}',
                 // `.card` itself keeps its own, separately-declared
                 // perspective-origin - it's a DIFFERENT element (the
@@ -3221,12 +3203,10 @@
                 // leftover. Same override logic as for contain above.
                 '.layout-desktop .detailImageContainer .card.' + cardCls + ',',
                 '.layout-tv .detailImageContainer .card.' + cardCls + ' {',
-                '    perspective-origin: calc(' + desktopTvCameraVw + 'vw) 50vh;',
                 '    contain: layout style !important;',
                 '    cursor: default !important;',
                 '}',
                 '.layout-mobile .detailImageContainer .card.' + cardCls + ' {',
-                '    perspective-origin: calc(' + mobileCameraVw + 'vw) 50vh;',
                 '    contain: layout style !important;',
                 '    cursor: default !important;',
                 '}'
@@ -3712,6 +3692,35 @@
             // rotation at openAngle=0. Rest tilt and Open Case now use
             // the same, CORRECT maths instead of an approximated
             // compensation.
+            // Session 129 (user: "the case angle scrolls with the page"): the Kodi
+            // matrix bakes SCREEN coordinates in - the object's position against a
+            // camera fixed at the screen centre. Kodi never scrolls; the case sits at
+            // its skin position. The plugin's equivalent is the DESIGN frame: the
+            // element's layout position at scroll 0 (viewport rect + the scroll
+            // offsets of every scrolling ancestor and the window). Every measurement
+            // for the case geometry goes through here - a raw getBoundingClientRect()
+            // is viewport-relative and changes with the scroll position, which gave
+            // three symptoms from one cause: the angle wandering while scrolling
+            // (Session 121's retilt on scroll), a wrong first tilt after a reload
+            // mid-page (browser restores the scroll), and an open-case animation
+            // measured while scrolled that jumped against the rest tilt.
+            // tests/diagnostic_casemod_design_frame.py keeps raw calls out of the module.
+            function measureDesignRect(el) {
+                var r = el.getBoundingClientRect();
+                var dx = window.scrollX || window.pageXOffset || 0;
+                var dy = window.scrollY || window.pageYOffset || 0;
+                // Inner scrollers only: the viewport scroller (html/body, whichever
+                // document.scrollingElement is) is already covered by window.scrollX/Y.
+                var viewportScroller = document.scrollingElement || document.documentElement;
+                for (var n = el.parentElement; n; n = n.parentElement) {
+                    if (n === viewportScroller || n === document.documentElement || n === document.body) { continue; }
+                    if (n.scrollTop) { dy += n.scrollTop; }
+                    if (n.scrollLeft) { dx += n.scrollLeft; }
+                }
+                return { left: r.left + dx, top: r.top + dy, width: r.width, height: r.height,
+                         right: r.right + dx, bottom: r.bottom + dy };
+            }
+
             function applyTilt(el, rect) {
                 el.style.transformOrigin = '0 0';
                 el.style.transform = computeKodiMatrix3dString(
@@ -3732,7 +3741,7 @@
             // parallelogram. retilt() re-measures every tilted element
             // UNTRANSFORMED (transform cleared, measured, re-applied inside
             // one frame - no visible flicker) and re-applies the matrix; it
-            // runs at settle points and on resize/scroll, never while the
+            // runs at settle points and on resize (Session 129: not on scroll), never while the
             // Open Case animation holds the rotator.
             var tiltedEls = [];
             var retiltQueued = null;
@@ -3748,15 +3757,15 @@
                 // off for the re-measure, reflow, restore afterwards.
                 var savedTransitions = tiltedEls.map(function (el) { return el.style.transition; });
                 tiltedEls.forEach(function (el) { el.style.transition = 'none'; el.style.transform = ''; });
-                var rect = tiltTarget.getBoundingClientRect();
+                var rect = measureDesignRect(tiltTarget);
                 if (rect.width && rect.height) {
                     tiltScreenW = window.innerWidth; tiltScreenH = window.innerHeight;
                     tiltHingeXPx = rect.left + (tiltHingePct / 100) * rect.width;
                     tiltCameraX = tiltScreenW * 0.5; tiltCameraY = tiltScreenH * 0.5;
                     tiltFrontRect = rect;
-                    if (tiltCardScalableEl && document.body.contains(tiltCardScalableEl)) { tiltPosterRect = tiltCardScalableEl.getBoundingClientRect(); }
+                    if (tiltCardScalableEl && document.body.contains(tiltCardScalableEl)) { tiltPosterRect = measureDesignRect(tiltCardScalableEl); }
                 }
-                tiltedEls.forEach(function (el) { applyTilt(el, el.getBoundingClientRect()); });
+                tiltedEls.forEach(function (el) { applyTilt(el, measureDesignRect(el)); });
                 void document.body.offsetWidth; // commit the untransitioned state before the transition comes back
                 tiltedEls.forEach(function (el, i) { el.style.transition = savedTransitions[i]; });
             }
@@ -3789,7 +3798,7 @@
                 // wrapper) stays untouched. Without Open Case (rotator
                 // == null) unchanged as before: frontBox directly.
                 tiltTarget = rotator || frontBox;
-                tiltFrontRect = tiltTarget.getBoundingClientRect();
+                tiltFrontRect = measureDesignRect(tiltTarget);
                 tiltHingePct = HINGE_ORIGIN_X_PERCENT[tiltHingeKey] || 0;
                 tiltScreenW = window.innerWidth; tiltScreenH = window.innerHeight;
                 tiltHingeXPx = tiltFrontRect.left + (tiltHingePct / 100) * tiltFrontRect.width;
@@ -3809,7 +3818,7 @@
                     // measureGeometryFor() further down needs this
                     // undeformed value again, not a later, already
                     // tilted re-measurement.
-                    tiltPosterRect = tiltCardScalableEl.getBoundingClientRect();
+                    tiltPosterRect = measureDesignRect(tiltCardScalableEl);
                     applyTilt(tiltCardScalableEl, tiltPosterRect);
                 }
                 if (response.TuneHidePoster && tiltCardScalableEl) {
@@ -3819,16 +3828,17 @@
                 // Settle passes + viewport listeners (Session 121, see retilt()).
                 navTimers.track(setTimeout(queueRetilt, 250));
                 navTimers.track(setTimeout(queueRetilt, 1200));
+                // Session 129: no scroll listener any more - the design frame
+                // (measureDesignRect) does not move with the scroll position, so
+                // only a real geometry change (resize, card size) needs a re-tilt.
                 var onViewportChange = function () {
                     if (myGeneration !== currentGeneration()) {
                         window.removeEventListener('resize', onViewportChange);
-                        document.removeEventListener('scroll', onViewportChange, true);
                         return;
                     }
                     queueRetilt();
                 };
                 window.addEventListener('resize', onViewportChange);
-                document.addEventListener('scroll', onViewportChange, true);
                 if (window.ResizeObserver && realCard) {
                     var tiltRo = new ResizeObserver(function () {
                         if (myGeneration !== currentGeneration()) { tiltRo.disconnect(); return; }
@@ -3943,7 +3953,7 @@
                         innerImg.src = innerImgUrl;
                         innerCaseBox.appendChild(innerImg);
                         detailImageContainer.appendChild(innerCaseBox);
-                        applyTilt(innerCaseBox, innerCaseBox.getBoundingClientRect());
+                        applyTilt(innerCaseBox, measureDesignRect(innerCaseBox));
 
                         var discPreviewBox = document.createElement('div');
                         discPreviewBox.className = TUNE_PREVIEW_CLASS;
@@ -3960,7 +3970,7 @@
                         discImg.src = discPreviewImgUrl;
                         discPreviewBox.appendChild(discImg);
                         detailImageContainer.appendChild(discPreviewBox);
-                        applyTilt(discPreviewBox, discPreviewBox.getBoundingClientRect());
+                        applyTilt(discPreviewBox, measureDesignRect(discPreviewBox));
                     }).catch(function (e) {
                         log('Inner case/disc preview preload failed, skipping', e);
                     });
@@ -4088,7 +4098,7 @@
                     // of the original flat one. Reuse the rects cached
                     // before the tilt (tiltFrontRect/tiltPosterRect)
                     // instead of measuring anew (and wrongly) here.
-                    var rect = el.getBoundingClientRect();
+                    var rect = measureDesignRect(el);
                     if (response.CaseType === 'vivaelite3dcases') {
                         if (el === rotator && tiltFrontRect) { rect = tiltFrontRect; }
                         else if (el === cardScalableEl && tiltPosterRect) { rect = tiltPosterRect; }
@@ -4384,7 +4394,7 @@
                 // longer runs for this type - left unchanged instead of
                 // removed, in case the back side is re-enabled later.)
                 if (response.CaseType === 'vivaelite3dcases' && typeof applyTilt === 'function') {
-                    applyTilt(backBox, backBox.getBoundingClientRect());
+                    applyTilt(backBox, measureDesignRect(backBox));
                 }
                 log('Applied (back)', response.CaseType, 'for', itemId);
             }).catch(function (e) {
@@ -4428,7 +4438,7 @@
                     // (discPreviewBox) got applyTilt() - the real
                     // discBox visible in normal operation never did.
                     if (response.CaseType === 'vivaelite3dcases' && typeof applyTilt === 'function') {
-                        applyTilt(discBox, discBox.getBoundingClientRect());
+                        applyTilt(discBox, measureDesignRect(discBox));
                     }
                     // Rare edge case, explicitly handled: the Open Case
                     // animation may already be running by the time Disc
