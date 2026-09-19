@@ -134,6 +134,8 @@ class Stub(BaseHTTPRequestHandler):
                     posters = [{"FileName": "e%d.jpg" % k, "Version": "1"} for k in range(n)]
                     if per.get('children'):  # Session 125: child posters carry Jellyfin's own URL
                         posters = [{"FileName": "c%d" % k, "Version": "1", "Url": "/Items/%s-child%d/Images/Primary?tag=1" % (i, k)} for k in range(n)]
+                        if per.get('slideLogos'):  # Keyart slides with the movie's own logo (first slide only here)
+                            posters[0]["LogoItemId"] = "%s-child0" % i
                     items[i] = dict(dict({"IsMovie": True, "OrderMode": "Sequential", "CycleTimeMs": 600, "FadeTimeMs": 200, "DelayEnabled": False, "DelayMs": 0, "SinglePass": False, "ResolvedType": "extraposter", "SyncEnabled": False,
                                      "Posters": posters}, **sc.extra_opts), **{k: v for k, v in per.items() if k != 'children'})
                 else:
@@ -198,6 +200,7 @@ def run():
         Scenario('S22 two features, same display duration: one beat (tiles change in the same frame)', ROWS5, extra={'t01': 3, 't02': 3}, extra_per={'t02': {"ResolvedType": "extrakeyart"}}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
         Scenario('S23 two features, different display duration: own beats', ROWS5, extra={'t01': 3, 't02': 3}, extra_per={'t02': {"ResolvedType": "extrakeyart", "CycleTimeMs": 500}}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
         Scenario('S24 child posters: the overlay uses the Url entries', ROWS5, extra={'t01': 2}, extra_per={'t01': {'children': True}}),
+        Scenario('S25 set keyart slides: the movie logo follows the slide, none on a slide without one', ROWS5, extra={'t01': 2}, extra_per={'t01': {'children': True, 'slideLogos': True, "SetLogoVerticalPositionPercent": 70, "SetLogoSizePercent": 50, "CycleTimeMs": 700, "FadeTimeMs": 100}}),
         Scenario('S16 extrakeyart logo appears with the first overlay image', ROWS5, extra={'t01': 2}, extra_opts={"ResolvedType": "extrakeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 85, "LogoSizePercent": 40, "HasLogo": True}),
     ]
 
@@ -335,6 +338,14 @@ def run():
                 else:
                     if any(abs(a - b) < 40 for a in s1 for b in s2) and len(s2) >= 2 and not (400 <= s2[1] - s2[0] <= 600): problems.append(f"different durations should not align: {s1} vs {s2}")
                     if len(s2) >= 2 and not (400 <= s2[1] - s2[0] <= 600): problems.append(f"t02 spacing {s2[1] - s2[0]:.0f}, expected ~500")
+            if sc.name.split(' ')[0] == 'S25':
+                # the logo must always match the visible slide: child0 -> its logo, child1 -> none
+                samples = page.evaluate("""async () => { var out = []; for (var i = 0; i < 30; i++) { await new Promise(r => setTimeout(r, 100)); var c = document.querySelector('[data-id=t01]'); var vis = [...c.querySelectorAll('.extraposter-lib-layer')].filter(x => +getComputedStyle(x).opacity > 0.9).map(x => x.style.backgroundImage.indexOf('child0') !== -1 ? 0 : 1)[0]; var l = c.querySelector('.artworkplus-tile-logo'); out.push({ vis: vis === undefined ? null : vis, logo: l ? l.firstChild.getAttribute('src') : null, top: l ? l.style.top : null }); } return out; }""")
+                seen0 = [x for x in samples if x['vis'] == 0]; seen1 = [x for x in samples if x['vis'] == 1]
+                if not seen0 or not seen1: problems.append(f"both slides not seen: {len(seen0)} / {len(seen1)}")
+                # a sample taken in the crossfade itself (no fully visible layer, vis None) is not judged
+                bad = [x for x in seen0 if not (x['logo'] and '/Items/t01-child0/Images/Logo' in x['logo'] and x['top'] == '70%')] + [x for x in seen1 if x['logo']]
+                if bad: problems.append(f"logo did not follow the slide: {[(x['vis'], (x['logo'] or '-')[-25:]) for x in samples]}")
             if sc.name.split(' ')[0] == 'S24':
                 page.wait_for_timeout(500)
                 rec = page.evaluate("window.__rec")

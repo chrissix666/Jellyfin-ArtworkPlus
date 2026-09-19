@@ -840,6 +840,15 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>None | Poster | Postercase | Keyart - used for a movie without the chosen image; None skips the movie.</summary>
     public string ExtraposterMoviesDetailSetFallback { get; set; } = "None";
 
+    /// <summary>Set slideshow with Keyart images: each movie's own Jellyfin Logo drawn over its keyart (Session 125).</summary>
+    public bool ExtraposterMoviesDetailSetKeyartLogoEnabled { get; set; } = false;
+
+    /// <summary>Logo centre from the top of the poster box, 0-100 %.</summary>
+    public int ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent { get; set; } = 87;
+
+    /// <summary>Logo width as a percentage of the poster box width.</summary>
+    public int ExtraposterMoviesDetailSetKeyartLogoSizePercent { get; set; } = 60;
+
     public string ExtraposterMoviesDetailOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -885,6 +894,15 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>None | Poster | Postercase | Keyart - used for a movie without the chosen image; None skips the movie.</summary>
     public string ExtraposterMoviesLibrarySetFallback { get; set; } = "None";
+
+    /// <summary>Set slideshow with Keyart images: each movie's own Jellyfin Logo drawn over its keyart (Session 125).</summary>
+    public bool ExtraposterMoviesLibrarySetKeyartLogoEnabled { get; set; } = false;
+
+    /// <summary>Logo centre from the top of the poster box, 0-100 %.</summary>
+    public int ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent { get; set; } = 87;
+
+    /// <summary>Logo width as a percentage of the poster box width.</summary>
+    public int ExtraposterMoviesLibrarySetKeyartLogoSizePercent { get; set; } = 80;
 
     public string ExtraposterMoviesLibraryOrderMode { get; set; } = "Sequential";
 

@@ -47,6 +47,9 @@ public class PosterEntry
     /// <summary>Session 125: set for child posters (a Set's movies, a series' seasons) - the client uses it instead of the file URL.</summary>
     public string? Url { get; set; }
 
+    /// <summary>Session 125: a Set movie shown as Keyart with "Set Keyart logo overlay" on - the movie's own id, whose Jellyfin Logo is drawn over this slide.</summary>
+    public string? LogoItemId { get; set; }
+
     public string Version { get; set; } = string.Empty;
 }
 
@@ -104,6 +107,11 @@ public class PosterListResult
 
     /// <summary>Session 123: the item has a Jellyfin Logo image (the tile logo overlay needs no extra item request).</summary>
     public bool HasLogo { get; set; }
+
+    /// <summary>Session 125: geometry of the per-slide Set Keyart logo (see PosterEntry.LogoItemId).</summary>
+    public int SetLogoVerticalPositionPercent { get; set; }
+
+    public int SetLogoSizePercent { get; set; }
 
     /// <summary>
     /// 1:1 replica of CustomPosterResult's own identical three fields
@@ -324,7 +332,7 @@ public class ExtraposterController : ControllerBase
         string OrderMode, bool SinglePass, int CycleTimeMs, int FadeTimeMs, bool DelayEnabled, int DelayMs,
         bool LogoEnabled, int LogoVerticalPositionPercent, int LogoSizePercent, bool SyncEnabled, bool SeamlessEnabled,
         string UnnumberedMode, bool SourceFiles, bool SourceChildren, bool ChildrenFirst, bool ChildOrderDescending, bool IncludeSpecials, bool SkipSingleSeason,
-        string SetImage, string SetFallback);
+        string SetImage, string SetFallback, bool SetKeyartLogoEnabled, int SetKeyartLogoVerticalPositionPercent, int SetKeyartLogoSizePercent);
 
     private ExtraViewSettings GetViewSettings(PluginConfiguration c, Guid itemId, string resolvedType, bool isLibraryScope)
     {
@@ -337,29 +345,29 @@ public class ExtraposterController : ControllerBase
             {
                 return isLibraryScope
                     ? new ExtraViewSettings(c.ExtraposterMoviesLibraryOrderMode, c.ExtraposterMoviesLibrarySinglePass, c.ExtraposterMoviesLibraryCycleTimeMs, c.ExtraposterMoviesLibraryFadeTimeMs, c.ExtraposterMoviesLibraryDelayEnabled, c.ExtraposterMoviesLibraryDelayMs, false, 0, 0, c.ExtraposterMoviesLibrarySyncEnabled, c.ExtraposterMoviesLibrarySeamlessEnabled,
-                        "Ignored", c.ExtraposterMoviesLibrarySourceFiles, c.ExtraposterMoviesLibrarySourceSetPosters, c.ExtraposterMoviesLibrarySourcePriority == "SetPosters", c.ExtraposterMoviesLibrarySetOrder == "Descending", false, false, c.ExtraposterMoviesLibrarySetImage, c.ExtraposterMoviesLibrarySetFallback)
+                        "Ignored", c.ExtraposterMoviesLibrarySourceFiles, c.ExtraposterMoviesLibrarySourceSetPosters, c.ExtraposterMoviesLibrarySourcePriority == "SetPosters", c.ExtraposterMoviesLibrarySetOrder == "Descending", false, false, c.ExtraposterMoviesLibrarySetImage, c.ExtraposterMoviesLibrarySetFallback, c.ExtraposterMoviesLibrarySetKeyartLogoEnabled, c.ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesLibrarySetKeyartLogoSizePercent)
                     : new ExtraViewSettings(c.ExtraposterMoviesDetailOrderMode, c.ExtraposterMoviesDetailSinglePass, c.ExtraposterMoviesDetailCycleTimeMs, c.ExtraposterMoviesDetailFadeTimeMs, c.ExtraposterMoviesDetailDelayEnabled, c.ExtraposterMoviesDetailDelayMs, false, 0, 0, false, true,
-                        "Ignored", c.ExtraposterMoviesDetailSourceFiles, c.ExtraposterMoviesDetailSourceSetPosters, c.ExtraposterMoviesDetailSourcePriority == "SetPosters", c.ExtraposterMoviesDetailSetOrder == "Descending", false, false, c.ExtraposterMoviesDetailSetImage, c.ExtraposterMoviesDetailSetFallback);
+                        "Ignored", c.ExtraposterMoviesDetailSourceFiles, c.ExtraposterMoviesDetailSourceSetPosters, c.ExtraposterMoviesDetailSourcePriority == "SetPosters", c.ExtraposterMoviesDetailSetOrder == "Descending", false, false, c.ExtraposterMoviesDetailSetImage, c.ExtraposterMoviesDetailSetFallback, c.ExtraposterMoviesDetailSetKeyartLogoEnabled, c.ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesDetailSetKeyartLogoSizePercent);
             }
             return isLibraryScope
                 ? new ExtraViewSettings(c.ExtraposterTvShowsLibraryOrderMode, c.ExtraposterTvShowsLibrarySinglePass, c.ExtraposterTvShowsLibraryCycleTimeMs, c.ExtraposterTvShowsLibraryFadeTimeMs, c.ExtraposterTvShowsLibraryDelayEnabled, c.ExtraposterTvShowsLibraryDelayMs, false, 0, 0, c.ExtraposterTvShowsLibrarySyncEnabled, c.ExtraposterTvShowsLibrarySeamlessEnabled,
-                        "Ignored", c.ExtraposterTvShowsLibrarySourceFiles, c.ExtraposterTvShowsLibrarySourceSeasonPosters, c.ExtraposterTvShowsLibrarySourcePriority == "SeasonPosters", c.ExtraposterTvShowsLibrarySeasonOrder == "Descending", c.ExtraposterTvShowsLibraryIncludeSpecials, c.ExtraposterTvShowsLibrarySkipSingleSeason, "Poster", "None")
+                        "Ignored", c.ExtraposterTvShowsLibrarySourceFiles, c.ExtraposterTvShowsLibrarySourceSeasonPosters, c.ExtraposterTvShowsLibrarySourcePriority == "SeasonPosters", c.ExtraposterTvShowsLibrarySeasonOrder == "Descending", c.ExtraposterTvShowsLibraryIncludeSpecials, c.ExtraposterTvShowsLibrarySkipSingleSeason, "Poster", "None", false, 0, 0)
                 : new ExtraViewSettings(c.ExtraposterTvShowsDetailOrderMode, c.ExtraposterTvShowsDetailSinglePass, c.ExtraposterTvShowsDetailCycleTimeMs, c.ExtraposterTvShowsDetailFadeTimeMs, c.ExtraposterTvShowsDetailDelayEnabled, c.ExtraposterTvShowsDetailDelayMs, false, 0, 0, false, true,
-                        "Ignored", c.ExtraposterTvShowsDetailSourceFiles, c.ExtraposterTvShowsDetailSourceSeasonPosters, c.ExtraposterTvShowsDetailSourcePriority == "SeasonPosters", c.ExtraposterTvShowsDetailSeasonOrder == "Descending", c.ExtraposterTvShowsDetailIncludeSpecials, c.ExtraposterTvShowsDetailSkipSingleSeason, "Poster", "None");
+                        "Ignored", c.ExtraposterTvShowsDetailSourceFiles, c.ExtraposterTvShowsDetailSourceSeasonPosters, c.ExtraposterTvShowsDetailSourcePriority == "SeasonPosters", c.ExtraposterTvShowsDetailSeasonOrder == "Descending", c.ExtraposterTvShowsDetailIncludeSpecials, c.ExtraposterTvShowsDetailSkipSingleSeason, "Poster", "None", false, 0, 0);
         }
         if (!tv)
         {
             return isLibraryScope
                 ? new ExtraViewSettings(c.ExtrakeyartMoviesLibraryOrderMode, c.ExtrakeyartMoviesLibrarySinglePass, c.ExtrakeyartMoviesLibraryCycleTimeMs, c.ExtrakeyartMoviesLibraryFadeTimeMs, c.ExtrakeyartMoviesLibraryDelayEnabled, c.ExtrakeyartMoviesLibraryDelayMs, c.ExtrakeyartMoviesLibraryLogoEnabled, c.ExtrakeyartMoviesLibraryLogoVerticalPositionPercent, c.ExtrakeyartMoviesLibraryLogoSizePercent, c.ExtrakeyartMoviesLibrarySyncEnabled, c.ExtrakeyartMoviesLibrarySeamlessEnabled,
-                        c.ExtrakeyartMoviesLibraryUnnumberedMode, true, false, false, false, false, false, "Poster", "None")
+                        c.ExtrakeyartMoviesLibraryUnnumberedMode, true, false, false, false, false, false, "Poster", "None", false, 0, 0)
                 : new ExtraViewSettings(c.ExtrakeyartMoviesDetailOrderMode, c.ExtrakeyartMoviesDetailSinglePass, c.ExtrakeyartMoviesDetailCycleTimeMs, c.ExtrakeyartMoviesDetailFadeTimeMs, c.ExtrakeyartMoviesDetailDelayEnabled, c.ExtrakeyartMoviesDetailDelayMs, c.ExtrakeyartMoviesDetailLogoEnabled, c.ExtrakeyartMoviesDetailLogoVerticalPositionPercent, c.ExtrakeyartMoviesDetailLogoSizePercent, false, true,
-                        c.ExtrakeyartMoviesDetailUnnumberedMode, true, false, false, false, false, false, "Poster", "None");
+                        c.ExtrakeyartMoviesDetailUnnumberedMode, true, false, false, false, false, false, "Poster", "None", false, 0, 0);
         }
         return isLibraryScope
             ? new ExtraViewSettings(c.ExtrakeyartTvShowsLibraryOrderMode, c.ExtrakeyartTvShowsLibrarySinglePass, c.ExtrakeyartTvShowsLibraryCycleTimeMs, c.ExtrakeyartTvShowsLibraryFadeTimeMs, c.ExtrakeyartTvShowsLibraryDelayEnabled, c.ExtrakeyartTvShowsLibraryDelayMs, c.ExtrakeyartTvShowsLibraryLogoEnabled, c.ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent, c.ExtrakeyartTvShowsLibraryLogoSizePercent, c.ExtrakeyartTvShowsLibrarySyncEnabled, c.ExtrakeyartTvShowsLibrarySeamlessEnabled,
-                        c.ExtrakeyartTvShowsLibraryUnnumberedMode, true, false, false, false, false, false, "Poster", "None")
+                        c.ExtrakeyartTvShowsLibraryUnnumberedMode, true, false, false, false, false, false, "Poster", "None", false, 0, 0)
             : new ExtraViewSettings(c.ExtrakeyartTvShowsDetailOrderMode, c.ExtrakeyartTvShowsDetailSinglePass, c.ExtrakeyartTvShowsDetailCycleTimeMs, c.ExtrakeyartTvShowsDetailFadeTimeMs, c.ExtrakeyartTvShowsDetailDelayEnabled, c.ExtrakeyartTvShowsDetailDelayMs, c.ExtrakeyartTvShowsDetailLogoEnabled, c.ExtrakeyartTvShowsDetailLogoVerticalPositionPercent, c.ExtrakeyartTvShowsDetailLogoSizePercent, false, true,
-                        c.ExtrakeyartTvShowsDetailUnnumberedMode, true, false, false, false, false, false, "Poster", "None");
+                        c.ExtrakeyartTvShowsDetailUnnumberedMode, true, false, false, false, false, false, "Poster", "None", false, 0, 0);
     }
 
 
@@ -411,12 +419,23 @@ public class ExtraposterController : ControllerBase
     }
 
     /// <summary>Session 125: the chosen image of a Set's movie (Poster / Postercase / Keyart), else its fallback, else nothing.</summary>
-    private static PosterEntry? SetMovieEntry(PluginConfiguration config, BaseItem child, string image, string fallback)
+    private static PosterEntry? SetMovieEntry(PluginConfiguration config, BaseItem child, ExtraViewSettings view)
     {
+        var image = view.SetImage;
+        var fallback = view.SetFallback;
         PosterEntry? Pick(string kind)
         {
             if (kind == "Poster") { return PrimaryEntry(child); }
-            if ((kind == "Postercase" || kind == "Keyart") && child is Movie movie) { return CustomEntry(config, movie, kind.ToLowerInvariant()); }
+            if ((kind == "Postercase" || kind == "Keyart") && child is Movie movie)
+            {
+                var entry = CustomEntry(config, movie, kind.ToLowerInvariant());
+                // Only a Keyart slide gets the movie's own logo (a poster carries its title itself).
+                if (entry is not null && kind == "Keyart" && view.SetKeyartLogoEnabled && child.HasImage(ImageType.Logo, 0))
+                {
+                    entry.LogoItemId = child.Id.ToString("N");
+                }
+                return entry;
+            }
             return null;
         }
         return Pick(image) ?? (fallback == "None" || fallback == image ? null : Pick(fallback));
@@ -430,7 +449,7 @@ public class ExtraposterController : ControllerBase
             var ordered = view.ChildOrderDescending
                 ? movies.OrderByDescending(PremiereSortDate).ToList()
                 : movies.OrderBy(PremiereSortDate).ToList();
-            return ordered.Select(c => SetMovieEntry(config, c, view.SetImage, view.SetFallback)).Where(e => e is not null).Select(e => e!).ToList();
+            return ordered.Select(c => SetMovieEntry(config, c, view)).Where(e => e is not null).Select(e => e!).ToList();
         }
         if (item is Series series)
         {
@@ -706,7 +725,9 @@ public class ExtraposterController : ControllerBase
                 ResolvedType = resolvedType,
                 LogoEnabled = logoEnabled,
                 LogoVerticalPositionPercent = logoEnabled ? view.LogoVerticalPositionPercent : 0,
-                LogoSizePercent = logoEnabled ? view.LogoSizePercent : 0
+                LogoSizePercent = logoEnabled ? view.LogoSizePercent : 0,
+                SetLogoVerticalPositionPercent = view.SetKeyartLogoVerticalPositionPercent,
+                SetLogoSizePercent = view.SetKeyartLogoSizePercent
             });
         }
         catch (Exception ex)
@@ -879,6 +900,8 @@ public class ExtraposterController : ControllerBase
             LogoSizePercent = logoEnabled ? view.LogoSizePercent : 0,
             SyncEnabled = view.SyncEnabled,
             SeamlessEnabled = view.SeamlessEnabled,
+            SetLogoVerticalPositionPercent = view.SetKeyartLogoVerticalPositionPercent,
+            SetLogoSizePercent = view.SetKeyartLogoSizePercent,
             HasLogo = logoEnabled && (item?.HasImage(MediaBrowser.Model.Entities.ImageType.Logo, 0) ?? false)
         };
     }

@@ -1005,7 +1005,7 @@
             }
             el.style.top = logo.vertical + '%';
             el.style.width = logo.size + '%';
-            var url = '/Items/' + encodeURIComponent(st.itemId) + '/Images/Logo?maxWidth=400';
+            var url = '/Items/' + encodeURIComponent(logo.itemId || st.itemId) + '/Images/Logo?maxWidth=400';
             if (el.firstChild.getAttribute('src') !== url) { el.firstChild.src = url; }
         }
 
@@ -1547,6 +1547,29 @@
                 return '/Extraposter/' + encodeURIComponent(itemId) + '/image/' + encodeURIComponent(entry.FileName)
                     + '?type=' + encodeURIComponent(listResponse.ResolvedType) + '&v=' + encodeURIComponent(entry.Version);
             });
+            // Session 125: a Set slide shown as Keyart may carry the movie's own
+            // logo (PosterEntry.LogoItemId) - swapped per slide through the
+            // shared logo overlay (participant 3's logo re-synced with the
+            // slide's item; the logo of a slide without one is removed).
+            var slideLogoItems = listResponse.Posters.map(function (entry) { return entry.LogoItemId || null; });
+            var hasSlideLogos = slideLogoItems.some(function (x) { return !!x; });
+            function syncSlideLogo(index) {
+                if (!hasSlideLogos) { return; }
+                var logoItem = slideLogoItems[index % slideLogoItems.length];
+                var current = coord.participants[3].logo;
+                if ((current && current.itemId) === logoItem) { return; }
+                var parent0 = posterEl.parentElement;
+                var old = parent0 && parent0.querySelector('.artworkplus-extrakeyart-logo');
+                if (old) { old.remove(); }
+                if (coord.activeLogoPriority === 3) { coord.activeLogoPriority = null; }
+                coord.participants[3].logo = logoItem ? {
+                    itemId: logoItem,
+                    className: 'artworkplus-extrakeyart-logo',
+                    verticalPercent: listResponse.SetLogoVerticalPositionPercent,
+                    sizePercent: listResponse.SetLogoSizePercent
+                } : null;
+                posterArbiterSyncLogo(coord);
+            }
 
             var parent = posterEl.parentElement;
             if (!parent) { posterArbiterWithdrawReservation(coord, 3); return; }
@@ -1588,6 +1611,7 @@
                 }
 
                 var url = imageUrls[slideIndex % imageUrls.length];
+                var slideNo = slideIndex;
                 try {
                     await preloadImage(url);
                 } catch (e) {
@@ -1619,6 +1643,7 @@
                 nextLayer.style.zIndex = '2';
                 nextLayer.style.opacity = '0';
                 void nextLayer.offsetWidth;
+                syncSlideLogo(slideNo);
                 if (prevLayer) {
                     prevLayer.style.zIndex = '1';
                     prevLayer.style.opacity = '0';
@@ -1718,6 +1743,10 @@
                     if (entry.Url) { return entry.Url; } // Session 125: child poster
                     return '/Extraposter/' + encodeURIComponent(itemId) + '/image/' + encodeURIComponent(entry.FileName)
                         + '?type=' + encodeURIComponent(resolvedType) + '&v=' + encodeURIComponent(entry.Version);
+                }),
+                // Session 125: per-slide logos of a Set's Keyart slides (movie's own logo), null for the others
+                slideLogos: result.Posters.map(function (entry) {
+                    return entry.LogoItemId ? { vertical: result.SetLogoVerticalPositionPercent, size: result.SetLogoSizePercent, hasLogo: true, itemId: entry.LogoItemId } : null;
                 }),
                 delayMs: result.DelayEnabled ? result.DelayMs : 0,
                 cycleMs: result.CycleTimeMs,
@@ -1900,6 +1929,7 @@
                         if (!tile.active) { return; }
                         if (sw.prev) { sw.prev.style.opacity = '0'; }
                         sw.next.style.opacity = '1';
+                        if (sw.logo !== undefined) { LibraryTiles.syncTileLogo(tile.st, sw.logo); }
                     });
                 });
             });
@@ -1921,14 +1951,23 @@
             // shownAt is the LOGICAL time of the last change (the tick, not the
             // frame it was painted in - a heavy frame can lag 100-200 ms and
             // would otherwise make every tile miss every second tick).
-            if (now - tile.shownAt < tile.cycleMs - 250) { return false; }
+            if (now - tile.shownAt < tile.cycleMs - Math.min(250, tile.cycleMs * 0.05)) { return false; }
             if (tile.singlePass && tile.slideIndex >= tile.urls.length) { return true; }
             return tile.nextReady;
         }
 
+        // The logo of a slide: the Set movie's own (Keyart slide) if the
+        // server marked one, else the tile's feature logo (Extrakeyart).
+        function tileLogoFor(tile, slideNo) {
+            var perSlide = tile.slideLogos[slideNo % tile.urls.length];
+            return perSlide || (tile.slideLogos.some(function (x) { return !!x; }) ? null : tile.logo);
+        }
+
         function stepTile(tile, now) {
             if (tile.singlePass && tile.slideIndex >= tile.urls.length) { finishTile(tile); return null; }
+            var shownNo = tile.slideIndex % tile.urls.length;
             var sw = prepareSwitch(tile);
+            sw.logo = tileLogoFor(tile, shownNo); // applied in the same frame as the switch (commitSwitches)
             tile.shownAt = now;
             prefetchNext(tile);
             return sw;
@@ -1955,7 +1994,7 @@
                 tile.joined = true;
                 tile.shownAt = performance.now();
                 if (hold) { LibraryTiles.release(st); }
-                LibraryTiles.syncTileLogo(st, tile.logo);
+                LibraryTiles.syncTileLogo(st, tileLogoFor(tile, 0));
                 prefetchNext(tile);
                 if (tile.sync) { ensureClock(clockKey(tile), tile.cycleMs); }
                 else if (tile.urls.length > 1) { tile.timer = setInterval(function () { ownTick(tile); }, Math.max(250, Math.min(1000, tile.cycleMs / 5))); }
@@ -2016,7 +2055,7 @@
             var layers = libCreateOverlayLayers(st.container, answer.fadeMs);
             var tile = {
                 id: st.itemId, el: cardEl, st: st, type: st.type, resolvedType: answer.resolvedType, layers: layers, urls: answer.urls,
-                fadeMs: answer.fadeMs, cycleMs: answer.cycleMs, sync: answer.sync, logo: answer.logo,
+                fadeMs: answer.fadeMs, cycleMs: answer.cycleMs, sync: answer.sync, logo: answer.logo, slideLogos: answer.slideLogos || [],
                 slideIndex: 0, visibleIndex: -1, singlePass: answer.singlePass,
                 finished: false, joined: false, active: true, fadeInGeneration: 0,
                 timer: null, shownAt: 0, nextUrl: null, nextReady: false

@@ -1059,6 +1059,21 @@ with sync_playwright() as p:
         # Chromium reports no reliable computed style for <option> (the popup is native) - check the rule exists
         col = apage.evaluate("() => { for (const ss of document.styleSheets) { try { for (const r of ss.cssRules) { if (r.selectorText && r.selectorText.indexOf('option:disabled') !== -1 && r.style.color) { return true; } } } catch (e) {} } return false; }")
         check(f'SRC: {p_} a stylesheet rule greys disabled options', col is True, str(col))
+        # Set Keyart logo rows: only with Set image = Keyart; position/size only with the overlay on
+        aset(p_ + 'SourceSetPosters', True)
+        apage.evaluate("(id) => { var e = document.getElementById(id); e.value = 'Poster'; e.dispatchEvent(new Event('change', { bubbles: true })); }", p_ + 'SetImage')
+        dbg = apage.evaluate("(p) => ({ img: document.getElementById(p + 'SetImage').value, sets: document.getElementById(p + 'ShowOnSets').checked, src: document.getElementById(p + 'SourceSetPosters').checked, en: document.getElementById(p + 'Enabled').checked })", p_)
+        check(f'SRC: {p_} Set Keyart logo rows grey while Set image is Keyart-less', agreyed(p_ + 'SetKeyartLogoRow') is True, str(dbg))
+        apage.evaluate("(id) => { var e = document.getElementById(id); e.value = 'Keyart'; e.dispatchEvent(new Event('change', { bubbles: true })); }", p_ + 'SetImage')
+        check(f'SRC: {p_} Set Keyart logo switch active with Keyart', agreyed(p_ + 'SetKeyartLogoRow') is False)
+        check(f'SRC: {p_} Set Keyart logo geometry grey while the overlay is off', agreyed(p_ + 'SetKeyartLogoSizeRow') is True)
+        aset(p_ + 'SetKeyartLogoEnabled', True)
+        check(f'SRC: {p_} Set Keyart logo geometry active with the overlay on', agreyed(p_ + 'SetKeyartLogoVerticalPositionRow') is False)
+        own = apage.evaluate("(id) => document.getElementById(id).classList.contains('epFieldDisabled')", p_ + 'SetKeyartLogoSizeRow')
+        aset(p_ + 'SourceSetPosters', False)
+        chain = apage.evaluate("(p) => { var ids = [p + 'SetKeyartLogoRow', p + 'SetKeyartLogoSizeRow', p + 'SetOrderRow']; var n = 0; ids.forEach(function (id) { var el = document.getElementById(id); var k = 0; while (el) { if (el.classList && el.classList.contains('epFieldDisabled')) { k++; } el = el.parentElement; } if (k > 1) { n++; } }); return n; }", p_)
+        check(f'SRC: {p_} Set posters off greys the logo rows exactly once (rule 14)', chain == 0 and agreyed(p_ + 'SetKeyartLogoRow') is True, str(chain))
+        aset(p_ + 'SourceSetPosters', True); aset(p_ + 'SetKeyartLogoEnabled', False)
         apage.evaluate("(id) => { var e = document.getElementById(id); e.value = 'Poster'; e.dispatchEvent(new Event('change', { bubbles: true })); }", p_ + 'SetImage')
     for view in ['Detail', 'Library']:
         p_ = 'ExtrakeyartMovies' + view

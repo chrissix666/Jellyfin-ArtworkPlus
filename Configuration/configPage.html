@@ -1853,6 +1853,32 @@
                             </select>
                             <div class="epDesc">Used for a movie without that file. None: the movie is skipped.</div>
                         </div>
+                        <div class="epRow epRowCheckbox" id="ExtraposterMoviesDetailSetKeyartLogoRow">
+                            <label for="ExtraposterMoviesDetailSetKeyartLogoEnabled">Enable Set Keyart logo overlay</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterMoviesDetailSetKeyartLogoEnabled" name="ExtraposterMoviesDetailSetKeyartLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Only shown when Jellyfin already has a Logo image for the movie.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtraposterMoviesDetailSetKeyartLogoVerticalPositionRow">
+                            <label for="ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent" class="epRowLabelSpan">Set Keyart logo position</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent" name="ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">From the top of the poster box, 0-100. Horizontal is always centered.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtraposterMoviesDetailSetKeyartLogoSizeRow">
+                            <label for="ExtraposterMoviesDetailSetKeyartLogoSizePercent" class="epRowLabelSpan">Set Keyart logo size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="ExtraposterMoviesDetailSetKeyartLogoSizePercent" name="ExtraposterMoviesDetailSetKeyartLogoSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Width as a percentage of the poster box's own width. Height follows automatically.</div>
+                        </div>
                         <div class="epRow epRowMerged" id="ExtraposterMoviesDetailOrderRow">
                             <label for="ExtraposterMoviesDetailOrderMode" class="epRowLabelSpan">Files order</label>
                             <select is="emby-select" id="ExtraposterMoviesDetailOrderMode" name="ExtraposterMoviesDetailOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
@@ -1970,6 +1996,32 @@
                                 <option value="Keyart">Keyart</option>
                             </select>
                             <div class="epDesc">Used for a movie without that file. None: the movie is skipped.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="ExtraposterMoviesLibrarySetKeyartLogoRow">
+                            <label for="ExtraposterMoviesLibrarySetKeyartLogoEnabled">Enable Set Keyart logo overlay</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterMoviesLibrarySetKeyartLogoEnabled" name="ExtraposterMoviesLibrarySetKeyartLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Only shown when Jellyfin already has a Logo image for the movie.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionRow">
+                            <label for="ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent" class="epRowLabelSpan">Set Keyart logo position</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent" name="ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">From the top of the poster box, 0-100. Horizontal is always centered.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtraposterMoviesLibrarySetKeyartLogoSizeRow">
+                            <label for="ExtraposterMoviesLibrarySetKeyartLogoSizePercent" class="epRowLabelSpan">Set Keyart logo size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="ExtraposterMoviesLibrarySetKeyartLogoSizePercent" name="ExtraposterMoviesLibrarySetKeyartLogoSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Width as a percentage of the poster box's own width. Height follows automatically.</div>
                         </div>
                         <div class="epRow epRowMerged" id="ExtraposterMoviesLibraryOrderRow">
                             <label for="ExtraposterMoviesLibraryOrderMode" class="epRowLabelSpan">Files order</label>
@@ -4990,6 +5042,9 @@
                 ExtraposterMoviesDetailSetOrder: { type: 'select', def: 'Ascending', tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetImage: { type: 'select', def: 'Poster', tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetFallback: { type: 'select', def: 'None', tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailSetKeyartLogoEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailSetKeyartLogoSizePercent: { type: 'number', def: 60, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
@@ -5004,6 +5059,9 @@
                 ExtraposterMoviesLibrarySetOrder: { type: 'select', def: 'Ascending', tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetImage: { type: 'select', def: 'Poster', tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetFallback: { type: 'select', def: 'None', tab: 'extraposterfeature' },
+                ExtraposterMoviesLibrarySetKeyartLogoEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibrarySetKeyartLogoSizePercent: { type: 'number', def: 80, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
@@ -6277,11 +6335,11 @@
                                     },
                                     {
                                         id: 'extraposterfeature_movies_detail', terminal: true, target: ['ExtraposterMoviesDetailFields'], headerTarget: ['extraposterMoviesDetail'],
-                                        when: [AllChecked(['ExtraposterMoviesDetailEnabled']), AnyChecked(['ExtraposterMoviesDetailShowOnMovies', 'ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_showon', structural: true, target: ['ExtraposterMoviesDetailShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_detail_sets', target: ['ExtraposterMoviesDetailSourcesRow', 'ExtraposterMoviesDetailSourcePriorityRow', 'ExtraposterMoviesDetailSetOrderRow', 'ExtraposterMoviesDetailSetImageRow', 'ExtraposterMoviesDetailSetFallbackRow'], when: [AllChecked(['ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_srcprio', structural: true, target: ['ExtraposterMoviesDetailSourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesDetailSourceFiles', 'ExtraposterMoviesDetailSourceSetPosters'])], children: [] }, { id: 'extraposterfeature_movies_detail_setrows', target: ['ExtraposterMoviesDetailSetOrderRow', 'ExtraposterMoviesDetailSetImageRow', 'ExtraposterMoviesDetailSetFallbackRow'], when: [AllChecked(['ExtraposterMoviesDetailSourceSetPosters'])], children: [] }] }, { id: 'extraposterfeature_movies_detail_filesrows', target: ['ExtraposterMoviesDetailOrderRow'], when: [AllChecked(['ExtraposterMoviesDetailSourceFiles'])], children: [] }]
+                                        when: [AllChecked(['ExtraposterMoviesDetailEnabled']), AnyChecked(['ExtraposterMoviesDetailShowOnMovies', 'ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_showon', structural: true, target: ['ExtraposterMoviesDetailShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_detail_sets', target: ['ExtraposterMoviesDetailSourcesRow'], when: [AllChecked(['ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_srcprio', structural: true, target: ['ExtraposterMoviesDetailSourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesDetailSourceFiles', 'ExtraposterMoviesDetailSourceSetPosters'])], children: [] }, { id: 'extraposterfeature_movies_detail_setrows', target: ['ExtraposterMoviesDetailSetOrderRow', 'ExtraposterMoviesDetailSetImageRow', 'ExtraposterMoviesDetailSetFallbackRow'], when: [AllChecked(['ExtraposterMoviesDetailSourceSetPosters'])], children: [{ id: 'extraposterfeature_movies_detail_setlogo', target: ['ExtraposterMoviesDetailSetKeyartLogoRow'], when: [ValueIn('ExtraposterMoviesDetailSetImage', ['Keyart'])], children: [{ id: 'extraposterfeature_movies_detail_setlogogeo', target: ['ExtraposterMoviesDetailSetKeyartLogoVerticalPositionRow', 'ExtraposterMoviesDetailSetKeyartLogoSizeRow'], when: [AllChecked(['ExtraposterMoviesDetailSetKeyartLogoEnabled'])], children: [] }] }] }] }, { id: 'extraposterfeature_movies_detail_filesrows', target: ['ExtraposterMoviesDetailOrderRow'], when: [AllChecked(['ExtraposterMoviesDetailSourceFiles'])], children: [] }]
                                     },
                                     {
                                         id: 'extraposterfeature_movies_library', terminal: true, target: ['ExtraposterMoviesLibraryFields'], headerTarget: ['extraposterMoviesLibrary'],
-                                        when: [AllChecked(['ExtraposterMoviesLibraryEnabled']), AnyChecked(['ExtraposterMoviesLibraryShowOnMovies', 'ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_showon', structural: true, target: ['ExtraposterMoviesLibraryShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_library_sets', target: ['ExtraposterMoviesLibrarySourcesRow', 'ExtraposterMoviesLibrarySourcePriorityRow', 'ExtraposterMoviesLibrarySetOrderRow', 'ExtraposterMoviesLibrarySetImageRow', 'ExtraposterMoviesLibrarySetFallbackRow'], when: [AllChecked(['ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_srcprio', structural: true, target: ['ExtraposterMoviesLibrarySourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesLibrarySourceFiles', 'ExtraposterMoviesLibrarySourceSetPosters'])], children: [] }, { id: 'extraposterfeature_movies_library_setrows', target: ['ExtraposterMoviesLibrarySetOrderRow', 'ExtraposterMoviesLibrarySetImageRow', 'ExtraposterMoviesLibrarySetFallbackRow'], when: [AllChecked(['ExtraposterMoviesLibrarySourceSetPosters'])], children: [] }] }, { id: 'extraposterfeature_movies_library_filesrows', target: ['ExtraposterMoviesLibraryOrderRow'], when: [AllChecked(['ExtraposterMoviesLibrarySourceFiles'])], children: [] }]
+                                        when: [AllChecked(['ExtraposterMoviesLibraryEnabled']), AnyChecked(['ExtraposterMoviesLibraryShowOnMovies', 'ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_showon', structural: true, target: ['ExtraposterMoviesLibraryShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_library_sets', target: ['ExtraposterMoviesLibrarySourcesRow'], when: [AllChecked(['ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_srcprio', structural: true, target: ['ExtraposterMoviesLibrarySourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesLibrarySourceFiles', 'ExtraposterMoviesLibrarySourceSetPosters'])], children: [] }, { id: 'extraposterfeature_movies_library_setrows', target: ['ExtraposterMoviesLibrarySetOrderRow', 'ExtraposterMoviesLibrarySetImageRow', 'ExtraposterMoviesLibrarySetFallbackRow'], when: [AllChecked(['ExtraposterMoviesLibrarySourceSetPosters'])], children: [{ id: 'extraposterfeature_movies_library_setlogo', target: ['ExtraposterMoviesLibrarySetKeyartLogoRow'], when: [ValueIn('ExtraposterMoviesLibrarySetImage', ['Keyart'])], children: [{ id: 'extraposterfeature_movies_library_setlogogeo', target: ['ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionRow', 'ExtraposterMoviesLibrarySetKeyartLogoSizeRow'], when: [AllChecked(['ExtraposterMoviesLibrarySetKeyartLogoEnabled'])], children: [] }] }] }] }, { id: 'extraposterfeature_movies_library_filesrows', target: ['ExtraposterMoviesLibraryOrderRow'], when: [AllChecked(['ExtraposterMoviesLibrarySourceFiles'])], children: [] }]
                                     }]
                                 },
                                 {
