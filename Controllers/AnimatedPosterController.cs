@@ -42,6 +42,16 @@ public class AnimatedPosterResult
     /// specified an explicit type itself, or when IsApplicable is false.
     /// </summary>
     public string ResolvedType { get; set; } = string.Empty;
+
+    /// <summary>Session 126: Animated Keyart's logo overlay for the requested view (like Custom Keyart). Only set for ResolvedType "animatedkeyart".</summary>
+    public bool LogoEnabled { get; set; }
+
+    public int LogoVerticalPositionPercent { get; set; }
+
+    public int LogoSizePercent { get; set; }
+
+    /// <summary>The item has a Jellyfin Logo image (tiles need no extra request).</summary>
+    public bool HasLogo { get; set; }
 }
 
 /// <summary>
@@ -115,8 +125,9 @@ public class AnimatedPosterController : ControllerBase
 
             var isLibraryScope = string.Equals(scope, "library", StringComparison.OrdinalIgnoreCase);
             var result = ResolveItemResult(itemId, config, posterType, isLibraryScope);
+            ApplyKeyartLogo(result, config, isLibraryScope, itemId);
 
-            var etag = ComputeETag(itemId, posterType, isLibraryScope, result?.FileName ?? "none");
+            var etag = ComputeETag(itemId, posterType, isLibraryScope, result?.FileName ?? "none", result?.LogoEnabled ?? false);
             if (IsETagStillValid(etag))
             {
                 return StatusCode(StatusCodes.Status304NotModified);
@@ -173,10 +184,28 @@ public class AnimatedPosterController : ControllerBase
             // data-id, which Jellyfin serialises via JsonGuidConverter as the
             // 32-hex form. Dictionary keys are strings and bypass that
             // converter - Guid.ToString() (dashed) never matched (Session 122).
-            result.Items[itemId.ToString("N")] = ResolveItemResult(itemId, config, posterType, isLibraryScope) ?? new AnimatedPosterResult { IsApplicable = false };
+            var itemResult = ResolveItemResult(itemId, config, posterType, isLibraryScope) ?? new AnimatedPosterResult { IsApplicable = false };
+            ApplyKeyartLogo(itemResult, config, isLibraryScope, itemId);
+            result.Items[itemId.ToString("N")] = itemResult;
         }
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Animated Keyart's logo overlay values for the requested view (Session
+    /// 126) - the same concept as Custom Keyart's. Animated Poster never gets
+    /// a logo (a poster carries its title itself).
+    /// </summary>
+    private void ApplyKeyartLogo(AnimatedPosterResult? result, PluginConfiguration config, bool isLibraryScope, Guid itemId)
+    {
+        if (result is null || !result.IsApplicable || result.ResolvedType != "animatedkeyart") { return; }
+        var enabled = isLibraryScope ? config.AnimatedKeyartLibraryLogoEnabled : config.AnimatedKeyartDetailLogoEnabled;
+        if (!enabled) { return; }
+        result.LogoEnabled = true;
+        result.LogoVerticalPositionPercent = isLibraryScope ? config.AnimatedKeyartLibraryLogoVerticalPositionPercent : config.AnimatedKeyartDetailLogoVerticalPositionPercent;
+        result.LogoSizePercent = isLibraryScope ? config.AnimatedKeyartLibraryLogoSizePercent : config.AnimatedKeyartDetailLogoSizePercent;
+        result.HasLogo = _libraryManager.GetItemById(itemId)?.HasImage(MediaBrowser.Model.Entities.ImageType.Logo, 0) ?? false;
     }
 
     /// <summary>

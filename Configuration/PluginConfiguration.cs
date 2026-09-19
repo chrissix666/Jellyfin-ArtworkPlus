@@ -827,11 +827,14 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
     public string ExtraposterMoviesDetailSetOrder { get; set; } = "Ascending";
 
-    /// <summary>Poster | Postercase | Keyart - which image of each movie in the Set (Postercase/Keyart = the movie's Custom Poster file, found by the Custom Poster tab's naming rules, regardless of that feature's switches).</summary>
+    /// <summary>Poster | Postercase | Keyart | AnimatedPoster | AnimatedKeyart - which image of each movie in the Set (Postercase/Keyart = the movie's Custom Poster file, found by the Custom Poster tab's naming rules, regardless of that feature's switches).</summary>
     public string ExtraposterMoviesDetailSetImage { get; set; } = "Poster";
 
-    /// <summary>None | Poster | Postercase | Keyart - used for a movie without the chosen image; None skips the movie.</summary>
+    /// <summary>None | Poster | Postercase | Keyart | AnimatedPoster | AnimatedKeyart - used for a movie without the chosen image; None skips the movie.</summary>
     public string ExtraposterMoviesDetailSetFallback { get; set; } = "None";
+
+    /// <summary>Second fallback (Session 126): tried when the first fallback has nothing either; None skips the movie.</summary>
+    public string ExtraposterMoviesDetailSetFallback2 { get; set; } = "None";
 
     /// <summary>Set slideshow with Keyart images: each movie's own Jellyfin Logo drawn over its keyart (Session 125).</summary>
     public bool ExtraposterMoviesDetailSetKeyartLogoEnabled { get; set; } = false;
@@ -875,11 +878,14 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
     public string ExtraposterMoviesLibrarySetOrder { get; set; } = "Ascending";
 
-    /// <summary>Poster | Postercase | Keyart - which image of each movie in the Set (Postercase/Keyart = the movie's Custom Poster file, found by the Custom Poster tab's naming rules, regardless of that feature's switches).</summary>
+    /// <summary>Poster | Postercase | Keyart | AnimatedPoster | AnimatedKeyart - which image of each movie in the Set (Postercase/Keyart = the movie's Custom Poster file, found by the Custom Poster tab's naming rules, regardless of that feature's switches).</summary>
     public string ExtraposterMoviesLibrarySetImage { get; set; } = "Poster";
 
-    /// <summary>None | Poster | Postercase | Keyart - used for a movie without the chosen image; None skips the movie.</summary>
+    /// <summary>None | Poster | Postercase | Keyart | AnimatedPoster | AnimatedKeyart - used for a movie without the chosen image; None skips the movie.</summary>
     public string ExtraposterMoviesLibrarySetFallback { get; set; } = "None";
+
+    /// <summary>Second fallback (Session 126): tried when the first fallback has nothing either; None skips the movie.</summary>
+    public string ExtraposterMoviesLibrarySetFallback2 { get; set; } = "None";
 
     /// <summary>Set slideshow with Keyart images: each movie's own Jellyfin Logo drawn over its keyart (Session 125).</summary>
     public bool ExtraposterMoviesLibrarySetKeyartLogoEnabled { get; set; } = false;
@@ -1649,6 +1655,26 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool AnimatedKeyartTvShowsDetailEnabled { get; set; } = true;
 
     public bool AnimatedKeyartTvShowsLibraryEnabled { get; set; } = true;
+
+    // ----- Animated Keyart logo overlay, detail pages (Session 126: closes the gap that every other Keyart variant had a logo).
+    /// <summary>Jellyfin's Logo image drawn over the animated keyart on detail pages.</summary>
+    public bool AnimatedKeyartDetailLogoEnabled { get; set; } = false;
+
+    /// <summary>Logo centre from the top of the poster box, 0-100 %.</summary>
+    public int AnimatedKeyartDetailLogoVerticalPositionPercent { get; set; } = 87;
+
+    /// <summary>Logo width as a percentage of the poster box width.</summary>
+    public int AnimatedKeyartDetailLogoSizePercent { get; set; } = 60;
+
+    // ----- Animated Keyart logo overlay, library views (Session 126: closes the gap that every other Keyart variant had a logo).
+    /// <summary>Jellyfin's Logo image drawn over the animated keyart on library views.</summary>
+    public bool AnimatedKeyartLibraryLogoEnabled { get; set; } = false;
+
+    /// <summary>Logo centre from the top of the poster box, 0-100 %.</summary>
+    public int AnimatedKeyartLibraryLogoVerticalPositionPercent { get; set; } = 87;
+
+    /// <summary>Logo width as a percentage of the poster box width.</summary>
+    public int AnimatedKeyartLibraryLogoSizePercent { get; set; } = 80;
 
     // ───────────────────────── Custom Poster tab: Postercase ─────────────────────────
     // A retouched poster with no lettering - a complete replacement for the

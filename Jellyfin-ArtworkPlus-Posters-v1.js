@@ -511,7 +511,8 @@
     function posterArbiterSyncLogo(coord) {
         var renderedSource = coord.decision.renderedSource;
         var desired = null;
-        if (renderedSource === 1 || renderedSource === 3) {
+        // 1 = Custom Keyart, 2 = Animated Keyart (Session 126), 3 = Extrakeyart / Set Keyart slides
+        if (renderedSource === 1 || renderedSource === 2 || renderedSource === 3) {
             var participant = coord.participants[renderedSource];
             if (participant && participant.logo) { desired = renderedSource; }
         }
@@ -832,7 +833,7 @@
             // actually resolved to underneath, with the underlying
             // decision itself always having been completely correct.
             // Same shared checkpoint, same reasoning as the fix above.
-            document.querySelectorAll('.detailImageContainer .artworkplus-keyart-logo, .detailImageContainer .artworkplus-extrakeyart-logo, .detailImageContainer .artworkplus-casemod-overlay').forEach(function (el) {
+            document.querySelectorAll('.detailImageContainer .artworkplus-keyart-logo, .detailImageContainer .artworkplus-animatedkeyart-logo, .detailImageContainer .artworkplus-extrakeyart-logo, .detailImageContainer .artworkplus-casemod-overlay').forEach(function (el) {
                 el.remove();
             });
             // Restored view (Back button): Jellyfin's own placeholder
@@ -1385,6 +1386,17 @@
             }
 
             posterArbiterReserve(coord, 2, false);
+            // Session 126: Animated Keyart's logo overlay - the same participant
+            // logo mechanism as Custom Keyart (posterArbiterSyncLogo decides when).
+            coord.participants[2].logo = (result.ResolvedType === 'animatedkeyart' && result.LogoEnabled)
+                ? {
+                    itemId: itemId,
+                    className: 'artworkplus-animatedkeyart-logo',
+                    verticalPercent: result.LogoVerticalPositionPercent,
+                    sizePercent: result.LogoSizePercent
+                }
+                : null;
+            posterArbiterSyncLogo(coord);
 
             var url = '/AnimatedPoster/' + encodeURIComponent(itemId) + '/image?type=' + encodeURIComponent(result.ResolvedType) + '&scope=detail'
                 + '&v=' + encodeURIComponent(result.Version);

@@ -1314,6 +1314,64 @@
                         </div>
 
                         <div id="AnimatedKeyartDependentFields">
+                        <div class="epCollapseHeader epCollapseNested" data-collapse="animatedkeyartDetailLogo"><span class="epChevron">▶</span><span>Detail page</span></div>
+                        <div class="epCollapseBody epCollapseNested" data-collapsebody="animatedkeyartDetailLogo">
+                        <div class="epRow epRowCheckbox">
+                            <label for="AnimatedKeyartDetailLogoEnabled">Enable logo overlay</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="AnimatedKeyartDetailLogoEnabled" name="AnimatedKeyartDetailLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Only shown when Jellyfin already has a Logo image for the title.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartDetailLogoVerticalPositionRow">
+                            <label for="AnimatedKeyartDetailLogoVerticalPositionPercent" class="epRowLabelSpan">Vertical position</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="AnimatedKeyartDetailLogoVerticalPositionPercent" name="AnimatedKeyartDetailLogoVerticalPositionPercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">From the top of the poster box, 0-100. Horizontal is always centered.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartDetailLogoSizeRow">
+                            <label for="AnimatedKeyartDetailLogoSizePercent" class="epRowLabelSpan">Logo size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="AnimatedKeyartDetailLogoSizePercent" name="AnimatedKeyartDetailLogoSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Width as a percentage of the poster box's own width. Height follows automatically.</div>
+                        </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested" data-collapse="animatedkeyartLibraryLogo"><span class="epChevron">▶</span><span>Library views</span></div>
+                        <div class="epCollapseBody epCollapseNested" data-collapsebody="animatedkeyartLibraryLogo">
+                        <div class="epRow epRowCheckbox">
+                            <label for="AnimatedKeyartLibraryLogoEnabled">Enable logo overlay</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="AnimatedKeyartLibraryLogoEnabled" name="AnimatedKeyartLibraryLogoEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Only shown when Jellyfin already has a Logo image for the title.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartLibraryLogoVerticalPositionRow">
+                            <label for="AnimatedKeyartLibraryLogoVerticalPositionPercent" class="epRowLabelSpan">Vertical position</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="100" step="1" class="epNumberCompact" id="AnimatedKeyartLibraryLogoVerticalPositionPercent" name="AnimatedKeyartLibraryLogoVerticalPositionPercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">From the top of the poster box, 0-100. Horizontal is always centered.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartLibraryLogoSizeRow">
+                            <label for="AnimatedKeyartLibraryLogoSizePercent" class="epRowLabelSpan">Logo size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="1" max="100" step="1" class="epNumberCompact" id="AnimatedKeyartLibraryLogoSizePercent" name="AnimatedKeyartLibraryLogoSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Width as a percentage of the poster box's own width. Height follows automatically.</div>
+                        </div>
+                        </div>
                         <div class="epCollapseHeader epCollapseNested" data-collapse="animatedkeyartMovies"><span class="epChevron">▶</span><span>Movies</span></div>
                         <div class="epCollapseBody epCollapseNested" data-collapsebody="animatedkeyartMovies">
                         <div class="epRow epRowMerged">
@@ -1834,8 +1892,10 @@
                                 <option value="Poster">Poster</option>
                                 <option value="Postercase">Postercase</option>
                                 <option value="Keyart">Keyart</option>
+                                <option value="AnimatedPoster">Animated Poster</option>
+                                <option value="AnimatedKeyart">Animated Keyart</option>
                             </select>
-                            <div class="epDesc">Image per movie in the Set: Jellyfin's poster, or its Postercase / Keyart file (Custom Poster naming).</div>
+                            <div class="epDesc">Image per movie in the Set: Jellyfin's poster, or its file named as in the Custom / Animated tab.</div>
                         </div>
                         <div class="epRow epRowMerged" id="ExtraposterMoviesDetailSetFallbackRow">
                             <label for="ExtraposterMoviesDetailSetFallback" class="epRowLabelSpan">Set fallback</label>
@@ -1844,8 +1904,22 @@
                                 <option value="Poster">Poster</option>
                                 <option value="Postercase">Postercase</option>
                                 <option value="Keyart">Keyart</option>
+                                <option value="AnimatedPoster">Animated Poster</option>
+                                <option value="AnimatedKeyart">Animated Keyart</option>
                             </select>
                             <div class="epDesc">Used for a movie without that file. None: the movie is skipped.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtraposterMoviesDetailSetFallback2Row">
+                            <label for="ExtraposterMoviesDetailSetFallback2" class="epRowLabelSpan">Set second fallback</label>
+                            <select is="emby-select" id="ExtraposterMoviesDetailSetFallback2" name="ExtraposterMoviesDetailSetFallback2" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="Poster">Poster</option>
+                                <option value="Postercase">Postercase</option>
+                                <option value="Keyart">Keyart</option>
+                                <option value="AnimatedPoster">Animated Poster</option>
+                                <option value="AnimatedKeyart">Animated Keyart</option>
+                            </select>
+                            <div class="epDesc">Tried when the first fallback has nothing either. None: the movie is skipped.</div>
                         </div>
                         <div class="epRow epRowCheckbox" id="ExtraposterMoviesDetailSetKeyartLogoRow">
                             <label for="ExtraposterMoviesDetailSetKeyartLogoEnabled">Enable Set Keyart logo overlay</label>
@@ -1972,8 +2046,10 @@
                                 <option value="Poster">Poster</option>
                                 <option value="Postercase">Postercase</option>
                                 <option value="Keyart">Keyart</option>
+                                <option value="AnimatedPoster">Animated Poster</option>
+                                <option value="AnimatedKeyart">Animated Keyart</option>
                             </select>
-                            <div class="epDesc">Image per movie in the Set: Jellyfin's poster, or its Postercase / Keyart file (Custom Poster naming).</div>
+                            <div class="epDesc">Image per movie in the Set: Jellyfin's poster, or its file named as in the Custom / Animated tab.</div>
                         </div>
                         <div class="epRow epRowMerged" id="ExtraposterMoviesLibrarySetFallbackRow">
                             <label for="ExtraposterMoviesLibrarySetFallback" class="epRowLabelSpan">Set fallback</label>
@@ -1982,8 +2058,22 @@
                                 <option value="Poster">Poster</option>
                                 <option value="Postercase">Postercase</option>
                                 <option value="Keyart">Keyart</option>
+                                <option value="AnimatedPoster">Animated Poster</option>
+                                <option value="AnimatedKeyart">Animated Keyart</option>
                             </select>
                             <div class="epDesc">Used for a movie without that file. None: the movie is skipped.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtraposterMoviesLibrarySetFallback2Row">
+                            <label for="ExtraposterMoviesLibrarySetFallback2" class="epRowLabelSpan">Set second fallback</label>
+                            <select is="emby-select" id="ExtraposterMoviesLibrarySetFallback2" name="ExtraposterMoviesLibrarySetFallback2" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="Poster">Poster</option>
+                                <option value="Postercase">Postercase</option>
+                                <option value="Keyart">Keyart</option>
+                                <option value="AnimatedPoster">Animated Poster</option>
+                                <option value="AnimatedKeyart">Animated Keyart</option>
+                            </select>
+                            <div class="epDesc">Tried when the first fallback has nothing either. None: the movie is skipped.</div>
                         </div>
                         <div class="epRow epRowCheckbox" id="ExtraposterMoviesLibrarySetKeyartLogoRow">
                             <label for="ExtraposterMoviesLibrarySetKeyartLogoEnabled">Enable Set Keyart logo overlay</label>
@@ -2064,7 +2154,7 @@
                             <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
                         </div>
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtraposterMoviesLibrarySeamlessEnabled">Seamless loading</label>
+                            <label for="ExtraposterMoviesLibrarySeamlessEnabled">Tile seamless loading</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtraposterMoviesLibrarySeamlessEnabled" name="ExtraposterMoviesLibrarySeamlessEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
@@ -2074,7 +2164,7 @@
                             </div>
                         </div>
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtraposterMoviesLibrarySyncEnabled">Synchronize</label>
+                            <label for="ExtraposterMoviesLibrarySyncEnabled">Tile synchronization</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtraposterMoviesLibrarySyncEnabled" name="ExtraposterMoviesLibrarySyncEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
@@ -2325,7 +2415,7 @@
                             <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
                         </div>
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtraposterTvShowsLibrarySeamlessEnabled">Seamless loading</label>
+                            <label for="ExtraposterTvShowsLibrarySeamlessEnabled">Tile seamless loading</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtraposterTvShowsLibrarySeamlessEnabled" name="ExtraposterTvShowsLibrarySeamlessEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
@@ -2335,7 +2425,7 @@
                             </div>
                         </div>
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtraposterTvShowsLibrarySyncEnabled">Synchronize</label>
+                            <label for="ExtraposterTvShowsLibrarySyncEnabled">Tile synchronization</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtraposterTvShowsLibrarySyncEnabled" name="ExtraposterTvShowsLibrarySyncEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
@@ -2603,7 +2693,7 @@
                             <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
                         </div>
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtrakeyartMoviesLibrarySeamlessEnabled">Seamless loading</label>
+                            <label for="ExtrakeyartMoviesLibrarySeamlessEnabled">Tile seamless loading</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtrakeyartMoviesLibrarySeamlessEnabled" name="ExtrakeyartMoviesLibrarySeamlessEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
@@ -2613,7 +2703,7 @@
                             </div>
                         </div>
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtrakeyartMoviesLibrarySyncEnabled">Synchronize</label>
+                            <label for="ExtrakeyartMoviesLibrarySyncEnabled">Tile synchronization</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtrakeyartMoviesLibrarySyncEnabled" name="ExtrakeyartMoviesLibrarySyncEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
@@ -2856,7 +2946,7 @@
                             <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
                         </div>
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtrakeyartTvShowsLibrarySeamlessEnabled">Seamless loading</label>
+                            <label for="ExtrakeyartTvShowsLibrarySeamlessEnabled">Tile seamless loading</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtrakeyartTvShowsLibrarySeamlessEnabled" name="ExtrakeyartTvShowsLibrarySeamlessEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
@@ -2866,7 +2956,7 @@
                             </div>
                         </div>
                         <div class="epRow epRowCheckbox">
-                            <label for="ExtrakeyartTvShowsLibrarySyncEnabled">Synchronize</label>
+                            <label for="ExtrakeyartTvShowsLibrarySyncEnabled">Tile synchronization</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtrakeyartTvShowsLibrarySyncEnabled" name="ExtrakeyartTvShowsLibrarySyncEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
@@ -5016,6 +5106,7 @@
                 ExtraposterMoviesDetailSetOrder: { type: 'select', def: 'Ascending', tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetImage: { type: 'select', def: 'Poster', tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetFallback: { type: 'select', def: 'None', tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailSetFallback2: { type: 'select', def: 'None', tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetKeyartLogoEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetKeyartLogoSizePercent: { type: 'number', def: 60, tab: 'extraposterfeature' },
@@ -5031,6 +5122,7 @@
                 ExtraposterMoviesLibrarySetOrder: { type: 'select', def: 'Ascending', tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetImage: { type: 'select', def: 'Poster', tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetFallback: { type: 'select', def: 'None', tab: 'extraposterfeature' },
+                ExtraposterMoviesLibrarySetFallback2: { type: 'select', def: 'None', tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetKeyartLogoEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetKeyartLogoSizePercent: { type: 'number', def: 80, tab: 'extraposterfeature' },
@@ -5186,6 +5278,12 @@
                 AnimatedKeyartShowOnTvShows: { type: 'checkbox', def: true, tab: 'animatedposter' },
                 AnimatedKeyartTvShowsDetailEnabled: { type: 'checkbox', def: true, tab: 'animatedposter' },
                 AnimatedKeyartTvShowsLibraryEnabled: { type: 'checkbox', def: true, tab: 'animatedposter' },
+                AnimatedKeyartLibraryLogoEnabled: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartLibraryLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'animatedposter' },
+                AnimatedKeyartLibraryLogoSizePercent: { type: 'number', def: 80, tab: 'animatedposter' },
+                AnimatedKeyartDetailLogoEnabled: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartDetailLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'animatedposter' },
+                AnimatedKeyartDetailLogoSizePercent: { type: 'number', def: 60, tab: 'animatedposter' },
                 // Custom Poster - Postercase (Keyart not yet implemented, no EP_FIELDS entries for it)
                 PostercaseEnabled: { type: 'checkbox', def: true, tab: 'postercase' },
                 PostercaseShowOnMovies: { type: 'checkbox', def: true, tab: 'postercase' },
@@ -5632,6 +5730,9 @@
             function AllChecked(ids) { return { kind: 'all', ids: ids }; }
             function AnyChecked(ids) { return { kind: 'any', ids: ids }; }
             function ValueIn(id, values) { return { kind: 'valueIn', id: id, values: values }; }
+            // Session 126: true when ANY of the fields holds one of the values (Set Keyart logo: a keyart-type
+            // slide can come from Set image or either fallback stage).
+            function AnyValueIn(ids, values) { return { kind: 'anyValueIn', ids: ids, values: values }; }
 
             function epEvalCondition(cond) {
                 if (cond.kind === 'all') {
@@ -5642,6 +5743,9 @@
                 }
                 if (cond.kind === 'valueIn') {
                     return cond.values.indexOf(epGetFieldValue(cond.id)) !== -1;
+                }
+                if (cond.kind === 'anyValueIn') {
+                    return cond.ids.some(function (id) { return cond.values.indexOf(epGetFieldValue(id)) !== -1; });
                 }
                 return true;
             }
@@ -6010,6 +6114,9 @@
                 epUpdateFavoritesHeaderFormatException();
                 epUpdatePeopleBackdropsWipeBtnState();
                 epUpdatePeopleBackdropsFormatDependency();
+                // Session 126: the tree re-toggles the second-fallback row on every recompute (it is a
+                // _setrows target), so the chain grey (first fallback = None) is re-applied afterwards.
+                ['ExtraposterMoviesDetail', 'ExtraposterMoviesLibrary'].forEach(epSyncSetFallback);
             }
 
 
@@ -6183,6 +6290,8 @@
                             ],
                             children: [
                                 { id: 'ak_showon', structural: true, target: ['AnimatedKeyartShowOnRow'], when: [], children: [] },
+                                { id: 'ak_logo_detail', target: ['AnimatedKeyartDetailLogoVerticalPositionRow', 'AnimatedKeyartDetailLogoSizeRow'], when: [AllChecked(['AnimatedKeyartDetailLogoEnabled'])], children: [] },
+                                { id: 'ak_logo_library', target: ['AnimatedKeyartLibraryLogoVerticalPositionRow', 'AnimatedKeyartLibraryLogoSizeRow'], when: [AllChecked(['AnimatedKeyartLibraryLogoEnabled'])], children: [] },
                                 { id: 'ak_movies', target: ['AnimatedKeyartMoviesDetailEnabledRow', 'AnimatedKeyartMoviesLibraryEnabledRow'], headerTarget: ['animatedkeyartMovies'], when: [AnyChecked(['AnimatedKeyartShowOnMovies', 'AnimatedKeyartShowOnSets'])], children: [] },
                                 { id: 'ak_tvshows', target: ['AnimatedKeyartTvShowsDetailEnabledRow', 'AnimatedKeyartTvShowsLibraryEnabledRow'], headerTarget: ['animatedkeyartTvShows'], when: [AllChecked(['AnimatedKeyartShowOnTvShows'])], children: [] }
                             ]
@@ -6303,11 +6412,11 @@
                                     },
                                     {
                                         id: 'extraposterfeature_movies_detail', terminal: true, target: ['ExtraposterMoviesDetailFields'], headerTarget: ['extraposterMoviesDetail'],
-                                        when: [AllChecked(['ExtraposterMoviesDetailEnabled']), AnyChecked(['ExtraposterMoviesDetailShowOnMovies', 'ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_showon', structural: true, target: ['ExtraposterMoviesDetailShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_detail_sets', target: ['ExtraposterMoviesDetailSourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_setrows', target: ['ExtraposterMoviesDetailSetOrderRow', 'ExtraposterMoviesDetailSetImageRow', 'ExtraposterMoviesDetailSetFallbackRow'], when: [ValueIn('ExtraposterMoviesDetailSourcePriority', ['FilesFirst', 'SetPostersFirst', 'SetPostersOnly'])], children: [{ id: 'extraposterfeature_movies_detail_setlogo', target: ['ExtraposterMoviesDetailSetKeyartLogoRow'], when: [ValueIn('ExtraposterMoviesDetailSetImage', ['Keyart'])], children: [{ id: 'extraposterfeature_movies_detail_setlogogeo', target: ['ExtraposterMoviesDetailSetKeyartLogoVerticalPositionRow', 'ExtraposterMoviesDetailSetKeyartLogoSizeRow'], when: [AllChecked(['ExtraposterMoviesDetailSetKeyartLogoEnabled'])], children: [] }] }] }] }]
+                                        when: [AllChecked(['ExtraposterMoviesDetailEnabled']), AnyChecked(['ExtraposterMoviesDetailShowOnMovies', 'ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_showon', structural: true, target: ['ExtraposterMoviesDetailShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_detail_sets', target: ['ExtraposterMoviesDetailSourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_setrows', target: ['ExtraposterMoviesDetailSetOrderRow', 'ExtraposterMoviesDetailSetImageRow', 'ExtraposterMoviesDetailSetFallbackRow', 'ExtraposterMoviesDetailSetFallback2Row'], when: [ValueIn('ExtraposterMoviesDetailSourcePriority', ['FilesFirst', 'SetPostersFirst', 'SetPostersOnly'])], children: [{ id: 'extraposterfeature_movies_detail_setlogo', target: ['ExtraposterMoviesDetailSetKeyartLogoRow'], when: [AnyValueIn(['ExtraposterMoviesDetailSetImage', 'ExtraposterMoviesDetailSetFallback', 'ExtraposterMoviesDetailSetFallback2'], ['Keyart', 'AnimatedKeyart'])], children: [{ id: 'extraposterfeature_movies_detail_setlogogeo', target: ['ExtraposterMoviesDetailSetKeyartLogoVerticalPositionRow', 'ExtraposterMoviesDetailSetKeyartLogoSizeRow'], when: [AllChecked(['ExtraposterMoviesDetailSetKeyartLogoEnabled'])], children: [] }] }] }] }]
                                     },
                                     {
                                         id: 'extraposterfeature_movies_library', terminal: true, target: ['ExtraposterMoviesLibraryFields'], headerTarget: ['extraposterMoviesLibrary'],
-                                        when: [AllChecked(['ExtraposterMoviesLibraryEnabled']), AnyChecked(['ExtraposterMoviesLibraryShowOnMovies', 'ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_showon', structural: true, target: ['ExtraposterMoviesLibraryShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_library_sets', target: ['ExtraposterMoviesLibrarySourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_setrows', target: ['ExtraposterMoviesLibrarySetOrderRow', 'ExtraposterMoviesLibrarySetImageRow', 'ExtraposterMoviesLibrarySetFallbackRow'], when: [ValueIn('ExtraposterMoviesLibrarySourcePriority', ['FilesFirst', 'SetPostersFirst', 'SetPostersOnly'])], children: [{ id: 'extraposterfeature_movies_library_setlogo', target: ['ExtraposterMoviesLibrarySetKeyartLogoRow'], when: [ValueIn('ExtraposterMoviesLibrarySetImage', ['Keyart'])], children: [{ id: 'extraposterfeature_movies_library_setlogogeo', target: ['ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionRow', 'ExtraposterMoviesLibrarySetKeyartLogoSizeRow'], when: [AllChecked(['ExtraposterMoviesLibrarySetKeyartLogoEnabled'])], children: [] }] }] }] }]
+                                        when: [AllChecked(['ExtraposterMoviesLibraryEnabled']), AnyChecked(['ExtraposterMoviesLibraryShowOnMovies', 'ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_showon', structural: true, target: ['ExtraposterMoviesLibraryShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_library_sets', target: ['ExtraposterMoviesLibrarySourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_setrows', target: ['ExtraposterMoviesLibrarySetOrderRow', 'ExtraposterMoviesLibrarySetImageRow', 'ExtraposterMoviesLibrarySetFallbackRow', 'ExtraposterMoviesLibrarySetFallback2Row'], when: [ValueIn('ExtraposterMoviesLibrarySourcePriority', ['FilesFirst', 'SetPostersFirst', 'SetPostersOnly'])], children: [{ id: 'extraposterfeature_movies_library_setlogo', target: ['ExtraposterMoviesLibrarySetKeyartLogoRow'], when: [AnyValueIn(['ExtraposterMoviesLibrarySetImage', 'ExtraposterMoviesLibrarySetFallback', 'ExtraposterMoviesLibrarySetFallback2'], ['Keyart', 'AnimatedKeyart'])], children: [{ id: 'extraposterfeature_movies_library_setlogogeo', target: ['ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionRow', 'ExtraposterMoviesLibrarySetKeyartLogoSizeRow'], when: [AllChecked(['ExtraposterMoviesLibrarySetKeyartLogoEnabled'])], children: [] }] }] }] }]
                                     }]
                                 },
                                 {
@@ -7565,17 +7674,63 @@
             });
             // Session 125: the Set image cannot be its own fallback - that option is disabled in the fallback list
             // (and, if it was selected, the fallback drops to None).
+            // Session 126: the chain Set image -> Set fallback -> Set second fallback. Every stage disables what
+            // an earlier stage already chose (a type cannot fall back to itself); a stage whose value became invalid
+            // drops to None; "None" ends the chain, so the second fallback is greyed while the first is None.
+            // The option texts of Postercase / Keyart follow the Custom Poster tab's type names (first letter
+            // upper-cased, fixed word when empty, feature name in brackets when two texts would collide).
+            function epSetImageOptionText(value) {
+                var fixed = { Poster: 'Poster', Postercase: 'Postercase', Keyart: 'Keyart', AnimatedPoster: 'Animated Poster', AnimatedKeyart: 'Animated Keyart', None: 'None (Skip)' };
+                var fromField = { Postercase: 'PostercaseMoviesTypeName', Keyart: 'KeyartMoviesTypeName' };
+                if (!fromField[value]) { return fixed[value]; }
+                var el = document.getElementById(fromField[value]);
+                var t = el && el.value ? el.value.trim() : '';
+                return t ? (t.charAt(0).toUpperCase() + t.slice(1)) : fixed[value];
+            }
+            function epRelabelSetImageOptions(select) {
+                var texts = {};
+                Array.prototype.forEach.call(select.options, function (opt) { texts[opt.value] = epSetImageOptionText(opt.value); });
+                Array.prototype.forEach.call(select.options, function (opt) {
+                    var t = texts[opt.value];
+                    var twins = Object.keys(texts).filter(function (k) { return k !== opt.value && texts[k].toLowerCase() === t.toLowerCase(); });
+                    opt.text = twins.length && opt.value !== 'None' ? t + ' (' + { Poster: 'Jellyfin', Postercase: 'Postercase', Keyart: 'Keyart', AnimatedPoster: 'Animated Poster', AnimatedKeyart: 'Animated Keyart' }[opt.value] + ')' : t;
+                });
+            }
             function epSyncSetFallback(prefix) {
                 var image = document.getElementById(prefix + 'SetImage');
                 var fallback = document.getElementById(prefix + 'SetFallback');
-                if (!image || !fallback) { return; }
+                var fallback2 = document.getElementById(prefix + 'SetFallback2');
+                if (!image || !fallback || !fallback2) { return; }
+                [image, fallback, fallback2].forEach(epRelabelSetImageOptions);
                 Array.prototype.forEach.call(fallback.options, function (opt) { opt.disabled = opt.value === image.value; });
-                if (fallback.value === image.value) { fallback.value = 'None'; fallback.dispatchEvent(new Event('change', { bubbles: true })); }
+                if (fallback.value === image.value) { fallback.value = 'None'; }
+                Array.prototype.forEach.call(fallback2.options, function (opt) { opt.disabled = opt.value === image.value || (opt.value !== 'None' && opt.value === fallback.value); });
+                if (fallback2.value === image.value || (fallback2.value !== 'None' && fallback2.value === fallback.value)) { fallback2.value = 'None'; }
+                // The second fallback is pointless while the first is None: greyed by this function alone
+                // (own marker, rule 26 - taken back only by this marker), never doubling an ancestor's grey (rule 14).
+                var row2 = document.getElementById(prefix + 'SetFallback2Row');
+                var chainEnded = fallback.value === 'None';
+                var ancestorGrey = false, n = row2.parentElement;
+                while (n) { if (n.classList && n.classList.contains('epFieldDisabled')) { ancestorGrey = true; break; } n = n.parentElement; }
+                if (chainEnded) {
+                    row2.dataset.epChainGrey = '1';
+                    row2.classList.toggle('epFieldDisabled', !ancestorGrey);
+                    fallback2.disabled = true;
+                } else if (row2.dataset.epChainGrey) {
+                    delete row2.dataset.epChainGrey;
+                    row2.classList.remove('epFieldDisabled');
+                    if (!ancestorGrey) { fallback2.disabled = false; }
+                }
             }
             ['ExtraposterMoviesDetail', 'ExtraposterMoviesLibrary'].forEach(function (prefix) {
-                document.getElementById(prefix + 'SetImage').addEventListener('change', function () { epSyncSetFallback(prefix); });
-                document.getElementById(prefix + 'SetFallback').addEventListener('change', function () { epSyncSetFallback(prefix); });
+                ['SetImage', 'SetFallback', 'SetFallback2'].forEach(function (k) {
+                    document.getElementById(prefix + k).addEventListener('change', function () { epSyncSetFallback(prefix); });
+                });
                 epSyncSetFallback(prefix);
+            });
+            ['PostercaseMoviesTypeName', 'KeyartMoviesTypeName'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) { el.addEventListener('input', function () { epSyncSetFallback('ExtraposterMoviesDetail'); epSyncSetFallback('ExtraposterMoviesLibrary'); }); }
             });
 
             // Session 36 (user-reported, systematic sweep after two

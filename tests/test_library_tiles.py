@@ -66,7 +66,7 @@ window.ApiClient = { getCurrentUserId: function(){return 'u';}, serverAddress: f
 
 class Scenario:
     def __init__(self, name, items, custom=None, animated=None, extra=None, flags=None,
-                 batch_delay=None, img_delay=None, img_fail=None, extra_opts=None, viewport_rows=2, custom_logo=None, extra_per=None):
+                 batch_delay=None, img_delay=None, img_fail=None, extra_opts=None, viewport_rows=2, custom_logo=None, extra_per=None, animated_logo=None):
         self.name = name
         self.items = items                     # [(id, type)]
         self.custom = custom or {}             # id -> True
@@ -80,6 +80,7 @@ class Scenario:
         self.viewport_rows = viewport_rows
         self.custom_logo = custom_logo         # dict merged into every applicable Custom answer (LogoEnabled/...)
         self.extra_per = extra_per             # id -> dict merged into that item's Extra answer ('children': True = child-poster URLs)
+        self.animated_logo = animated_logo     # Session 126: dict merged into every Animated answer (Animated Keyart logo)
 
 
 class Stub(BaseHTTPRequestHandler):
@@ -123,7 +124,7 @@ class Stub(BaseHTTPRequestHandler):
             items = {i: dict({"IsApplicable": True, "ResolvedType": "postercase", "Version": "1", "FileName": "x"}, **(sc.custom_logo or {})) for i in ids if sc.custom.get(i)}
             return self._json({"Items": items}, sc.batch_delay.get('custom', 0))
         if p == '/AnimatedPoster/batch':
-            items = {i: {"IsApplicable": True, "ResolvedType": "animatedposter", "Version": "1", "FileName": "x"} for i in ids if sc.animated.get(i)}
+            items = {i: dict({"IsApplicable": True, "ResolvedType": "animatedposter", "Version": "1", "FileName": "x"}, **(sc.animated_logo or {})) for i in ids if sc.animated.get(i)}
             return self._json({"Items": items}, sc.batch_delay.get('animated', 0))
         if p == '/Extraposter/batch':
             items = {}
@@ -201,6 +202,7 @@ def run():
         Scenario('S23 two features, different display duration: own beats', ROWS5, extra={'t01': 3, 't02': 3}, extra_per={'t02': {"ResolvedType": "extrakeyart", "CycleTimeMs": 500}}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
         Scenario('S24 child posters: the overlay uses the Url entries', ROWS5, extra={'t01': 2}, extra_per={'t01': {'children': True}}),
         Scenario('S25 set keyart slides: the movie logo follows the slide, none on a slide without one', ROWS5, extra={'t01': 2}, extra_per={'t01': {'children': True, 'slideLogos': True, "SetLogoVerticalPositionPercent": 70, "SetLogoSizePercent": 50, "CycleTimeMs": 700, "FadeTimeMs": 100}}),
+        Scenario('S26 animated keyart logo on the tile (animated winner), none on a custom tile', ROWS5, animated={'t01': True}, custom={'t02': True}, animated_logo={"ResolvedType": "animatedkeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 75, "LogoSizePercent": 45, "HasLogo": True}),
         Scenario('S16 extrakeyart logo appears with the first overlay image', ROWS5, extra={'t01': 2}, extra_opts={"ResolvedType": "extrakeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 85, "LogoSizePercent": 40, "HasLogo": True}),
     ]
 
@@ -434,6 +436,12 @@ def run():
                 if not (info['t01'] and info['t01']['top'] == '80%' and info['t01']['width'] == '50%' and '/Items/t01/Images/Logo' in info['t01']['src'] and info['t01']['inContainer']):
                     problems.append(f"keyart logo wrong: {info['t01']}")
                 if info['t02'] is not None: problems.append(f"animated tile has a logo: {info['t02']}")
+            if sc.name.split(' ')[0] == 'S26':
+                page.wait_for_timeout(300)
+                info = page.evaluate("(()=>{var q=id=>{var c=document.querySelector('[data-id='+id+']');var l=c.querySelector('.artworkplus-tile-logo');return l?{top:l.style.top,width:l.style.width,src:l.firstChild.getAttribute('src'),inContainer:l.parentElement.classList.contains('cardImageContainer')}:null;};return {t01:q('t01'),t02:q('t02')};})()")
+                if not (info['t01'] and info['t01']['top'] == '75%' and info['t01']['width'] == '45%' and '/Items/t01/Images/Logo' in info['t01']['src'] and info['t01']['inContainer']):
+                    problems.append(f"animated keyart logo wrong: {info['t01']}")
+                if info['t02'] is not None: problems.append(f"custom tile has a logo: {info['t02']}")
             if sc.name.split(' ')[0] == 'S16':
                 page.wait_for_timeout(300)
                 info = page.evaluate("(()=>{var c=document.querySelector('[data-id=t01]');var l=c.querySelector('.artworkplus-tile-logo');var layer=c.querySelector('.extraposter-lib-layer');return l?{top:l.style.top,afterLayers:!!(layer.compareDocumentPosition(l)&Node.DOCUMENT_POSITION_FOLLOWING)}:null;})()")

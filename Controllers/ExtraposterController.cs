@@ -161,9 +161,15 @@ public class BatchPosterListResult
 /// final outcome. Goal: for every future debugging case, a look at the
 /// server log is enough, with no need to add new log lines and redeploy
 /// first. All lines start with "Extraposter:", easy to filter for via log
-/// search. Levels: LogInformation for the normal flow (always visible, even
-/// without the Debug log level), LogWarning for genuinely
-/// suspicious/erroneous states, LogError for unexpected exceptions.
+/// search. Levels (Session 126): LogInformation only for the request-level
+/// flow (GetPosterList / GetQuickCheck / batch START+END with timing), LogDebug
+/// for the per-item and per-image detail (folder resolution, candidate
+/// search, GetPosterImage) - a library page asks for 200 items and every
+/// tile image, which at Information filled the server log with ~80,000
+/// lines a day; enable the Debug override for
+/// Jellyfin.Plugin.ArtworkPlus in Jellyfin's logging config to see it all.
+/// LogWarning for genuinely suspicious/erroneous states, LogError for
+/// unexpected exceptions.
 /// </summary>
 [ApiController]
 [Route("Extraposter")]
@@ -190,6 +196,15 @@ public class ExtraposterController : ControllerBase
     // since changed, leaving the old key "orphaned"), it automatically gets
     // evicted after this time instead of staying in memory forever.
     private static readonly TimeSpan CacheSlidingExpiration = TimeSpan.FromHours(6);
+
+    /// <summary>
+    /// Session 126: how long a library batch answer per item is reused. The
+    /// file list underneath is keyed by the folder's write time, so a new
+    /// file is seen as soon as this window has passed (or a config save
+    /// replaces the config object). Measured on this library: a cold 200-item
+    /// batch takes 2-7 s on the external drives, a cached one milliseconds.
+    /// </summary>
+    private static readonly TimeSpan LibraryResultCacheWindow = TimeSpan.FromSeconds(30);
 
     public ExtraposterController(ILibraryManager libraryManager, ILogger<ExtraposterController> logger, IMemoryCache cache)
     {
@@ -332,7 +347,7 @@ public class ExtraposterController : ControllerBase
         string OrderMode, bool SinglePass, int CycleTimeMs, int FadeTimeMs, bool DelayEnabled, int DelayMs,
         bool LogoEnabled, int LogoVerticalPositionPercent, int LogoSizePercent, bool SyncEnabled, bool SeamlessEnabled,
         string UnnumberedMode, bool SourceFiles, bool SourceChildren, bool ChildrenFirst, bool ChildOrderDescending, bool IncludeSpecials, bool SkipSingleSeason,
-        string SetImage, string SetFallback, bool SetKeyartLogoEnabled, int SetKeyartLogoVerticalPositionPercent, int SetKeyartLogoSizePercent);
+        string SetImage, string SetFallback, string SetFallback2, bool SetKeyartLogoEnabled, int SetKeyartLogoVerticalPositionPercent, int SetKeyartLogoSizePercent);
 
     // Session 125: the four-value priority (FilesFirst | FilesOnly | SetPostersFirst | SetPostersOnly,
     // TV: SeasonPosters…) decides which sources a Set / series uses and in which order. A movie
@@ -363,29 +378,29 @@ public class ExtraposterController : ControllerBase
             {
                 return isLibraryScope
                     ? new ExtraViewSettings(c.ExtraposterMoviesLibraryOrderMode, c.ExtraposterMoviesLibrarySinglePass, c.ExtraposterMoviesLibraryCycleTimeMs, c.ExtraposterMoviesLibraryFadeTimeMs, c.ExtraposterMoviesLibraryDelayEnabled, c.ExtraposterMoviesLibraryDelayMs, false, 0, 0, c.ExtraposterMoviesLibrarySyncEnabled, c.ExtraposterMoviesLibrarySeamlessEnabled,
-                        "Ignored", SourceUsesFiles(c.ExtraposterMoviesLibrarySourcePriority), SourceUsesChildren(c.ExtraposterMoviesLibrarySourcePriority), SourceChildrenFirst(c.ExtraposterMoviesLibrarySourcePriority), c.ExtraposterMoviesLibrarySetOrder == "Descending", false, false, c.ExtraposterMoviesLibrarySetImage, c.ExtraposterMoviesLibrarySetFallback, c.ExtraposterMoviesLibrarySetKeyartLogoEnabled, c.ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesLibrarySetKeyartLogoSizePercent)
+                        "Ignored", SourceUsesFiles(c.ExtraposterMoviesLibrarySourcePriority), SourceUsesChildren(c.ExtraposterMoviesLibrarySourcePriority), SourceChildrenFirst(c.ExtraposterMoviesLibrarySourcePriority), c.ExtraposterMoviesLibrarySetOrder == "Descending", false, false, c.ExtraposterMoviesLibrarySetImage, c.ExtraposterMoviesLibrarySetFallback, c.ExtraposterMoviesLibrarySetFallback2, c.ExtraposterMoviesLibrarySetKeyartLogoEnabled, c.ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesLibrarySetKeyartLogoSizePercent)
                     : new ExtraViewSettings(c.ExtraposterMoviesDetailOrderMode, c.ExtraposterMoviesDetailSinglePass, c.ExtraposterMoviesDetailCycleTimeMs, c.ExtraposterMoviesDetailFadeTimeMs, c.ExtraposterMoviesDetailDelayEnabled, c.ExtraposterMoviesDetailDelayMs, false, 0, 0, false, true,
-                        "Ignored", SourceUsesFiles(c.ExtraposterMoviesDetailSourcePriority), SourceUsesChildren(c.ExtraposterMoviesDetailSourcePriority), SourceChildrenFirst(c.ExtraposterMoviesDetailSourcePriority), c.ExtraposterMoviesDetailSetOrder == "Descending", false, false, c.ExtraposterMoviesDetailSetImage, c.ExtraposterMoviesDetailSetFallback, c.ExtraposterMoviesDetailSetKeyartLogoEnabled, c.ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesDetailSetKeyartLogoSizePercent);
+                        "Ignored", SourceUsesFiles(c.ExtraposterMoviesDetailSourcePriority), SourceUsesChildren(c.ExtraposterMoviesDetailSourcePriority), SourceChildrenFirst(c.ExtraposterMoviesDetailSourcePriority), c.ExtraposterMoviesDetailSetOrder == "Descending", false, false, c.ExtraposterMoviesDetailSetImage, c.ExtraposterMoviesDetailSetFallback, c.ExtraposterMoviesDetailSetFallback2, c.ExtraposterMoviesDetailSetKeyartLogoEnabled, c.ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesDetailSetKeyartLogoSizePercent);
             }
             return isLibraryScope
                 ? new ExtraViewSettings(c.ExtraposterTvShowsLibraryOrderMode, c.ExtraposterTvShowsLibrarySinglePass, c.ExtraposterTvShowsLibraryCycleTimeMs, c.ExtraposterTvShowsLibraryFadeTimeMs, c.ExtraposterTvShowsLibraryDelayEnabled, c.ExtraposterTvShowsLibraryDelayMs, false, 0, 0, c.ExtraposterTvShowsLibrarySyncEnabled, c.ExtraposterTvShowsLibrarySeamlessEnabled,
-                        "Ignored", SourceUsesFiles(c.ExtraposterTvShowsLibrarySourcePriority), SourceUsesChildren(c.ExtraposterTvShowsLibrarySourcePriority), SourceChildrenFirst(c.ExtraposterTvShowsLibrarySourcePriority), c.ExtraposterTvShowsLibrarySeasonOrder == "Descending", c.ExtraposterTvShowsLibraryIncludeSpecials, c.ExtraposterTvShowsLibrarySkipSingleSeason, "Poster", "None", false, 0, 0)
+                        "Ignored", SourceUsesFiles(c.ExtraposterTvShowsLibrarySourcePriority), SourceUsesChildren(c.ExtraposterTvShowsLibrarySourcePriority), SourceChildrenFirst(c.ExtraposterTvShowsLibrarySourcePriority), c.ExtraposterTvShowsLibrarySeasonOrder == "Descending", c.ExtraposterTvShowsLibraryIncludeSpecials, c.ExtraposterTvShowsLibrarySkipSingleSeason, "Poster", "None", "None", false, 0, 0)
                 : new ExtraViewSettings(c.ExtraposterTvShowsDetailOrderMode, c.ExtraposterTvShowsDetailSinglePass, c.ExtraposterTvShowsDetailCycleTimeMs, c.ExtraposterTvShowsDetailFadeTimeMs, c.ExtraposterTvShowsDetailDelayEnabled, c.ExtraposterTvShowsDetailDelayMs, false, 0, 0, false, true,
-                        "Ignored", SourceUsesFiles(c.ExtraposterTvShowsDetailSourcePriority), SourceUsesChildren(c.ExtraposterTvShowsDetailSourcePriority), SourceChildrenFirst(c.ExtraposterTvShowsDetailSourcePriority), c.ExtraposterTvShowsDetailSeasonOrder == "Descending", c.ExtraposterTvShowsDetailIncludeSpecials, c.ExtraposterTvShowsDetailSkipSingleSeason, "Poster", "None", false, 0, 0);
+                        "Ignored", SourceUsesFiles(c.ExtraposterTvShowsDetailSourcePriority), SourceUsesChildren(c.ExtraposterTvShowsDetailSourcePriority), SourceChildrenFirst(c.ExtraposterTvShowsDetailSourcePriority), c.ExtraposterTvShowsDetailSeasonOrder == "Descending", c.ExtraposterTvShowsDetailIncludeSpecials, c.ExtraposterTvShowsDetailSkipSingleSeason, "Poster", "None", "None", false, 0, 0);
         }
         if (!tv)
         {
             return isLibraryScope
                 ? new ExtraViewSettings(c.ExtrakeyartMoviesLibraryOrderMode, c.ExtrakeyartMoviesLibrarySinglePass, c.ExtrakeyartMoviesLibraryCycleTimeMs, c.ExtrakeyartMoviesLibraryFadeTimeMs, c.ExtrakeyartMoviesLibraryDelayEnabled, c.ExtrakeyartMoviesLibraryDelayMs, c.ExtrakeyartMoviesLibraryLogoEnabled, c.ExtrakeyartMoviesLibraryLogoVerticalPositionPercent, c.ExtrakeyartMoviesLibraryLogoSizePercent, c.ExtrakeyartMoviesLibrarySyncEnabled, c.ExtrakeyartMoviesLibrarySeamlessEnabled,
-                        c.ExtrakeyartMoviesLibraryUnnumberedMode, true, false, false, false, false, false, "Poster", "None", false, 0, 0)
+                        c.ExtrakeyartMoviesLibraryUnnumberedMode, true, false, false, false, false, false, "Poster", "None", "None", false, 0, 0)
                 : new ExtraViewSettings(c.ExtrakeyartMoviesDetailOrderMode, c.ExtrakeyartMoviesDetailSinglePass, c.ExtrakeyartMoviesDetailCycleTimeMs, c.ExtrakeyartMoviesDetailFadeTimeMs, c.ExtrakeyartMoviesDetailDelayEnabled, c.ExtrakeyartMoviesDetailDelayMs, c.ExtrakeyartMoviesDetailLogoEnabled, c.ExtrakeyartMoviesDetailLogoVerticalPositionPercent, c.ExtrakeyartMoviesDetailLogoSizePercent, false, true,
-                        c.ExtrakeyartMoviesDetailUnnumberedMode, true, false, false, false, false, false, "Poster", "None", false, 0, 0);
+                        c.ExtrakeyartMoviesDetailUnnumberedMode, true, false, false, false, false, false, "Poster", "None", "None", false, 0, 0);
         }
         return isLibraryScope
             ? new ExtraViewSettings(c.ExtrakeyartTvShowsLibraryOrderMode, c.ExtrakeyartTvShowsLibrarySinglePass, c.ExtrakeyartTvShowsLibraryCycleTimeMs, c.ExtrakeyartTvShowsLibraryFadeTimeMs, c.ExtrakeyartTvShowsLibraryDelayEnabled, c.ExtrakeyartTvShowsLibraryDelayMs, c.ExtrakeyartTvShowsLibraryLogoEnabled, c.ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent, c.ExtrakeyartTvShowsLibraryLogoSizePercent, c.ExtrakeyartTvShowsLibrarySyncEnabled, c.ExtrakeyartTvShowsLibrarySeamlessEnabled,
-                        c.ExtrakeyartTvShowsLibraryUnnumberedMode, true, false, false, false, false, false, "Poster", "None", false, 0, 0)
+                        c.ExtrakeyartTvShowsLibraryUnnumberedMode, true, false, false, false, false, false, "Poster", "None", "None", false, 0, 0)
             : new ExtraViewSettings(c.ExtrakeyartTvShowsDetailOrderMode, c.ExtrakeyartTvShowsDetailSinglePass, c.ExtrakeyartTvShowsDetailCycleTimeMs, c.ExtrakeyartTvShowsDetailFadeTimeMs, c.ExtrakeyartTvShowsDetailDelayEnabled, c.ExtrakeyartTvShowsDetailDelayMs, c.ExtrakeyartTvShowsDetailLogoEnabled, c.ExtrakeyartTvShowsDetailLogoVerticalPositionPercent, c.ExtrakeyartTvShowsDetailLogoSizePercent, false, true,
-                        c.ExtrakeyartTvShowsDetailUnnumberedMode, true, false, false, false, false, false, "Poster", "None", false, 0, 0);
+                        c.ExtrakeyartTvShowsDetailUnnumberedMode, true, false, false, false, false, false, "Poster", "None", "None", false, 0, 0);
     }
 
 
@@ -422,10 +437,12 @@ public class ExtraposterController : ControllerBase
         };
     }
 
-    /// <summary>A movie's Postercase/Keyart file as an entry (served by GetChildImage), or null.</summary>
+    /// <summary>A movie's Postercase/Keyart/Animated file as an entry (served by GetChildImage), or null.</summary>
     private static PosterEntry? CustomEntry(PluginConfiguration config, Movie movie, string posterType)
     {
-        var path = Helpers.CustomPosterFileResolver.Resolve(config, movie, posterType);
+        var path = posterType.StartsWith("animated", StringComparison.Ordinal)
+            ? Helpers.AnimatedPosterFileResolver.Resolve(config, movie, posterType)
+            : Helpers.CustomPosterFileResolver.Resolve(config, movie, posterType);
         if (path is null) { return null; }
         var v = Helpers.BackdropFileResolver.VersionTag(path);
         return new PosterEntry
@@ -436,27 +453,38 @@ public class ExtraposterController : ControllerBase
         };
     }
 
-    /// <summary>Session 125: the chosen image of a Set's movie (Poster / Postercase / Keyart), else its fallback, else nothing.</summary>
+    /// <summary>
+    /// Session 125/126: the chosen image of a Set's movie (Poster / Postercase /
+    /// Keyart / AnimatedPoster / AnimatedKeyart), else its first fallback, else
+    /// its second, else nothing. A Keyart slide of either kind gets the movie's
+    /// own logo when the Set Keyart logo is on - by the kind actually shown.
+    /// </summary>
     private static PosterEntry? SetMovieEntry(PluginConfiguration config, BaseItem child, ExtraViewSettings view)
     {
-        var image = view.SetImage;
-        var fallback = view.SetFallback;
         PosterEntry? Pick(string kind)
         {
             if (kind == "Poster") { return PrimaryEntry(child); }
-            if ((kind == "Postercase" || kind == "Keyart") && child is Movie movie)
+            if (child is not Movie movie) { return null; }
+            var fileKind = kind switch { "Postercase" => "postercase", "Keyart" => "keyart", "AnimatedPoster" => "animatedposter", "AnimatedKeyart" => "animatedkeyart", _ => null };
+            if (fileKind is null) { return null; }
+            var entry = CustomEntry(config, movie, fileKind);
+            if (entry is not null && (kind == "Keyart" || kind == "AnimatedKeyart") && view.SetKeyartLogoEnabled && child.HasImage(ImageType.Logo, 0))
             {
-                var entry = CustomEntry(config, movie, kind.ToLowerInvariant());
-                // Only a Keyart slide gets the movie's own logo (a poster carries its title itself).
-                if (entry is not null && kind == "Keyart" && view.SetKeyartLogoEnabled && child.HasImage(ImageType.Logo, 0))
-                {
-                    entry.LogoItemId = child.Id.ToString("N");
-                }
-                return entry;
+                entry.LogoItemId = child.Id.ToString("N");
             }
-            return null;
+            return entry;
         }
-        return Pick(image) ?? (fallback == "None" || fallback == image ? null : Pick(fallback));
+        var tried = new System.Collections.Generic.HashSet<string> { view.SetImage };
+        var entry0 = Pick(view.SetImage);
+        if (entry0 is not null) { return entry0; }
+        foreach (var fb in new[] { view.SetFallback, view.SetFallback2 })
+        {
+            if (fb == "None") { return null; }
+            if (!tried.Add(fb)) { continue; }
+            var e = Pick(fb);
+            if (e is not null) { return e; }
+        }
+        return null;
     }
 
     private List<PosterEntry> ResolveChildPosters(PluginConfiguration config, BaseItem item, ExtraViewSettings view)
@@ -809,9 +837,11 @@ public class ExtraposterController : ControllerBase
                 allParsedIds.Count, MaxBatchIds);
         }
 
-        _logger.LogInformation(
-            "Extraposter: === GetPosterListBatch START, {Count} unique itemIds requested: [{Ids}]",
-            itemIds.Count, string.Join(", ", itemIds));
+        _logger.LogInformation("Extraposter: === GetPosterListBatch START, {Count} unique itemIds requested", itemIds.Count);
+        _logger.LogDebug("Extraposter: GetPosterListBatch ids: [{Ids}]", string.Join(", ", itemIds));
+        var batchWatch = System.Diagnostics.Stopwatch.StartNew();
+        var cacheHits = 0;
+        long slowestTicks = 0; var slowestId = Guid.Empty;
 
         // Session 123: resolved in parallel and cached per item for 30 s.
         // Measured before: 200 series = 1.6 s, 200 movies = 0.9-2.3 s
@@ -828,8 +858,17 @@ public class ExtraposterController : ControllerBase
             var key = "Extraposter:LibResult|" + itemId.ToString("N") + "|" + configStamp;
             if (!_cache.TryGetValue(key, out PosterListResult? cachedResult) || cachedResult is null)
             {
+                var itemWatch = System.Diagnostics.Stopwatch.StartNew();
                 cachedResult = ResolveLibraryItemResult(itemId, config);
-                _cache.Set(key, cachedResult, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(30)));
+                _cache.Set(key, cachedResult, new MemoryCacheEntryOptions().SetAbsoluteExpiration(LibraryResultCacheWindow));
+                lock (resolved)
+                {
+                    if (itemWatch.ElapsedTicks > slowestTicks) { slowestTicks = itemWatch.ElapsedTicks; slowestId = itemId; }
+                }
+            }
+            else
+            {
+                System.Threading.Interlocked.Increment(ref cacheHits);
             }
             // "N" (no dashes): the client looks the answer up by the tile's
             // data-id, which Jellyfin serialises via JsonGuidConverter as the
@@ -840,8 +879,9 @@ public class ExtraposterController : ControllerBase
         foreach (var kv in resolved) { result.Items[kv.Key] = kv.Value; }
 
         _logger.LogInformation(
-            "Extraposter: === GetPosterListBatch END, {Count} entries answered, {WithPosters} of them with IsMovie=true",
-            result.Items.Count, result.Items.Values.Count(r => r.IsMovie));
+            "Extraposter: === GetPosterListBatch END, {Count} entries answered, {WithPosters} of them with IsMovie=true, {Ms} ms, {Hits} from cache, slowest item {SlowestMs} ms ({SlowestId})",
+            result.Items.Count, result.Items.Values.Count(r => r.IsMovie), batchWatch.ElapsedMilliseconds, cacheHits,
+            slowestTicks * 1000 / System.Diagnostics.Stopwatch.Frequency, slowestId);
 
         return Ok(result);
     }
@@ -939,7 +979,7 @@ public class ExtraposterController : ControllerBase
     /// just the check order.
     /// </summary>
     /// <summary>
-    /// GET /Extraposter/child-image?itemId=&amp;type=postercase|keyart - a Set
+    /// GET /Extraposter/child-image?itemId=&amp;type=postercase|keyart|animatedposter|animatedkeyart - a Set
     /// movie's Custom Poster file for the Set slideshow (Session 125). Found
     /// by the Custom Poster tab's naming rules only; that feature's own
     /// switches do not apply here (user decision: the file counts).
@@ -948,14 +988,15 @@ public class ExtraposterController : ControllerBase
     public ActionResult GetChildImage([FromQuery] Guid itemId, [FromQuery] string? type)
     {
         var config = Plugin.Instance!.Configuration;
-        var kind = type == "keyart" ? "keyart" : "postercase";
+        var kind = type switch { "keyart" => "keyart", "animatedposter" => "animatedposter", "animatedkeyart" => "animatedkeyart", _ => "postercase" };
         if (_libraryManager.GetItemById(itemId) is not Movie movie) { return NotFound(); }
-        var path = Helpers.CustomPosterFileResolver.Resolve(config, movie, kind);
+        var animated = kind.StartsWith("animated", StringComparison.Ordinal);
+        var path = animated ? Helpers.AnimatedPosterFileResolver.Resolve(config, movie, kind) : Helpers.CustomPosterFileResolver.Resolve(config, movie, kind);
         if (path is null || !System.IO.File.Exists(path)) { return NotFound(); }
         var etag = ComputeETag("child", itemId, kind, Helpers.BackdropFileResolver.VersionTag(path));
         if (IsETagStillValid(etag)) { return StatusCode(StatusCodes.Status304NotModified); }
         Response.Headers.CacheControl = "private, max-age=86400";
-        return PhysicalFile(path, Helpers.CustomPosterFileResolver.ContentType(path));
+        return PhysicalFile(path, animated ? Helpers.AnimatedPosterFileResolver.ContentType(path) : Helpers.CustomPosterFileResolver.ContentType(path));
     }
 
     [HttpGet("{itemId}/image/{fileName}")]
@@ -977,7 +1018,7 @@ public class ExtraposterController : ControllerBase
                 resolvedType = "extraposter";
             }
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: GetPosterImage START for {ItemId}, type={Type}, requested file=\"{FileName}\"",
                 itemId, resolvedType, fileName);
 
@@ -1077,7 +1118,7 @@ public class ExtraposterController : ControllerBase
 
             var fullPath = Path.Combine(folderPath, fileName);
             var exists = System.IO.File.Exists(fullPath);
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: GetPosterImage - full path=\"{FullPath}\", File.Exists={Exists}",
                 fullPath, exists);
 
@@ -1119,11 +1160,11 @@ public class ExtraposterController : ControllerBase
             var ifNoneMatchImage = Request.Headers.IfNoneMatch.ToString();
             if (!string.IsNullOrEmpty(ifNoneMatchImage) && ifNoneMatchImage == imageEtag)
             {
-                _logger.LogInformation("Extraposter: GetPosterImage - ETag unchanged, 304 for \"{FullPath}\"", fullPath);
+                _logger.LogDebug("Extraposter: GetPosterImage - ETag unchanged, 304 for \"{FullPath}\"", fullPath);
                 return StatusCode(StatusCodes.Status304NotModified);
             }
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: GetPosterImage 200 - serving \"{FullPath}\", {Size} bytes, Content-Type={ContentType}",
                 fullPath, fileInfo.Length, contentType);
 
@@ -1208,14 +1249,14 @@ public class ExtraposterController : ControllerBase
     {
         var item = _libraryManager.GetItemById(itemId);
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Extraposter: ResolveMovieFolder - item {ItemId} resolved as type \"{Type}\"",
             itemId,
             item?.GetType().FullName ?? "null (not found)");
 
         if (item is not Movie movie)
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: ResolveMovieFolder - not a Movie, aborting for {ItemId}",
                 itemId);
             return (false, null);
@@ -1224,7 +1265,7 @@ public class ExtraposterController : ControllerBase
         var folderPath = movie.ContainingFolderPath;
         var exists = !string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath);
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Extraposter: ResolveMovieFolder - ContainingFolderPath=\"{Path}\", Directory.Exists={Exists}",
             folderPath, exists);
 
@@ -1251,14 +1292,14 @@ public class ExtraposterController : ControllerBase
     {
         var item = _libraryManager.GetItemById(itemId);
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Extraposter: ResolveSeriesFolder - item {ItemId} resolved as type \"{Type}\"",
             itemId,
             item?.GetType().FullName ?? "null (not found)");
 
         if (item is not Series series)
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: ResolveSeriesFolder - not a Series, aborting for {ItemId}",
                 itemId);
             return (false, null);
@@ -1267,7 +1308,7 @@ public class ExtraposterController : ControllerBase
         var folderPath = series.ContainingFolderPath;
         var exists = !string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath);
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Extraposter: ResolveSeriesFolder - ContainingFolderPath=\"{Path}\", Directory.Exists={Exists}",
             folderPath, exists);
 
@@ -1295,14 +1336,14 @@ public class ExtraposterController : ControllerBase
     {
         var item = _libraryManager.GetItemById(itemId);
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Extraposter: ResolveSetFolder - item {ItemId} resolved as type \"{Type}\"",
             itemId,
             item?.GetType().FullName ?? "null (not found)");
 
         if (item is not BoxSet boxSet)
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: ResolveSetFolder - not a BoxSet, aborting for {ItemId}",
                 itemId);
             return (false, null);
@@ -1311,7 +1352,7 @@ public class ExtraposterController : ControllerBase
         var folderPath = boxSet.ContainingFolderPath;
         var exists = !string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath);
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Extraposter: ResolveSetFolder - ContainingFolderPath=\"{Path}\", Directory.Exists={Exists}",
             folderPath, exists);
 
@@ -1450,7 +1491,7 @@ public class ExtraposterController : ControllerBase
         }
         else
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: ResolveCandidates - cache miss, scanning the disk. Key: \"{Key}\"",
                 cacheKey);
 
@@ -1526,7 +1567,7 @@ public class ExtraposterController : ControllerBase
             var allFilesInFolder = Directory.EnumerateFiles(folderPath)
                 .Select(Path.GetFileName)
                 .ToList();
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: ResolveCandidates - actual contents of \"{Folder}\" ({Count} files): [{Files}], allowed extensions: [{Allowed}]",
                 folderPath, allFilesInFolder.Count, string.Join(", ", allFilesInFolder), string.Join(", ", allowedExtensions));
         }
@@ -1539,7 +1580,7 @@ public class ExtraposterController : ControllerBase
         {
             var subFolder = Path.Combine(folderPath, folderName);
             var subFolderExists = Directory.Exists(subFolder);
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: ResolveCandidates - Folder mode, expected subfolder=\"{SubFolder}\", Directory.Exists={Exists}",
                 subFolder, subFolderExists);
 
@@ -1549,7 +1590,7 @@ public class ExtraposterController : ControllerBase
             }
 
             var filesInSubFolder = Directory.EnumerateFiles(subFolder).Select(Path.GetFileName).ToList();
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: ResolveCandidates - contents of \"{SubFolder}\" ({Count} files): [{Files}]",
                 subFolder, filesInSubFolder.Count, string.Join(", ", filesInSubFolder));
 
@@ -1566,7 +1607,7 @@ public class ExtraposterController : ControllerBase
             var skipped = filesInSubFolder.Count - fileNames.Count;
             if (skipped > 0)
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Extraposter: ResolveCandidates - {Skipped} file(s) in the subfolder skipped due to an unsupported extension (allowed: {Allowed})",
                     skipped, string.Join(", ", allowedExtensions));
             }
@@ -1601,7 +1642,7 @@ public class ExtraposterController : ControllerBase
             // deviations (a different type of hyphen, a missing space,
             // etc.) at a glance.
             var exampleCandidate = Path.Combine(folderPath, prefix + "1" + allowedExtensions[0]);
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: ResolveCandidates - NamingMode={NamingMode}, searched prefix=\"{Prefix}\", example full path #1=\"{Example}\"",
                 namingMode, prefix, exampleCandidate);
 
@@ -1636,7 +1677,7 @@ public class ExtraposterController : ControllerBase
                     if (System.IO.File.Exists(Path.Combine(folderPath, unnumberedCandidate)))
                     {
                         fileNames.Add(unnumberedCandidate);
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Extraposter: ResolveCandidates - unnumbered file found and counted as #1: \"{Candidate}\"",
                             unnumberedCandidate);
                         break; // one match is enough, same "first extension wins" principle as the numbered loop below
@@ -1666,14 +1707,14 @@ public class ExtraposterController : ControllerBase
                 // calls for empty sets.
                 if (!found && i >= 3 && fileNames.Count == 0)
                 {
-                    _logger.LogInformation(
+                    _logger.LogDebug(
                         "Extraposter: ResolveCandidates - the first 3 numbers (1-3) had no match, aborting the search early instead of continuing to {Max}",
                         MaxNumberedPosters);
                     break;
                 }
             }
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Extraposter: ResolveCandidates - search performed up to number {Last}, {Count} matches: [{Files}]",
                 lastCheckedNumber, fileNames.Count, string.Join(", ", fileNames));
         }
@@ -1708,7 +1749,7 @@ public class ExtraposterController : ControllerBase
             result = NaturalSort(fileNames);
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Extraposter: ResolveCandidates - final order ({OrderMode}): [{Files}]",
             orderMode, string.Join(", ", result));
 
