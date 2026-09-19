@@ -119,8 +119,9 @@
                        wirklich braucht"). Yellow-green = a hint, never an
                        error (red stays free for real failures). */
                     #ArtworkPlusConfigPage .epVanillaNotice {
-                        /* its own, minimal spacing (user, Session 130): 1px above the 14px line, nothing below */
-                        height: 15px; min-height: 15px; padding: 1px 0 0 0; margin: 0; box-sizing: border-box;
+                        /* its own spacing (user, Session 130): 0 above (the intro's 1px bottom padding is all
+                           that separates the two lines), the 14px line, nothing below; the 4px come from the row */
+                        height: 14px; min-height: 14px; padding: 0; margin: 0; box-sizing: border-box;
                         color: #cddc39; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                     }
                     /* The intro line and its hint sit together in one column
@@ -130,6 +131,8 @@
                        Zeilen näher beieinander und dafür danach etwas
                        Abstand"). */
                     #ArtworkPlusConfigPage .epTabIntroCol { display: flex; flex-direction: column; min-width: 0; }
+                    /* the intro's own 1px bottom padding would remain between the two lines - user wants 0 */
+                    #ArtworkPlusConfigPage .epTabIntroCol > .epDesc:first-child { padding-bottom: 0; }
                     /* gap after the pair: minimal (user, Session 130 - the hint lines are temporary,
                        a block with just its intro must stay compact). Combined selector: the base
                        .epTabHeaderRow rule (margin-bottom: 0) comes later in this stylesheet and would

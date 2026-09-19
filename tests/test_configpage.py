@@ -1290,7 +1290,7 @@ with sync_playwright() as p:
         heights: (function () { ['backdropsMod', 'backdropsLibrary', 'backdropsGenre'].forEach(function (k) { var h = document.querySelector('.epCollapseHeader[data-collapse="' + k + '"]'); if (h && !h.classList.contains('epOpen')) { h.click(); } }); return ['backdropsMod', 'backdropsLibrary', 'backdropsGenre'].map(function (k) { return document.querySelector('.epCollapseBody[data-collapsebody="' + k + '"] .epVanillaNotice').getBoundingClientRect().height; }); })()
     })""")
     check('S130: intro texts name the vanilla setting', texts['intro'].startswith("Replaces vanilla's 'Backdrops' display setting") and texts['dvIntro'].startswith("Replaces vanilla's 'Details Banner' setting"), str(texts))
-    check('S130: seven notice placeholders, all the same one-line height', texts['placeholders'] == 7 and len(set(texts['heights'])) == 1 and texts['heights'][0] == 15, str(texts))
+    check('S130: seven notice placeholders, all the same one-line height', texts['placeholders'] == 7 and len(set(texts['heights'])) == 1 and texts['heights'][0] == 14, str(texts))
     # the hint layer (Fibel rule 9): preview mode shows all three, real mode follows Enable + vanilla localStorage
     def notices():
         return apage.evaluate("""() => ({ ff: document.getElementById('epBackdropsNotice').textContent, dv: document.getElementById('epBackdropsVanillaNotice').textContent, lib: document.getElementById('epBackdropsLibraryVanillaNotice').textContent })""")
