@@ -66,7 +66,7 @@ window.ApiClient = { getCurrentUserId: function(){return 'u';}, serverAddress: f
 
 class Scenario:
     def __init__(self, name, items, custom=None, animated=None, extra=None, flags=None,
-                 batch_delay=None, img_delay=None, img_fail=None, extra_opts=None, viewport_rows=2, custom_logo=None):
+                 batch_delay=None, img_delay=None, img_fail=None, extra_opts=None, viewport_rows=2, custom_logo=None, extra_per=None):
         self.name = name
         self.items = items                     # [(id, type)]
         self.custom = custom or {}             # id -> True
@@ -79,6 +79,7 @@ class Scenario:
         self.extra_opts = extra_opts or {}     # DelayEnabled/DelayMs/CycleTimeMs/FadeTimeMs
         self.viewport_rows = viewport_rows
         self.custom_logo = custom_logo         # dict merged into every applicable Custom answer (LogoEnabled/...)
+        self.extra_per = extra_per             # id -> dict merged into that item's Extra answer ('children': True = child-poster URLs)
 
 
 class Stub(BaseHTTPRequestHandler):
@@ -129,8 +130,12 @@ class Stub(BaseHTTPRequestHandler):
             for i in ids:
                 n = sc.extra.get(i, 0)
                 if n:
-                    items[i] = dict({"IsMovie": True, "OrderMode": "Sequential", "CycleTimeMs": 600, "FadeTimeMs": 200, "DelayEnabled": False, "DelayMs": 0, "SinglePass": False, "ResolvedType": "extraposter", "SyncEnabled": False,
-                                     "Posters": [{"FileName": "e%d.jpg" % k, "Version": "1"} for k in range(n)]}, **sc.extra_opts)
+                    per = (sc.extra_per or {}).get(i, {})
+                    posters = [{"FileName": "e%d.jpg" % k, "Version": "1"} for k in range(n)]
+                    if per.get('children'):  # Session 125: child posters carry Jellyfin's own URL
+                        posters = [{"FileName": "c%d" % k, "Version": "1", "Url": "/Items/%s-child%d/Images/Primary?tag=1" % (i, k)} for k in range(n)]
+                    items[i] = dict(dict({"IsMovie": True, "OrderMode": "Sequential", "CycleTimeMs": 600, "FadeTimeMs": 200, "DelayEnabled": False, "DelayMs": 0, "SinglePass": False, "ResolvedType": "extraposter", "SyncEnabled": False,
+                                     "Posters": posters}, **sc.extra_opts), **{k: v for k, v in per.items() if k != 'children'})
                 else:
                     items[i] = {"IsMovie": False, "Posters": []}
             return self._json({"Items": items}, sc.batch_delay.get('extra', 0))
@@ -190,6 +195,9 @@ def run():
         Scenario('S19 sync on: a tile whose next image is late stays and joins the following tick', ROWS5, extra={'t01': 3, 't02': 3, 't03': 3}, img_delay={'t02/image/e1': 1100}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
         Scenario('S20 seamless off: Jellyfin poster first, overlay on top later, tile released at once', ROWS5, extra={'t01': 2}, img_delay={'t01/image/e0': 500}, extra_opts={"SeamlessEnabled": False}, flags={"custom": False, "animated": False, "extra": True, "extraSeamless": False}),
         Scenario('S21 seamless on (flags): held blank until the overlay, never the poster', ROWS5, extra={'t01': 2}, img_delay={'t01/image/e0': 500}, extra_opts={"SeamlessEnabled": True}, flags={"custom": False, "animated": False, "extra": True, "extraSeamless": True}),
+        Scenario('S22 two features, same display duration: one beat (tiles change in the same frame)', ROWS5, extra={'t01': 3, 't02': 3}, extra_per={'t02': {"ResolvedType": "extrakeyart"}}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
+        Scenario('S23 two features, different display duration: own beats', ROWS5, extra={'t01': 3, 't02': 3}, extra_per={'t02': {"ResolvedType": "extrakeyart", "CycleTimeMs": 500}}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
+        Scenario('S24 child posters: the overlay uses the Url entries', ROWS5, extra={'t01': 2}, extra_per={'t01': {'children': True}}),
         Scenario('S16 extrakeyart logo appears with the first overlay image', ROWS5, extra={'t01': 2}, extra_opts={"ResolvedType": "extrakeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 85, "LogoSizePercent": 40, "HasLogo": True}),
     ]
 
@@ -307,6 +315,31 @@ def run():
                     if not poster_first: problems.append("the poster never showed before the overlay (expected with Seamless off)")
                 else:
                     if poster_first: problems.append("poster showed before the overlay although Seamless loading is on")
+            if sc.name.split(' ')[0] in ('S22', 'S23'):
+                page.wait_for_timeout(2600)
+                rec = page.evaluate("window.__rec")
+                def sw(tid):
+                    out, prev = [], None
+                    for smp in rec:
+                        for x in smp['tiles']:
+                            if x['id'] != tid: continue
+                            vis = [l['bg'] for l in x['layers'] if l['op'] > 0.5]
+                            cur = vis[0] if vis else None
+                            if cur and cur != prev and prev is not None: out.append(smp['t'])
+                            if cur: prev = cur
+                    return out
+                s1, s2 = sw('t01'), sw('t02')
+                if len(s1) < 1 or len(s2) < 1: problems.append(f"too few changes: {s1} {s2}")
+                elif sc.name.startswith('S22'):
+                    if not all(any(abs(a - b) < 40 for b in s2) for a in s1): problems.append(f"same duration but not one beat: {s1} vs {s2}")
+                else:
+                    if any(abs(a - b) < 40 for a in s1 for b in s2) and len(s2) >= 2 and not (400 <= s2[1] - s2[0] <= 600): problems.append(f"different durations should not align: {s1} vs {s2}")
+                    if len(s2) >= 2 and not (400 <= s2[1] - s2[0] <= 600): problems.append(f"t02 spacing {s2[1] - s2[0]:.0f}, expected ~500")
+            if sc.name.split(' ')[0] == 'S24':
+                page.wait_for_timeout(500)
+                rec = page.evaluate("window.__rec")
+                t = final_tile(rec, 't01')
+                if not (t and sum(l['op'] for l in t['layers'] if '/Items/t01-child' in l['bg']) > 0.95): problems.append(f"child url not used: {t and t['layers']}")
             if sc.name.split(' ')[0] == 'S19':
                 page.wait_for_timeout(3000)
                 rec = page.evaluate("window.__rec")

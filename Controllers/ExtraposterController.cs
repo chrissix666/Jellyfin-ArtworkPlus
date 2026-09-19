@@ -6,7 +6,9 @@ using System.Text.RegularExpressions;
 using Jellyfin.Plugin.ArtworkPlus.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +43,9 @@ namespace Jellyfin.Plugin.ArtworkPlus.Controllers;
 public class PosterEntry
 {
     public string FileName { get; set; } = string.Empty;
+
+    /// <summary>Session 125: set for child posters (a Set's movies, a series' seasons) - the client uses it instead of the file URL.</summary>
+    public string? Url { get; set; }
 
     public string Version { get; set; } = string.Empty;
 }
@@ -317,7 +322,8 @@ public class ExtraposterController : ControllerBase
     /// </summary>
     private sealed record ExtraViewSettings(
         string OrderMode, bool SinglePass, int CycleTimeMs, int FadeTimeMs, bool DelayEnabled, int DelayMs,
-        bool LogoEnabled, int LogoVerticalPositionPercent, int LogoSizePercent, bool SyncEnabled, bool SeamlessEnabled);
+        bool LogoEnabled, int LogoVerticalPositionPercent, int LogoSizePercent, bool SyncEnabled, bool SeamlessEnabled,
+        string UnnumberedMode, bool SourceFiles, bool SourceChildren, bool ChildrenFirst, bool ChildOrderDescending, bool IncludeSpecials, bool SkipSingleSeason);
 
     private ExtraViewSettings GetViewSettings(PluginConfiguration c, Guid itemId, string resolvedType, bool isLibraryScope)
     {
@@ -329,22 +335,113 @@ public class ExtraposterController : ControllerBase
             if (!tv)
             {
                 return isLibraryScope
-                    ? new ExtraViewSettings(c.ExtraposterMoviesLibraryOrderMode, c.ExtraposterMoviesLibrarySinglePass, c.ExtraposterMoviesLibraryCycleTimeMs, c.ExtraposterMoviesLibraryFadeTimeMs, c.ExtraposterMoviesLibraryDelayEnabled, c.ExtraposterMoviesLibraryDelayMs, false, 0, 0, c.ExtraposterMoviesLibrarySyncEnabled, c.ExtraposterMoviesLibrarySeamlessEnabled)
-                    : new ExtraViewSettings(c.ExtraposterMoviesDetailOrderMode, c.ExtraposterMoviesDetailSinglePass, c.ExtraposterMoviesDetailCycleTimeMs, c.ExtraposterMoviesDetailFadeTimeMs, c.ExtraposterMoviesDetailDelayEnabled, c.ExtraposterMoviesDetailDelayMs, false, 0, 0, false, true);
+                    ? new ExtraViewSettings(c.ExtraposterMoviesLibraryOrderMode, c.ExtraposterMoviesLibrarySinglePass, c.ExtraposterMoviesLibraryCycleTimeMs, c.ExtraposterMoviesLibraryFadeTimeMs, c.ExtraposterMoviesLibraryDelayEnabled, c.ExtraposterMoviesLibraryDelayMs, false, 0, 0, c.ExtraposterMoviesLibrarySyncEnabled, c.ExtraposterMoviesLibrarySeamlessEnabled,
+                        "Ignored", c.ExtraposterMoviesLibrarySourceFiles, c.ExtraposterMoviesLibrarySourceSetPosters, c.ExtraposterMoviesLibrarySourcePriority == "SetPosters", c.ExtraposterMoviesLibrarySetOrder == "Descending", false, false)
+                    : new ExtraViewSettings(c.ExtraposterMoviesDetailOrderMode, c.ExtraposterMoviesDetailSinglePass, c.ExtraposterMoviesDetailCycleTimeMs, c.ExtraposterMoviesDetailFadeTimeMs, c.ExtraposterMoviesDetailDelayEnabled, c.ExtraposterMoviesDetailDelayMs, false, 0, 0, false, true,
+                        "Ignored", c.ExtraposterMoviesDetailSourceFiles, c.ExtraposterMoviesDetailSourceSetPosters, c.ExtraposterMoviesDetailSourcePriority == "SetPosters", c.ExtraposterMoviesDetailSetOrder == "Descending", false, false);
             }
             return isLibraryScope
-                ? new ExtraViewSettings(c.ExtraposterTvShowsLibraryOrderMode, c.ExtraposterTvShowsLibrarySinglePass, c.ExtraposterTvShowsLibraryCycleTimeMs, c.ExtraposterTvShowsLibraryFadeTimeMs, c.ExtraposterTvShowsLibraryDelayEnabled, c.ExtraposterTvShowsLibraryDelayMs, false, 0, 0, c.ExtraposterTvShowsLibrarySyncEnabled, c.ExtraposterTvShowsLibrarySeamlessEnabled)
-                : new ExtraViewSettings(c.ExtraposterTvShowsDetailOrderMode, c.ExtraposterTvShowsDetailSinglePass, c.ExtraposterTvShowsDetailCycleTimeMs, c.ExtraposterTvShowsDetailFadeTimeMs, c.ExtraposterTvShowsDetailDelayEnabled, c.ExtraposterTvShowsDetailDelayMs, false, 0, 0, false, true);
+                ? new ExtraViewSettings(c.ExtraposterTvShowsLibraryOrderMode, c.ExtraposterTvShowsLibrarySinglePass, c.ExtraposterTvShowsLibraryCycleTimeMs, c.ExtraposterTvShowsLibraryFadeTimeMs, c.ExtraposterTvShowsLibraryDelayEnabled, c.ExtraposterTvShowsLibraryDelayMs, false, 0, 0, c.ExtraposterTvShowsLibrarySyncEnabled, c.ExtraposterTvShowsLibrarySeamlessEnabled,
+                        "Ignored", c.ExtraposterTvShowsLibrarySourceFiles, c.ExtraposterTvShowsLibrarySourceSeasonPosters, c.ExtraposterTvShowsLibrarySourcePriority == "SeasonPosters", c.ExtraposterTvShowsLibrarySeasonOrder == "Descending", c.ExtraposterTvShowsLibraryIncludeSpecials, c.ExtraposterTvShowsLibrarySkipSingleSeason)
+                : new ExtraViewSettings(c.ExtraposterTvShowsDetailOrderMode, c.ExtraposterTvShowsDetailSinglePass, c.ExtraposterTvShowsDetailCycleTimeMs, c.ExtraposterTvShowsDetailFadeTimeMs, c.ExtraposterTvShowsDetailDelayEnabled, c.ExtraposterTvShowsDetailDelayMs, false, 0, 0, false, true,
+                        "Ignored", c.ExtraposterTvShowsDetailSourceFiles, c.ExtraposterTvShowsDetailSourceSeasonPosters, c.ExtraposterTvShowsDetailSourcePriority == "SeasonPosters", c.ExtraposterTvShowsDetailSeasonOrder == "Descending", c.ExtraposterTvShowsDetailIncludeSpecials, c.ExtraposterTvShowsDetailSkipSingleSeason);
         }
         if (!tv)
         {
             return isLibraryScope
-                ? new ExtraViewSettings(c.ExtrakeyartMoviesLibraryOrderMode, c.ExtrakeyartMoviesLibrarySinglePass, c.ExtrakeyartMoviesLibraryCycleTimeMs, c.ExtrakeyartMoviesLibraryFadeTimeMs, c.ExtrakeyartMoviesLibraryDelayEnabled, c.ExtrakeyartMoviesLibraryDelayMs, c.ExtrakeyartMoviesLibraryLogoEnabled, c.ExtrakeyartMoviesLibraryLogoVerticalPositionPercent, c.ExtrakeyartMoviesLibraryLogoSizePercent, c.ExtrakeyartMoviesLibrarySyncEnabled, c.ExtrakeyartMoviesLibrarySeamlessEnabled)
-                : new ExtraViewSettings(c.ExtrakeyartMoviesDetailOrderMode, c.ExtrakeyartMoviesDetailSinglePass, c.ExtrakeyartMoviesDetailCycleTimeMs, c.ExtrakeyartMoviesDetailFadeTimeMs, c.ExtrakeyartMoviesDetailDelayEnabled, c.ExtrakeyartMoviesDetailDelayMs, c.ExtrakeyartMoviesDetailLogoEnabled, c.ExtrakeyartMoviesDetailLogoVerticalPositionPercent, c.ExtrakeyartMoviesDetailLogoSizePercent, false, true);
+                ? new ExtraViewSettings(c.ExtrakeyartMoviesLibraryOrderMode, c.ExtrakeyartMoviesLibrarySinglePass, c.ExtrakeyartMoviesLibraryCycleTimeMs, c.ExtrakeyartMoviesLibraryFadeTimeMs, c.ExtrakeyartMoviesLibraryDelayEnabled, c.ExtrakeyartMoviesLibraryDelayMs, c.ExtrakeyartMoviesLibraryLogoEnabled, c.ExtrakeyartMoviesLibraryLogoVerticalPositionPercent, c.ExtrakeyartMoviesLibraryLogoSizePercent, c.ExtrakeyartMoviesLibrarySyncEnabled, c.ExtrakeyartMoviesLibrarySeamlessEnabled,
+                        c.ExtrakeyartMoviesLibraryUnnumberedMode, c.ExtrakeyartMoviesLibrarySourceFiles, c.ExtrakeyartMoviesLibrarySourceSetPosters, c.ExtrakeyartMoviesLibrarySourcePriority == "SetPosters", c.ExtrakeyartMoviesLibrarySetOrder == "Descending", false, false)
+                : new ExtraViewSettings(c.ExtrakeyartMoviesDetailOrderMode, c.ExtrakeyartMoviesDetailSinglePass, c.ExtrakeyartMoviesDetailCycleTimeMs, c.ExtrakeyartMoviesDetailFadeTimeMs, c.ExtrakeyartMoviesDetailDelayEnabled, c.ExtrakeyartMoviesDetailDelayMs, c.ExtrakeyartMoviesDetailLogoEnabled, c.ExtrakeyartMoviesDetailLogoVerticalPositionPercent, c.ExtrakeyartMoviesDetailLogoSizePercent, false, true,
+                        c.ExtrakeyartMoviesDetailUnnumberedMode, c.ExtrakeyartMoviesDetailSourceFiles, c.ExtrakeyartMoviesDetailSourceSetPosters, c.ExtrakeyartMoviesDetailSourcePriority == "SetPosters", c.ExtrakeyartMoviesDetailSetOrder == "Descending", false, false);
         }
         return isLibraryScope
-            ? new ExtraViewSettings(c.ExtrakeyartTvShowsLibraryOrderMode, c.ExtrakeyartTvShowsLibrarySinglePass, c.ExtrakeyartTvShowsLibraryCycleTimeMs, c.ExtrakeyartTvShowsLibraryFadeTimeMs, c.ExtrakeyartTvShowsLibraryDelayEnabled, c.ExtrakeyartTvShowsLibraryDelayMs, c.ExtrakeyartTvShowsLibraryLogoEnabled, c.ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent, c.ExtrakeyartTvShowsLibraryLogoSizePercent, c.ExtrakeyartTvShowsLibrarySyncEnabled, c.ExtrakeyartTvShowsLibrarySeamlessEnabled)
-            : new ExtraViewSettings(c.ExtrakeyartTvShowsDetailOrderMode, c.ExtrakeyartTvShowsDetailSinglePass, c.ExtrakeyartTvShowsDetailCycleTimeMs, c.ExtrakeyartTvShowsDetailFadeTimeMs, c.ExtrakeyartTvShowsDetailDelayEnabled, c.ExtrakeyartTvShowsDetailDelayMs, c.ExtrakeyartTvShowsDetailLogoEnabled, c.ExtrakeyartTvShowsDetailLogoVerticalPositionPercent, c.ExtrakeyartTvShowsDetailLogoSizePercent, false, true);
+            ? new ExtraViewSettings(c.ExtrakeyartTvShowsLibraryOrderMode, c.ExtrakeyartTvShowsLibrarySinglePass, c.ExtrakeyartTvShowsLibraryCycleTimeMs, c.ExtrakeyartTvShowsLibraryFadeTimeMs, c.ExtrakeyartTvShowsLibraryDelayEnabled, c.ExtrakeyartTvShowsLibraryDelayMs, c.ExtrakeyartTvShowsLibraryLogoEnabled, c.ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent, c.ExtrakeyartTvShowsLibraryLogoSizePercent, c.ExtrakeyartTvShowsLibrarySyncEnabled, c.ExtrakeyartTvShowsLibrarySeamlessEnabled,
+                        c.ExtrakeyartTvShowsLibraryUnnumberedMode, true, false, false, false, false, false)
+            : new ExtraViewSettings(c.ExtrakeyartTvShowsDetailOrderMode, c.ExtrakeyartTvShowsDetailSinglePass, c.ExtrakeyartTvShowsDetailCycleTimeMs, c.ExtrakeyartTvShowsDetailFadeTimeMs, c.ExtrakeyartTvShowsDetailDelayEnabled, c.ExtrakeyartTvShowsDetailDelayMs, c.ExtrakeyartTvShowsDetailLogoEnabled, c.ExtrakeyartTvShowsDetailLogoVerticalPositionPercent, c.ExtrakeyartTvShowsDetailLogoSizePercent, false, true,
+                        c.ExtrakeyartTvShowsDetailUnnumberedMode, true, false, false, false, false, false);
+    }
+
+
+    // =====================================================================
+    // Session 125: child posters as a slideshow source - a Set's movies
+    // (release-date order, Jellyfin's own PremiereDateComparer rule) or a
+    // series' seasons (season number; specials optional and always first;
+    // a single usable season poster counts as "nothing" when SkipSingle-
+    // Season is on). Only children with a Primary image count. The client
+    // gets Jellyfin's own image URL per child (PosterEntry.Url).
+    // =====================================================================
+
+    private static DateTime PremiereSortDate(BaseItem x)
+    {
+        if (x.PremiereDate.HasValue) { return x.PremiereDate.Value; }
+        if (x.ProductionYear.HasValue)
+        {
+            try { return new DateTime(x.ProductionYear.Value, 1, 1, 0, 0, 0, DateTimeKind.Utc); }
+            catch (ArgumentOutOfRangeException) { /* bad year - sorts first, like Jellyfin */ }
+        }
+        return DateTime.MinValue;
+    }
+
+    private static PosterEntry ChildEntry(BaseItem child)
+    {
+        var info = child.GetImageInfo(ImageType.Primary, 0);
+        var tag = info is null ? "0" : info.DateModified.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return new PosterEntry
+        {
+            FileName = child.Id.ToString("N"),
+            Version = tag,
+            Url = "/Items/" + child.Id.ToString("N") + "/Images/Primary?tag=" + tag + "&maxWidth=800"
+        };
+    }
+
+    private List<PosterEntry> ResolveChildPosters(BaseItem item, ExtraViewSettings view)
+    {
+        if (item is BoxSet boxSet)
+        {
+            var movies = boxSet.GetLinkedChildren().Where(c => c.HasImage(ImageType.Primary, 0)).ToList();
+            var ordered = view.ChildOrderDescending
+                ? movies.OrderByDescending(PremiereSortDate).ToList()
+                : movies.OrderBy(PremiereSortDate).ToList();
+            return ordered.Select(ChildEntry).ToList();
+        }
+        if (item is Series series)
+        {
+            var seasons = series.Children.OfType<Season>().Where(x => x.HasImage(ImageType.Primary, 0)).ToList();
+            var specials = seasons.Where(x => (x.IndexNumber ?? 0) == 0).ToList();
+            var regular = seasons.Where(x => (x.IndexNumber ?? 0) != 0).ToList();
+            regular = view.ChildOrderDescending
+                ? regular.OrderByDescending(x => x.IndexNumber ?? 0).ToList()
+                : regular.OrderBy(x => x.IndexNumber ?? 0).ToList();
+            var usable = view.IncludeSpecials ? specials.Concat(regular).ToList() : regular;
+            if (view.SkipSingleSeason && usable.Count <= 1) { return new List<PosterEntry>(); }
+            return usable.Select(ChildEntry).ToList();
+        }
+        return new List<PosterEntry>();
+    }
+
+    /// <summary>
+    /// The slideshow entries of an item for one view: the preferred source,
+    /// the other one only when the preferred one has nothing (Priority =
+    /// fallback, the plugin's usual meaning). Files keep their FileName
+    /// (served by GetPosterImage), children carry Jellyfin's own Url.
+    /// </summary>
+    private List<PosterEntry> ResolveEntries(Guid itemId, PluginConfiguration config, string resolvedType, bool isLibraryScope,
+        string folderPath, string namingMode, string folderName, ExtraViewSettings view)
+    {
+        List<PosterEntry> files = new();
+        if (view.SourceFiles)
+        {
+            var candidates = ResolveCandidates(folderPath, namingMode, folderName, view.OrderMode, config.AllowedFormats, resolvedType, view.UnnumberedMode);
+            files = BuildPosterEntries(folderPath, candidates);
+        }
+        List<PosterEntry> children = new();
+        if (view.SourceChildren)
+        {
+            var item = _libraryManager.GetItemById(itemId);
+            if (item is not null) { children = ResolveChildPosters(item, view); }
+        }
+        if (view.ChildrenFirst) { return children.Count > 0 ? children : files; }
+        return files.Count > 0 ? files : children;
     }
 
     private static string NormalizeType(string? type)
@@ -383,10 +480,9 @@ public class ExtraposterController : ControllerBase
             var (explicitApplicable, explicitFolderPath, explicitNamingMode, explicitFolderName) = ResolveApplicability(itemId, config, requestedType, isLibraryScope);
             if (!explicitApplicable || explicitFolderPath is null) { return null; }
 
-            var explicitAllowedFormats = config.AllowedFormats;
-            var explicitOrderMode = GetViewSettings(config, itemId, requestedType, isLibraryScope).OrderMode;
-            var explicitCandidates = ResolveCandidates(explicitFolderPath, explicitNamingMode, explicitFolderName, explicitOrderMode, explicitAllowedFormats, requestedType, config.ExtrakeyartUnnumberedMode);
-            return explicitCandidates.Count > 0 ? requestedType : null;
+            var explicitView = GetViewSettings(config, itemId, requestedType, isLibraryScope);
+            var explicitEntries = ResolveEntries(itemId, config, requestedType, isLibraryScope, explicitFolderPath, explicitNamingMode, explicitFolderName, explicitView);
+            return explicitEntries.Count > 0 ? requestedType : null;
         }
 
         var order = string.Equals(config.ExtraposterPriority, "Extrakeyart", StringComparison.OrdinalIgnoreCase)
@@ -398,10 +494,8 @@ public class ExtraposterController : ControllerBase
             var (applicable, folderPath, namingMode, folderName) = ResolveApplicability(itemId, config, candidateType, isLibraryScope);
             if (!applicable || folderPath is null) { continue; }
 
-            var allowedFormats = config.AllowedFormats; // CHANGED: shared, tab-level now (explicit user request), no longer per-sub
-            var orderMode = GetViewSettings(config, itemId, candidateType, isLibraryScope).OrderMode;
-            var candidates = ResolveCandidates(folderPath, namingMode, folderName, orderMode, allowedFormats, candidateType, config.ExtrakeyartUnnumberedMode);
-            if (candidates.Count > 0) { return candidateType; }
+            var candidateView = GetViewSettings(config, itemId, candidateType, isLibraryScope);
+            if (ResolveEntries(itemId, config, candidateType, isLibraryScope, folderPath, namingMode, folderName, candidateView).Count > 0) { return candidateType; }
         }
 
         return null;
@@ -456,7 +550,7 @@ public class ExtraposterController : ControllerBase
             var delayEnabled = view.DelayEnabled;
             var delayMs = view.DelayMs;
 
-            var candidates = ResolveCandidates(folderPath, namingMode, folderName, orderMode, allowedFormats, resolvedType, config.ExtrakeyartUnnumberedMode);
+            var candidates = ResolveEntries(itemId, config, resolvedType, isLibraryScope: false, folderPath, namingMode, folderName, view);
             var hasAny = candidates.Count > 0;
             _logger.LogInformation(
                 "Extraposter: GetQuickCheck for {ItemId} -> IsApplicable={HasAny} ({Count} candidate(s), ResolvedType={ResolvedType}, DelayEnabled={DelayEnabled}, Delay={Delay})",
@@ -543,7 +637,8 @@ public class ExtraposterController : ControllerBase
                 return StatusCode(StatusCodes.Status304NotModified);
             }
 
-            var candidates = ResolveCandidates(folderPath, namingMode, folderName, orderMode, allowedFormats, resolvedType, config.ExtrakeyartUnnumberedMode);
+            var entries = ResolveEntries(itemId, config, resolvedType, isLibraryScope: false, folderPath, namingMode, folderName, view);
+            var candidates = entries.Select(e => e.Url ?? e.FileName).ToList();
 
             // A defensive safeguard, in addition to the live clamping in
             // the config page itself (curriculum A.6) - in case, e.g., an
@@ -574,7 +669,7 @@ public class ExtraposterController : ControllerBase
             {
                 IsMovie = true,
                 OrderMode = orderMode,
-                Posters = BuildPosterEntries(folderPath, candidates),
+                Posters = entries,
                 CycleTimeMs = cycleTimeMs,
                 FadeTimeMs = effectiveFadeMs,
                 DelayEnabled = delayEnabled,
@@ -736,7 +831,7 @@ public class ExtraposterController : ControllerBase
         var isExtrakeyart = resolvedType == "extrakeyart";
         var allowedFormats = config.AllowedFormats;
         var view = GetViewSettings(config, itemId, resolvedType, isLibraryScope: true);
-        var candidates = ResolveCandidates(folderPath, namingMode, folderName, view.OrderMode, allowedFormats, resolvedType, config.ExtrakeyartUnnumberedMode);
+        var entries = ResolveEntries(itemId, config, resolvedType, isLibraryScope: true, folderPath, namingMode, folderName, view);
         var effectiveFade = Math.Min(view.FadeTimeMs, view.CycleTimeMs);
         var logoEnabled = isExtrakeyart && view.LogoEnabled;
 
@@ -744,7 +839,7 @@ public class ExtraposterController : ControllerBase
         {
             IsMovie = true, // the field name is historically "IsMovie", here it means "is a valid, enabled item"
             OrderMode = view.OrderMode,
-            Posters = BuildPosterEntries(folderPath, candidates),
+            Posters = entries,
             CycleTimeMs = view.CycleTimeMs,
             FadeTimeMs = effectiveFade,
             DelayEnabled = view.DelayEnabled,
@@ -866,7 +961,10 @@ public class ExtraposterController : ControllerBase
                 // order - and this endpoint checks membership only (Session 123:
                 // the order is per view, the image URL carries no scope).
                 var allowedFormats = config.AllowedFormats; // CHANGED: shared, tab-level now (explicit user request), no longer per-sub
-                candidates = ResolveCandidates(folderPath, namingMode, folderName, "Sequential", allowedFormats, resolvedType, config.ExtrakeyartUnnumberedMode);
+                // Session 125: Unnumbered mode is per view - serve the unnumbered file when any view counts it.
+                var unnumbered = isExtrakeyart && (config.ExtrakeyartMoviesDetailUnnumberedMode == "Counts" || config.ExtrakeyartMoviesLibraryUnnumberedMode == "Counts"
+                    || config.ExtrakeyartTvShowsDetailUnnumberedMode == "Counts" || config.ExtrakeyartTvShowsLibraryUnnumberedMode == "Counts") ? "Counts" : "Ignored";
+                candidates = ResolveCandidates(folderPath, namingMode, folderName, "Sequential", allowedFormats, resolvedType, unnumbered);
             }
 
             if (folderPath is null || candidates is null)

@@ -1543,6 +1543,7 @@
             posterArbiterSyncLogo(coord);
 
             var imageUrls = listResponse.Posters.map(function (entry) {
+                if (entry.Url) { return entry.Url; } // Session 125: a child poster (Set movie / season) - Jellyfin's own image
                 return '/Extraposter/' + encodeURIComponent(itemId) + '/image/' + encodeURIComponent(entry.FileName)
                     + '?type=' + encodeURIComponent(listResponse.ResolvedType) + '&v=' + encodeURIComponent(entry.Version);
             });
@@ -1714,6 +1715,7 @@
             var resolvedType = result.ResolvedType || 'extraposter';
             return {
                 urls: result.Posters.map(function (entry) {
+                    if (entry.Url) { return entry.Url; } // Session 125: child poster
                     return '/Extraposter/' + encodeURIComponent(itemId) + '/image/' + encodeURIComponent(entry.FileName)
                         + '?type=' + encodeURIComponent(resolvedType) + '&v=' + encodeURIComponent(entry.Version);
                 }),
@@ -1848,7 +1850,11 @@
         var clocks = {}; // key -> { periodMs, epoch, timer, n }
         window.__artworkPlusExtraClocks = clocks; // diagnostics only
 
-        function clockKey(tile) { return tile.resolvedType + '|' + tile.type; }
+        // Session 125 (user decision): one beat per (tile type, Display
+        // duration) - Extraposter and Extrakeyart tiles with the same
+        // duration share a clock and change together; different durations
+        // run their own clocks, deliberately.
+        function clockKey(tile) { return tile.type + '|' + tile.cycleMs; }
 
         // The next image is fetched right after every change and its
         // arrival is recorded as a flag - a change only ever happens with a

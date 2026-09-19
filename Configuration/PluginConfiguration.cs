@@ -821,6 +821,19 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
     public bool ExtraposterMoviesDetailShowOnSets { get; set; } = true;
 
+    // ----- Sources (Session 125): the slideshow of a Set can also be the posters of its movies.
+    /// <summary>Source "Files": the extraposter files of the item itself.</summary>
+    public bool ExtraposterMoviesDetailSourceFiles { get; set; } = true;
+
+    /// <summary>Source "Set movie posters": for a Set, the primary posters of the movies it contains (never the Set's own poster).</summary>
+    public bool ExtraposterMoviesDetailSourceSetPosters { get; set; } = false;
+
+    /// <summary>Files | SetPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
+    public string ExtraposterMoviesDetailSourcePriority { get; set; } = "Files";
+
+    /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
+    public string ExtraposterMoviesDetailSetOrder { get; set; } = "Ascending";
+
     public string ExtraposterMoviesDetailOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -847,6 +860,19 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
     public bool ExtraposterMoviesLibraryShowOnSets { get; set; } = true;
+
+    // ----- Sources (Session 125): the slideshow of a Set can also be the posters of its movies.
+    /// <summary>Source "Files": the extraposter files of the item itself.</summary>
+    public bool ExtraposterMoviesLibrarySourceFiles { get; set; } = true;
+
+    /// <summary>Source "Set movie posters": for a Set, the primary posters of the movies it contains (never the Set's own poster).</summary>
+    public bool ExtraposterMoviesLibrarySourceSetPosters { get; set; } = false;
+
+    /// <summary>Files | SetPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
+    public string ExtraposterMoviesLibrarySourcePriority { get; set; } = "Files";
+
+    /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
+    public string ExtraposterMoviesLibrarySetOrder { get; set; } = "Ascending";
 
     public string ExtraposterMoviesLibraryOrderMode { get; set; } = "Sequential";
 
@@ -878,6 +904,25 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Show on TV shows in this view (Session 124: Show-on lives per view).</summary>
     public bool ExtraposterTvShowsDetailShowOnTvShows { get; set; } = true;
 
+    // ----- Sources (Session 125): the slideshow of a series can also be its season posters (Extraposter only).
+    /// <summary>Source "Files": the extraposter files of the series itself.</summary>
+    public bool ExtraposterTvShowsDetailSourceFiles { get; set; } = true;
+
+    /// <summary>Source "Season posters": the primary posters of the series' seasons (never the series' own poster).</summary>
+    public bool ExtraposterTvShowsDetailSourceSeasonPosters { get; set; } = false;
+
+    /// <summary>Files | SeasonPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
+    public string ExtraposterTvShowsDetailSourcePriority { get; set; } = "Files";
+
+    /// <summary>Ascending | Descending - season number order.</summary>
+    public string ExtraposterTvShowsDetailSeasonOrder { get; set; } = "Ascending";
+
+    /// <summary>Season 0 (specials) included, always first.</summary>
+    public bool ExtraposterTvShowsDetailIncludeSpecials { get; set; } = false;
+
+    /// <summary>A series with only one season poster gets no season slideshow (falls back to the other source).</summary>
+    public bool ExtraposterTvShowsDetailSkipSingleSeason { get; set; } = true;
+
     public string ExtraposterTvShowsDetailOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -901,6 +946,25 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
     /// <summary>Show on TV shows in this view (Session 124: Show-on lives per view).</summary>
     public bool ExtraposterTvShowsLibraryShowOnTvShows { get; set; } = true;
+
+    // ----- Sources (Session 125): the slideshow of a series can also be its season posters (Extraposter only).
+    /// <summary>Source "Files": the extraposter files of the series itself.</summary>
+    public bool ExtraposterTvShowsLibrarySourceFiles { get; set; } = true;
+
+    /// <summary>Source "Season posters": the primary posters of the series' seasons (never the series' own poster).</summary>
+    public bool ExtraposterTvShowsLibrarySourceSeasonPosters { get; set; } = false;
+
+    /// <summary>Files | SeasonPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
+    public string ExtraposterTvShowsLibrarySourcePriority { get; set; } = "Files";
+
+    /// <summary>Ascending | Descending - season number order.</summary>
+    public string ExtraposterTvShowsLibrarySeasonOrder { get; set; } = "Ascending";
+
+    /// <summary>Season 0 (specials) included, always first.</summary>
+    public bool ExtraposterTvShowsLibraryIncludeSpecials { get; set; } = false;
+
+    /// <summary>A series with only one season poster gets no season slideshow (falls back to the other source).</summary>
+    public bool ExtraposterTvShowsLibrarySkipSingleSeason { get; set; } = true;
 
     public string ExtraposterTvShowsLibraryOrderMode { get; set; } = "Sequential";
 
@@ -951,17 +1015,6 @@ public class PluginConfiguration : BasePluginConfiguration
     // tab-level AllowedFormats above (explicit user request - detached
     // from both Extraposter and Extrakeyart, now covers both).
 
-    /// <summary>
-    /// "Counts" or "Ignored". Whether the unnumbered file (e.g.
-    /// "keyart.jpg", no "1"/"2"/... suffix) is picked up as the
-    /// first image in the rotation, or ignored entirely (only explicitly
-    /// numbered files, starting at 1, are ever found). Default "Ignored"
-    /// matches the pre-existing behavior exactly - this file search never
-    /// looked for an unnumbered variant before this field existed, so an
-    /// upgrade must not silently start picking one up.
-    /// </summary>
-    public string ExtrakeyartUnnumberedMode { get; set; } = "Ignored";
-
     public string ExtrakeyartMoviesNamingMode { get; set; } = "Prefixed";
 
     public string ExtrakeyartMoviesFolderName { get; set; } = "keyart";
@@ -988,7 +1041,23 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
     public bool ExtrakeyartMoviesDetailShowOnSets { get; set; } = true;
 
+    // ----- Sources (Session 125): the slideshow of a Set can also be the posters of its movies.
+    /// <summary>Source "Files": the extraposter files of the item itself.</summary>
+    public bool ExtrakeyartMoviesDetailSourceFiles { get; set; } = true;
+
+    /// <summary>Source "Set movie posters": for a Set, the primary posters of the movies it contains (never the Set's own poster).</summary>
+    public bool ExtrakeyartMoviesDetailSourceSetPosters { get; set; } = false;
+
+    /// <summary>Files | SetPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
+    public string ExtrakeyartMoviesDetailSourcePriority { get; set; } = "Files";
+
+    /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
+    public string ExtrakeyartMoviesDetailSetOrder { get; set; } = "Ascending";
+
     public string ExtrakeyartMoviesDetailOrderMode { get; set; } = "Sequential";
+    /// <summary>Ignored | Counts - whether a file without a number (keyart.jpg) is picked up as the first image (Session 125: per view).</summary>
+    public string ExtrakeyartMoviesDetailUnnumberedMode { get; set; } = "Ignored";
+
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtrakeyartMoviesDetailSinglePass { get; set; } = false;
@@ -1024,7 +1093,23 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
     public bool ExtrakeyartMoviesLibraryShowOnSets { get; set; } = true;
 
+    // ----- Sources (Session 125): the slideshow of a Set can also be the posters of its movies.
+    /// <summary>Source "Files": the extraposter files of the item itself.</summary>
+    public bool ExtrakeyartMoviesLibrarySourceFiles { get; set; } = true;
+
+    /// <summary>Source "Set movie posters": for a Set, the primary posters of the movies it contains (never the Set's own poster).</summary>
+    public bool ExtrakeyartMoviesLibrarySourceSetPosters { get; set; } = false;
+
+    /// <summary>Files | SetPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
+    public string ExtrakeyartMoviesLibrarySourcePriority { get; set; } = "Files";
+
+    /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
+    public string ExtrakeyartMoviesLibrarySetOrder { get; set; } = "Ascending";
+
     public string ExtrakeyartMoviesLibraryOrderMode { get; set; } = "Sequential";
+    /// <summary>Ignored | Counts - whether a file without a number (keyart.jpg) is picked up as the first image (Session 125: per view).</summary>
+    public string ExtrakeyartMoviesLibraryUnnumberedMode { get; set; } = "Ignored";
+
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtrakeyartMoviesLibrarySinglePass { get; set; } = false;
@@ -1048,7 +1133,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public int ExtrakeyartMoviesLibraryLogoVerticalPositionPercent { get; set; } = 87;
 
     /// <summary>Logo width as a percentage of the poster box width.</summary>
-    public int ExtrakeyartMoviesLibraryLogoSizePercent { get; set; } = 60;
+    public int ExtrakeyartMoviesLibraryLogoSizePercent { get; set; } = 80;
 
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtrakeyartMoviesLibrarySyncEnabled { get; set; } = true;
@@ -1064,6 +1149,9 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ExtrakeyartTvShowsDetailShowOnTvShows { get; set; } = true;
 
     public string ExtrakeyartTvShowsDetailOrderMode { get; set; } = "Sequential";
+    /// <summary>Ignored | Counts - whether a file without a number (keyart.jpg) is picked up as the first image (Session 125: per view).</summary>
+    public string ExtrakeyartTvShowsDetailUnnumberedMode { get; set; } = "Ignored";
+
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtrakeyartTvShowsDetailSinglePass { get; set; } = false;
@@ -1097,6 +1185,9 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ExtrakeyartTvShowsLibraryShowOnTvShows { get; set; } = true;
 
     public string ExtrakeyartTvShowsLibraryOrderMode { get; set; } = "Sequential";
+    /// <summary>Ignored | Counts - whether a file without a number (keyart.jpg) is picked up as the first image (Session 125: per view).</summary>
+    public string ExtrakeyartTvShowsLibraryUnnumberedMode { get; set; } = "Ignored";
+
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtrakeyartTvShowsLibrarySinglePass { get; set; } = false;
@@ -1120,7 +1211,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public int ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent { get; set; } = 87;
 
     /// <summary>Logo width as a percentage of the poster box width.</summary>
-    public int ExtrakeyartTvShowsLibraryLogoSizePercent { get; set; } = 60;
+    public int ExtrakeyartTvShowsLibraryLogoSizePercent { get; set; } = 80;
 
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtrakeyartTvShowsLibrarySyncEnabled { get; set; } = true;

@@ -1025,6 +1025,47 @@ with sync_playwright() as p:
     check('SPLIT: one view back on un-greys the tab button', tab_grey is False, str(tab_grey))
     apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
     apage.wait_for_timeout(150)
+    # ─── Session 125: sources per view (Files / child posters), priority auto-grey, Unnumbered per view ───
+    apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
+    apage.wait_for_timeout(150)
+    apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="extraposter"]').click(); }""")
+    for feature in ['Extraposter', 'Extrakeyart']:
+        for view in ['Detail', 'Library']:
+            p_ = feature + 'Movies' + view
+            # defaults: Files on, Set posters off -> Priority greyed (only one source), value Files
+            check(f'SRC: {p_} Priority greyed with a single source', agreyed(p_ + 'SourcePriorityRow') is True)
+            aset(p_ + 'SourceSetPosters', True)
+            check(f'SRC: {p_} Priority active with both sources', agreyed(p_ + 'SourcePriorityRow') is False)
+            aset(p_ + 'SourceFiles', False)
+            val = apage.evaluate("(id) => document.getElementById(id).value", p_ + 'SourcePriority')
+            check(f'SRC: {p_} Priority shows the remaining source', val == 'SetPosters' and agreyed(p_ + 'SourcePriorityRow') is True, val)
+            aset(p_ + 'SourceSetPosters', False)
+            en = apage.evaluate("(id) => document.getElementById(id).checked", p_ + 'Enabled')
+            check(f'SRC: {p_} no source left switches the view off', en is False, str(en))
+            aset(p_ + 'SourceFiles', True); aset(p_ + 'Enabled', True)
+            # Sets unchecked -> the three Set rows grey, the block stays
+            aset(p_ + 'ShowOnSets', False)
+            check(f'SRC: {p_} Sets off greys the Set rows', agreyed(p_ + 'SourcesRow') is True and agreyed(p_ + 'SetOrderRow') is True)
+            check(f'SRC: {p_} Sets off leaves Order alone', agreyed(p_ + 'OrderMode') is False)
+            aset(p_ + 'ShowOnSets', True)
+            check(f'SRC: {p_} Sets back on un-greys the Set rows', agreyed(p_ + 'SourcesRow') is False)
+            if feature == 'Extrakeyart':
+                un = apage.evaluate("(id) => !!document.getElementById(id)", p_ + 'UnnumberedMode')
+                check(f'SRC: {p_} has its own Unnumbered file field', un is True)
+    for view in ['Detail', 'Library']:
+        p_ = 'ExtraposterTvShows' + view
+        check(f'SRC: {p_} Priority greyed with a single source', agreyed(p_ + 'SourcePriorityRow') is True)
+        aset(p_ + 'SourceSeasonPosters', True)
+        check(f'SRC: {p_} Priority active with both sources', agreyed(p_ + 'SourcePriorityRow') is False)
+        aset(p_ + 'SourceSeasonPosters', False)
+        for k in ['SeasonOrder', 'IncludeSpecials', 'SkipSingleSeason']:
+            ok = apage.evaluate("(id) => !!document.getElementById(id)", p_ + k)
+            check(f'SRC: {p_}{k} exists', ok is True)
+    no_tv_keyart = apage.evaluate("() => !document.getElementById('ExtrakeyartTvShowsDetailSourceFiles') && !document.getElementById('ExtrakeyartUnnumberedMode')")
+    check('SRC: Extrakeyart TV blocks have no season sources; feature-level Unnumbered field is gone', no_tv_keyart is True)
+    apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
+    apage.wait_for_timeout(150)
+
     # Keyart (Custom Poster): logo per view
     apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="customposter"]').click(); }""")
     for view in ['Detail', 'Library']:

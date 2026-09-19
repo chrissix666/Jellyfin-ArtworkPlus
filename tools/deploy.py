@@ -91,6 +91,12 @@ def deploy_plugin():
         + (f", stale in target: {extra}" if extra else "") + ")")
 
 
+def fail(reason):
+    """Every exit path prints a RESULT line - a caller waiting for it must never hang."""
+    say("RESULT FAILED - " + reason)
+    sys.exit(1)
+
+
 def wait(cond, secs, what):
     for i in range(secs):
         if cond():
@@ -101,19 +107,70 @@ def wait(cond, secs, what):
     return False
 
 
+def _find_tray_button(d):
+    """The Jellyfin tray icon - in the visible tray, or behind the overflow
+    chevron ("Ausgeblendete Symbole einblenden"), which is opened on demand."""
+    tb = d.window(class_name="Shell_TrayWnd")
+    for b in tb.descendants(control_type="Button"):
+        if b.window_text().strip() == "Jellyfin":
+            return b
+    for b in tb.descendants(control_type="Button"):
+        if "Ausgeblendete Symbole" in b.window_text() or "hidden icons" in b.window_text().lower():
+            b.click_input()
+            time.sleep(0.8)
+            break
+    for w in d.windows():
+        for b in w.descendants(control_type="Button"):
+            if b.window_text().strip() == "Jellyfin":
+                return b
+    raise LookupError("Jellyfin tray icon not found (visible tray or overflow)")
+
+
 def tray_start():
+    """Deploy #30: the click raised ElementNotFoundError twice in a row and
+    the run died without a RESULT line. Now: the icon is looked up freshly
+    each time (overflow included), the menu item is searched across all
+    windows, and the whole thing is retried a few times quickly."""
     from pywinauto import Desktop, mouse
     d = Desktop(backend="uia")
-    tb = d.window(class_name="Shell_TrayWnd")
-    btn = tb.child_window(title=" Jellyfin", control_type="Button").wrapper_object()
-    p = btn.rectangle().mid_point()
-    mouse.right_click(coords=(p.x, p.y))
-    time.sleep(0.8)
-    menu = d.window(class_name_re="WindowsForms10.Window.*")
-    item = menu.child_window(title="Start Jellyfin", control_type="MenuItem").wrapper_object()
-    q = item.rectangle().mid_point()
-    mouse.click(coords=(q.x, q.y))
-    say("tray menu: Start Jellyfin clicked")
+    last = None
+    for attempt in range(1, 5):
+        try:
+            btn = _find_tray_button(d)
+            p = btn.rectangle().mid_point()
+            mouse.right_click(coords=(p.x, p.y))
+            item = None
+            # The context menu needs a moment to exist (deploy #31: the first
+            # two lookups came too early) - poll for it up to 3 s.
+            for _ in range(15):
+                time.sleep(0.2)
+                for w in d.windows():
+                    try:
+                        cands = w.descendants(control_type="MenuItem", title="Start Jellyfin")
+                    except Exception:  # noqa: BLE001
+                        cands = []
+                    if cands:
+                        item = cands[0]
+                        break
+                if item is not None:
+                    break
+            if item is None:
+                mouse.press(coords=(1, 1)); mouse.release(coords=(1, 1))  # close a stray menu
+                raise LookupError("menu item 'Start Jellyfin' not found")
+            q = item.rectangle().mid_point()
+            mouse.click(coords=(q.x, q.y))
+            say(f"tray menu: Start Jellyfin clicked (attempt {attempt})")
+            if wait(jellyfin_running, 12, "jellyfin.exe running"):
+                return True
+            last = "clicked, but the process did not appear"
+        except Exception as e:  # noqa: BLE001
+            last = f"{type(e).__name__}: {e}"
+            say(f"tray attempt {attempt} failed - {last}")
+            time.sleep(2)
+        if jellyfin_running():
+            return True
+    say(f"tray start gave up after 4 attempts ({last})")
+    return False
 
 
 def log_check():
@@ -139,28 +196,15 @@ def main():
     # May be started before the API shutdown is even sent (the caller
     # fires it from the browser in parallel): wait for the process to go.
     if not wait(lambda: not jellyfin_running(), 120, "jellyfin.exe exited"):
-        sys.exit(1)
+        fail("jellyfin.exe did not exit within 120 s (was the API shutdown sent?)")
     deploy_plugin()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     for name in SCRIPTS:
         shutil.copy2(ROOT / name, DATA_DIR / name)
-    # Deploy #9: the tray menu click sometimes raises after the click
-    # already landed (menu closes before pywinauto confirms the item).
-    # Never abort on that - check whether the server is coming up anyway.
-    try:
-        tray_start()
-    except Exception as e:  # noqa: BLE001
-        say(f"tray click raised {type(e).__name__} - checking whether the server started anyway")
-    if not wait(jellyfin_running, 15, "jellyfin.exe running"):
-        say("server not running - retrying the tray menu once")
-        try:
-            tray_start()
-        except Exception as e:  # noqa: BLE001
-            say(f"second tray attempt raised {type(e).__name__}")
-        if not wait(jellyfin_running, 15, "jellyfin.exe running"):
-            sys.exit(1)
+    if not tray_start():
+        fail("server not started - start Jellyfin from the tray by hand, the files are deployed")
     if not wait(lambda: http("/System/Info/Public")[0] == 200, 90, "API up"):
-        sys.exit(1)
+        fail("API did not come up within 90 s")
     wait(lambda: 'Loaded plugin: "ArtworkPlus"' in LOG.read_text(encoding="utf-8", errors="replace")[-200000:], 20, "plugin load line in log")
     ok = log_check()
     ok &= deploy_scripts()
