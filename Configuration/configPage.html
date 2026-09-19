@@ -7816,6 +7816,10 @@
                 [['ExtrakeyartMoviesLibraryShowOnMovies', 'ExtrakeyartMoviesLibraryShowOnSets'], 'ExtrakeyartMoviesLibraryEnabled'],
                 [['ExtrakeyartTvShowsDetailShowOnTvShows'], 'ExtrakeyartTvShowsDetailEnabled'],
                 [['ExtrakeyartTvShowsLibraryShowOnTvShows'], 'ExtrakeyartTvShowsLibraryEnabled'],
+                // Session 127: all four views of a feature off -> the feature Enable unticks itself (one way,
+                // same helper; a view switched off by its own empty Show-on chains into this through its change event).
+                [['ExtraposterMoviesDetailEnabled', 'ExtraposterMoviesLibraryEnabled', 'ExtraposterTvShowsDetailEnabled', 'ExtraposterTvShowsLibraryEnabled'], 'ExtraposterEnabled'],
+                [['ExtrakeyartMoviesDetailEnabled', 'ExtrakeyartMoviesLibraryEnabled', 'ExtrakeyartTvShowsDetailEnabled', 'ExtrakeyartTvShowsLibraryEnabled'], 'ExtrakeyartEnabled'],
                 // Session 30 (user-reported gap): Backdrops was missing
                 // entirely from Session 29's original wiring - the only
                 // one of five structurally identical Enable+Show-on

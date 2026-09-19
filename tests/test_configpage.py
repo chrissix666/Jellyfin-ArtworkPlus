@@ -1017,12 +1017,16 @@ with sync_playwright() as p:
                 aset(feature + typ + view + 'Enabled', False)
     tab_grey = apage.evaluate("""() => document.querySelector('.epTabBtn[data-tab="extraposter"]').classList.contains('epTabGreyed')""")
     check('SPLIT: Extraposter tab button greys when every view of every type is off', tab_grey is True, str(tab_grey))
-    # no cascade from the view enables upwards any more (Session 124: the feature Enable is the user's own switch)
-    en = apage.evaluate("() => document.getElementById('ExtraposterEnabled').checked")
-    check('SPLIT: view enables off leave the feature Enable alone', en is True, str(en))
+    # Session 127 (reverses Session 124's "feature Enable is the user's own switch" in the off direction):
+    # all four views off -> the feature Enable unticks itself; a view back on does NOT re-check it (one way)
+    en = apage.evaluate("() => [document.getElementById('ExtraposterEnabled').checked, document.getElementById('ExtrakeyartEnabled').checked]")
+    check('SPLIT: all views off untick both feature Enables', en == [False, False], str(en))
     aset('ExtrakeyartTvShowsLibraryEnabled', True)
     tab_grey = apage.evaluate("""() => document.querySelector('.epTabBtn[data-tab="extraposter"]').classList.contains('epTabGreyed')""")
-    check('SPLIT: one view back on un-greys the tab button', tab_grey is False, str(tab_grey))
+    check('SPLIT: one view back on alone keeps the tab button grey (feature Enable still off, one way)', tab_grey is True, str(tab_grey))
+    aset('ExtrakeyartEnabled', True)
+    tab_grey = apage.evaluate("""() => document.querySelector('.epTabBtn[data-tab="extraposter"]').classList.contains('epTabGreyed')""")
+    check('SPLIT: feature Enable back on un-greys the tab button', tab_grey is False, str(tab_grey))
     apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
     apage.wait_for_timeout(150)
     # ─── Session 125 (final model): Set priority / Season priority with four values, no Sources row ───
@@ -1147,6 +1151,24 @@ with sync_playwright() as p:
         st = hdr_state()
         check(f'S127: {key} header back to normal when a view returns', st['hdr'] is False, str(st))
         aset(pre + 'DetailEnabled', True)
+    # Session 127: all four views off -> feature Enable unticks (one way); chained from an empty Show-on
+    for feat in ['Extraposter', 'Extrakeyart']:
+        views = [feat + v for v in ['MoviesDetail', 'MoviesLibrary', 'TvShowsDetail', 'TvShowsLibrary']]
+        aset(feat + 'Enabled', True)
+        for v in views[:3]: aset(v + 'Enabled', False)
+        check(f'S127: {feat} Enable stays on with one view left', apage.evaluate("(id) => document.getElementById(id).checked", feat + 'Enabled') is True)
+        aset(views[3] + 'Enabled', False)
+        check(f'S127: {feat} Enable unticks when the fourth view goes off', apage.evaluate("(id) => document.getElementById(id).checked", feat + 'Enabled') is False)
+        aset(views[0] + 'Enabled', True)
+        check(f'S127: {feat} Enable stays off when a view returns (one way)', apage.evaluate("(id) => document.getElementById(id).checked", feat + 'Enabled') is False)
+        aset(feat + 'Enabled', True)
+        for v in views[1:]: aset(v + 'Enabled', True)
+        # chain: the last view's Show-on emptied -> that view off -> feature off
+        for v in views[1:]: aset(v + 'Enabled', False)
+        aset(views[0] + 'ShowOnMovies', False); aset(views[0] + 'ShowOnSets', False)
+        check(f'S127: {feat} empty Show-on of the last view chains into the feature Enable', apage.evaluate("(a) => [document.getElementById(a[0]).checked, document.getElementById(a[1]).checked]", [views[0] + 'Enabled', feat + 'Enabled']) == [False, False])
+        apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
+        apage.wait_for_timeout(150)
     # Animated Keyart: logo per view (Session 126), mirrors the Keyart tab
     apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="animatedposter"]').click(); }""")
     for view, size in [('Detail', '60'), ('Library', '80')]:
