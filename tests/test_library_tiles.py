@@ -182,11 +182,12 @@ def run():
         Scenario('S10 scroll out and back keeps the animated poster', ROWS5, animated={'t01': True}),
         Scenario('S11 extra layers sit under the hover menu', ROWS5, extra={'t07': 1}),
         Scenario('S12 all three off via flags: no tile is ever pending', ROWS5, flags={"custom": False, "animated": False, "extra": False}),
-        Scenario('S13 sync on: a late tile waits for the next tick and then changes together', ROWS5, extra={'t01': 2, 't02': 2}, img_delay={'t02/image/e0': 300}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100, "DelayEnabled": True, "DelayMs": 100}),
+        Scenario('S13 sync on: a late tile appears at once, stands a full period, then changes on a shared tick', ROWS5, extra={'t01': 3, 't02': 3}, img_delay={'t02/image/e0': 300}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100, "DelayEnabled": True, "DelayMs": 100}),
         Scenario('S14 sync off: a late tile appears as soon as it is ready', ROWS5, extra={'t01': 2, 't02': 2}, img_delay={'t02/image/e0': 300}, extra_opts={"SyncEnabled": False, "CycleTimeMs": 800, "FadeTimeMs": 100, "DelayEnabled": True, "DelayMs": 100}),
         Scenario('S15 keyart logo on the tile (custom winner), none on an animated tile', ROWS5, custom={'t01': True}, animated={'t02': True}, custom_logo={"ResolvedType": "keyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 80, "LogoSizePercent": 50, "HasLogo": True}),
         Scenario('S17 sync on: tiles ready within the boarding window appear on the same first tick', ROWS5, extra={'t01': 2, 't02': 2, 't03': 2}, img_delay={'t02/image/e0': 60}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
         Scenario('S18 animated image fails and nothing else is ours -> Jellyfin poster restored, tile never blank for good', ROWS5, animated={'t01': True}, img_fail=['AnimatedPoster']),
+        Scenario('S19 sync on: a tile whose next image is late stays and joins the following tick', ROWS5, extra={'t01': 3, 't02': 3, 't03': 3}, img_delay={'t02/image/e1': 1100}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
         Scenario('S16 extrakeyart logo appears with the first overlay image', ROWS5, extra={'t01': 2}, extra_opts={"ResolvedType": "extrakeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 85, "LogoSizePercent": 40, "HasLogo": True}),
     ]
 
@@ -292,6 +293,29 @@ def run():
                 t = final_tile(rec, 't01')
                 if not (t and vanilla(t['bg']) and t['op'] > 0.99): problems.append(f"vanilla broken {t}")
 
+            if sc.name.split(' ')[0] == 'S19':
+                page.wait_for_timeout(3000)
+                rec = page.evaluate("window.__rec")
+                def sw(tid):
+                    out, prev = [], None
+                    for smp in rec:
+                        for x in smp['tiles']:
+                            if x['id'] != tid: continue
+                            vis = [l['bg'] for l in x['layers'] if l['op'] > 0.5]
+                            cur = vis[0] if vis else None
+                            if cur and cur != prev and prev is not None: out.append(smp['t'])
+                            if cur: prev = cur
+                    return out
+                s1, s2, s3 = sw('t01'), sw('t02'), sw('t03')
+                if len(s1) < 2 or len(s2) < 1: problems.append(f"too few changes: {s1} {s2} {s3}")
+                else:
+                    # t02 must skip the first shared tick (image not decoded) ...
+                    if abs(s2[0] - s1[0]) < 60: problems.append(f"late tile changed on the first tick although its image was not ready: {s2[0]:.0f} vs {s1[0]:.0f}")
+                    # ... and change on a later shared tick, in the same frame as the others
+                    if not any(abs(s2[0] - x) < 60 for x in s1[1:]): problems.append(f"late tile did not join a shared tick: {s2[0]:.0f} vs {s1}")
+                    if not all(any(abs(a - b) < 60 for b in s3) for a in s1): problems.append(f"t01/t03 not together: {s1} {s3}")
+                    # consecutive changes one period apart - never every other tick (Session 124 live finding)
+                    if not (700 <= s1[1] - s1[0] <= 950): problems.append(f"t01 change spacing {s1[1] - s1[0]:.0f} ms, expected ~800")
             if sc.name.split(' ')[0] == 'S18':
                 page.wait_for_timeout(1500)
                 rec = page.evaluate("window.__rec")
@@ -309,7 +333,7 @@ def run():
                 ts = [fv('t01'), fv('t02'), fv('t03')]
                 if None in ts or max(ts) - min(ts) > 120: problems.append(f"first appearances not together: {ts}")
             if sc.name.split(' ')[0] in ('S13', 'S14'):
-                page.wait_for_timeout(1400)
+                page.wait_for_timeout(2600)
                 rec = page.evaluate("window.__rec")
                 def first_visible(tid):
                     for smp in rec:
@@ -331,10 +355,15 @@ def run():
                 if a is None or b is None:
                     problems.append(f"first appearance missing: {a} {b}")
                 elif sc.name.startswith('S13'):
-                    if not (700 <= b - a <= 1000): problems.append(f"late tile did not wait for the tick: gap {b - a:.0f} ms (period 800)")
+                    # Session 124: appear at once (gap = its image delay), never wait for a tick
+                    if not (150 <= b - a <= 550): problems.append(f"late tile did not appear when ready: gap {b - a:.0f} ms")
                     sa, sb = switch_times('t01'), switch_times('t02')
-                    together = [abs(x - y) for x in sa for y in sb if abs(x - y) < 100]
-                    if len(sb) and not together: problems.append(f"changes not together: {sa[:3]} vs {sb[:3]}")
+                    if not sb: problems.append(f"late tile never changed: {sa[:3]}")
+                    else:
+                        # stood at least a full period before its first change ...
+                        if sb[0] - b < 700: problems.append(f"late tile changed after only {sb[0] - b:.0f} ms")
+                        # ... and that change fell on a tick shared with the other tile (same frame)
+                        if not any(abs(sb[0] - x) < 60 for x in sa): problems.append(f"first change not on a shared tick: {sb[0]:.0f} vs {sa[:4]}")
                 else:
                     if not (150 <= b - a <= 500): problems.append(f"late tile did not appear when ready: gap {b - a:.0f} ms")
             if sc.name.split(' ')[0] == 'S15':

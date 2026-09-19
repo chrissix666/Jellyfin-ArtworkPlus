@@ -1696,6 +1696,8 @@
         var pendingCards = {};
         var pendingFetchTimer = null;
         var activeTiles = new Map();
+        // Diagnostics only (DevTools / live checks): the active overlay tiles.
+        window.__artworkPlusExtraTiles = activeTiles;
 
         function libAnswerFor(itemId) {
             var result = resultCache[itemId];
@@ -1818,56 +1820,116 @@
         }
 
         // -----------------------------------------------------------------
-        // Two clock modes (Session 123, Phase 2 - user decision, the old
-        // per-type conductor is gone):
-        //   sync off: every tile runs on its own - first image as soon as
-        //             it is decoded (after its Delay), then its own interval.
-        //   sync on:  ONE page clock per (feature type, tile type) with the
-        //             Display duration as its period. EVERY change - the
-        //             first appearance included - happens on a tick; a tile
-        //             whose first image is decoded between two ticks waits
-        //             for the next one (its base or blurhash shows until
-        //             then). The clock starts with the first tile that is
-        //             ready, stops when no tile of its key is left.
-        // The next image is prefetched right after each change, so at the
-        // tick every tile's preload resolves from the cache in the same
-        // microtask checkpoint and all fades start in the same frame.
+        // Two clock modes (Session 123/124 - user decisions, the old
+        // per-type conductor is gone). In BOTH modes the first image appears
+        // as soon as its Delay is over and it is decoded ("appear as early as
+        // possible"), and a change needs (a) the tile to have stood a full
+        // Display duration and (b) its next image decoded ("rather too late
+        // than too early, and never alone"):
+        //   sync off: every tile checks its own rules on its own interval.
+        //   sync on:  ONE free-running page clock per (feature type, tile
+        //             type), period = Display duration, started by the first
+        //             joined tile. At a tick every due tile changes in the
+        //             SAME frame; a tile that is not due stays and tries at
+        //             the next tick - so a late tile stands 6-9 s instead of
+        //             fading 1-2 s after it appeared, or fading alone later.
         // -----------------------------------------------------------------
 
         var clocks = {}; // key -> { periodMs, epoch, timer, n }
-        // Tiles that become ready within this window of the clock's start
-        // board the first tick together (a cached page re-entering the
-        // viewport has all its images at once - without the window only the
-        // very first would show and the rest would wait a whole period).
-        var BOARD_MS = 150;
+        window.__artworkPlusExtraClocks = clocks; // diagnostics only
 
         function clockKey(tile) { return tile.resolvedType + '|' + tile.type; }
 
+        // The next image is fetched right after every change and its
+        // arrival is recorded as a flag - a change only ever happens with a
+        // decoded image at hand (never a late lone fade, Session 124).
         function prefetchNext(tile) {
+            tile.nextReady = false;
+            tile.nextUrl = null;
             if (tile.urls.length < 2) { return; }
+            if (tile.singlePass && tile.slideIndex >= tile.urls.length) { return; }
             var url = tile.urls[tile.slideIndex % tile.urls.length];
-            Core.preloadImage(url, { timeoutMs: PRELOAD_TIMEOUT_MS }).catch(function () { /* the tick handles a failure */ });
+            tile.nextUrl = url;
+            tile.prefetchStartedAt = performance.now();
+            Core.preloadImage(url, { timeoutMs: PRELOAD_TIMEOUT_MS })
+                .then(function () { if (tile.active && tile.nextUrl === url) { tile.nextReady = true; tile.nextReadyAt = performance.now(); } })
+                .catch(function (e) {
+                    // Skip the broken file, try the one after it at the next chance.
+                    libLog('Image skipped (load error)', tile.id, e);
+                    if (tile.active && tile.nextUrl === url) { tile.slideIndex++; prefetchNext(tile); }
+                });
         }
 
-        // One rotation step of a joined tile (Loop / Play once semantics).
-        function advanceTile(tile) {
-            if (!tile.active || !tile.joined || tile.finished) { return; }
-            if (!document.body.contains(tile.el)) { deactivateTile(tile.el); return; }
-            if (tile.urls.length < 2) { return; } // one image: static overlay, nothing to rotate
-            if (tile.singlePass && tile.slideIndex >= tile.urls.length) {
-                var visibleLayer = tile.visibleIndex === -1 ? null : tile.layers[tile.visibleIndex];
-                if (visibleLayer) { visibleLayer.style.opacity = '0'; }
-                tile.finished = true;
-                if (tile.timer) { clearInterval(tile.timer); tile.timer = null; }
-                return;
-            }
-            var url = tile.urls[tile.slideIndex % tile.urls.length];
+        // Prepares the incoming layer of a tile (image already decoded) -
+        // no opacity change yet, that happens for all tiles of a tick in
+        // ONE frame (commitSwitches).
+        function prepareSwitch(tile) {
+            var nextLayerIndex = tile.visibleIndex === 0 ? 1 : 0;
+            var nextLayer = tile.layers[nextLayerIndex];
+            var prevLayer = tile.visibleIndex === -1 ? null : tile.layers[tile.visibleIndex];
+            nextLayer.style.backgroundImage = cssUrl(tile.nextUrl);
+            if (prevLayer && prevLayer.nextSibling !== nextLayer) { prevLayer.parentNode.insertBefore(nextLayer, prevLayer.nextSibling); }
+            nextLayer.style.opacity = '0';
+            void nextLayer.offsetWidth;
+            tile.visibleIndex = nextLayerIndex;
             tile.slideIndex++;
-            showLayer(tile, url, false).then(function () { prefetchNext(tile); }).catch(function (e) { libLog('Image skipped (load error)', tile.id, e); });
+            return { next: nextLayer, prev: prevLayer };
         }
 
-        // The first appearance of a tile (its Delay has passed and the
-        // first image is decoded). instant = the tile was held pending.
+        function commitSwitches(switches, tiles) {
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    switches.forEach(function (sw, i) {
+                        var tile = tiles[i];
+                        if (!tile.active) { return; }
+                        if (sw.prev) { sw.prev.style.opacity = '0'; }
+                        sw.next.style.opacity = '1';
+                    });
+                });
+            });
+        }
+
+        // Play once: after the last image the overlay fades away for good.
+        function finishTile(tile) {
+            var visibleLayer = tile.visibleIndex === -1 ? null : tile.layers[tile.visibleIndex];
+            if (visibleLayer) { visibleLayer.style.opacity = '0'; }
+            tile.finished = true;
+            if (tile.timer) { clearInterval(tile.timer); tile.timer = null; }
+        }
+
+        // A tile may change when it has stood at least one Display duration
+        // (the user's rule: rather 6-9 s than 1-2 s) and its next image is
+        // decoded. Play once ends the same way.
+        function switchDue(tile, now) {
+            if (!tile.active || !tile.joined || tile.finished || tile.urls.length < 2) { return false; }
+            // shownAt is the LOGICAL time of the last change (the tick, not the
+            // frame it was painted in - a heavy frame can lag 100-200 ms and
+            // would otherwise make every tile miss every second tick).
+            if (now - tile.shownAt < tile.cycleMs - 250) { return false; }
+            if (tile.singlePass && tile.slideIndex >= tile.urls.length) { return true; }
+            return tile.nextReady;
+        }
+
+        function stepTile(tile, now) {
+            if (tile.singlePass && tile.slideIndex >= tile.urls.length) { finishTile(tile); return null; }
+            var sw = prepareSwitch(tile);
+            tile.shownAt = now;
+            prefetchNext(tile);
+            return sw;
+        }
+
+        // Independent mode: the tile's own interval, same rules per tile.
+        function ownTick(tile) {
+            if (!document.body.contains(tile.el)) { deactivateTile(tile.el); return; }
+            var now = performance.now();
+            if (!switchDue(tile, now)) { return; }
+            var sw = stepTile(tile, now);
+            if (sw) { commitSwitches([sw], [tile]); }
+        }
+
+        // The first appearance: as soon as the Delay is over and the first
+        // image is decoded - in BOTH modes (Session 124: waiting for a tick
+        // here looked like a loading hitch). instant = the tile was held.
         function firstShow(tile) {
             var st = tile.st;
             var hold = st.holdForOverlay;
@@ -1875,19 +1937,23 @@
             return showLayer(tile, tile.urls[0], hold).then(function () {
                 if (!tile.active) { return; }
                 tile.joined = true;
+                tile.shownAt = performance.now();
                 if (hold) { LibraryTiles.release(st); }
                 LibraryTiles.syncTileLogo(st, tile.logo);
                 prefetchNext(tile);
-                if (!tile.sync && tile.urls.length > 1) {
-                    tile.timer = setInterval(function () { advanceTile(tile); }, tile.cycleMs);
-                }
+                if (tile.sync) { ensureClock(clockKey(tile), tile.cycleMs); }
+                else if (tile.urls.length > 1) { tile.timer = setInterval(function () { ownTick(tile); }, Math.max(250, Math.min(1000, tile.cycleMs / 5))); }
             });
         }
 
+        // Sync mode: one free-running page clock per (feature type, tile
+        // type), ticking every Display duration from the first joined tile.
+        // At a tick every tile that is due (stood a full Display duration,
+        // next image decoded) changes - all in the same frame; the others
+        // stay and try at the next tick. Nothing ever changes alone or late.
         function ensureClock(key, periodMs) {
             if (clocks[key]) { return clocks[key]; }
-            // epoch = the first tick (n = 0), BOARD_MS from now.
-            var clock = { periodMs: periodMs, epoch: performance.now() + BOARD_MS, n: -1, timer: null };
+            var clock = { periodMs: periodMs, epoch: performance.now(), n: 0, timer: null };
             clocks[key] = clock;
             libLog('Page clock', key, 'started, period:', periodMs, 'ms');
             scheduleTick(key);
@@ -1907,32 +1973,23 @@
             if (!clock) { return; }
             var now = performance.now();
             var alive = 0;
+            var switches = [], tiles = [];
             activeTiles.forEach(function (tile) {
                 if (!tile.sync || clockKey(tile) !== key) { return; }
                 if (!document.body.contains(tile.el)) { deactivateTile(tile.el); return; }
                 alive++;
-                if (tile.joined) { advanceTile(tile); return; }
-                if (tile.firstReady && now >= tile.readyAt - 1) { firstShow(tile).catch(function () { /* handled in preload */ }); }
+                if (!switchDue(tile, now)) {
+                    if (tile.joined && !tile.finished && tile.urls.length > 1) {
+                        libLog('tick', key, 'tile', tile.id.slice(0, 6), 'stays: stood', Math.round(now - tile.shownAt), 'ms of', tile.cycleMs, '| next ready:', tile.nextReady);
+                    }
+                    return;
+                }
+                var sw = stepTile(tile, now);
+                if (sw) { switches.push(sw); tiles.push(tile); }
             });
+            if (switches.length) { commitSwitches(switches, tiles); }
             if (!alive) { delete clocks[key]; libLog('Page clock', key, 'stopped (no tiles)'); return; }
             scheduleTick(key);
-        }
-
-        // Sync mode: called when a tile's first image is decoded. Starts the
-        // clock with THIS tile if none runs (it shows at once and sets the
-        // epoch); otherwise the tile waits for the next tick.
-        function onFirstReady(tile) {
-            tile.firstReady = true;
-            var key = clockKey(tile);
-            if (clocks[key]) { return; } // the running clock picks it up on its next tick
-            var wait = tile.readyAt - performance.now();
-            if (wait > 1) {
-                // Its Delay is not over: the clock starts when it is (unless
-                // another tile starts it first - then this one waits for a tick).
-                setTimeout(function () { if (tile.active && !tile.joined) { onFirstReady(tile); } }, wait);
-                return;
-            }
-            ensureClock(key, tile.cycleMs); // its first tick (BOARD_MS from now) shows this tile and every other one ready by then
         }
 
         function activateTile(st) {
@@ -1946,27 +2003,19 @@
                 fadeMs: answer.fadeMs, cycleMs: answer.cycleMs, sync: answer.sync, logo: answer.logo,
                 slideIndex: 0, visibleIndex: -1, singlePass: answer.singlePass,
                 finished: false, joined: false, active: true, fadeInGeneration: 0,
-                timer: null, firstReady: false, readyAt: performance.now() + answer.delayMs
+                timer: null, shownAt: 0, nextUrl: null, nextReady: false
             };
             activeTiles.set(cardEl, tile);
-            var hold = st.holdForOverlay;
-            if (hold) {
+            if (st.holdForOverlay) {
                 // No Delay: nothing underneath is meant to show - keep (or
-                // put back) the blurhash until the first image is decoded
-                // (sync: until the tick that shows it - one period longer).
+                // put back) the blurhash until the first image is decoded.
                 LibraryTiles.setPending(st);
-                LibraryTiles.armSafety(st, tile.sync ? tile.cycleMs + 2000 : undefined);
+                LibraryTiles.armSafety(st);
             }
             function firstFailed(e) {
                 libLog('First image failed for tile', tile.id, '- withdrawing', e);
                 deactivateTile(cardEl);
                 LibraryTiles.withdraw(cardEl, LIB_PRIORITY);
-            }
-            if (tile.sync) {
-                Core.preloadImage(answer.urls[0], { timeoutMs: PRELOAD_TIMEOUT_MS })
-                    .then(function () { if (tile.active) { onFirstReady(tile); } })
-                    .catch(firstFailed);
-                return;
             }
             setTimeout(function () {
                 if (!tile.active) { return; }
@@ -2005,7 +2054,7 @@
 
         // No viewshow reset: a view Jellyfin restores from its cache keeps
         // its tiles (and their overlays); tiles of a discarded view are
-        // dropped by the document.body checks in advanceTile()/tick(),
+        // dropped by the document.body checks in ownTick()/tick(),
         // and a page clock with no tiles left stops itself.
 
         return { check: check, priority: 3 };
