@@ -507,6 +507,10 @@
                     #ArtworkPlusConfigPage .epCollapseBody.epCollapseNested2 {
                         margin-left: 20px;
                     }
+                    /* Session 125: a disabled <option> (the Set image cannot be its own
+                       fallback) is greyed like a disabled field - Jellyfin's select
+                       styling paints every option in the same colour otherwise. */
+                    #ArtworkPlusConfigPage select option:disabled { color: #6f6f6f; opacity: 0.6; }
                     #ArtworkPlusConfigPage .epCollapseHeader .epChevron {
                         font-size: 10px; transition: transform 0.15s; display: inline-block;
                     }

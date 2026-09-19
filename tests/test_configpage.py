@@ -1056,6 +1056,9 @@ with sync_playwright() as p:
         apage.evaluate("(id) => { var e = document.getElementById(id); e.value = 'Keyart'; e.dispatchEvent(new Event('change', { bubbles: true })); }", p_ + 'SetImage')
         fb = apage.evaluate("(id) => { var e = document.getElementById(id); return { value: e.value, disabled: Array.prototype.map.call(e.options, function (o) { return o.value + ':' + o.disabled; }) }; }", p_ + 'SetFallback')
         check(f'SRC: {p_} Set fallback drops to None and disables the chosen image', fb['value'] == 'None' and 'Keyart:true' in fb['disabled'] and 'Poster:false' in fb['disabled'], str(fb))
+        # Chromium reports no reliable computed style for <option> (the popup is native) - check the rule exists
+        col = apage.evaluate("() => { for (const ss of document.styleSheets) { try { for (const r of ss.cssRules) { if (r.selectorText && r.selectorText.indexOf('option:disabled') !== -1 && r.style.color) { return true; } } } catch (e) {} } return false; }")
+        check(f'SRC: {p_} a stylesheet rule greys disabled options', col is True, str(col))
         apage.evaluate("(id) => { var e = document.getElementById(id); e.value = 'Poster'; e.dispatchEvent(new Event('change', { bubbles: true })); }", p_ + 'SetImage')
     for view in ['Detail', 'Library']:
         p_ = 'ExtrakeyartMovies' + view
