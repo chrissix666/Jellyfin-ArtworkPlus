@@ -1767,16 +1767,6 @@
                             </div>
                         </div>
 
-                        <div class="epRow epRowMerged" id="ExtraposterShowOnRow">
-                            <span class="epRowLabelSpan">Show on</span>
-                            <div class="epFormatGrid">
-                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtraposterShowOnMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
-                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtraposterShowOnSets" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Sets</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
-                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtraposterShowOnTvShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">TV shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
-                            </div>
-                            <div class="epDesc">Off disables this entirely. Sets use Movies' settings, but always Standalone.</div>
-                        </div>
-
                         <div id="ExtraposterDependentFields">
 
                         <div class="epCollapseHeader epCollapseNested" data-collapse="extraposterMovies"><span class="epChevron">▶</span><span>Movies</span></div>
@@ -1806,6 +1796,14 @@
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtraposterMoviesDetailShowOnRow">
+                            <span class="epRowLabelSpan">Show on</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtraposterMoviesDetailShowOnMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtraposterMoviesDetailShowOnSets" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Sets</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Sets use Movies' settings, but always Standalone.</div>
                         </div>
                         <div id="ExtraposterMoviesDetailFields">
                         <div class="epRow epRowMerged">
@@ -1874,6 +1872,14 @@
                                 </label>
                             </div>
                         </div>
+                        <div class="epRow epRowMerged" id="ExtraposterMoviesLibraryShowOnRow">
+                            <span class="epRowLabelSpan">Show on</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtraposterMoviesLibraryShowOnMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtraposterMoviesLibraryShowOnSets" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Sets</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Sets use Movies' settings, but always Standalone.</div>
+                        </div>
                         <div id="ExtraposterMoviesLibraryFields">
                         <div class="epRow epRowMerged">
                             <label for="ExtraposterMoviesLibraryOrderMode" class="epRowLabelSpan">Order</label>
@@ -1928,6 +1934,16 @@
                             <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
                         </div>
                         <div class="epRow epRowCheckbox">
+                            <label for="ExtraposterMoviesLibrarySeamlessEnabled">Seamless loading</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterMoviesLibrarySeamlessEnabled" name="ExtraposterMoviesLibrarySeamlessEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">On: nicer to look at, slightly longer wait. Off: quicker, the original poster peeks through first.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
                             <label for="ExtraposterMoviesLibrarySyncEnabled">Synchronize</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
@@ -1967,6 +1983,13 @@
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtraposterTvShowsDetailShowOnRow">
+                            <span class="epRowLabelSpan">Show on</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtraposterTvShowsDetailShowOnTvShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">TV shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Off disables this view for TV shows.</div>
                         </div>
                         <div id="ExtraposterTvShowsDetailFields">
                         <div class="epRow epRowMerged">
@@ -2035,6 +2058,13 @@
                                 </label>
                             </div>
                         </div>
+                        <div class="epRow epRowMerged" id="ExtraposterTvShowsLibraryShowOnRow">
+                            <span class="epRowLabelSpan">Show on</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtraposterTvShowsLibraryShowOnTvShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">TV shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Off disables this view for TV shows.</div>
+                        </div>
                         <div id="ExtraposterTvShowsLibraryFields">
                         <div class="epRow epRowMerged">
                             <label for="ExtraposterTvShowsLibraryOrderMode" class="epRowLabelSpan">Order</label>
@@ -2089,6 +2119,16 @@
                             <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
                         </div>
                         <div class="epRow epRowCheckbox">
+                            <label for="ExtraposterTvShowsLibrarySeamlessEnabled">Seamless loading</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterTvShowsLibrarySeamlessEnabled" name="ExtraposterTvShowsLibrarySeamlessEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">On: nicer to look at, slightly longer wait. Off: quicker, the original poster peeks through first.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
                             <label for="ExtraposterTvShowsLibrarySyncEnabled">Synchronize</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
@@ -2120,16 +2160,6 @@
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
-                        </div>
-
-                        <div class="epRow epRowMerged" id="ExtrakeyartShowOnRow">
-                            <span class="epRowLabelSpan">Show on</span>
-                            <div class="epFormatGrid">
-                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtrakeyartShowOnMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
-                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtrakeyartShowOnSets" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Sets</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
-                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtrakeyartShowOnTvShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">TV shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
-                            </div>
-                            <div class="epDesc">Off disables this entirely. Sets use Movies' settings, but always Standalone.</div>
                         </div>
 
                         <div id="ExtrakeyartDependentFields">
@@ -2170,6 +2200,14 @@
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartMoviesDetailShowOnRow">
+                            <span class="epRowLabelSpan">Show on</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtrakeyartMoviesDetailShowOnMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtrakeyartMoviesDetailShowOnSets" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Sets</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Sets use Movies' settings, but always Standalone.</div>
                         </div>
                         <div id="ExtrakeyartMoviesDetailFields">
                         <div class="epRow epRowCheckbox">
@@ -2264,6 +2302,14 @@
                                 </label>
                             </div>
                         </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartMoviesLibraryShowOnRow">
+                            <span class="epRowLabelSpan">Show on</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtrakeyartMoviesLibraryShowOnMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtrakeyartMoviesLibraryShowOnSets" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Sets</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Sets use Movies' settings, but always Standalone.</div>
+                        </div>
                         <div id="ExtrakeyartMoviesLibraryFields">
                         <div class="epRow epRowCheckbox">
                             <label for="ExtrakeyartMoviesLibraryLogoEnabled">Enable logo overlay</label>
@@ -2344,6 +2390,16 @@
                             <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
                         </div>
                         <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartMoviesLibrarySeamlessEnabled">Seamless loading</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartMoviesLibrarySeamlessEnabled" name="ExtrakeyartMoviesLibrarySeamlessEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">On: nicer to look at, slightly longer wait. Off: quicker, the original poster peeks through first.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
                             <label for="ExtrakeyartMoviesLibrarySyncEnabled">Synchronize</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
@@ -2383,6 +2439,13 @@
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartTvShowsDetailShowOnRow">
+                            <span class="epRowLabelSpan">Show on</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtrakeyartTvShowsDetailShowOnTvShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">TV shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Off disables this view for TV shows.</div>
                         </div>
                         <div id="ExtrakeyartTvShowsDetailFields">
                         <div class="epRow epRowCheckbox">
@@ -2477,6 +2540,13 @@
                                 </label>
                             </div>
                         </div>
+                        <div class="epRow epRowMerged" id="ExtrakeyartTvShowsLibraryShowOnRow">
+                            <span class="epRowLabelSpan">Show on</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="ExtrakeyartTvShowsLibraryShowOnTvShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">TV shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Off disables this view for TV shows.</div>
+                        </div>
                         <div id="ExtrakeyartTvShowsLibraryFields">
                         <div class="epRow epRowCheckbox">
                             <label for="ExtrakeyartTvShowsLibraryLogoEnabled">Enable logo overlay</label>
@@ -2555,6 +2625,16 @@
                                 <span class="epUnitLabel">ms</span>
                             </div>
                             <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="ExtrakeyartTvShowsLibrarySeamlessEnabled">Seamless loading</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartTvShowsLibrarySeamlessEnabled" name="ExtrakeyartTvShowsLibrarySeamlessEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">On: nicer to look at, slightly longer wait. Off: quicker, the original poster peeks through first.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         <div class="epRow epRowCheckbox">
                             <label for="ExtrakeyartTvShowsLibrarySyncEnabled">Synchronize</label>
@@ -4696,38 +4776,43 @@
                 ExtraposterTvShowsNamingMode: { type: 'select', def: 'Standalone', tab: 'extraposterfeature' },
                 ExtraposterTvShowsFolderName: { type: 'text', def: 'extraposter', tab: 'extraposterfeature' },
                 // Four independent enable switches (Movies/TV shows x Detail/Library)
-                ExtraposterShowOnMovies: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
-                ExtraposterShowOnSets: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
-                ExtraposterShowOnTvShows: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailShowOnMovies: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailShowOnSets: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibraryShowOnMovies: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibraryShowOnSets: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibrarySeamlessEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
+                ExtraposterTvShowsDetailShowOnTvShows: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailSinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibraryShowOnTvShows: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryDelayMs: { type: 'number', def: 3000, tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibrarySeamlessEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 // Characterart
                 CharacterartShowOnMovies: { type: 'checkbox', def: true, tab: 'characterart' },
@@ -4896,9 +4981,6 @@
                 ExtraposterPriority: { type: 'select', def: 'Extraposter', tab: 'extraposter' },
                 ExtrakeyartEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartUnnumberedMode: { type: 'select', def: 'Ignored', tab: 'extrakeyart' },
-                ExtrakeyartShowOnMovies: { type: 'checkbox', def: true, tab: 'extrakeyart' },
-                ExtrakeyartShowOnSets: { type: 'checkbox', def: true, tab: 'extrakeyart' },
-                ExtrakeyartShowOnTvShows: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartMoviesNamingMode: { type: 'select', def: 'Prefixed', tab: 'extrakeyart' },
                 ExtrakeyartMoviesFolderName: { type: 'text', def: 'keyart', tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
@@ -4910,6 +4992,8 @@
                 ExtrakeyartMoviesDetailLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailLogoSizePercent: { type: 'number', def: 60, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailShowOnMovies: { type: 'checkbox', def: true, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailShowOnSets: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailSinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
@@ -4919,16 +5003,20 @@
                 ExtrakeyartMoviesLibraryLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryLogoSizePercent: { type: 'number', def: 60, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryShowOnMovies: { type: 'checkbox', def: true, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryShowOnSets: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryDelayMs: { type: 'number', def: 3000, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibrarySeamlessEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailLogoSizePercent: { type: 'number', def: 60, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailShowOnTvShows: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailSinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
@@ -4938,12 +5026,14 @@
                 ExtrakeyartTvShowsLibraryLogoEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryLogoSizePercent: { type: 'number', def: 60, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibraryShowOnTvShows: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryDelayMs: { type: 'number', def: 3000, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibrarySeamlessEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extrakeyart' },
                 RedCarpetBottomLeftScaleMode: { type: 'text', def: 'Height', tab: 'redcarpet' },
                 RedCarpetBottomLeftHeightVh: { type: 'number', def: 45, tab: 'redcarpet' },
@@ -5946,41 +6036,42 @@
                                 AllChecked(['ExtraposterEnabled'])
                             ],
                             children: [
-                                { id: 'extraposterfeature_showon', structural: true, target: ['ExtraposterShowOnRow'], when: [], children: [] },
                                 {
                                     // Session 123: no longer terminal - the two view blocks below are
                                     // real co-requirements (both off = no output for this type); the
                                     // Folder refinement is structural so it never counts (rule 12).
-                                    id: 'extraposterfeature_movies', target: ['extraposterMovies'], when: [AnyChecked(['ExtraposterShowOnMovies', 'ExtraposterShowOnSets'])],
+                                    // Session 124: Show-on lives per view - Movies/TV shows are containers
+                                    // without a condition of their own; their view children carry Enable + Show-on.
+                                    id: 'extraposterfeature_movies', target: ['extraposterMovies'], when: [],
                                     children: [{
                                         id: 'extraposterfeature_movies_folder', structural: true, target: ['ExtraposterMoviesFolderNameRow'],
                                         when: [ValueIn('ExtraposterMoviesNamingMode', ['Folder'])], children: []
                                     },
                                     {
                                         id: 'extraposterfeature_movies_detail', terminal: true, target: ['ExtraposterMoviesDetailFields'], headerTarget: ['extraposterMoviesDetail'],
-                                        when: [AllChecked(['ExtraposterMoviesDetailEnabled'])], children: []
+                                        when: [AllChecked(['ExtraposterMoviesDetailEnabled']), AnyChecked(['ExtraposterMoviesDetailShowOnMovies', 'ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_showon', structural: true, target: ['ExtraposterMoviesDetailShowOnRow'], when: [], children: [] }]
                                     },
                                     {
                                         id: 'extraposterfeature_movies_library', terminal: true, target: ['ExtraposterMoviesLibraryFields'], headerTarget: ['extraposterMoviesLibrary'],
-                                        when: [AllChecked(['ExtraposterMoviesLibraryEnabled'])], children: []
+                                        when: [AllChecked(['ExtraposterMoviesLibraryEnabled']), AnyChecked(['ExtraposterMoviesLibraryShowOnMovies', 'ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_showon', structural: true, target: ['ExtraposterMoviesLibraryShowOnRow'], when: [], children: [] }]
                                     }]
                                 },
                                 {
                                     // Session 123: no longer terminal - the two view blocks below are
                                     // real co-requirements (both off = no output for this type); the
                                     // Folder refinement is structural so it never counts (rule 12).
-                                    id: 'extraposterfeature_tvshows', target: ['extraposterTvShows'], when: [AllChecked(['ExtraposterShowOnTvShows'])],
+                                    id: 'extraposterfeature_tvshows', target: ['extraposterTvShows'], when: [],
                                     children: [{
                                         id: 'extraposterfeature_tvshows_folder', structural: true, target: ['ExtraposterTvShowsFolderNameRow'],
                                         when: [ValueIn('ExtraposterTvShowsNamingMode', ['Folder'])], children: []
                                     },
                                     {
                                         id: 'extraposterfeature_tvshows_detail', terminal: true, target: ['ExtraposterTvShowsDetailFields'], headerTarget: ['extraposterTvShowsDetail'],
-                                        when: [AllChecked(['ExtraposterTvShowsDetailEnabled'])], children: []
+                                        when: [AllChecked(['ExtraposterTvShowsDetailEnabled']), AllChecked(['ExtraposterTvShowsDetailShowOnTvShows'])], children: [{ id: 'extraposterfeature_tvshows_detail_showon', structural: true, target: ['ExtraposterTvShowsDetailShowOnRow'], when: [], children: [] }]
                                     },
                                     {
                                         id: 'extraposterfeature_tvshows_library', terminal: true, target: ['ExtraposterTvShowsLibraryFields'], headerTarget: ['extraposterTvShowsLibrary'],
-                                        when: [AllChecked(['ExtraposterTvShowsLibraryEnabled'])], children: []
+                                        when: [AllChecked(['ExtraposterTvShowsLibraryEnabled']), AllChecked(['ExtraposterTvShowsLibraryShowOnTvShows'])], children: [{ id: 'extraposterfeature_tvshows_library_showon', structural: true, target: ['ExtraposterTvShowsLibraryShowOnRow'], when: [], children: [] }]
                                     }]
                                 }
                             ]
@@ -5992,26 +6083,27 @@
                                 AllChecked(['ExtrakeyartEnabled'])
                             ],
                             children: [
-                                { id: 'extrakeyart_showon', structural: true, target: ['ExtrakeyartShowOnRow'], when: [], children: [] },
                                 {
                                     // Session 123: no longer terminal - the two view blocks below are
                                     // real co-requirements (both off = no output for this type); the
                                     // Folder refinement is structural so it never counts (rule 12).
-                                    id: 'extrakeyart_movies', target: ['extrakeyartMovies'], when: [AnyChecked(['ExtrakeyartShowOnMovies', 'ExtrakeyartShowOnSets'])],
+                                    // Session 124: Show-on lives per view - Movies/TV shows are containers
+                                    // without a condition of their own; their view children carry Enable + Show-on.
+                                    id: 'extrakeyart_movies', target: ['extrakeyartMovies'], when: [],
                                     children: [{
                                         id: 'extrakeyart_movies_folder', structural: true, target: ['ExtrakeyartMoviesFolderNameRow'],
                                         when: [ValueIn('ExtrakeyartMoviesNamingMode', ['Folder'])], children: []
                                     },
                                     {
                                         id: 'extrakeyart_movies_detail', terminal: true, target: ['ExtrakeyartMoviesDetailFields'], headerTarget: ['extrakeyartMoviesDetail'],
-                                        when: [AllChecked(['ExtrakeyartMoviesDetailEnabled'])], children: [{
+                                        when: [AllChecked(['ExtrakeyartMoviesDetailEnabled']), AnyChecked(['ExtrakeyartMoviesDetailShowOnMovies', 'ExtrakeyartMoviesDetailShowOnSets'])], children: [{ id: 'extrakeyart_movies_detail_showon', structural: true, target: ['ExtrakeyartMoviesDetailShowOnRow'], when: [], children: [] }, {
                                             id: 'extrakeyart_movies_detail_logo', target: ['ExtrakeyartMoviesDetailLogoVerticalPositionRow', 'ExtrakeyartMoviesDetailLogoSizeRow'],
                                             when: [AllChecked(['ExtrakeyartMoviesDetailLogoEnabled'])], children: []
                                         }]
                                     },
                                     {
                                         id: 'extrakeyart_movies_library', terminal: true, target: ['ExtrakeyartMoviesLibraryFields'], headerTarget: ['extrakeyartMoviesLibrary'],
-                                        when: [AllChecked(['ExtrakeyartMoviesLibraryEnabled'])], children: [{
+                                        when: [AllChecked(['ExtrakeyartMoviesLibraryEnabled']), AnyChecked(['ExtrakeyartMoviesLibraryShowOnMovies', 'ExtrakeyartMoviesLibraryShowOnSets'])], children: [{ id: 'extrakeyart_movies_library_showon', structural: true, target: ['ExtrakeyartMoviesLibraryShowOnRow'], when: [], children: [] }, {
                                             id: 'extrakeyart_movies_library_logo', target: ['ExtrakeyartMoviesLibraryLogoVerticalPositionRow', 'ExtrakeyartMoviesLibraryLogoSizeRow'],
                                             when: [AllChecked(['ExtrakeyartMoviesLibraryLogoEnabled'])], children: []
                                         }]
@@ -6021,21 +6113,21 @@
                                     // Session 123: no longer terminal - the two view blocks below are
                                     // real co-requirements (both off = no output for this type); the
                                     // Folder refinement is structural so it never counts (rule 12).
-                                    id: 'extrakeyart_tvshows', target: ['extrakeyartTvShows'], when: [AllChecked(['ExtrakeyartShowOnTvShows'])],
+                                    id: 'extrakeyart_tvshows', target: ['extrakeyartTvShows'], when: [],
                                     children: [{
                                         id: 'extrakeyart_tvshows_folder', structural: true, target: ['ExtrakeyartTvShowsFolderNameRow'],
                                         when: [ValueIn('ExtrakeyartTvShowsNamingMode', ['Folder'])], children: []
                                     },
                                     {
                                         id: 'extrakeyart_tvshows_detail', terminal: true, target: ['ExtrakeyartTvShowsDetailFields'], headerTarget: ['extrakeyartTvShowsDetail'],
-                                        when: [AllChecked(['ExtrakeyartTvShowsDetailEnabled'])], children: [{
+                                        when: [AllChecked(['ExtrakeyartTvShowsDetailEnabled']), AllChecked(['ExtrakeyartTvShowsDetailShowOnTvShows'])], children: [{ id: 'extrakeyart_tvshows_detail_showon', structural: true, target: ['ExtrakeyartTvShowsDetailShowOnRow'], when: [], children: [] }, {
                                             id: 'extrakeyart_tvshows_detail_logo', target: ['ExtrakeyartTvShowsDetailLogoVerticalPositionRow', 'ExtrakeyartTvShowsDetailLogoSizeRow'],
                                             when: [AllChecked(['ExtrakeyartTvShowsDetailLogoEnabled'])], children: []
                                         }]
                                     },
                                     {
                                         id: 'extrakeyart_tvshows_library', terminal: true, target: ['ExtrakeyartTvShowsLibraryFields'], headerTarget: ['extrakeyartTvShowsLibrary'],
-                                        when: [AllChecked(['ExtrakeyartTvShowsLibraryEnabled'])], children: [{
+                                        when: [AllChecked(['ExtrakeyartTvShowsLibraryEnabled']), AllChecked(['ExtrakeyartTvShowsLibraryShowOnTvShows'])], children: [{ id: 'extrakeyart_tvshows_library_showon', structural: true, target: ['ExtrakeyartTvShowsLibraryShowOnRow'], when: [], children: [] }, {
                                             id: 'extrakeyart_tvshows_library_logo', target: ['ExtrakeyartTvShowsLibraryLogoVerticalPositionRow', 'ExtrakeyartTvShowsLibraryLogoSizeRow'],
                                             when: [AllChecked(['ExtrakeyartTvShowsLibraryLogoEnabled'])], children: []
                                         }]
@@ -7257,13 +7349,7 @@
                 ['PostercaseTvShowsDetailEnabled', 'PostercaseTvShowsLibraryEnabled', 'PostercaseShowOnTvShows'],
                 ['KeyartMoviesDetailEnabled', 'KeyartMoviesLibraryEnabled', 'KeyartShowOnMovies'],
                 ['KeyartMoviesDetailEnabled', 'KeyartMoviesLibraryEnabled', 'KeyartShowOnSets'],
-                ['KeyartTvShowsDetailEnabled', 'KeyartTvShowsLibraryEnabled', 'KeyartShowOnTvShows'],
-                ['ExtraposterMoviesDetailEnabled', 'ExtraposterMoviesLibraryEnabled', 'ExtraposterShowOnMovies'],
-                ['ExtraposterMoviesDetailEnabled', 'ExtraposterMoviesLibraryEnabled', 'ExtraposterShowOnSets'],
-                ['ExtraposterTvShowsDetailEnabled', 'ExtraposterTvShowsLibraryEnabled', 'ExtraposterShowOnTvShows'],
-                ['ExtrakeyartMoviesDetailEnabled', 'ExtrakeyartMoviesLibraryEnabled', 'ExtrakeyartShowOnMovies'],
-                ['ExtrakeyartMoviesDetailEnabled', 'ExtrakeyartMoviesLibraryEnabled', 'ExtrakeyartShowOnSets'],
-                ['ExtrakeyartTvShowsDetailEnabled', 'ExtrakeyartTvShowsLibraryEnabled', 'ExtrakeyartShowOnTvShows']
+                ['KeyartTvShowsDetailEnabled', 'KeyartTvShowsLibraryEnabled', 'KeyartShowOnTvShows']
             ].forEach(function (triple) {
                 var detailEl = document.getElementById(triple[0]);
                 var libraryEl = document.getElementById(triple[1]);
@@ -7290,8 +7376,15 @@
                 [['AnimatedPosterShowOnMovies', 'AnimatedPosterShowOnSets', 'AnimatedPosterShowOnTvShows'], 'AnimatedPosterEnabled'],
                 [['AnimatedKeyartShowOnMovies', 'AnimatedKeyartShowOnSets', 'AnimatedKeyartShowOnTvShows'], 'AnimatedKeyartEnabled'],
                 [['KeyartShowOnMovies', 'KeyartShowOnSets', 'KeyartShowOnTvShows'], 'KeyartEnabled'],
-                [['ExtraposterShowOnMovies', 'ExtraposterShowOnSets', 'ExtraposterShowOnTvShows'], 'ExtraposterEnabled'],
-                [['ExtrakeyartShowOnMovies', 'ExtrakeyartShowOnSets', 'ExtrakeyartShowOnTvShows'], 'ExtrakeyartEnabled'],
+                // Session 124: Extra's Show-on lives per view - empty Show-on switches that view off.
+                [['ExtraposterMoviesDetailShowOnMovies', 'ExtraposterMoviesDetailShowOnSets'], 'ExtraposterMoviesDetailEnabled'],
+                [['ExtraposterMoviesLibraryShowOnMovies', 'ExtraposterMoviesLibraryShowOnSets'], 'ExtraposterMoviesLibraryEnabled'],
+                [['ExtraposterTvShowsDetailShowOnTvShows'], 'ExtraposterTvShowsDetailEnabled'],
+                [['ExtraposterTvShowsLibraryShowOnTvShows'], 'ExtraposterTvShowsLibraryEnabled'],
+                [['ExtrakeyartMoviesDetailShowOnMovies', 'ExtrakeyartMoviesDetailShowOnSets'], 'ExtrakeyartMoviesDetailEnabled'],
+                [['ExtrakeyartMoviesLibraryShowOnMovies', 'ExtrakeyartMoviesLibraryShowOnSets'], 'ExtrakeyartMoviesLibraryEnabled'],
+                [['ExtrakeyartTvShowsDetailShowOnTvShows'], 'ExtrakeyartTvShowsDetailEnabled'],
+                [['ExtrakeyartTvShowsLibraryShowOnTvShows'], 'ExtrakeyartTvShowsLibraryEnabled'],
                 // Session 30 (user-reported gap): Backdrops was missing
                 // entirely from Session 29's original wiring - the only
                 // one of five structurally identical Enable+Show-on

@@ -188,6 +188,8 @@ def run():
         Scenario('S17 sync on: tiles ready within the boarding window appear on the same first tick', ROWS5, extra={'t01': 2, 't02': 2, 't03': 2}, img_delay={'t02/image/e0': 60}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
         Scenario('S18 animated image fails and nothing else is ours -> Jellyfin poster restored, tile never blank for good', ROWS5, animated={'t01': True}, img_fail=['AnimatedPoster']),
         Scenario('S19 sync on: a tile whose next image is late stays and joins the following tick', ROWS5, extra={'t01': 3, 't02': 3, 't03': 3}, img_delay={'t02/image/e1': 1100}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
+        Scenario('S20 seamless off: Jellyfin poster first, overlay on top later, tile released at once', ROWS5, extra={'t01': 2}, img_delay={'t01/image/e0': 500}, extra_opts={"SeamlessEnabled": False}, flags={"custom": False, "animated": False, "extra": True, "extraSeamless": False}),
+        Scenario('S21 seamless on (flags): held blank until the overlay, never the poster', ROWS5, extra={'t01': 2}, img_delay={'t01/image/e0': 500}, extra_opts={"SeamlessEnabled": True}, flags={"custom": False, "animated": False, "extra": True, "extraSeamless": True}),
         Scenario('S16 extrakeyart logo appears with the first overlay image', ROWS5, extra={'t01': 2}, extra_opts={"ResolvedType": "extrakeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 85, "LogoSizePercent": 40, "HasLogo": True}),
     ]
 
@@ -293,6 +295,18 @@ def run():
                 t = final_tile(rec, 't01')
                 if not (t and vanilla(t['bg']) and t['op'] > 0.99): problems.append(f"vanilla broken {t}")
 
+            if sc.name.split(' ')[0] in ('S20', 'S21'):
+                page.wait_for_timeout(800)
+                rec = page.evaluate("window.__rec")
+                pend = any(x['id'] == 't01' and x['pending'] for smp in rec for x in smp['tiles'])
+                poster_first = any(x['id'] == 't01' and x['op'] > 0.9 and vanilla(x['bg']) and sum(l['op'] for l in x['layers']) < 0.5 for smp in rec for x in smp['tiles'])
+                t = final_tile(rec, 't01')
+                if not (t and sum(l['op'] for l in t['layers']) > 0.95): problems.append(f"overlay missing at the end: {t}")
+                if sc.name.startswith('S20'):
+                    if pend: problems.append("tile was held pending although Seamless loading is off")
+                    if not poster_first: problems.append("the poster never showed before the overlay (expected with Seamless off)")
+                else:
+                    if poster_first: problems.append("poster showed before the overlay although Seamless loading is on")
             if sc.name.split(' ')[0] == 'S19':
                 page.wait_for_timeout(3000)
                 rec = page.evaluate("window.__rec")

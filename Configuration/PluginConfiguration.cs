@@ -789,27 +789,6 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public string AllowedFormats { get; set; } = "jpg";
 
-    /// <summary>
-    /// A coarse, type-wide gate - separate from the finer Detail/Library
-    /// enable switches further below (which control per-scope, not
-    /// per-content-type). If off, Extraposter never applies to that
-    /// content type at all, regardless of the Detail/Library switches -
-    /// the same two-level gate pattern Characterart already uses via
-    /// CharacterartShowOnMovies/CharacterartShowOnTvShows.
-    /// </summary>
-    public bool ExtraposterShowOnMovies { get; set; } = true;
-
-    /// <summary>
-    /// Session 87 (Sets extension): Sets share Movies' own naming-mode/
-    /// type-name/Detail/Library settings - no own set of fields. Naming
-    /// for Sets is ALWAYS forced to Standalone in the server code,
-    /// regardless of the configured Movies NamingMode.
-    /// </summary>
-    public bool ExtraposterShowOnSets { get; set; } = true;
-
-    /// <summary>Same as <see cref="ExtraposterShowOnMovies"/>, but for TV shows.</summary>
-    public bool ExtraposterShowOnTvShows { get; set; } = true;
-
     /// <summary>Independent on/off switch for the movie detail page.</summary>
     public bool ExtraposterMoviesDetailEnabled { get; set; } = true;
 
@@ -836,6 +815,12 @@ public class PluginConfiguration : BasePluginConfiguration
     // full set; nothing is shared between detail and library any more).
     // ExtraposterMoviesDetailEnabled is the view switch and predates the split.
     /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    /// <summary>Show on movies in this view (Session 124: Show-on lives per view).</summary>
+    public bool ExtraposterMoviesDetailShowOnMovies { get; set; } = true;
+
+    /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
+    public bool ExtraposterMoviesDetailShowOnSets { get; set; } = true;
+
     public string ExtraposterMoviesDetailOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -857,6 +842,12 @@ public class PluginConfiguration : BasePluginConfiguration
     // full set; nothing is shared between detail and library any more).
     // ExtraposterMoviesLibraryEnabled is the view switch and predates the split.
     /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    /// <summary>Show on movies in this view (Session 124: Show-on lives per view).</summary>
+    public bool ExtraposterMoviesLibraryShowOnMovies { get; set; } = true;
+
+    /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
+    public bool ExtraposterMoviesLibraryShowOnSets { get; set; } = true;
+
     public string ExtraposterMoviesLibraryOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -877,10 +868,16 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtraposterMoviesLibrarySyncEnabled { get; set; } = true;
 
+    /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
+    public bool ExtraposterMoviesLibrarySeamlessEnabled { get; set; } = true;
+
     // ----- Extraposter / TV shows / detail pages (Session 123: every view has its own
     // full set; nothing is shared between detail and library any more).
     // ExtraposterTvShowsDetailEnabled is the view switch and predates the split.
     /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    /// <summary>Show on TV shows in this view (Session 124: Show-on lives per view).</summary>
+    public bool ExtraposterTvShowsDetailShowOnTvShows { get; set; } = true;
+
     public string ExtraposterTvShowsDetailOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -902,6 +899,9 @@ public class PluginConfiguration : BasePluginConfiguration
     // full set; nothing is shared between detail and library any more).
     // ExtraposterTvShowsLibraryEnabled is the view switch and predates the split.
     /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    /// <summary>Show on TV shows in this view (Session 124: Show-on lives per view).</summary>
+    public bool ExtraposterTvShowsLibraryShowOnTvShows { get; set; } = true;
+
     public string ExtraposterTvShowsLibraryOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -921,6 +921,9 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtraposterTvShowsLibrarySyncEnabled { get; set; } = true;
+
+    /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
+    public bool ExtraposterTvShowsLibrarySeamlessEnabled { get; set; } = true;
 
     /// <summary>
     /// Which of Extraposter/Extrakeyart wins when BOTH are enabled and
@@ -959,13 +962,6 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public string ExtrakeyartUnnumberedMode { get; set; } = "Ignored";
 
-    public bool ExtrakeyartShowOnMovies { get; set; } = true;
-
-    /// <summary>See ExtraposterShowOnSets's own doc comment - identisches Muster.</summary>
-    public bool ExtrakeyartShowOnSets { get; set; } = true;
-
-    public bool ExtrakeyartShowOnTvShows { get; set; } = true;
-
     public string ExtrakeyartMoviesNamingMode { get; set; } = "Prefixed";
 
     public string ExtrakeyartMoviesFolderName { get; set; } = "keyart";
@@ -986,6 +982,12 @@ public class PluginConfiguration : BasePluginConfiguration
     // full set; nothing is shared between detail and library any more).
     // ExtrakeyartMoviesDetailEnabled is the view switch and predates the split.
     /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    /// <summary>Show on movies in this view (Session 124: Show-on lives per view).</summary>
+    public bool ExtrakeyartMoviesDetailShowOnMovies { get; set; } = true;
+
+    /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
+    public bool ExtrakeyartMoviesDetailShowOnSets { get; set; } = true;
+
     public string ExtrakeyartMoviesDetailOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -1016,6 +1018,12 @@ public class PluginConfiguration : BasePluginConfiguration
     // full set; nothing is shared between detail and library any more).
     // ExtrakeyartMoviesLibraryEnabled is the view switch and predates the split.
     /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    /// <summary>Show on movies in this view (Session 124: Show-on lives per view).</summary>
+    public bool ExtrakeyartMoviesLibraryShowOnMovies { get; set; } = true;
+
+    /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
+    public bool ExtrakeyartMoviesLibraryShowOnSets { get; set; } = true;
+
     public string ExtrakeyartMoviesLibraryOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -1045,10 +1053,16 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtrakeyartMoviesLibrarySyncEnabled { get; set; } = true;
 
+    /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
+    public bool ExtrakeyartMoviesLibrarySeamlessEnabled { get; set; } = true;
+
     // ----- Extrakeyart / TV shows / detail pages (Session 123: every view has its own
     // full set; nothing is shared between detail and library any more).
     // ExtrakeyartTvShowsDetailEnabled is the view switch and predates the split.
     /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    /// <summary>Show on TV shows in this view (Session 124: Show-on lives per view).</summary>
+    public bool ExtrakeyartTvShowsDetailShowOnTvShows { get; set; } = true;
+
     public string ExtrakeyartTvShowsDetailOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -1079,6 +1093,9 @@ public class PluginConfiguration : BasePluginConfiguration
     // full set; nothing is shared between detail and library any more).
     // ExtrakeyartTvShowsLibraryEnabled is the view switch and predates the split.
     /// <summary>Sequential | Shuffle | Random - order of the slideshow images.</summary>
+    /// <summary>Show on TV shows in this view (Session 124: Show-on lives per view).</summary>
+    public bool ExtrakeyartTvShowsLibraryShowOnTvShows { get; set; } = true;
+
     public string ExtrakeyartTvShowsLibraryOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -1107,6 +1124,9 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtrakeyartTvShowsLibrarySyncEnabled { get; set; } = true;
+
+    /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
+    public bool ExtrakeyartTvShowsLibrarySeamlessEnabled { get; set; } = true;
 
     // ───────────────────────── Characterart tab ─────────────────────────
     // Curriculum section E. A completely separate feature block,

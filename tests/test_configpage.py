@@ -987,13 +987,29 @@ with sync_playwright() as p:
                     aset(p_ + 'LogoEnabled', True)
                     check(f'SPLIT: {p_} logo rows active with the logo on', agreyed(p_ + 'LogoVerticalPositionRow') is False)
                     aset(p_ + 'LogoEnabled', False)
-        # Show on Movies+Sets off -> the Movies body (and both view blocks inside) grey, one grey level
-        aset(feature + 'ShowOnMovies', False); aset(feature + 'ShowOnSets', False)
-        check(f'SPLIT: {feature} Show-on Movies off greys the Movies body', agreyed(feature.lower() + 'Movies') is True)
-        check(f'SPLIT: {feature} Show-on Movies off reaches the Detail block by inheritance', agreyed(feature.lower() + 'MoviesDetail') is True)
-        own_cls = apage.evaluate("""(k) => document.querySelector('.epCollapseBody[data-collapsebody="' + k + '"]').classList.contains('epFieldDisabled')""", feature.lower() + 'MoviesDetail')
-        check(f'SPLIT: {feature} Detail block carries NO own grey class under a greyed Movies body (rule 14)', own_cls is False, str(own_cls))
-        aset(feature + 'ShowOnMovies', True); aset(feature + 'ShowOnSets', True)
+        # Session 124: Show-on lives per view. Empty Show-on of a view -> its Fields grey (the Show-on row
+        # itself stays usable), the OTHER view of the same type is untouched, and the one-way sync switches
+        # that view's Enable off.
+        p_ = feature + 'MoviesDetail'
+        aset(p_ + 'ShowOnMovies', False); aset(p_ + 'ShowOnSets', False)
+        check(f'SPLIT: {p_} Show-on empty greys its fields', agreyed(p_ + 'Fields') is True)
+        check(f'SPLIT: {p_} Show-on empty leaves the Library block alone', agreyed(feature + 'MoviesLibraryFields') is False)
+        en = apage.evaluate("(id) => document.getElementById(id).checked", p_ + 'Enabled')
+        check(f'SPLIT: {p_} empty Show-on switches the view Enable off (one-way sync)', en is False, str(en))
+        # the escape route is the view's own Enable row (outside the greyed target, like every feature Enable)
+        en_dis = apage.evaluate("(id) => document.getElementById(id).disabled", p_ + 'Enabled')
+        check(f'SPLIT: {p_} Enable stays clickable as the way back', en_dis is False, str(en_dis))
+        aset(p_ + 'ShowOnMovies', True); aset(p_ + 'ShowOnSets', True); aset(p_ + 'Enabled', True)
+        check(f'SPLIT: {p_} Show-on back on (and Enable re-checked) un-greys its fields', agreyed(p_ + 'Fields') is False)
+        p_ = feature + 'TvShowsLibrary'
+        aset(p_ + 'ShowOnTvShows', False)
+        check(f'SPLIT: {p_} Show-on off greys its fields', agreyed(p_ + 'Fields') is True)
+        aset(p_ + 'ShowOnTvShows', True); aset(p_ + 'Enabled', True)
+        # rule 14: a greyed view block carries its own class exactly once, never a doubled ancestor
+        aset(feature + 'MoviesDetailEnabled', False)
+        movies_body_cls = apage.evaluate("""(k) => document.querySelector('.epCollapseBody[data-collapsebody="' + k + '"]').classList.contains('epFieldDisabled')""", feature.lower() + 'Movies')
+        check(f'SPLIT: {feature} Movies body is NOT greyed itself when only one view is off (rule 14)', movies_body_cls is False, str(movies_body_cls))
+        aset(feature + 'MoviesDetailEnabled', True)
     # both views of both types off -> the feature produces nothing -> tab button greys (rule 12: view nodes are co-requirements)
     for feature in ['Extraposter', 'Extrakeyart']:
         for typ in ['Movies', 'TvShows']:
@@ -1001,10 +1017,12 @@ with sync_playwright() as p:
                 aset(feature + typ + view + 'Enabled', False)
     tab_grey = apage.evaluate("""() => document.querySelector('.epTabBtn[data-tab="extraposter"]').classList.contains('epTabGreyed')""")
     check('SPLIT: Extraposter tab button greys when every view of every type is off', tab_grey is True, str(tab_grey))
-    # the Detail/Library -> Show-on -> Enable cascade (Session 22/29 sync, one direction only) still
-    # runs through the view enables: both views off unchecks the type's Show-on, all Show-on off unchecks Enable
-    cascade = apage.evaluate("""() => ({ m: document.getElementById('ExtraposterShowOnMovies').checked, t: document.getElementById('ExtraposterShowOnTvShows').checked, e: document.getElementById('ExtraposterEnabled').checked })""")
-    check('SPLIT: both view enables off cascade into Show-on and Enable (sync direction unchanged)', cascade == {'m': False, 't': False, 'e': False}, str(cascade))
+    # no cascade from the view enables upwards any more (Session 124: the feature Enable is the user's own switch)
+    en = apage.evaluate("() => document.getElementById('ExtraposterEnabled').checked")
+    check('SPLIT: view enables off leave the feature Enable alone', en is True, str(en))
+    aset('ExtrakeyartTvShowsLibraryEnabled', True)
+    tab_grey = apage.evaluate("""() => document.querySelector('.epTabBtn[data-tab="extraposter"]').classList.contains('epTabGreyed')""")
+    check('SPLIT: one view back on un-greys the tab button', tab_grey is False, str(tab_grey))
     apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
     apage.wait_for_timeout(150)
     # Keyart (Custom Poster): logo per view

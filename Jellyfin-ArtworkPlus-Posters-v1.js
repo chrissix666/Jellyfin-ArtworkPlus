@@ -909,6 +909,11 @@
 
         var flags = window.ArtworkPlusLibraryTiles || null;
         var expected = [1, 2, 3].filter(function (p) { return !flags || !!flags[NAMES[p]]; });
+        // Session 124: the tile is held blank before the first paint only when a
+        // participant that wants that can still win it - Custom/Animated always
+        // do (one image), Extra only where "Seamless loading" is on. An older
+        // server sends no extraSeamless flag: then as before (held).
+        var wantsPending = !flags || !!flags.custom || !!flags.animated || flags.extraSeamless !== false;
 
         function ensureStyles() {
             if (document.getElementById('artworkplus-library-tiles')) { return; }
@@ -953,7 +958,7 @@
         }
 
         function setPending(st) {
-            if (!expected.length) { return; }
+            if (!expected.length || !wantsPending) { return; }
             st.container.classList.add(PENDING_CLASS);
             st.pending = true;
             if (!st.pendingSince) { st.pendingSince = performance.now(); }
@@ -1068,11 +1073,15 @@
                 var base = null;
                 for (var q = 2; q >= 1; q--) { if (isEnabled(q) && st.answers[q]) { base = st.answers[q].url; break; } }
                 var hasDelay = st.answers[3].delayMs > 0;
-                st.holdForOverlay = !hasDelay;
+                var seamless = st.answers[3].seamless !== false;
+                // Hold the tile blank until Extra's first image only when the
+                // user wants it seamless (Session 124) and no Delay asks for
+                // the base to show anyway.
+                st.holdForOverlay = !hasDelay && seamless;
                 if (base) {
-                    applyBase(st, base, hasDelay);
-                } else if (hasDelay) {
-                    release(st); // Jellyfin's own poster is the Delay backdrop
+                    applyBase(st, base, hasDelay || !seamless);
+                } else if (hasDelay || !seamless) {
+                    release(st); // Jellyfin's own poster shows first (Delay, or Seamless loading off)
                 }
                 syncTileLogo(st, null); // Extra draws its own (Extrakeyart) logo once its first image is up
                 if (participants[3] && participants[3].apply) { participants[3].apply(st); }
@@ -1713,6 +1722,7 @@
                 fadeMs: result.FadeTimeMs,
                 singlePass: !!result.SinglePass,
                 sync: !!result.SyncEnabled,
+                seamless: result.SeamlessEnabled !== false, // older server: seamless (the Session 123 behaviour)
                 logo: result.LogoEnabled ? { vertical: result.LogoVerticalPositionPercent, size: result.LogoSizePercent, hasLogo: !!result.HasLogo } : null,
                 resolvedType: resolvedType
             };

@@ -306,11 +306,22 @@ public static class FileTransformCallback
         var animated = config.AnimatedPosterTabEnabled && (
             (config.AnimatedPosterEnabled && (config.AnimatedPosterMoviesLibraryEnabled || config.AnimatedPosterTvShowsLibraryEnabled))
             || (config.AnimatedKeyartEnabled && (config.AnimatedKeyartMoviesLibraryEnabled || config.AnimatedKeyartTvShowsLibraryEnabled)));
+        // Session 124: a library view counts when it is on AND shows at least one type.
+        var epMoviesLib = config.ExtraposterMoviesLibraryEnabled && (config.ExtraposterMoviesLibraryShowOnMovies || config.ExtraposterMoviesLibraryShowOnSets);
+        var epTvLib = config.ExtraposterTvShowsLibraryEnabled && config.ExtraposterTvShowsLibraryShowOnTvShows;
+        var ekMoviesLib = config.ExtrakeyartMoviesLibraryEnabled && (config.ExtrakeyartMoviesLibraryShowOnMovies || config.ExtrakeyartMoviesLibraryShowOnSets);
+        var ekTvLib = config.ExtrakeyartTvShowsLibraryEnabled && config.ExtrakeyartTvShowsLibraryShowOnTvShows;
         var extra = config.ExtraposterTabEnabled && (
-            (config.ExtraposterEnabled && (config.ExtraposterMoviesLibraryEnabled || config.ExtraposterTvShowsLibraryEnabled))
-            || (config.ExtrakeyartEnabled && (config.ExtrakeyartMoviesLibraryEnabled || config.ExtrakeyartTvShowsLibraryEnabled)));
+            (config.ExtraposterEnabled && (epMoviesLib || epTvLib))
+            || (config.ExtrakeyartEnabled && (ekMoviesLib || ekTvLib)));
+        // Session 124: does any active Extra library block want the tile held
+        // blank until its first image (Seamless loading)? Custom/Animated
+        // always do (one image, nothing to wait for on top).
+        var extraSeamless = config.ExtraposterTabEnabled && (
+            (config.ExtraposterEnabled && ((epMoviesLib && config.ExtraposterMoviesLibrarySeamlessEnabled) || (epTvLib && config.ExtraposterTvShowsLibrarySeamlessEnabled)))
+            || (config.ExtrakeyartEnabled && ((ekMoviesLib && config.ExtrakeyartMoviesLibrarySeamlessEnabled) || (ekTvLib && config.ExtrakeyartTvShowsLibrarySeamlessEnabled))));
         static string B(bool b) => b ? "true" : "false";
-        return "<script id=\"artworkplus-library-tiles-flags\">window.ArtworkPlusLibraryTiles={custom:" + B(custom) + ",animated:" + B(animated) + ",extra:" + B(extra) + "};</script>";
+        return "<script id=\"artworkplus-library-tiles-flags\">window.ArtworkPlusLibraryTiles={custom:" + B(custom) + ",animated:" + B(animated) + ",extra:" + B(extra) + ",extraSeamless:" + B(extraSeamless) + "};</script>";
     }
 
     /// <summary>

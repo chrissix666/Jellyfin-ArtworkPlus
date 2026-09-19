@@ -94,6 +94,9 @@ public class PosterListResult
     /// <summary>Library views only (Session 123): one shared clock per page for all tiles of this type.</summary>
     public bool SyncEnabled { get; set; }
 
+    /// <summary>Library views only (Session 124): tile blank until our image is ready (on) or Jellyfin's poster first (off).</summary>
+    public bool SeamlessEnabled { get; set; }
+
     /// <summary>Session 123: the item has a Jellyfin Logo image (the tile logo overlay needs no extra item request).</summary>
     public bool HasLogo { get; set; }
 
@@ -238,7 +241,9 @@ public class ExtraposterController : ControllerBase
         var (isMovie, movieFolderPath) = ResolveMovieFolder(itemId);
         if (isMovie && movieFolderPath is not null)
         {
-            var showOnMovies = isExtrakeyart ? config.ExtrakeyartShowOnMovies : config.ExtraposterShowOnMovies;
+            var showOnMovies = isExtrakeyart
+                ? (isLibraryScope ? config.ExtrakeyartMoviesLibraryShowOnMovies : config.ExtrakeyartMoviesDetailShowOnMovies)
+                : (isLibraryScope ? config.ExtraposterMoviesLibraryShowOnMovies : config.ExtraposterMoviesDetailShowOnMovies);
             var moviesDetailOrLibraryEnabled = isExtrakeyart
                 ? (isLibraryScope ? config.ExtrakeyartMoviesLibraryEnabled : config.ExtrakeyartMoviesDetailEnabled)
                 : (isLibraryScope ? config.ExtraposterMoviesLibraryEnabled : config.ExtraposterMoviesDetailEnabled);
@@ -262,7 +267,9 @@ public class ExtraposterController : ControllerBase
         var (isSet, setFolderPath) = ResolveSetFolder(itemId);
         if (isSet && setFolderPath is not null)
         {
-            var showOnSets = isExtrakeyart ? config.ExtrakeyartShowOnSets : config.ExtraposterShowOnSets;
+            var showOnSets = isExtrakeyart
+                ? (isLibraryScope ? config.ExtrakeyartMoviesLibraryShowOnSets : config.ExtrakeyartMoviesDetailShowOnSets)
+                : (isLibraryScope ? config.ExtraposterMoviesLibraryShowOnSets : config.ExtraposterMoviesDetailShowOnSets);
             var setsDetailOrLibraryEnabled = isExtrakeyart
                 ? (isLibraryScope ? config.ExtrakeyartMoviesLibraryEnabled : config.ExtrakeyartMoviesDetailEnabled)
                 : (isLibraryScope ? config.ExtraposterMoviesLibraryEnabled : config.ExtraposterMoviesDetailEnabled);
@@ -280,7 +287,9 @@ public class ExtraposterController : ControllerBase
             return (false, null, string.Empty, string.Empty);
         }
 
-        var showOnTvShows = isExtrakeyart ? config.ExtrakeyartShowOnTvShows : config.ExtraposterShowOnTvShows;
+        var showOnTvShows = isExtrakeyart
+            ? (isLibraryScope ? config.ExtrakeyartTvShowsLibraryShowOnTvShows : config.ExtrakeyartTvShowsDetailShowOnTvShows)
+            : (isLibraryScope ? config.ExtraposterTvShowsLibraryShowOnTvShows : config.ExtraposterTvShowsDetailShowOnTvShows);
         var tvShowsDetailOrLibraryEnabled = isExtrakeyart
             ? (isLibraryScope ? config.ExtrakeyartTvShowsLibraryEnabled : config.ExtrakeyartTvShowsDetailEnabled)
             : (isLibraryScope ? config.ExtraposterTvShowsLibraryEnabled : config.ExtraposterTvShowsDetailEnabled);
@@ -308,7 +317,7 @@ public class ExtraposterController : ControllerBase
     /// </summary>
     private sealed record ExtraViewSettings(
         string OrderMode, bool SinglePass, int CycleTimeMs, int FadeTimeMs, bool DelayEnabled, int DelayMs,
-        bool LogoEnabled, int LogoVerticalPositionPercent, int LogoSizePercent, bool SyncEnabled);
+        bool LogoEnabled, int LogoVerticalPositionPercent, int LogoSizePercent, bool SyncEnabled, bool SeamlessEnabled);
 
     private ExtraViewSettings GetViewSettings(PluginConfiguration c, Guid itemId, string resolvedType, bool isLibraryScope)
     {
@@ -320,22 +329,22 @@ public class ExtraposterController : ControllerBase
             if (!tv)
             {
                 return isLibraryScope
-                    ? new ExtraViewSettings(c.ExtraposterMoviesLibraryOrderMode, c.ExtraposterMoviesLibrarySinglePass, c.ExtraposterMoviesLibraryCycleTimeMs, c.ExtraposterMoviesLibraryFadeTimeMs, c.ExtraposterMoviesLibraryDelayEnabled, c.ExtraposterMoviesLibraryDelayMs, false, 0, 0, c.ExtraposterMoviesLibrarySyncEnabled)
-                    : new ExtraViewSettings(c.ExtraposterMoviesDetailOrderMode, c.ExtraposterMoviesDetailSinglePass, c.ExtraposterMoviesDetailCycleTimeMs, c.ExtraposterMoviesDetailFadeTimeMs, c.ExtraposterMoviesDetailDelayEnabled, c.ExtraposterMoviesDetailDelayMs, false, 0, 0, false);
+                    ? new ExtraViewSettings(c.ExtraposterMoviesLibraryOrderMode, c.ExtraposterMoviesLibrarySinglePass, c.ExtraposterMoviesLibraryCycleTimeMs, c.ExtraposterMoviesLibraryFadeTimeMs, c.ExtraposterMoviesLibraryDelayEnabled, c.ExtraposterMoviesLibraryDelayMs, false, 0, 0, c.ExtraposterMoviesLibrarySyncEnabled, c.ExtraposterMoviesLibrarySeamlessEnabled)
+                    : new ExtraViewSettings(c.ExtraposterMoviesDetailOrderMode, c.ExtraposterMoviesDetailSinglePass, c.ExtraposterMoviesDetailCycleTimeMs, c.ExtraposterMoviesDetailFadeTimeMs, c.ExtraposterMoviesDetailDelayEnabled, c.ExtraposterMoviesDetailDelayMs, false, 0, 0, false, true);
             }
             return isLibraryScope
-                ? new ExtraViewSettings(c.ExtraposterTvShowsLibraryOrderMode, c.ExtraposterTvShowsLibrarySinglePass, c.ExtraposterTvShowsLibraryCycleTimeMs, c.ExtraposterTvShowsLibraryFadeTimeMs, c.ExtraposterTvShowsLibraryDelayEnabled, c.ExtraposterTvShowsLibraryDelayMs, false, 0, 0, c.ExtraposterTvShowsLibrarySyncEnabled)
-                : new ExtraViewSettings(c.ExtraposterTvShowsDetailOrderMode, c.ExtraposterTvShowsDetailSinglePass, c.ExtraposterTvShowsDetailCycleTimeMs, c.ExtraposterTvShowsDetailFadeTimeMs, c.ExtraposterTvShowsDetailDelayEnabled, c.ExtraposterTvShowsDetailDelayMs, false, 0, 0, false);
+                ? new ExtraViewSettings(c.ExtraposterTvShowsLibraryOrderMode, c.ExtraposterTvShowsLibrarySinglePass, c.ExtraposterTvShowsLibraryCycleTimeMs, c.ExtraposterTvShowsLibraryFadeTimeMs, c.ExtraposterTvShowsLibraryDelayEnabled, c.ExtraposterTvShowsLibraryDelayMs, false, 0, 0, c.ExtraposterTvShowsLibrarySyncEnabled, c.ExtraposterTvShowsLibrarySeamlessEnabled)
+                : new ExtraViewSettings(c.ExtraposterTvShowsDetailOrderMode, c.ExtraposterTvShowsDetailSinglePass, c.ExtraposterTvShowsDetailCycleTimeMs, c.ExtraposterTvShowsDetailFadeTimeMs, c.ExtraposterTvShowsDetailDelayEnabled, c.ExtraposterTvShowsDetailDelayMs, false, 0, 0, false, true);
         }
         if (!tv)
         {
             return isLibraryScope
-                ? new ExtraViewSettings(c.ExtrakeyartMoviesLibraryOrderMode, c.ExtrakeyartMoviesLibrarySinglePass, c.ExtrakeyartMoviesLibraryCycleTimeMs, c.ExtrakeyartMoviesLibraryFadeTimeMs, c.ExtrakeyartMoviesLibraryDelayEnabled, c.ExtrakeyartMoviesLibraryDelayMs, c.ExtrakeyartMoviesLibraryLogoEnabled, c.ExtrakeyartMoviesLibraryLogoVerticalPositionPercent, c.ExtrakeyartMoviesLibraryLogoSizePercent, c.ExtrakeyartMoviesLibrarySyncEnabled)
-                : new ExtraViewSettings(c.ExtrakeyartMoviesDetailOrderMode, c.ExtrakeyartMoviesDetailSinglePass, c.ExtrakeyartMoviesDetailCycleTimeMs, c.ExtrakeyartMoviesDetailFadeTimeMs, c.ExtrakeyartMoviesDetailDelayEnabled, c.ExtrakeyartMoviesDetailDelayMs, c.ExtrakeyartMoviesDetailLogoEnabled, c.ExtrakeyartMoviesDetailLogoVerticalPositionPercent, c.ExtrakeyartMoviesDetailLogoSizePercent, false);
+                ? new ExtraViewSettings(c.ExtrakeyartMoviesLibraryOrderMode, c.ExtrakeyartMoviesLibrarySinglePass, c.ExtrakeyartMoviesLibraryCycleTimeMs, c.ExtrakeyartMoviesLibraryFadeTimeMs, c.ExtrakeyartMoviesLibraryDelayEnabled, c.ExtrakeyartMoviesLibraryDelayMs, c.ExtrakeyartMoviesLibraryLogoEnabled, c.ExtrakeyartMoviesLibraryLogoVerticalPositionPercent, c.ExtrakeyartMoviesLibraryLogoSizePercent, c.ExtrakeyartMoviesLibrarySyncEnabled, c.ExtrakeyartMoviesLibrarySeamlessEnabled)
+                : new ExtraViewSettings(c.ExtrakeyartMoviesDetailOrderMode, c.ExtrakeyartMoviesDetailSinglePass, c.ExtrakeyartMoviesDetailCycleTimeMs, c.ExtrakeyartMoviesDetailFadeTimeMs, c.ExtrakeyartMoviesDetailDelayEnabled, c.ExtrakeyartMoviesDetailDelayMs, c.ExtrakeyartMoviesDetailLogoEnabled, c.ExtrakeyartMoviesDetailLogoVerticalPositionPercent, c.ExtrakeyartMoviesDetailLogoSizePercent, false, true);
         }
         return isLibraryScope
-            ? new ExtraViewSettings(c.ExtrakeyartTvShowsLibraryOrderMode, c.ExtrakeyartTvShowsLibrarySinglePass, c.ExtrakeyartTvShowsLibraryCycleTimeMs, c.ExtrakeyartTvShowsLibraryFadeTimeMs, c.ExtrakeyartTvShowsLibraryDelayEnabled, c.ExtrakeyartTvShowsLibraryDelayMs, c.ExtrakeyartTvShowsLibraryLogoEnabled, c.ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent, c.ExtrakeyartTvShowsLibraryLogoSizePercent, c.ExtrakeyartTvShowsLibrarySyncEnabled)
-            : new ExtraViewSettings(c.ExtrakeyartTvShowsDetailOrderMode, c.ExtrakeyartTvShowsDetailSinglePass, c.ExtrakeyartTvShowsDetailCycleTimeMs, c.ExtrakeyartTvShowsDetailFadeTimeMs, c.ExtrakeyartTvShowsDetailDelayEnabled, c.ExtrakeyartTvShowsDetailDelayMs, c.ExtrakeyartTvShowsDetailLogoEnabled, c.ExtrakeyartTvShowsDetailLogoVerticalPositionPercent, c.ExtrakeyartTvShowsDetailLogoSizePercent, false);
+            ? new ExtraViewSettings(c.ExtrakeyartTvShowsLibraryOrderMode, c.ExtrakeyartTvShowsLibrarySinglePass, c.ExtrakeyartTvShowsLibraryCycleTimeMs, c.ExtrakeyartTvShowsLibraryFadeTimeMs, c.ExtrakeyartTvShowsLibraryDelayEnabled, c.ExtrakeyartTvShowsLibraryDelayMs, c.ExtrakeyartTvShowsLibraryLogoEnabled, c.ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent, c.ExtrakeyartTvShowsLibraryLogoSizePercent, c.ExtrakeyartTvShowsLibrarySyncEnabled, c.ExtrakeyartTvShowsLibrarySeamlessEnabled)
+            : new ExtraViewSettings(c.ExtrakeyartTvShowsDetailOrderMode, c.ExtrakeyartTvShowsDetailSinglePass, c.ExtrakeyartTvShowsDetailCycleTimeMs, c.ExtrakeyartTvShowsDetailFadeTimeMs, c.ExtrakeyartTvShowsDetailDelayEnabled, c.ExtrakeyartTvShowsDetailDelayMs, c.ExtrakeyartTvShowsDetailLogoEnabled, c.ExtrakeyartTvShowsDetailLogoVerticalPositionPercent, c.ExtrakeyartTvShowsDetailLogoSizePercent, false, true);
     }
 
     private static string NormalizeType(string? type)
@@ -746,6 +755,7 @@ public class ExtraposterController : ControllerBase
             LogoVerticalPositionPercent = logoEnabled ? view.LogoVerticalPositionPercent : 0,
             LogoSizePercent = logoEnabled ? view.LogoSizePercent : 0,
             SyncEnabled = view.SyncEnabled,
+            SeamlessEnabled = view.SeamlessEnabled,
             HasLogo = logoEnabled && (item?.HasImage(MediaBrowser.Model.Entities.ImageType.Logo, 0) ?? false)
         };
     }
@@ -807,10 +817,11 @@ public class ExtraposterController : ControllerBase
             if (typeEnabled)
             {
                 var (isMovie, movieFolderPath) = ResolveMovieFolder(itemId);
-                var showOnMovies = isExtrakeyart ? config.ExtrakeyartShowOnMovies : config.ExtraposterShowOnMovies;
-                var moviesDetailEnabled = isExtrakeyart ? config.ExtrakeyartMoviesDetailEnabled : config.ExtraposterMoviesDetailEnabled;
-                var moviesLibraryEnabled = isExtrakeyart ? config.ExtrakeyartMoviesLibraryEnabled : config.ExtraposterMoviesLibraryEnabled;
-                if (isMovie && movieFolderPath is not null && showOnMovies && (moviesDetailEnabled || moviesLibraryEnabled))
+                // Session 124: Show-on lives per view; the image URL carries no
+                // scope, so the file is served when ANY view of the type wants it.
+                var moviesDetailEnabled = isExtrakeyart ? (config.ExtrakeyartMoviesDetailEnabled && config.ExtrakeyartMoviesDetailShowOnMovies) : (config.ExtraposterMoviesDetailEnabled && config.ExtraposterMoviesDetailShowOnMovies);
+                var moviesLibraryEnabled = isExtrakeyart ? (config.ExtrakeyartMoviesLibraryEnabled && config.ExtrakeyartMoviesLibraryShowOnMovies) : (config.ExtraposterMoviesLibraryEnabled && config.ExtraposterMoviesLibraryShowOnMovies);
+                if (isMovie && movieFolderPath is not null && (moviesDetailEnabled || moviesLibraryEnabled))
                 {
                     folderPath = movieFolderPath;
                     namingMode = isExtrakeyart ? config.ExtrakeyartMoviesNamingMode : config.ExtraposterMoviesNamingMode;
@@ -825,8 +836,9 @@ public class ExtraposterController : ControllerBase
                     // is always forced "Standalone", never Movies'
                     // configured NamingMode.
                     var (isSet, setFolderPath) = ResolveSetFolder(itemId);
-                    var showOnSets = isExtrakeyart ? config.ExtrakeyartShowOnSets : config.ExtraposterShowOnSets;
-                    if (isSet && setFolderPath is not null && showOnSets && (moviesDetailEnabled || moviesLibraryEnabled))
+                    var setsDetailEnabled = isExtrakeyart ? (config.ExtrakeyartMoviesDetailEnabled && config.ExtrakeyartMoviesDetailShowOnSets) : (config.ExtraposterMoviesDetailEnabled && config.ExtraposterMoviesDetailShowOnSets);
+                    var setsLibraryEnabled = isExtrakeyart ? (config.ExtrakeyartMoviesLibraryEnabled && config.ExtrakeyartMoviesLibraryShowOnSets) : (config.ExtraposterMoviesLibraryEnabled && config.ExtraposterMoviesLibraryShowOnSets);
+                    if (isSet && setFolderPath is not null && (setsDetailEnabled || setsLibraryEnabled))
                     {
                         folderPath = setFolderPath;
                         namingMode = "Standalone";
@@ -835,10 +847,9 @@ public class ExtraposterController : ControllerBase
                     else
                     {
                         var (isSeries, seriesFolderPath) = ResolveSeriesFolder(itemId);
-                        var showOnTvShows = isExtrakeyart ? config.ExtrakeyartShowOnTvShows : config.ExtraposterShowOnTvShows;
-                        var tvShowsDetailEnabled = isExtrakeyart ? config.ExtrakeyartTvShowsDetailEnabled : config.ExtraposterTvShowsDetailEnabled;
-                        var tvShowsLibraryEnabled = isExtrakeyart ? config.ExtrakeyartTvShowsLibraryEnabled : config.ExtraposterTvShowsLibraryEnabled;
-                        if (isSeries && seriesFolderPath is not null && showOnTvShows && (tvShowsDetailEnabled || tvShowsLibraryEnabled))
+                        var tvShowsDetailEnabled = isExtrakeyart ? (config.ExtrakeyartTvShowsDetailEnabled && config.ExtrakeyartTvShowsDetailShowOnTvShows) : (config.ExtraposterTvShowsDetailEnabled && config.ExtraposterTvShowsDetailShowOnTvShows);
+                        var tvShowsLibraryEnabled = isExtrakeyart ? (config.ExtrakeyartTvShowsLibraryEnabled && config.ExtrakeyartTvShowsLibraryShowOnTvShows) : (config.ExtraposterTvShowsLibraryEnabled && config.ExtraposterTvShowsLibraryShowOnTvShows);
+                        if (isSeries && seriesFolderPath is not null && (tvShowsDetailEnabled || tvShowsLibraryEnabled))
                         {
                             folderPath = seriesFolderPath;
                             namingMode = isExtrakeyart ? config.ExtrakeyartTvShowsNamingMode : config.ExtraposterTvShowsNamingMode;
