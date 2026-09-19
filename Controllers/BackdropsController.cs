@@ -292,6 +292,11 @@ public class BackdropsController : ControllerBase
             if (item is not null)
             {
                 (images, imageSource) = ResolveDetailViewImages(item, config);
+                // Session 127: Random start position - Sequential only; episode files have their own Order + box.
+                var detailRandomStart = imageSource == "Episode"
+                    ? config.BackdropsEpisodeOrderMode == "Sequential" && config.BackdropsEpisodeRandomStart
+                    : config.BackdropsOrderMode == "Sequential" && config.BackdropsRandomStart;
+                if (detailRandomStart) { images = Helpers.RandomStart.Rotate(images); }
             }
         }
 
@@ -494,6 +499,7 @@ public class BackdropsController : ControllerBase
         // Movies/TvShows), matching the sandbox design from Session 77.
         var sortMode = config.BackdropsGenreSortMode;
         var traversalMode = config.BackdropsGenreTraversalMode;
+        var randomStart = config.BackdropsGenreRandomStart;
 
         var finalEnabled = tabAndRootEnabled && subEnabled;
         var result = new GenrePoolResult
@@ -526,7 +532,7 @@ public class BackdropsController : ControllerBase
             query.ParentId = parentId.Value;
         }
 
-        var (resolvedOrderBy, resolvedOrder, resolvedStartIndex, resolvedLimit) = ResolveRotationQuery(sortMode, traversalMode, query);
+        var (resolvedOrderBy, resolvedOrder, resolvedStartIndex, resolvedLimit) = ResolveRotationQuery(sortMode, traversalMode, randomStart, query);
         query.OrderBy = new[] { (resolvedOrderBy, resolvedOrder) };
         query.Limit = resolvedLimit;
         if (resolvedStartIndex.HasValue)
@@ -594,6 +600,7 @@ public class BackdropsController : ControllerBase
 
         var sortMode = config.BackdropsStudioSortMode;
         var traversalMode = config.BackdropsStudioTraversalMode;
+        var randomStart = config.BackdropsStudioRandomStart;
         var finalEnabled = tabAndRootEnabled && subEnabled && config.BackdropsStudioSourceMode == "Appearances";
         var result = new GenrePoolResult
         {
@@ -625,7 +632,7 @@ public class BackdropsController : ControllerBase
             query.ParentId = parentId.Value;
         }
 
-        var (resolvedOrderBy, resolvedOrder, resolvedStartIndex, resolvedLimit) = ResolveRotationQuery(sortMode, traversalMode, query);
+        var (resolvedOrderBy, resolvedOrder, resolvedStartIndex, resolvedLimit) = ResolveRotationQuery(sortMode, traversalMode, randomStart, query);
         query.OrderBy = new[] { (resolvedOrderBy, resolvedOrder) };
         query.Limit = resolvedLimit;
         if (resolvedStartIndex.HasValue)
@@ -679,6 +686,7 @@ public class BackdropsController : ControllerBase
 
         var sortMode = config.BackdropsTagSortMode;
         var traversalMode = config.BackdropsTagTraversalMode;
+        var randomStart = config.BackdropsTagRandomStart;
 
         // Deliberately NO IncludeItemTypes restriction - "tags nimmt
         // alles was im tag ist", explicit user decision, mixing
@@ -689,7 +697,7 @@ public class BackdropsController : ControllerBase
             Tags = new[] { tag },
             Recursive = true
         };
-        var (resolvedOrderBy, resolvedOrder, resolvedStartIndex, resolvedLimit) = ResolveRotationQuery(sortMode, traversalMode, query);
+        var (resolvedOrderBy, resolvedOrder, resolvedStartIndex, resolvedLimit) = ResolveRotationQuery(sortMode, traversalMode, randomStart, query);
         query.OrderBy = new[] { (resolvedOrderBy, resolvedOrder) };
         query.Limit = resolvedLimit;
         if (resolvedStartIndex.HasValue)
@@ -760,19 +768,20 @@ public class BackdropsController : ControllerBase
         bool subEnabled;
         string perTypeSortMode;
         string perTypeTraversalMode;
+        bool perTypeRandomStart;
         BaseItemKind includeType;
         switch (type)
         {
-            case "Movie": subEnabled = config.BackdropsFavoritesMoviesEnabled; perTypeSortMode = config.BackdropsFavoritesMoviesSortMode; perTypeTraversalMode = config.BackdropsFavoritesMoviesTraversalMode; includeType = BaseItemKind.Movie; break;
-            case "Series": subEnabled = config.BackdropsFavoritesShowsEnabled; perTypeSortMode = config.BackdropsFavoritesShowsSortMode; perTypeTraversalMode = config.BackdropsFavoritesShowsTraversalMode; includeType = BaseItemKind.Series; break;
-            case "Episode": subEnabled = config.BackdropsFavoritesEpisodesEnabled; perTypeSortMode = config.BackdropsFavoritesEpisodesSortMode; perTypeTraversalMode = config.BackdropsFavoritesEpisodesTraversalMode; includeType = BaseItemKind.Episode; break;
-            case "Video": subEnabled = config.BackdropsFavoritesVideosEnabled; perTypeSortMode = config.BackdropsFavoritesVideosSortMode; perTypeTraversalMode = config.BackdropsFavoritesVideosTraversalMode; includeType = BaseItemKind.Video; break;
-            case "BoxSet": subEnabled = config.BackdropsFavoritesCollectionsEnabled; perTypeSortMode = config.BackdropsFavoritesCollectionsSortMode; perTypeTraversalMode = config.BackdropsFavoritesCollectionsTraversalMode; includeType = BaseItemKind.BoxSet; break;
-            case "Playlist": subEnabled = config.BackdropsFavoritesPlaylistsEnabled; perTypeSortMode = config.BackdropsFavoritesPlaylistsSortMode; perTypeTraversalMode = config.BackdropsFavoritesPlaylistsTraversalMode; includeType = BaseItemKind.Playlist; break;
-            case "MusicArtist": subEnabled = config.BackdropsFavoritesArtistsEnabled; perTypeSortMode = config.BackdropsFavoritesArtistsSortMode; perTypeTraversalMode = config.BackdropsFavoritesArtistsTraversalMode; includeType = BaseItemKind.MusicArtist; break;
-            case "MusicAlbum": subEnabled = config.BackdropsFavoritesAlbumsEnabled; perTypeSortMode = config.BackdropsFavoritesAlbumsSortMode; perTypeTraversalMode = config.BackdropsFavoritesAlbumsTraversalMode; includeType = BaseItemKind.MusicAlbum; break;
-            case "Audio": subEnabled = config.BackdropsFavoritesSongsEnabled; perTypeSortMode = config.BackdropsFavoritesSongsSortMode; perTypeTraversalMode = config.BackdropsFavoritesSongsTraversalMode; includeType = BaseItemKind.Audio; break;
-            case "Book": subEnabled = config.BackdropsFavoritesBooksEnabled; perTypeSortMode = config.BackdropsFavoritesBooksSortMode; perTypeTraversalMode = config.BackdropsFavoritesBooksTraversalMode; includeType = BaseItemKind.Book; break;
+            case "Movie": subEnabled = config.BackdropsFavoritesMoviesEnabled; perTypeSortMode = config.BackdropsFavoritesMoviesSortMode; perTypeTraversalMode = config.BackdropsFavoritesMoviesTraversalMode; perTypeRandomStart = config.BackdropsFavoritesMoviesRandomStart; includeType = BaseItemKind.Movie; break;
+            case "Series": subEnabled = config.BackdropsFavoritesShowsEnabled; perTypeSortMode = config.BackdropsFavoritesShowsSortMode; perTypeTraversalMode = config.BackdropsFavoritesShowsTraversalMode; perTypeRandomStart = config.BackdropsFavoritesShowsRandomStart; includeType = BaseItemKind.Series; break;
+            case "Episode": subEnabled = config.BackdropsFavoritesEpisodesEnabled; perTypeSortMode = config.BackdropsFavoritesEpisodesSortMode; perTypeTraversalMode = config.BackdropsFavoritesEpisodesTraversalMode; perTypeRandomStart = config.BackdropsFavoritesEpisodesRandomStart; includeType = BaseItemKind.Episode; break;
+            case "Video": subEnabled = config.BackdropsFavoritesVideosEnabled; perTypeSortMode = config.BackdropsFavoritesVideosSortMode; perTypeTraversalMode = config.BackdropsFavoritesVideosTraversalMode; perTypeRandomStart = config.BackdropsFavoritesVideosRandomStart; includeType = BaseItemKind.Video; break;
+            case "BoxSet": subEnabled = config.BackdropsFavoritesCollectionsEnabled; perTypeSortMode = config.BackdropsFavoritesCollectionsSortMode; perTypeTraversalMode = config.BackdropsFavoritesCollectionsTraversalMode; perTypeRandomStart = config.BackdropsFavoritesCollectionsRandomStart; includeType = BaseItemKind.BoxSet; break;
+            case "Playlist": subEnabled = config.BackdropsFavoritesPlaylistsEnabled; perTypeSortMode = config.BackdropsFavoritesPlaylistsSortMode; perTypeTraversalMode = config.BackdropsFavoritesPlaylistsTraversalMode; perTypeRandomStart = config.BackdropsFavoritesPlaylistsRandomStart; includeType = BaseItemKind.Playlist; break;
+            case "MusicArtist": subEnabled = config.BackdropsFavoritesArtistsEnabled; perTypeSortMode = config.BackdropsFavoritesArtistsSortMode; perTypeTraversalMode = config.BackdropsFavoritesArtistsTraversalMode; perTypeRandomStart = config.BackdropsFavoritesArtistsRandomStart; includeType = BaseItemKind.MusicArtist; break;
+            case "MusicAlbum": subEnabled = config.BackdropsFavoritesAlbumsEnabled; perTypeSortMode = config.BackdropsFavoritesAlbumsSortMode; perTypeTraversalMode = config.BackdropsFavoritesAlbumsTraversalMode; perTypeRandomStart = config.BackdropsFavoritesAlbumsRandomStart; includeType = BaseItemKind.MusicAlbum; break;
+            case "Audio": subEnabled = config.BackdropsFavoritesSongsEnabled; perTypeSortMode = config.BackdropsFavoritesSongsSortMode; perTypeTraversalMode = config.BackdropsFavoritesSongsTraversalMode; perTypeRandomStart = config.BackdropsFavoritesSongsRandomStart; includeType = BaseItemKind.Audio; break;
+            case "Book": subEnabled = config.BackdropsFavoritesBooksEnabled; perTypeSortMode = config.BackdropsFavoritesBooksSortMode; perTypeTraversalMode = config.BackdropsFavoritesBooksTraversalMode; perTypeRandomStart = config.BackdropsFavoritesBooksRandomStart; includeType = BaseItemKind.Book; break;
             default:
                 _logger.LogInformation("Backdrops: GetFavoritesPool - unrecognized type {Type}", type);
                 return Ok(new GenrePoolResult { Enabled = false });
@@ -784,6 +793,7 @@ public class BackdropsController : ControllerBase
         var isGeneral = config.BackdropsFavoritesManageMode == "General";
         var sortMode = isGeneral ? config.BackdropsFavoritesGeneralSortMode : perTypeSortMode;
         var traversalMode = isGeneral ? config.BackdropsFavoritesGeneralTraversalMode : perTypeTraversalMode;
+        var randomStart = isGeneral ? config.BackdropsFavoritesGeneralRandomStart : perTypeRandomStart;
 
         var requestUser = GetRequestUser();
         var finalEnabled = tabAndRootEnabled && subEnabled && requestUser is not null;
@@ -810,7 +820,7 @@ public class BackdropsController : ControllerBase
             IncludeItemTypes = new[] { includeType },
             Recursive = true
         };
-        var (resolvedOrderBy, resolvedOrder, resolvedStartIndex, resolvedLimit) = ResolveRotationQuery(sortMode, traversalMode, query);
+        var (resolvedOrderBy, resolvedOrder, resolvedStartIndex, resolvedLimit) = ResolveRotationQuery(sortMode, traversalMode, randomStart, query);
         query.OrderBy = new[] { (resolvedOrderBy, resolvedOrder) };
         query.Limit = resolvedLimit;
         if (resolvedStartIndex.HasValue)
@@ -919,7 +929,7 @@ public class BackdropsController : ControllerBase
                 IncludeItemTypes = includeTypes,
                 Recursive = true
             };
-            var (apOrderBy, apOrder, apStart, apLimit) = ResolveRotationQuery(config.BackdropsFavoritesPeopleAppearancesSortMode, config.BackdropsFavoritesPeopleAppearancesTraversalMode, appearancesQuery);
+            var (apOrderBy, apOrder, apStart, apLimit) = ResolveRotationQuery(config.BackdropsFavoritesPeopleAppearancesSortMode, config.BackdropsFavoritesPeopleAppearancesTraversalMode, config.BackdropsFavoritesPeopleAppearancesRandomStart, appearancesQuery);
             appearancesQuery.OrderBy = new[] { (apOrderBy, apOrder) };
             appearancesQuery.Limit = apLimit;
             if (apStart.HasValue) { appearancesQuery.StartIndex = apStart.Value; }
@@ -976,6 +986,8 @@ public class BackdropsController : ControllerBase
                     folderUrls.Add("/PeopleBackdrops/" + person.Id + "/folder-image?index=" + i + "&mode=" + folderMode + "&v=" + Helpers.BackdropFileResolver.VersionTag(paths[i]));
                 }
             }
+            // Session 127: Random start position (Sequential only - the client shuffles the other orders itself).
+            if (config.BackdropsFavoritesPeopleFolderRandomStart && config.BackdropsFavoritesPeopleFolderOrderMode == "Sequential") { folderUrls = Helpers.RandomStart.Rotate(folderUrls); }
             result.WallpaperUrls = folderUrls;
             _logger.LogInformation(
                 "Backdrops: GetFavoritesPeoplePool - Folder, favoritePeople={PeopleCount}, mode={Mode}, imagesReturned={ImageCount}",
@@ -1246,7 +1258,7 @@ public class BackdropsController : ControllerBase
         ItemSortBy.IsPlayed, ItemSortBy.IsUnplayed, ItemSortBy.IsFavoriteOrLiked
     };
 
-    private (ItemSortBy OrderBy, SortOrder Order, int? StartIndex, int Limit) ResolveRotationQuery(string sortMode, string traversalMode, InternalItemsQuery baseQuery)
+    private (ItemSortBy OrderBy, SortOrder Order, int? StartIndex, int Limit) ResolveRotationQuery(string sortMode, string traversalMode, bool randomStart, InternalItemsQuery baseQuery)
     {
         const int PoolLimit = 100;
 
@@ -1277,7 +1289,9 @@ public class BackdropsController : ControllerBase
             : SortOrder.Ascending;
 
         int? startIndex = null;
-        if (traversalMode == "RandomStartAscending" || traversalMode == "RandomStartDescending")
+        // Session 127: the Random start position checkbox (Traversal keeps only its two directions;
+        // a legacy RandomStart* word saved before still counts until the page is saved again).
+        if (Helpers.RandomStart.ForTraversal(randomStart, traversalMode))
         {
             var total = _libraryManager.GetCount(baseQuery);
             var maxStart = Math.Max(0, total - PoolLimit);

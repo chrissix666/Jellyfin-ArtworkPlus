@@ -417,6 +417,11 @@ public class PeopleBackdropsController : ControllerBase
                 {
                     Random.Shared.Shuffle(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(streamOrder));
                 }
+                else if (config.PeopleBackdropsRandomStart)
+                {
+                    // Session 127: Random start position - Sequential keeps its order, only the entry point moves.
+                    streamOrder = Helpers.RandomStart.Rotate(cacheFile.Images);
+                }
 
                 foreach (var image in streamOrder)
                 {
@@ -576,7 +581,8 @@ public class PeopleBackdropsController : ControllerBase
             Recursive = true,
             OrderBy = new[] { (orderByField, order) }
         };
-        if (traversal == "RandomStartAscending" || traversal == "RandomStartDescending")
+        // Session 127: the Random start position checkbox (legacy RandomStart* traversal words still count).
+        if (Helpers.RandomStart.ForTraversal(config.PeopleBackdropsAppearancesRandomStart, traversal))
         {
             var total = _libraryManager.GetCount(appearancesQuery);
             var maxStart = Math.Max(0, total - 100);
@@ -683,9 +689,15 @@ public class PeopleBackdropsController : ControllerBase
         var personFolder = GetPersonFolder(person);
         var paths = ResolveFolderBackdropPaths(personFolder, config.PeopleBackdropsFolderBackdropFiles, config.BackdropsAllowedFormats, config.PeopleBackdropsFolderBaseName);
 
+        // Session 127: Random start position - the URLs keep their file index, only the stream order is rotated.
+        var folderUrls = new List<string>(paths.Count);
         for (var i = 0; i < paths.Count; i++)
         {
-            var url = "/PeopleBackdrops/" + person.Id + "/folder-image?index=" + i + "&v=" + Helpers.BackdropFileResolver.VersionTag(paths[i]);
+            folderUrls.Add("/PeopleBackdrops/" + person.Id + "/folder-image?index=" + i + "&v=" + Helpers.BackdropFileResolver.VersionTag(paths[i]));
+        }
+        if (config.PeopleBackdropsFolderRandomStart && config.PeopleBackdropsFolderOrderMode == "Sequential") { folderUrls = Helpers.RandomStart.Rotate(folderUrls); }
+        foreach (var url in folderUrls)
+        {
             await WriteStreamLineAsync(new PeopleBackdropsStreamLine { Type = "Image", Url = url }).ConfigureAwait(false);
         }
 

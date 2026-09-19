@@ -347,7 +347,8 @@ public class ExtraposterController : ControllerBase
         string OrderMode, bool SinglePass, int CycleTimeMs, int FadeTimeMs, bool DelayEnabled, int DelayMs,
         bool LogoEnabled, int LogoVerticalPositionPercent, int LogoSizePercent, bool SyncEnabled, bool SeamlessEnabled,
         string UnnumberedMode, bool SourceFiles, bool SourceChildren, bool ChildrenFirst, string ChildOrder, bool IncludeSpecials, bool SkipSingleSeason,
-        string SetImage, string SetFallback, string SetFallback2, bool SetKeyartLogoEnabled, int SetKeyartLogoVerticalPositionPercent, int SetKeyartLogoSizePercent);
+        string SetImage, string SetFallback, string SetFallback2, bool SetKeyartLogoEnabled, int SetKeyartLogoVerticalPositionPercent, int SetKeyartLogoSizePercent,
+        bool FilesRandomStart, bool ChildRandomStart);
 
     // Session 125: the four-value priority (FilesFirst | FilesOnly | SetPostersFirst | SetPostersOnly,
     // TV: SeasonPosters…) decides which sources a Set / series uses and in which order. A movie
@@ -378,29 +379,29 @@ public class ExtraposterController : ControllerBase
             {
                 return isLibraryScope
                     ? new ExtraViewSettings(c.ExtraposterMoviesLibraryOrderMode, c.ExtraposterMoviesLibrarySinglePass, c.ExtraposterMoviesLibraryCycleTimeMs, c.ExtraposterMoviesLibraryFadeTimeMs, c.ExtraposterMoviesLibraryDelayEnabled, c.ExtraposterMoviesLibraryDelayMs, false, 0, 0, c.ExtraposterMoviesLibrarySyncEnabled, c.ExtraposterMoviesLibrarySeamlessEnabled,
-                        "Ignored", SourceUsesFiles(c.ExtraposterMoviesLibrarySourcePriority), SourceUsesChildren(c.ExtraposterMoviesLibrarySourcePriority), SourceChildrenFirst(c.ExtraposterMoviesLibrarySourcePriority), c.ExtraposterMoviesLibrarySetOrder, false, false, c.ExtraposterMoviesLibrarySetImage, c.ExtraposterMoviesLibrarySetFallback, c.ExtraposterMoviesLibrarySetFallback2, c.ExtraposterMoviesLibrarySetKeyartLogoEnabled, c.ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesLibrarySetKeyartLogoSizePercent)
+                        "Ignored", SourceUsesFiles(c.ExtraposterMoviesLibrarySourcePriority), SourceUsesChildren(c.ExtraposterMoviesLibrarySourcePriority), SourceChildrenFirst(c.ExtraposterMoviesLibrarySourcePriority), c.ExtraposterMoviesLibrarySetOrder, false, false, c.ExtraposterMoviesLibrarySetImage, c.ExtraposterMoviesLibrarySetFallback, c.ExtraposterMoviesLibrarySetFallback2, c.ExtraposterMoviesLibrarySetKeyartLogoEnabled, c.ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesLibrarySetKeyartLogoSizePercent, c.ExtraposterMoviesLibraryRandomStart, c.ExtraposterMoviesLibrarySetRandomStart)
                     : new ExtraViewSettings(c.ExtraposterMoviesDetailOrderMode, c.ExtraposterMoviesDetailSinglePass, c.ExtraposterMoviesDetailCycleTimeMs, c.ExtraposterMoviesDetailFadeTimeMs, c.ExtraposterMoviesDetailDelayEnabled, c.ExtraposterMoviesDetailDelayMs, false, 0, 0, false, true,
-                        "Ignored", SourceUsesFiles(c.ExtraposterMoviesDetailSourcePriority), SourceUsesChildren(c.ExtraposterMoviesDetailSourcePriority), SourceChildrenFirst(c.ExtraposterMoviesDetailSourcePriority), c.ExtraposterMoviesDetailSetOrder, false, false, c.ExtraposterMoviesDetailSetImage, c.ExtraposterMoviesDetailSetFallback, c.ExtraposterMoviesDetailSetFallback2, c.ExtraposterMoviesDetailSetKeyartLogoEnabled, c.ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesDetailSetKeyartLogoSizePercent);
+                        "Ignored", SourceUsesFiles(c.ExtraposterMoviesDetailSourcePriority), SourceUsesChildren(c.ExtraposterMoviesDetailSourcePriority), SourceChildrenFirst(c.ExtraposterMoviesDetailSourcePriority), c.ExtraposterMoviesDetailSetOrder, false, false, c.ExtraposterMoviesDetailSetImage, c.ExtraposterMoviesDetailSetFallback, c.ExtraposterMoviesDetailSetFallback2, c.ExtraposterMoviesDetailSetKeyartLogoEnabled, c.ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent, c.ExtraposterMoviesDetailSetKeyartLogoSizePercent, c.ExtraposterMoviesDetailRandomStart, c.ExtraposterMoviesDetailSetRandomStart);
             }
             return isLibraryScope
                 ? new ExtraViewSettings(c.ExtraposterTvShowsLibraryOrderMode, c.ExtraposterTvShowsLibrarySinglePass, c.ExtraposterTvShowsLibraryCycleTimeMs, c.ExtraposterTvShowsLibraryFadeTimeMs, c.ExtraposterTvShowsLibraryDelayEnabled, c.ExtraposterTvShowsLibraryDelayMs, false, 0, 0, c.ExtraposterTvShowsLibrarySyncEnabled, c.ExtraposterTvShowsLibrarySeamlessEnabled,
-                        "Ignored", SourceUsesFiles(c.ExtraposterTvShowsLibrarySourcePriority), SourceUsesChildren(c.ExtraposterTvShowsLibrarySourcePriority), SourceChildrenFirst(c.ExtraposterTvShowsLibrarySourcePriority), c.ExtraposterTvShowsLibrarySeasonOrder, c.ExtraposterTvShowsLibraryIncludeSpecials, c.ExtraposterTvShowsLibrarySkipSingleSeason, "Poster", "None", "None", false, 0, 0)
+                        "Ignored", SourceUsesFiles(c.ExtraposterTvShowsLibrarySourcePriority), SourceUsesChildren(c.ExtraposterTvShowsLibrarySourcePriority), SourceChildrenFirst(c.ExtraposterTvShowsLibrarySourcePriority), c.ExtraposterTvShowsLibrarySeasonOrder, c.ExtraposterTvShowsLibraryIncludeSpecials, c.ExtraposterTvShowsLibrarySkipSingleSeason, "Poster", "None", "None", false, 0, 0, c.ExtraposterTvShowsLibraryRandomStart, c.ExtraposterTvShowsLibrarySeasonRandomStart)
                 : new ExtraViewSettings(c.ExtraposterTvShowsDetailOrderMode, c.ExtraposterTvShowsDetailSinglePass, c.ExtraposterTvShowsDetailCycleTimeMs, c.ExtraposterTvShowsDetailFadeTimeMs, c.ExtraposterTvShowsDetailDelayEnabled, c.ExtraposterTvShowsDetailDelayMs, false, 0, 0, false, true,
-                        "Ignored", SourceUsesFiles(c.ExtraposterTvShowsDetailSourcePriority), SourceUsesChildren(c.ExtraposterTvShowsDetailSourcePriority), SourceChildrenFirst(c.ExtraposterTvShowsDetailSourcePriority), c.ExtraposterTvShowsDetailSeasonOrder, c.ExtraposterTvShowsDetailIncludeSpecials, c.ExtraposterTvShowsDetailSkipSingleSeason, "Poster", "None", "None", false, 0, 0);
+                        "Ignored", SourceUsesFiles(c.ExtraposterTvShowsDetailSourcePriority), SourceUsesChildren(c.ExtraposterTvShowsDetailSourcePriority), SourceChildrenFirst(c.ExtraposterTvShowsDetailSourcePriority), c.ExtraposterTvShowsDetailSeasonOrder, c.ExtraposterTvShowsDetailIncludeSpecials, c.ExtraposterTvShowsDetailSkipSingleSeason, "Poster", "None", "None", false, 0, 0, c.ExtraposterTvShowsDetailRandomStart, c.ExtraposterTvShowsDetailSeasonRandomStart);
         }
         if (!tv)
         {
             return isLibraryScope
                 ? new ExtraViewSettings(c.ExtrakeyartMoviesLibraryOrderMode, c.ExtrakeyartMoviesLibrarySinglePass, c.ExtrakeyartMoviesLibraryCycleTimeMs, c.ExtrakeyartMoviesLibraryFadeTimeMs, c.ExtrakeyartMoviesLibraryDelayEnabled, c.ExtrakeyartMoviesLibraryDelayMs, c.ExtrakeyartMoviesLibraryLogoEnabled, c.ExtrakeyartMoviesLibraryLogoVerticalPositionPercent, c.ExtrakeyartMoviesLibraryLogoSizePercent, c.ExtrakeyartMoviesLibrarySyncEnabled, c.ExtrakeyartMoviesLibrarySeamlessEnabled,
-                        c.ExtrakeyartMoviesLibraryUnnumberedMode, true, false, false, "Ascending", false, false, "Poster", "None", "None", false, 0, 0)
+                        c.ExtrakeyartMoviesLibraryUnnumberedMode, true, false, false, "Ascending", false, false, "Poster", "None", "None", false, 0, 0, c.ExtrakeyartMoviesLibraryRandomStart, false)
                 : new ExtraViewSettings(c.ExtrakeyartMoviesDetailOrderMode, c.ExtrakeyartMoviesDetailSinglePass, c.ExtrakeyartMoviesDetailCycleTimeMs, c.ExtrakeyartMoviesDetailFadeTimeMs, c.ExtrakeyartMoviesDetailDelayEnabled, c.ExtrakeyartMoviesDetailDelayMs, c.ExtrakeyartMoviesDetailLogoEnabled, c.ExtrakeyartMoviesDetailLogoVerticalPositionPercent, c.ExtrakeyartMoviesDetailLogoSizePercent, false, true,
-                        c.ExtrakeyartMoviesDetailUnnumberedMode, true, false, false, "Ascending", false, false, "Poster", "None", "None", false, 0, 0);
+                        c.ExtrakeyartMoviesDetailUnnumberedMode, true, false, false, "Ascending", false, false, "Poster", "None", "None", false, 0, 0, c.ExtrakeyartMoviesDetailRandomStart, false);
         }
         return isLibraryScope
             ? new ExtraViewSettings(c.ExtrakeyartTvShowsLibraryOrderMode, c.ExtrakeyartTvShowsLibrarySinglePass, c.ExtrakeyartTvShowsLibraryCycleTimeMs, c.ExtrakeyartTvShowsLibraryFadeTimeMs, c.ExtrakeyartTvShowsLibraryDelayEnabled, c.ExtrakeyartTvShowsLibraryDelayMs, c.ExtrakeyartTvShowsLibraryLogoEnabled, c.ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent, c.ExtrakeyartTvShowsLibraryLogoSizePercent, c.ExtrakeyartTvShowsLibrarySyncEnabled, c.ExtrakeyartTvShowsLibrarySeamlessEnabled,
-                        c.ExtrakeyartTvShowsLibraryUnnumberedMode, true, false, false, "Ascending", false, false, "Poster", "None", "None", false, 0, 0)
+                        c.ExtrakeyartTvShowsLibraryUnnumberedMode, true, false, false, "Ascending", false, false, "Poster", "None", "None", false, 0, 0, c.ExtrakeyartTvShowsLibraryRandomStart, false)
             : new ExtraViewSettings(c.ExtrakeyartTvShowsDetailOrderMode, c.ExtrakeyartTvShowsDetailSinglePass, c.ExtrakeyartTvShowsDetailCycleTimeMs, c.ExtrakeyartTvShowsDetailFadeTimeMs, c.ExtrakeyartTvShowsDetailDelayEnabled, c.ExtrakeyartTvShowsDetailDelayMs, c.ExtrakeyartTvShowsDetailLogoEnabled, c.ExtrakeyartTvShowsDetailLogoVerticalPositionPercent, c.ExtrakeyartTvShowsDetailLogoSizePercent, false, true,
-                        c.ExtrakeyartTvShowsDetailUnnumberedMode, true, false, false, "Ascending", false, false, "Poster", "None", "None", false, 0, 0);
+                        c.ExtrakeyartTvShowsDetailUnnumberedMode, true, false, false, "Ascending", false, false, "Poster", "None", "None", false, 0, 0, c.ExtrakeyartTvShowsDetailRandomStart, false);
     }
 
 
@@ -493,9 +494,11 @@ public class ExtraposterController : ControllerBase
     /// (Shuffle: one random permutation, no repeats per round; Random: as many
     /// random draws as entries, repeats allowed). Sorted values pass through.
     /// </summary>
-    private static List<PosterEntry> ApplyEntryOrder(List<PosterEntry> entries, string childOrder)
+    private static List<PosterEntry> ApplyEntryOrder(List<PosterEntry> entries, string childOrder, bool randomStart)
     {
-        if (entries.Count < 2 || (childOrder != "Shuffle" && childOrder != "Random")) { return entries; }
+        if (entries.Count < 2) { return entries; }
+        // Session 127: Random start position for the sorted orders (Shuffle/Random are random anyway).
+        if (childOrder != "Shuffle" && childOrder != "Random") { return randomStart ? Helpers.RandomStart.Rotate(entries) : entries; }
         if (childOrder == "Shuffle") { return entries.OrderBy(_ => Guid.NewGuid()).ToList(); }
         var rnd = new Random();
         return Enumerable.Range(0, entries.Count).Select(_ => entries[rnd.Next(entries.Count)]).ToList();
@@ -509,7 +512,7 @@ public class ExtraposterController : ControllerBase
             var ordered = view.ChildOrder == "Descending"
                 ? movies.OrderByDescending(PremiereSortDate).ToList()
                 : movies.OrderBy(PremiereSortDate).ToList();
-            return ApplyEntryOrder(ordered.Select(c => SetMovieEntry(config, c, view)).Where(e => e is not null).Select(e => e!).ToList(), view.ChildOrder);
+            return ApplyEntryOrder(ordered.Select(c => SetMovieEntry(config, c, view)).Where(e => e is not null).Select(e => e!).ToList(), view.ChildOrder, view.ChildRandomStart);
         }
         if (item is Series series)
         {
@@ -521,7 +524,7 @@ public class ExtraposterController : ControllerBase
                 : regular.OrderBy(x => x.IndexNumber ?? 0).ToList();
             var usable = view.IncludeSpecials ? specials.Concat(regular).ToList() : regular;
             if (view.SkipSingleSeason && usable.Count <= 1) { return new List<PosterEntry>(); }
-            return ApplyEntryOrder(usable.Select(PrimaryEntry).Where(e => e is not null).Select(e => e!).ToList(), view.ChildOrder);
+            return ApplyEntryOrder(usable.Select(PrimaryEntry).Where(e => e is not null).Select(e => e!).ToList(), view.ChildOrder, view.ChildRandomStart);
         }
         return new List<PosterEntry>();
     }
@@ -542,6 +545,8 @@ public class ExtraposterController : ControllerBase
         {
             var candidates = ResolveCandidates(folderPath, namingMode, folderName, view.OrderMode, config.AllowedFormats, resolvedType, view.UnnumberedMode);
             files = BuildPosterEntries(folderPath, candidates);
+            // Session 127: Random start position - Sequential + Loop only (the page greys the box otherwise).
+            if (view.FilesRandomStart && view.OrderMode == "Sequential" && !view.SinglePass) { files = Helpers.RandomStart.Rotate(files); }
         }
         List<PosterEntry> children = new();
         if (view.SourceChildren && hasChildren)

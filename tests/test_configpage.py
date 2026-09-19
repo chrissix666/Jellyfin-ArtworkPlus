@@ -1178,6 +1178,62 @@ with sync_playwright() as p:
         check(f'S127: {id_} options', vals == expect, str(vals))
     delays = apage.evaluate("() => ['ExtraposterMoviesDetail', 'ExtraposterMoviesLibrary', 'ExtraposterTvShowsDetail', 'ExtraposterTvShowsLibrary', 'ExtrakeyartMoviesDetail', 'ExtrakeyartMoviesLibrary', 'ExtrakeyartTvShowsDetail', 'ExtrakeyartTvShowsLibrary', 'CharacterartMovies', 'CharacterartTvShows'].map(function (p) { return document.getElementById(p + 'DelayMs').value; })")
     check('S127: every Extra + Characterart Delay defaults to 5000', all(d == '5000' for d in delays), str(delays))
+    # ─── Session 127d: Random start position (35 checkboxes) + Traversal reduced to two directions ───
+    apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
+    apage.wait_for_timeout(150)
+    for tab in ['extraposter', 'characterart', 'backdrops']:
+        apage.evaluate("(t) => { var b = document.querySelector('.epTabBtn[data-tab=' + JSON.stringify(t) + ']'); if (b) b.click(); }", tab)
+    apage.evaluate("""() => { ['ExtraposterEnabled','ExtrakeyartEnabled','CharacterartEnabled','BackdropsEnabled','PeopleBackdropsEnabled','BackdropsGenreEnabled','BackdropsStudioEnabled','BackdropsTagEnabled','BackdropsFavoritesEnabled','BackdropsFavoritesPeopleEnabled','BackdropsFavoritesMoviesEnabled','BackdropsFavoritesShowsEnabled','BackdropsFavoritesEpisodesEnabled','BackdropsFavoritesVideosEnabled','BackdropsFavoritesCollectionsEnabled','BackdropsFavoritesPlaylistsEnabled','BackdropsFavoritesArtistsEnabled','BackdropsFavoritesAlbumsEnabled','BackdropsFavoritesSongsEnabled','BackdropsFavoritesBooksEnabled','CharacterartShowOnMovies','CharacterartShowOnTvShows','BackdropsShowOnMovies','BackdropsGenreGlobalEnabled','BackdropsStudioGlobalEnabled'].forEach(function (id) { var e = document.getElementById(id); if (e && e.type === 'checkbox' && !e.checked) { e.checked = true; e.dispatchEvent(new Event('change', { bubbles: true })); } }); }""")
+    def rs_set(i, v):
+        if isinstance(v, bool): aset(i, v)
+        else: sel(i, v)
+    def rs_state(cb):
+        return apage.evaluate("(id) => { var r = document.getElementById(id + 'Row'); var n = r, g = false; while (n) { if (n.classList && n.classList.contains('epFieldDisabled')) { g = true; break; } n = n.parentElement; } return { grey: g, dis: document.getElementById(id).disabled, exists: !!r, label: r ? r.querySelector('label').textContent : null }; }", cb)
+    RS = []
+    for feat in ('Extraposter', 'Extrakeyart'):
+        for typ in ('Movies', 'TvShows'):
+            for view in ('Detail', 'Library'):
+                p = feat + typ + view
+                RS.append((p + 'RandomStart', p + 'OrderMode', 'Sequential', 'Shuffle', p + 'SinglePassSelect', [(p + 'SourcePriority', 'FilesFirst')] if (feat == 'Extraposter' and typ == 'TvShows') else []))
+    for view in ('Detail', 'Library'):
+        p = 'ExtraposterMovies' + view
+        RS.append((p + 'SetRandomStart', p + 'SetOrder', 'Descending', 'Random', None, [(p + 'ShowOnSets', True), (p + 'SourcePriority', 'SetPostersFirst')]))
+        p = 'ExtraposterTvShows' + view
+        RS.append((p + 'SeasonRandomStart', p + 'SeasonOrder', 'Ascending', 'Shuffle', None, [(p + 'SourcePriority', 'SeasonPostersFirst')]))
+    for typ in ('Movies', 'TvShows'):
+        p = 'Characterart' + typ
+        RS.append((p + 'RandomStart', p + 'OrderMode', 'Sequential', 'Random', p + 'SinglePassSelect', [(p + 'MultiImage', True)]))
+    RS += [
+        ('BackdropsRandomStart', 'BackdropsOrderMode', 'Sequential', 'Shuffle', None, []),
+        ('BackdropsEpisodeRandomStart', 'BackdropsEpisodeOrderMode', 'Sequential', 'Shuffle', None, [('BackdropsShowOnEpisodes', True), ('BackdropsEpisodeEnabled', True), ('BackdropsEpisodeBackdropFiles', 'Multiple')]),
+        ('PeopleBackdropsRandomStart', 'PeopleBackdropsOrderMode', 'Sequential', 'Random', None, [('PeopleBackdropsSourceMode', 'WallpapersCom')]),
+        ('PeopleBackdropsFolderRandomStart', 'PeopleBackdropsFolderOrderMode', 'Sequential', 'Shuffle', None, [('PeopleBackdropsSourceMode', 'Folder'), ('PeopleBackdropsFolderBackdropFiles', 'Multiple')]),
+        ('PeopleBackdropsAppearancesRandomStart', 'PeopleBackdropsAppearancesSortMode', 'SortName', 'Shuffle', None, [('PeopleBackdropsSourceMode', 'Appearances')]),
+        ('BackdropsStudioRandomStart', 'BackdropsStudioSortMode', 'SortName', 'Shuffle', None, [('BackdropsStudioSourceMode', 'Appearances')]),
+        ('BackdropsGenreRandomStart', 'BackdropsGenreSortMode', 'SortName', 'Random', None, []),
+        ('BackdropsTagRandomStart', 'BackdropsTagSortMode', 'SortName', 'Shuffle', None, []),
+        ('BackdropsFavoritesGeneralRandomStart', 'BackdropsFavoritesGeneralSortMode', 'SortName', 'Shuffle', None, [('BackdropsFavoritesManageMode', 'General')]),
+        ('BackdropsFavoritesPeopleAppearancesRandomStart', 'BackdropsFavoritesPeopleAppearancesSortMode', 'SortName', 'Shuffle', None, [('BackdropsFavoritesPeopleSourceMode', 'Appearances')]),
+        ('BackdropsFavoritesPeopleFolderRandomStart', 'BackdropsFavoritesPeopleFolderOrderMode', 'Sequential', 'Shuffle', None, [('BackdropsFavoritesPeopleSourceMode', 'Folder'), ('BackdropsFavoritesPeopleFolderBackdropFiles', 'Multiple')]),
+    ] + [('BackdropsFavorites%sRandomStart' % T_, 'BackdropsFavorites%sSortMode' % T_, 'DateCreated' if T_ == 'Episodes' else 'SortName', 'Shuffle', None, [('BackdropsFavoritesManageMode', 'Individual')]) for T_ in ('Movies', 'Shows', 'Episodes', 'Videos', 'Collections', 'Playlists', 'Artists', 'Albums', 'Songs', 'Books')]  # Episodes sort by series name / date, not SortName
+    check('S127d: 35 Random start places listed', len(RS) == 35, str(len(RS)))
+    for cb, gate, on, off, sp, pre in RS:
+        for i_, v_ in pre: rs_set(i_, v_)
+        if sp: rs_set(sp, 'false')
+        rs_set(gate, on); a_ = rs_state(cb)
+        rs_set(gate, off); c_ = rs_state(cb)
+        rs_set(gate, on)
+        d_ = None
+        if sp:
+            rs_set(sp, 'true'); d_ = rs_state(cb); rs_set(sp, 'false')
+        ok_ = a_['exists'] and a_['label'] == 'Random start position' and not a_['grey'] and not a_['dis'] and c_['grey'] and c_['dis'] and (d_ is None or (d_['grey'] and d_['dis']))
+        check(f'S127d: {cb} active with a sorted order, grey with a random one' + (' and with Play once' if sp else ''), ok_, f'sorted={a_} random={c_} once={d_}')
+    res = apage.evaluate("() => { var cfg = { BackdropsGenreTraversalMode: 'RandomStartDescending', BackdropsFavoritesSongsTraversalMode: 'RandomStartAscending', BackdropsTagTraversalMode: 'BeginAscending' }; epNormalizeLegacyTraversal(cfg); return cfg; }")
+    check('S127d: legacy RandomStart* traversal values become direction + checkbox', res == {'BackdropsGenreTraversalMode': 'BeginDescending', 'BackdropsGenreRandomStart': True, 'BackdropsFavoritesSongsTraversalMode': 'BeginAscending', 'BackdropsFavoritesSongsRandomStart': True, 'BackdropsTagTraversalMode': 'BeginAscending'}, str(res))
+    trav = apage.evaluate("() => Array.prototype.map.call(document.querySelectorAll('select[id$=TraversalMode]'), function (s) { return Array.prototype.map.call(s.options, function (o) { return o.value + '=' + o.text; }).join('|'); })")
+    check('S127d: all 16 Traversal dropdowns offer exactly Ascending / Descending', len(trav) == 16 and all(x == 'BeginAscending=Ascending|BeginDescending=Descending' for x in trav), str(trav))
+    apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
+    apage.wait_for_timeout(150)
     # Animated Keyart: logo per view (Session 126), mirrors the Keyart tab
     apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="animatedposter"]').click(); }""")
     for view, size in [('Detail', '60'), ('Library', '80')]:

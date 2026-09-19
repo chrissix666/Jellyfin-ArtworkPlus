@@ -1888,6 +1888,16 @@
                             </select>
                             <div class="epDesc">Release date per Jellyfin's rule (date, else year), or Shuffle / Random.</div>
                         </div>
+                        <div class="epRow epRowCheckbox" id="ExtraposterMoviesDetailSetRandomStartRow">
+                            <label for="ExtraposterMoviesDetailSetRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterMoviesDetailSetRandomStart" name="ExtraposterMoviesDetailSetRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random movie and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
                         <div class="epRow epRowMerged" id="ExtraposterMoviesDetailSetImageRow">
                             <label for="ExtraposterMoviesDetailSetImage" class="epRowLabelSpan">Set image</label>
                             <select is="emby-select" id="ExtraposterMoviesDetailSetImage" name="ExtraposterMoviesDetailSetImage" class="emby-select-withcolor emby-select epSelectCompact">
@@ -1967,6 +1977,16 @@
                             <input type="checkbox" id="ExtraposterMoviesDetailSinglePass" name="ExtraposterMoviesDetailSinglePass" style="display:none;" />
                             <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
                         </div>
+                        <div class="epRow epRowCheckbox" id="ExtraposterMoviesDetailRandomStartRow">
+                            <label for="ExtraposterMoviesDetailRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterMoviesDetailRandomStart" name="ExtraposterMoviesDetailRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random poster and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
                         <div class="epRow epRowMerged">
                             <label for="ExtraposterMoviesDetailCycleTimeMs" class="epRowLabelSpan">Display duration</label>
                             <div style="display:flex; align-items:center; gap:6px;">
@@ -2043,6 +2063,16 @@
                                 <option value="Random">Random</option>
                             </select>
                             <div class="epDesc">Release date per Jellyfin's rule (date, else year), or Shuffle / Random.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="ExtraposterMoviesLibrarySetRandomStartRow">
+                            <label for="ExtraposterMoviesLibrarySetRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterMoviesLibrarySetRandomStart" name="ExtraposterMoviesLibrarySetRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random movie and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         <div class="epRow epRowMerged" id="ExtraposterMoviesLibrarySetImageRow">
                             <label for="ExtraposterMoviesLibrarySetImage" class="epRowLabelSpan">Set image</label>
@@ -2122,6 +2152,16 @@
                             </select>
                             <input type="checkbox" id="ExtraposterMoviesLibrarySinglePass" name="ExtraposterMoviesLibrarySinglePass" style="display:none;" />
                             <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="ExtraposterMoviesLibraryRandomStartRow">
+                            <label for="ExtraposterMoviesLibraryRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterMoviesLibraryRandomStart" name="ExtraposterMoviesLibraryRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random poster and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         <div class="epRow epRowMerged">
                             <label for="ExtraposterMoviesLibraryCycleTimeMs" class="epRowLabelSpan">Display duration</label>
@@ -2236,6 +2276,16 @@
                             </select>
                             <div class="epDesc">By season number, or Shuffle / Random.</div>
                         </div>
+                        <div class="epRow epRowCheckbox" id="ExtraposterTvShowsDetailSeasonRandomStartRow">
+                            <label for="ExtraposterTvShowsDetailSeasonRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterTvShowsDetailSeasonRandomStart" name="ExtraposterTvShowsDetailSeasonRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random season and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
                         <div class="epRow epRowCheckbox" id="ExtraposterTvShowsDetailIncludeSpecialsRow">
                             <label for="ExtraposterTvShowsDetailIncludeSpecials">Include specials</label>
                             <div class="checkboxContainer" style="margin:0;">
@@ -2273,6 +2323,16 @@
                             </select>
                             <input type="checkbox" id="ExtraposterTvShowsDetailSinglePass" name="ExtraposterTvShowsDetailSinglePass" style="display:none;" />
                             <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="ExtraposterTvShowsDetailRandomStartRow">
+                            <label for="ExtraposterTvShowsDetailRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterTvShowsDetailRandomStart" name="ExtraposterTvShowsDetailRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random poster and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         <div class="epRow epRowMerged">
                             <label for="ExtraposterTvShowsDetailCycleTimeMs" class="epRowLabelSpan">Display duration</label>
@@ -2350,6 +2410,16 @@
                             </select>
                             <div class="epDesc">By season number, or Shuffle / Random.</div>
                         </div>
+                        <div class="epRow epRowCheckbox" id="ExtraposterTvShowsLibrarySeasonRandomStartRow">
+                            <label for="ExtraposterTvShowsLibrarySeasonRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterTvShowsLibrarySeasonRandomStart" name="ExtraposterTvShowsLibrarySeasonRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random season and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
                         <div class="epRow epRowCheckbox" id="ExtraposterTvShowsLibraryIncludeSpecialsRow">
                             <label for="ExtraposterTvShowsLibraryIncludeSpecials">Include specials</label>
                             <div class="checkboxContainer" style="margin:0;">
@@ -2387,6 +2457,16 @@
                             </select>
                             <input type="checkbox" id="ExtraposterTvShowsLibrarySinglePass" name="ExtraposterTvShowsLibrarySinglePass" style="display:none;" />
                             <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="ExtraposterTvShowsLibraryRandomStartRow">
+                            <label for="ExtraposterTvShowsLibraryRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtraposterTvShowsLibraryRandomStart" name="ExtraposterTvShowsLibraryRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random poster and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         <div class="epRow epRowMerged">
                             <label for="ExtraposterTvShowsLibraryCycleTimeMs" class="epRowLabelSpan">Display duration</label>
@@ -2557,6 +2637,16 @@
                             <input type="checkbox" id="ExtrakeyartMoviesDetailSinglePass" name="ExtrakeyartMoviesDetailSinglePass" style="display:none;" />
                             <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
                         </div>
+                        <div class="epRow epRowCheckbox" id="ExtrakeyartMoviesDetailRandomStartRow">
+                            <label for="ExtrakeyartMoviesDetailRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartMoviesDetailRandomStart" name="ExtrakeyartMoviesDetailRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random poster and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
                         <div class="epRow epRowMerged">
                             <label for="ExtrakeyartMoviesDetailCycleTimeMs" class="epRowLabelSpan">Display duration</label>
                             <div style="display:flex; align-items:center; gap:6px;">
@@ -2665,6 +2755,16 @@
                             </select>
                             <input type="checkbox" id="ExtrakeyartMoviesLibrarySinglePass" name="ExtrakeyartMoviesLibrarySinglePass" style="display:none;" />
                             <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="ExtrakeyartMoviesLibraryRandomStartRow">
+                            <label for="ExtrakeyartMoviesLibraryRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartMoviesLibraryRandomStart" name="ExtrakeyartMoviesLibraryRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random poster and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         <div class="epRow epRowMerged">
                             <label for="ExtrakeyartMoviesLibraryCycleTimeMs" class="epRowLabelSpan">Display duration</label>
@@ -2811,6 +2911,16 @@
                             <input type="checkbox" id="ExtrakeyartTvShowsDetailSinglePass" name="ExtrakeyartTvShowsDetailSinglePass" style="display:none;" />
                             <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
                         </div>
+                        <div class="epRow epRowCheckbox" id="ExtrakeyartTvShowsDetailRandomStartRow">
+                            <label for="ExtrakeyartTvShowsDetailRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartTvShowsDetailRandomStart" name="ExtrakeyartTvShowsDetailRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random poster and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
                         <div class="epRow epRowMerged">
                             <label for="ExtrakeyartTvShowsDetailCycleTimeMs" class="epRowLabelSpan">Display duration</label>
                             <div style="display:flex; align-items:center; gap:6px;">
@@ -2918,6 +3028,16 @@
                             </select>
                             <input type="checkbox" id="ExtrakeyartTvShowsLibrarySinglePass" name="ExtrakeyartTvShowsLibrarySinglePass" style="display:none;" />
                             <div class="epDesc">Loop: runs forever. Play once: fades back to the original after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="ExtrakeyartTvShowsLibraryRandomStartRow">
+                            <label for="ExtrakeyartTvShowsLibraryRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="ExtrakeyartTvShowsLibraryRandomStart" name="ExtrakeyartTvShowsLibraryRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random poster and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         <div class="epRow epRowMerged">
                             <label for="ExtrakeyartTvShowsLibraryCycleTimeMs" class="epRowLabelSpan">Display duration</label>
@@ -3064,6 +3184,16 @@
                             </select>
                             <input type="checkbox" id="CharacterartMoviesSinglePass" name="CharacterartMoviesSinglePass" style="display:none;" />
                             <div class="epDesc">Multi-image only. Loop: runs forever. Play once: fades back after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="CharacterartMoviesRandomStartRow">
+                            <label for="CharacterartMoviesRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CharacterartMoviesRandomStart" name="CharacterartMoviesRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random image and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         <div class="epRow epRowCheckbox" id="CharacterartMoviesStaySingleImageStaticRow">
                             <label for="CharacterartMoviesStaySingleImageStatic">If only 1 image is found</label>
@@ -3380,6 +3510,16 @@
                             </select>
                             <input type="checkbox" id="CharacterartTvShowsSinglePass" name="CharacterartTvShowsSinglePass" style="display:none;" />
                             <div class="epDesc">Multi-image only. Loop: runs forever. Play once: fades back after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="CharacterartTvShowsRandomStartRow">
+                            <label for="CharacterartTvShowsRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CharacterartTvShowsRandomStart" name="CharacterartTvShowsRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random image and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         <div class="epRow epRowCheckbox" id="CharacterartTvShowsStaySingleImageStaticRow">
                             <label for="CharacterartTvShowsStaySingleImageStatic">If only 1 image is found</label>
@@ -3923,6 +4063,16 @@
                             </select>
                             <div class="epDesc">Sequential: native order. Shuffle: no repeats/round. Random: repeats OK.</div>
                         </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsRandomStartRow">
+                            <label for="BackdropsRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsRandomStart" name="BackdropsRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
                         <div class="epRow epRowCheckbox" id="BackdropsEpisodeEnabledRow">
                             <label for="BackdropsEpisodeEnabled">Episode backdrops</label>
                             <div class="checkboxContainer" style="margin:0;">
@@ -3954,6 +4104,16 @@
                                 <option value="Random">Random</option>
                             </select>
                             <div class="epDesc">Sequential: file order. Shuffle: no repeats/round. Random: repeats OK. Only for Multiple.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsEpisodeRandomStartRow">
+                            <label for="BackdropsEpisodeRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsEpisodeRandomStart" name="BackdropsEpisodeRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
                         </div>
@@ -4116,12 +4276,20 @@
                         <div class="epRow epRowMerged" id="PeopleBackdropsAppearancesTraversalModeRow">
                             <label for="PeopleBackdropsAppearancesTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="PeopleBackdropsAppearancesTraversalMode" name="PeopleBackdropsAppearancesTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Order above is a real field, not Shuffle/Random. Only used for Appearances.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending). Only used for Appearances.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="PeopleBackdropsAppearancesRandomStartRow">
+                            <label for="PeopleBackdropsAppearancesRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="PeopleBackdropsAppearancesRandomStart" name="PeopleBackdropsAppearancesRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
 
                         <!-- Fix #8 (Session 105, ported aus der Sandbox,
@@ -4150,6 +4318,16 @@
                             </select>
                             <div class="epDesc">Sequential: native order. Shuffle: no repeats/round. Random: repeats OK. Only used for Folder.</div>
                         </div>
+                        <div class="epRow epRowCheckbox" id="PeopleBackdropsFolderRandomStartRow">
+                            <label for="PeopleBackdropsFolderRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="PeopleBackdropsFolderRandomStart" name="PeopleBackdropsFolderRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
 
                         <div class="epRow epRowMerged" id="PeopleBackdropsApiKeyRow">
                             <label for="PeopleBackdropsApiKey" class="epRowLabelSpan">API Key</label>
@@ -4177,6 +4355,16 @@
                                 <option value="Random">Random</option>
                             </select>
                             <div class="epDesc">Sequential: native order. Shuffle: no repeats/round. Random: repeats OK. Only used for Wallpapers.com.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="PeopleBackdropsRandomStartRow">
+                            <label for="PeopleBackdropsRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="PeopleBackdropsRandomStart" name="PeopleBackdropsRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
 
                         <div class="epRow epRowMerged" id="PeopleBackdropsMaxImagesRow">
@@ -4303,12 +4491,20 @@
                         <div class="epRow epRowMerged" id="BackdropsGenreTraversalModeRow">
                             <label for="BackdropsGenreTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsGenreTraversalMode" name="BackdropsGenreTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Order above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsGenreRandomStartRow">
+                            <label for="BackdropsGenreRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsGenreRandomStart" name="BackdropsGenreRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
 
                         </div>
@@ -4418,12 +4614,20 @@
                         <div class="epRow epRowMerged" id="BackdropsStudioTraversalModeRow">
                             <label for="BackdropsStudioTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsStudioTraversalMode" name="BackdropsStudioTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Order above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsStudioRandomStartRow">
+                            <label for="BackdropsStudioRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsStudioRandomStart" name="BackdropsStudioRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
                         </div>
@@ -4516,12 +4720,20 @@
                         <div class="epRow epRowMerged" id="BackdropsTagTraversalModeRow">
                             <label for="BackdropsTagTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsTagTraversalMode" name="BackdropsTagTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Sort above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsTagRandomStartRow">
+                            <label for="BackdropsTagRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsTagRandomStart" name="BackdropsTagRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
                         </div>
@@ -4622,12 +4834,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesGeneralTraversalModeRow">
                             <label for="BackdropsFavoritesGeneralTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesGeneralTraversalMode" name="BackdropsFavoritesGeneralTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Order above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesGeneralRandomStartRow">
+                            <label for="BackdropsFavoritesGeneralRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesGeneralRandomStart" name="BackdropsFavoritesGeneralRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
 
                         <div class="epCollapseHeader epCollapseNested" data-collapse="backdropsFavoritesMovies"><span class="epChevron">▶</span><span>Movies</span></div>
@@ -4651,12 +4871,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesMoviesTraversalModeRow">
                             <label for="BackdropsFavoritesMoviesTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesMoviesTraversalMode" name="BackdropsFavoritesMoviesTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Sort above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesMoviesRandomStartRow">
+                            <label for="BackdropsFavoritesMoviesRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesMoviesRandomStart" name="BackdropsFavoritesMoviesRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
 
@@ -4681,12 +4909,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesShowsTraversalModeRow">
                             <label for="BackdropsFavoritesShowsTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesShowsTraversalMode" name="BackdropsFavoritesShowsTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Sort above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesShowsRandomStartRow">
+                            <label for="BackdropsFavoritesShowsRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesShowsRandomStart" name="BackdropsFavoritesShowsRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
 
@@ -4711,12 +4947,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesEpisodesTraversalModeRow">
                             <label for="BackdropsFavoritesEpisodesTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesEpisodesTraversalMode" name="BackdropsFavoritesEpisodesTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Sort above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesEpisodesRandomStartRow">
+                            <label for="BackdropsFavoritesEpisodesRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesEpisodesRandomStart" name="BackdropsFavoritesEpisodesRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
 
@@ -4741,12 +4985,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesVideosTraversalModeRow">
                             <label for="BackdropsFavoritesVideosTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesVideosTraversalMode" name="BackdropsFavoritesVideosTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Sort above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesVideosRandomStartRow">
+                            <label for="BackdropsFavoritesVideosRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesVideosRandomStart" name="BackdropsFavoritesVideosRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
 
@@ -4771,12 +5023,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesCollectionsTraversalModeRow">
                             <label for="BackdropsFavoritesCollectionsTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesCollectionsTraversalMode" name="BackdropsFavoritesCollectionsTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Sort above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesCollectionsRandomStartRow">
+                            <label for="BackdropsFavoritesCollectionsRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesCollectionsRandomStart" name="BackdropsFavoritesCollectionsRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
 
@@ -4801,12 +5061,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesPlaylistsTraversalModeRow">
                             <label for="BackdropsFavoritesPlaylistsTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesPlaylistsTraversalMode" name="BackdropsFavoritesPlaylistsTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Sort above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesPlaylistsRandomStartRow">
+                            <label for="BackdropsFavoritesPlaylistsRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesPlaylistsRandomStart" name="BackdropsFavoritesPlaylistsRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
 
@@ -4875,12 +5143,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleAppearancesTraversalModeRow">
                             <label for="BackdropsFavoritesPeopleAppearancesTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesPeopleAppearancesTraversalMode" name="BackdropsFavoritesPeopleAppearancesTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Order above is a real field, not Shuffle/Random. Only used for Appearances.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending). Only used for Appearances.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesPeopleAppearancesRandomStartRow">
+                            <label for="BackdropsFavoritesPeopleAppearancesRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesPeopleAppearancesRandomStart" name="BackdropsFavoritesPeopleAppearancesRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         <div class="epRow epRowMerged" id="BackdropsFavoritesPeopleFolderBackdropFilesRow">
                             <label for="BackdropsFavoritesPeopleFolderBackdropFiles" class="epRowLabelSpan">Backdrop files</label>
@@ -4898,6 +5174,16 @@
                                 <option value="Random">Random</option>
                             </select>
                             <div class="epDesc">Sequential: native order. Shuffle: no repeats/round. Random: repeats OK. Only used for Folder.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesPeopleFolderRandomStartRow">
+                            <label for="BackdropsFavoritesPeopleFolderRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesPeopleFolderRandomStart" name="BackdropsFavoritesPeopleFolderRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
 
@@ -4922,12 +5208,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesArtistsTraversalModeRow">
                             <label for="BackdropsFavoritesArtistsTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesArtistsTraversalMode" name="BackdropsFavoritesArtistsTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Sort above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesArtistsRandomStartRow">
+                            <label for="BackdropsFavoritesArtistsRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesArtistsRandomStart" name="BackdropsFavoritesArtistsRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
 
@@ -4952,12 +5246,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesAlbumsTraversalModeRow">
                             <label for="BackdropsFavoritesAlbumsTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesAlbumsTraversalMode" name="BackdropsFavoritesAlbumsTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Sort above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesAlbumsRandomStartRow">
+                            <label for="BackdropsFavoritesAlbumsRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesAlbumsRandomStart" name="BackdropsFavoritesAlbumsRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
 
@@ -4982,12 +5284,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesSongsTraversalModeRow">
                             <label for="BackdropsFavoritesSongsTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesSongsTraversalMode" name="BackdropsFavoritesSongsTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Sort above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesSongsRandomStartRow">
+                            <label for="BackdropsFavoritesSongsRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesSongsRandomStart" name="BackdropsFavoritesSongsRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
 
@@ -5012,12 +5322,20 @@
                         <div class="epRow epRowMerged" id="BackdropsFavoritesBooksTraversalModeRow">
                             <label for="BackdropsFavoritesBooksTraversalMode" class="epRowLabelSpan">Traversal</label>
                             <select is="emby-select" id="BackdropsFavoritesBooksTraversalMode" name="BackdropsFavoritesBooksTraversalMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="BeginAscending">Begin, ascending</option>
-                                <option value="BeginDescending">Begin, descending</option>
-                                <option value="RandomStartAscending">Random start, ascending</option>
-                                <option value="RandomStartDescending">Random start, descending</option>
+                                <option value="BeginAscending">Ascending</option>
+                                <option value="BeginDescending">Descending</option>
                             </select>
-                            <div class="epDesc">Only used when Sort above is a real field, not Shuffle/Random.</div>
+                            <div class="epDesc">Runs the sorted list forwards (Ascending) or backwards (Descending).</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsFavoritesBooksRandomStartRow">
+                            <label for="BackdropsFavoritesBooksRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsFavoritesBooksRandomStart" name="BackdropsFavoritesBooksRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
                         </div>
                         </div>
                         </div>
@@ -5112,6 +5430,7 @@
                 ExtraposterMoviesDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSourcePriority: { type: 'select', def: 'FilesOnly', tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetOrder: { type: 'select', def: 'Ascending', tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailSetRandomStart: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetImage: { type: 'select', def: 'Poster', tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetFallback: { type: 'select', def: 'None', tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetFallback2: { type: 'select', def: 'None', tab: 'extraposterfeature' },
@@ -5119,6 +5438,7 @@
                 ExtraposterMoviesDetailSetKeyartLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSetKeyartLogoSizePercent: { type: 'number', def: 60, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailSinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterMoviesDetailRandomStart: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterMoviesDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
@@ -5128,6 +5448,7 @@
                 ExtraposterMoviesLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySourcePriority: { type: 'select', def: 'FilesOnly', tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetOrder: { type: 'select', def: 'Ascending', tab: 'extraposterfeature' },
+                ExtraposterMoviesLibrarySetRandomStart: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetImage: { type: 'select', def: 'Poster', tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetFallback: { type: 'select', def: 'None', tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetFallback2: { type: 'select', def: 'None', tab: 'extraposterfeature' },
@@ -5135,6 +5456,7 @@
                 ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySetKeyartLogoSizePercent: { type: 'number', def: 80, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterMoviesLibraryRandomStart: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterMoviesLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
@@ -5145,9 +5467,11 @@
                 ExtraposterTvShowsDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailSourcePriority: { type: 'select', def: 'FilesOnly', tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailSeasonOrder: { type: 'select', def: 'Ascending', tab: 'extraposterfeature' },
+                ExtraposterTvShowsDetailSeasonRandomStart: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailIncludeSpecials: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailSkipSingleSeason: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailSinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterTvShowsDetailRandomStart: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
@@ -5156,9 +5480,11 @@
                 ExtraposterTvShowsLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibrarySourcePriority: { type: 'select', def: 'FilesOnly', tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibrarySeasonOrder: { type: 'select', def: 'Ascending', tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibrarySeasonRandomStart: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryIncludeSpecials: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibrarySkipSingleSeason: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
+                ExtraposterTvShowsLibraryRandomStart: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extraposterfeature' },
@@ -5246,6 +5572,7 @@
                 CharacterartMoviesDelayEnabled: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartMoviesDelayMs: { type: 'number', def: 5000, tab: 'characterart' },
                 CharacterartMoviesSinglePass: { type: 'checkbox', def: false, tab: 'characterart' },
+                CharacterartMoviesRandomStart: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartMoviesStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartMoviesOrderMode: { type: 'select', def: 'Shuffle', tab: 'characterart' },
                 CharacterartTvShowsNamingMode: { type: 'select', def: 'Standalone', tab: 'characterart' },
@@ -5257,6 +5584,7 @@
                 CharacterartTvShowsDelayEnabled: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartTvShowsDelayMs: { type: 'number', def: 5000, tab: 'characterart' },
                 CharacterartTvShowsSinglePass: { type: 'checkbox', def: false, tab: 'characterart' },
+                CharacterartTvShowsRandomStart: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartTvShowsStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartTvShowsOrderMode: { type: 'select', def: 'Shuffle', tab: 'characterart' },
                 // Animated Poster (Phase 2, Session 90: jetzt eigenes
@@ -5353,6 +5681,7 @@
                 ExtrakeyartMoviesDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailUnnumberedMode: { type: 'select', def: 'Ignored', tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailSinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartMoviesDetailRandomStart: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
@@ -5365,6 +5694,7 @@
                 ExtrakeyartMoviesLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryUnnumberedMode: { type: 'select', def: 'Ignored', tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartMoviesLibraryRandomStart: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
                 ExtrakeyartMoviesLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
@@ -5378,6 +5708,7 @@
                 ExtrakeyartTvShowsDetailOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailUnnumberedMode: { type: 'select', def: 'Ignored', tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailSinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsDetailRandomStart: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsDetailDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
@@ -5389,6 +5720,7 @@
                 ExtrakeyartTvShowsLibraryOrderMode: { type: 'select', def: 'Sequential', tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryUnnumberedMode: { type: 'select', def: 'Ignored', tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibrarySinglePass: { type: 'checkbox', def: false, tab: 'extrakeyart' },
+                ExtrakeyartTvShowsLibraryRandomStart: { type: 'checkbox', def: false, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryCycleTimeMs: { type: 'number', def: 5000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryFadeTimeMs: { type: 'number', def: 1000, tab: 'extrakeyart' },
                 ExtrakeyartTvShowsLibraryDelayEnabled: { type: 'checkbox', def: false, tab: 'extrakeyart' },
@@ -5430,6 +5762,7 @@
                 PeopleBackdropsTextFilterEnabled: { type: 'checkbox', def: true, tab: 'peoplebackdrops' },
                 PeopleBackdropsCycleTimeMs: { type: 'number', def: 10000, tab: 'peoplebackdrops' },
                 PeopleBackdropsOrderMode: { type: 'select', def: 'Shuffle', tab: 'peoplebackdrops' },
+                PeopleBackdropsRandomStart: { type: 'checkbox', def: false, tab: 'peoplebackdrops' },
                 PeopleBackdropsKenBurnsEnabled: { type: 'checkbox', def: true, tab: 'peoplebackdrops' },
                 PeopleBackdropsKenBurnsZoomMs: { type: 'number', def: 20000, tab: 'peoplebackdrops' },
                 PeopleBackdropsKenBurnsPanMs: { type: 'number', def: 10000, tab: 'peoplebackdrops' },
@@ -5437,10 +5770,12 @@
                 PeopleBackdropsAppearancesFilter: { type: 'select', def: 'MoviesAndSeries', tab: 'peoplebackdrops' },
                 PeopleBackdropsAppearancesSortMode: { type: 'select', def: 'Shuffle', tab: 'peoplebackdrops' },
                 PeopleBackdropsAppearancesTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'peoplebackdrops' },
+                PeopleBackdropsAppearancesRandomStart: { type: 'checkbox', def: false, tab: 'peoplebackdrops' },
                 PeopleBackdropsAppearancesMainOnly: { type: 'select', def: 'Main', tab: 'peoplebackdrops' },
                 PeopleBackdropsFolderBaseName: { type: 'text', def: 'backdrop', tab: 'peoplebackdrops' },
                 PeopleBackdropsFolderBackdropFiles: { type: 'select', def: 'Single', tab: 'peoplebackdrops' },
                 PeopleBackdropsFolderOrderMode: { type: 'select', def: 'Sequential', tab: 'peoplebackdrops' },
+                PeopleBackdropsFolderRandomStart: { type: 'checkbox', def: false, tab: 'peoplebackdrops' },
                 // Backdrops
                 // BackdropsPlus's own sub-feature switch, now independent
                 // from BackdropsTabEnabled above - lives in the tab
@@ -5458,6 +5793,7 @@
                 BackdropsGenreKenBurnsPanMs: { type: 'number', def: 10000, tab: 'backdropsgenre' },
                 BackdropsGenreSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsgenre' },
                 BackdropsGenreTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsgenre' },
+                BackdropsGenreRandomStart: { type: 'checkbox', def: false, tab: 'backdropsgenre' },
                 BackdropsGenreGlobalEnabled: { type: 'checkbox', def: true, tab: 'backdropsgenre' },
                 BackdropsGenreMoviesEnabled: { type: 'checkbox', def: true, tab: 'backdropsgenre' },
                 BackdropsGenreTvShowsEnabled: { type: 'checkbox', def: true, tab: 'backdropsgenre' },
@@ -5472,11 +5808,13 @@
                 BackdropsStudioTvShowsEnabled: { type: 'checkbox', def: true, tab: 'backdropsstudio' },
                 BackdropsStudioSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsstudio' },
                 BackdropsStudioTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsstudio' },
+                BackdropsStudioRandomStart: { type: 'checkbox', def: false, tab: 'backdropsstudio' },
                 BackdropsTagEnabled: { type: 'checkbox', def: true, tab: 'backdropstag' },
                 BackdropsTagMainOnly: { type: 'select', def: 'Main', tab: 'backdropstag' },
                 BackdropsTagCycleTimeMs: { type: 'number', def: 10000, tab: 'backdropstag' },
                 BackdropsTagSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropstag' },
                 BackdropsTagTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropstag' },
+                BackdropsTagRandomStart: { type: 'checkbox', def: false, tab: 'backdropstag' },
                 BackdropsTagKenBurnsEnabled: { type: 'checkbox', def: true, tab: 'backdropstag' },
                 BackdropsTagKenBurnsZoomMs: { type: 'number', def: 20000, tab: 'backdropstag' },
                 BackdropsTagKenBurnsPanMs: { type: 'number', def: 10000, tab: 'backdropstag' },
@@ -5485,6 +5823,7 @@
                 BackdropsFavoritesManageMode: { type: 'select', def: 'General', tab: 'backdropsfavorites' },
                 BackdropsFavoritesGeneralSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesGeneralTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesGeneralRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesCycleTimeMs: { type: 'number', def: 10000, tab: 'backdropsfavorites' },
                 BackdropsFavoritesKenBurnsEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesKenBurnsZoomMs: { type: 'number', def: 20000, tab: 'backdropsfavorites' },
@@ -5492,41 +5831,53 @@
                 BackdropsFavoritesMoviesEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesMoviesSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesMoviesTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesMoviesRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesShowsEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesShowsSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesShowsTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesShowsRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesEpisodesEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesEpisodesSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesEpisodesTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesEpisodesRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesVideosEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesVideosSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesVideosTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesVideosRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesCollectionsEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesCollectionsSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesCollectionsTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesCollectionsRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesPlaylistsEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesPlaylistsSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesPlaylistsTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesPlaylistsRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesPeopleEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesPeopleSourceMode: { type: 'select', def: 'WallpapersCom', tab: 'backdropsfavorites' },
                 BackdropsFavoritesPeopleAppearancesFilter: { type: 'select', def: 'MoviesAndSeries', tab: 'backdropsfavorites' },
                 BackdropsFavoritesPeopleAppearancesMainOnly: { type: 'select', def: 'Main', tab: 'backdropsfavorites' },
                 BackdropsFavoritesPeopleAppearancesSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesPeopleAppearancesTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesPeopleAppearancesRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesPeopleFolderBackdropFiles: { type: 'select', def: 'Single', tab: 'backdropsfavorites' },
                 BackdropsFavoritesPeopleFolderOrderMode: { type: 'select', def: 'Sequential', tab: 'backdropsfavorites' },
+                BackdropsFavoritesPeopleFolderRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesArtistsEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesArtistsSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesArtistsTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesArtistsRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesAlbumsEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesAlbumsSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesAlbumsTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesAlbumsRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesSongsEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesSongsSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesSongsTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesSongsRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsFavoritesBooksEnabled: { type: 'checkbox', def: true, tab: 'backdropsfavorites' },
                 BackdropsFavoritesBooksSortMode: { type: 'select', def: 'Shuffle', tab: 'backdropsfavorites' },
                 BackdropsFavoritesBooksTraversalMode: { type: 'select', def: 'BeginAscending', tab: 'backdropsfavorites' },
+                BackdropsFavoritesBooksRandomStart: { type: 'checkbox', def: false, tab: 'backdropsfavorites' },
                 BackdropsShowOnMovies: { type: 'checkbox', def: true, tab: 'backdropsmod' },
                 BackdropsShowOnSets: { type: 'checkbox', def: true, tab: 'backdropsmod' },
                 BackdropsShowOnTvShows: { type: 'checkbox', def: true, tab: 'backdropsmod' },
@@ -5536,9 +5887,11 @@
                 BackdropsEpisodeBaseName: { type: 'text', def: 'backdrop', tab: 'backdropsmod' },
                 BackdropsEpisodeBackdropFiles: { type: 'select', def: 'Multiple', tab: 'backdropsmod' },
                 BackdropsEpisodeOrderMode: { type: 'select', def: 'Shuffle', tab: 'backdropsmod' },
+                BackdropsEpisodeRandomStart: { type: 'checkbox', def: false, tab: 'backdropsmod' },
                 BackdropsShowOnVideos: { type: 'checkbox', def: true, tab: 'backdropsmod' },
                 BackdropsCycleTimeMs: { type: 'number', def: 10000, tab: 'backdropsmod' },
                 BackdropsOrderMode: { type: 'select', def: 'Shuffle', tab: 'backdropsmod' },
+                BackdropsRandomStart: { type: 'checkbox', def: false, tab: 'backdropsmod' },
                 BackdropsKenBurnsEnabled: { type: 'checkbox', def: true, tab: 'backdropsmod' },
                 BackdropsKenBurnsZoomMs: { type: 'number', def: 20000, tab: 'backdropsmod' },
                 BackdropsKenBurnsPanMs: { type: 'number', def: 10000, tab: 'backdropsmod' },
@@ -5741,6 +6094,8 @@
             // Session 126: true when ANY of the fields holds one of the values (Set Keyart logo: a keyart-type
             // slide can come from Set image or either fallback stage).
             function AnyValueIn(ids, values) { return { kind: 'anyValueIn', ids: ids, values: values }; }
+            // Session 127: none of the checkboxes on (Random start needs Loop = SinglePass off).
+            function NoneChecked(ids) { return { kind: 'none', ids: ids }; }
 
             function epEvalCondition(cond) {
                 if (cond.kind === 'all') {
@@ -5751,6 +6106,9 @@
                 }
                 if (cond.kind === 'valueIn') {
                     return cond.values.indexOf(epGetFieldValue(cond.id)) !== -1;
+                }
+                if (cond.kind === 'none') {
+                    return cond.ids.every(function (id) { return epGetFieldValue(id) !== true; });
                 }
                 if (cond.kind === 'anyValueIn') {
                     return cond.ids.some(function (id) { return cond.values.indexOf(epGetFieldValue(id)) !== -1; });
@@ -6422,11 +6780,11 @@
                                     },
                                     {
                                         id: 'extraposterfeature_movies_detail', terminal: true, target: ['ExtraposterMoviesDetailFields'], headerTarget: ['extraposterMoviesDetail'],
-                                        when: [AllChecked(['ExtraposterMoviesDetailEnabled']), AnyChecked(['ExtraposterMoviesDetailShowOnMovies', 'ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_showon', structural: true, target: ['ExtraposterMoviesDetailShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_detail_sets', target: ['ExtraposterMoviesDetailSourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_setrows', target: ['ExtraposterMoviesDetailSetOrderRow', 'ExtraposterMoviesDetailSetImageRow', 'ExtraposterMoviesDetailSetFallbackRow', 'ExtraposterMoviesDetailSetFallback2Row'], when: [ValueIn('ExtraposterMoviesDetailSourcePriority', ['FilesFirst', 'SetPostersFirst', 'SetPostersOnly'])], children: [{ id: 'extraposterfeature_movies_detail_setlogo', target: ['ExtraposterMoviesDetailSetKeyartLogoRow'], when: [AnyValueIn(['ExtraposterMoviesDetailSetImage', 'ExtraposterMoviesDetailSetFallback', 'ExtraposterMoviesDetailSetFallback2'], ['Keyart', 'AnimatedKeyart'])], children: [{ id: 'extraposterfeature_movies_detail_setlogogeo', target: ['ExtraposterMoviesDetailSetKeyartLogoVerticalPositionRow', 'ExtraposterMoviesDetailSetKeyartLogoSizeRow'], when: [AllChecked(['ExtraposterMoviesDetailSetKeyartLogoEnabled'])], children: [] }] }] }] }]
+                                        when: [AllChecked(['ExtraposterMoviesDetailEnabled']), AnyChecked(['ExtraposterMoviesDetailShowOnMovies', 'ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_showon', structural: true, target: ['ExtraposterMoviesDetailShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_detail_randomstart', target: ['ExtraposterMoviesDetailRandomStartRow'], when: [ValueIn('ExtraposterMoviesDetailOrderMode', ['Sequential']), NoneChecked(['ExtraposterMoviesDetailSinglePass'])], children: [] }, { id: 'extraposterfeature_movies_detail_sets', target: ['ExtraposterMoviesDetailSourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesDetailShowOnSets'])], children: [{ id: 'extraposterfeature_movies_detail_setrows', target: ['ExtraposterMoviesDetailSetOrderRow', 'ExtraposterMoviesDetailSetImageRow', 'ExtraposterMoviesDetailSetFallbackRow', 'ExtraposterMoviesDetailSetFallback2Row'], when: [ValueIn('ExtraposterMoviesDetailSourcePriority', ['FilesFirst', 'SetPostersFirst', 'SetPostersOnly'])], children: [{ id: 'extraposterfeature_movies_detail_setrandomstart', target: ['ExtraposterMoviesDetailSetRandomStartRow'], when: [ValueIn('ExtraposterMoviesDetailSetOrder', ['Ascending', 'Descending'])], children: [] }, { id: 'extraposterfeature_movies_detail_setlogo', target: ['ExtraposterMoviesDetailSetKeyartLogoRow'], when: [AnyValueIn(['ExtraposterMoviesDetailSetImage', 'ExtraposterMoviesDetailSetFallback', 'ExtraposterMoviesDetailSetFallback2'], ['Keyart', 'AnimatedKeyart'])], children: [{ id: 'extraposterfeature_movies_detail_setlogogeo', target: ['ExtraposterMoviesDetailSetKeyartLogoVerticalPositionRow', 'ExtraposterMoviesDetailSetKeyartLogoSizeRow'], when: [AllChecked(['ExtraposterMoviesDetailSetKeyartLogoEnabled'])], children: [] }] }] }] }]
                                     },
                                     {
                                         id: 'extraposterfeature_movies_library', terminal: true, target: ['ExtraposterMoviesLibraryFields'], headerTarget: ['extraposterMoviesLibrary'],
-                                        when: [AllChecked(['ExtraposterMoviesLibraryEnabled']), AnyChecked(['ExtraposterMoviesLibraryShowOnMovies', 'ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_showon', structural: true, target: ['ExtraposterMoviesLibraryShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_library_sets', target: ['ExtraposterMoviesLibrarySourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_setrows', target: ['ExtraposterMoviesLibrarySetOrderRow', 'ExtraposterMoviesLibrarySetImageRow', 'ExtraposterMoviesLibrarySetFallbackRow', 'ExtraposterMoviesLibrarySetFallback2Row'], when: [ValueIn('ExtraposterMoviesLibrarySourcePriority', ['FilesFirst', 'SetPostersFirst', 'SetPostersOnly'])], children: [{ id: 'extraposterfeature_movies_library_setlogo', target: ['ExtraposterMoviesLibrarySetKeyartLogoRow'], when: [AnyValueIn(['ExtraposterMoviesLibrarySetImage', 'ExtraposterMoviesLibrarySetFallback', 'ExtraposterMoviesLibrarySetFallback2'], ['Keyart', 'AnimatedKeyart'])], children: [{ id: 'extraposterfeature_movies_library_setlogogeo', target: ['ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionRow', 'ExtraposterMoviesLibrarySetKeyartLogoSizeRow'], when: [AllChecked(['ExtraposterMoviesLibrarySetKeyartLogoEnabled'])], children: [] }] }] }] }]
+                                        when: [AllChecked(['ExtraposterMoviesLibraryEnabled']), AnyChecked(['ExtraposterMoviesLibraryShowOnMovies', 'ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_showon', structural: true, target: ['ExtraposterMoviesLibraryShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_movies_library_randomstart', target: ['ExtraposterMoviesLibraryRandomStartRow'], when: [ValueIn('ExtraposterMoviesLibraryOrderMode', ['Sequential']), NoneChecked(['ExtraposterMoviesLibrarySinglePass'])], children: [] }, { id: 'extraposterfeature_movies_library_sets', target: ['ExtraposterMoviesLibrarySourcePriorityRow'], when: [AllChecked(['ExtraposterMoviesLibraryShowOnSets'])], children: [{ id: 'extraposterfeature_movies_library_setrows', target: ['ExtraposterMoviesLibrarySetOrderRow', 'ExtraposterMoviesLibrarySetImageRow', 'ExtraposterMoviesLibrarySetFallbackRow', 'ExtraposterMoviesLibrarySetFallback2Row'], when: [ValueIn('ExtraposterMoviesLibrarySourcePriority', ['FilesFirst', 'SetPostersFirst', 'SetPostersOnly'])], children: [{ id: 'extraposterfeature_movies_library_setrandomstart', target: ['ExtraposterMoviesLibrarySetRandomStartRow'], when: [ValueIn('ExtraposterMoviesLibrarySetOrder', ['Ascending', 'Descending'])], children: [] }, { id: 'extraposterfeature_movies_library_setlogo', target: ['ExtraposterMoviesLibrarySetKeyartLogoRow'], when: [AnyValueIn(['ExtraposterMoviesLibrarySetImage', 'ExtraposterMoviesLibrarySetFallback', 'ExtraposterMoviesLibrarySetFallback2'], ['Keyart', 'AnimatedKeyart'])], children: [{ id: 'extraposterfeature_movies_library_setlogogeo', target: ['ExtraposterMoviesLibrarySetKeyartLogoVerticalPositionRow', 'ExtraposterMoviesLibrarySetKeyartLogoSizeRow'], when: [AllChecked(['ExtraposterMoviesLibrarySetKeyartLogoEnabled'])], children: [] }] }] }] }]
                                     }]
                                 },
                                 {
@@ -6442,11 +6800,11 @@
                                     },
                                     {
                                         id: 'extraposterfeature_tvshows_detail', terminal: true, target: ['ExtraposterTvShowsDetailFields'], headerTarget: ['extraposterTvShowsDetail'],
-                                        when: [AllChecked(['ExtraposterTvShowsDetailEnabled']), AllChecked(['ExtraposterTvShowsDetailShowOnTvShows'])], children: [{ id: 'extraposterfeature_tvshows_detail_showon', structural: true, target: ['ExtraposterTvShowsDetailShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_tvshows_detail_seasonrows', target: ['ExtraposterTvShowsDetailSeasonOrderRow', 'ExtraposterTvShowsDetailIncludeSpecialsRow', 'ExtraposterTvShowsDetailSkipSingleSeasonRow'], when: [ValueIn('ExtraposterTvShowsDetailSourcePriority', ['FilesFirst', 'SeasonPostersFirst', 'SeasonPostersOnly'])], children: [] }, { id: 'extraposterfeature_tvshows_detail_filesrows', target: ['ExtraposterTvShowsDetailOrderRow'], when: [ValueIn('ExtraposterTvShowsDetailSourcePriority', ['FilesFirst', 'FilesOnly', 'SeasonPostersFirst'])], children: [] }]
+                                        when: [AllChecked(['ExtraposterTvShowsDetailEnabled']), AllChecked(['ExtraposterTvShowsDetailShowOnTvShows'])], children: [{ id: 'extraposterfeature_tvshows_detail_showon', structural: true, target: ['ExtraposterTvShowsDetailShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_tvshows_detail_seasonrows', target: ['ExtraposterTvShowsDetailSeasonOrderRow', 'ExtraposterTvShowsDetailIncludeSpecialsRow', 'ExtraposterTvShowsDetailSkipSingleSeasonRow'], when: [ValueIn('ExtraposterTvShowsDetailSourcePriority', ['FilesFirst', 'SeasonPostersFirst', 'SeasonPostersOnly'])], children: [{ id: 'extraposterfeature_tvshows_detail_seasonrandomstart', target: ['ExtraposterTvShowsDetailSeasonRandomStartRow'], when: [ValueIn('ExtraposterTvShowsDetailSeasonOrder', ['Ascending', 'Descending'])], children: [] }] }, { id: 'extraposterfeature_tvshows_detail_filesrows', target: ['ExtraposterTvShowsDetailOrderRow'], when: [ValueIn('ExtraposterTvShowsDetailSourcePriority', ['FilesFirst', 'FilesOnly', 'SeasonPostersFirst'])], children: [{ id: 'extraposterfeature_tvshows_detail_randomstart', target: ['ExtraposterTvShowsDetailRandomStartRow'], when: [ValueIn('ExtraposterTvShowsDetailOrderMode', ['Sequential']), NoneChecked(['ExtraposterTvShowsDetailSinglePass'])], children: [] }] }]
                                     },
                                     {
                                         id: 'extraposterfeature_tvshows_library', terminal: true, target: ['ExtraposterTvShowsLibraryFields'], headerTarget: ['extraposterTvShowsLibrary'],
-                                        when: [AllChecked(['ExtraposterTvShowsLibraryEnabled']), AllChecked(['ExtraposterTvShowsLibraryShowOnTvShows'])], children: [{ id: 'extraposterfeature_tvshows_library_showon', structural: true, target: ['ExtraposterTvShowsLibraryShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_tvshows_library_seasonrows', target: ['ExtraposterTvShowsLibrarySeasonOrderRow', 'ExtraposterTvShowsLibraryIncludeSpecialsRow', 'ExtraposterTvShowsLibrarySkipSingleSeasonRow'], when: [ValueIn('ExtraposterTvShowsLibrarySourcePriority', ['FilesFirst', 'SeasonPostersFirst', 'SeasonPostersOnly'])], children: [] }, { id: 'extraposterfeature_tvshows_library_filesrows', target: ['ExtraposterTvShowsLibraryOrderRow'], when: [ValueIn('ExtraposterTvShowsLibrarySourcePriority', ['FilesFirst', 'FilesOnly', 'SeasonPostersFirst'])], children: [] }]
+                                        when: [AllChecked(['ExtraposterTvShowsLibraryEnabled']), AllChecked(['ExtraposterTvShowsLibraryShowOnTvShows'])], children: [{ id: 'extraposterfeature_tvshows_library_showon', structural: true, target: ['ExtraposterTvShowsLibraryShowOnRow'], when: [], children: [] }, { id: 'extraposterfeature_tvshows_library_seasonrows', target: ['ExtraposterTvShowsLibrarySeasonOrderRow', 'ExtraposterTvShowsLibraryIncludeSpecialsRow', 'ExtraposterTvShowsLibrarySkipSingleSeasonRow'], when: [ValueIn('ExtraposterTvShowsLibrarySourcePriority', ['FilesFirst', 'SeasonPostersFirst', 'SeasonPostersOnly'])], children: [{ id: 'extraposterfeature_tvshows_library_seasonrandomstart', target: ['ExtraposterTvShowsLibrarySeasonRandomStartRow'], when: [ValueIn('ExtraposterTvShowsLibrarySeasonOrder', ['Ascending', 'Descending'])], children: [] }] }, { id: 'extraposterfeature_tvshows_library_filesrows', target: ['ExtraposterTvShowsLibraryOrderRow'], when: [ValueIn('ExtraposterTvShowsLibrarySourcePriority', ['FilesFirst', 'FilesOnly', 'SeasonPostersFirst'])], children: [{ id: 'extraposterfeature_tvshows_library_randomstart', target: ['ExtraposterTvShowsLibraryRandomStartRow'], when: [ValueIn('ExtraposterTvShowsLibraryOrderMode', ['Sequential']), NoneChecked(['ExtraposterTvShowsLibrarySinglePass'])], children: [] }] }]
                                     }]
                                 }
                             ]
@@ -6473,14 +6831,14 @@
                                     },
                                     {
                                         id: 'extrakeyart_movies_detail', terminal: true, target: ['ExtrakeyartMoviesDetailFields'], headerTarget: ['extrakeyartMoviesDetail'],
-                                        when: [AllChecked(['ExtrakeyartMoviesDetailEnabled']), AnyChecked(['ExtrakeyartMoviesDetailShowOnMovies', 'ExtrakeyartMoviesDetailShowOnSets'])], children: [{ id: 'extrakeyart_movies_detail_showon', structural: true, target: ['ExtrakeyartMoviesDetailShowOnRow'], when: [], children: [] }, {
+                                        when: [AllChecked(['ExtrakeyartMoviesDetailEnabled']), AnyChecked(['ExtrakeyartMoviesDetailShowOnMovies', 'ExtrakeyartMoviesDetailShowOnSets'])], children: [{ id: 'extrakeyart_movies_detail_showon', structural: true, target: ['ExtrakeyartMoviesDetailShowOnRow'], when: [], children: [] }, { id: 'extrakeyart_movies_detail_randomstart', target: ['ExtrakeyartMoviesDetailRandomStartRow'], when: [ValueIn('ExtrakeyartMoviesDetailOrderMode', ['Sequential']), NoneChecked(['ExtrakeyartMoviesDetailSinglePass'])], children: [] }, {
                                             id: 'extrakeyart_movies_detail_logo', target: ['ExtrakeyartMoviesDetailLogoVerticalPositionRow', 'ExtrakeyartMoviesDetailLogoSizeRow'],
                                             when: [AllChecked(['ExtrakeyartMoviesDetailLogoEnabled'])], children: []
                                         }]
                                     },
                                     {
                                         id: 'extrakeyart_movies_library', terminal: true, target: ['ExtrakeyartMoviesLibraryFields'], headerTarget: ['extrakeyartMoviesLibrary'],
-                                        when: [AllChecked(['ExtrakeyartMoviesLibraryEnabled']), AnyChecked(['ExtrakeyartMoviesLibraryShowOnMovies', 'ExtrakeyartMoviesLibraryShowOnSets'])], children: [{ id: 'extrakeyart_movies_library_showon', structural: true, target: ['ExtrakeyartMoviesLibraryShowOnRow'], when: [], children: [] }, {
+                                        when: [AllChecked(['ExtrakeyartMoviesLibraryEnabled']), AnyChecked(['ExtrakeyartMoviesLibraryShowOnMovies', 'ExtrakeyartMoviesLibraryShowOnSets'])], children: [{ id: 'extrakeyart_movies_library_showon', structural: true, target: ['ExtrakeyartMoviesLibraryShowOnRow'], when: [], children: [] }, { id: 'extrakeyart_movies_library_randomstart', target: ['ExtrakeyartMoviesLibraryRandomStartRow'], when: [ValueIn('ExtrakeyartMoviesLibraryOrderMode', ['Sequential']), NoneChecked(['ExtrakeyartMoviesLibrarySinglePass'])], children: [] }, {
                                             id: 'extrakeyart_movies_library_logo', target: ['ExtrakeyartMoviesLibraryLogoVerticalPositionRow', 'ExtrakeyartMoviesLibraryLogoSizeRow'],
                                             when: [AllChecked(['ExtrakeyartMoviesLibraryLogoEnabled'])], children: []
                                         }]
@@ -6499,14 +6857,14 @@
                                     },
                                     {
                                         id: 'extrakeyart_tvshows_detail', terminal: true, target: ['ExtrakeyartTvShowsDetailFields'], headerTarget: ['extrakeyartTvShowsDetail'],
-                                        when: [AllChecked(['ExtrakeyartTvShowsDetailEnabled']), AllChecked(['ExtrakeyartTvShowsDetailShowOnTvShows'])], children: [{ id: 'extrakeyart_tvshows_detail_showon', structural: true, target: ['ExtrakeyartTvShowsDetailShowOnRow'], when: [], children: [] }, {
+                                        when: [AllChecked(['ExtrakeyartTvShowsDetailEnabled']), AllChecked(['ExtrakeyartTvShowsDetailShowOnTvShows'])], children: [{ id: 'extrakeyart_tvshows_detail_showon', structural: true, target: ['ExtrakeyartTvShowsDetailShowOnRow'], when: [], children: [] }, { id: 'extrakeyart_tvshows_detail_randomstart', target: ['ExtrakeyartTvShowsDetailRandomStartRow'], when: [ValueIn('ExtrakeyartTvShowsDetailOrderMode', ['Sequential']), NoneChecked(['ExtrakeyartTvShowsDetailSinglePass'])], children: [] }, {
                                             id: 'extrakeyart_tvshows_detail_logo', target: ['ExtrakeyartTvShowsDetailLogoVerticalPositionRow', 'ExtrakeyartTvShowsDetailLogoSizeRow'],
                                             when: [AllChecked(['ExtrakeyartTvShowsDetailLogoEnabled'])], children: []
                                         }]
                                     },
                                     {
                                         id: 'extrakeyart_tvshows_library', terminal: true, target: ['ExtrakeyartTvShowsLibraryFields'], headerTarget: ['extrakeyartTvShowsLibrary'],
-                                        when: [AllChecked(['ExtrakeyartTvShowsLibraryEnabled']), AllChecked(['ExtrakeyartTvShowsLibraryShowOnTvShows'])], children: [{ id: 'extrakeyart_tvshows_library_showon', structural: true, target: ['ExtrakeyartTvShowsLibraryShowOnRow'], when: [], children: [] }, {
+                                        when: [AllChecked(['ExtrakeyartTvShowsLibraryEnabled']), AllChecked(['ExtrakeyartTvShowsLibraryShowOnTvShows'])], children: [{ id: 'extrakeyart_tvshows_library_showon', structural: true, target: ['ExtrakeyartTvShowsLibraryShowOnRow'], when: [], children: [] }, { id: 'extrakeyart_tvshows_library_randomstart', target: ['ExtrakeyartTvShowsLibraryRandomStartRow'], when: [ValueIn('ExtrakeyartTvShowsLibraryOrderMode', ['Sequential']), NoneChecked(['ExtrakeyartTvShowsLibrarySinglePass'])], children: [] }, {
                                             id: 'extrakeyart_tvshows_library_logo', target: ['ExtrakeyartTvShowsLibraryLogoVerticalPositionRow', 'ExtrakeyartTvShowsLibraryLogoSizeRow'],
                                             when: [AllChecked(['ExtrakeyartTvShowsLibraryLogoEnabled'])], children: []
                                         }]
@@ -6535,7 +6893,7 @@
                                     {
                                         id: 'ca_movies_multiimage',
                                         target: ['CharacterartMoviesCycleRow', 'CharacterartMoviesFadeRow', 'CharacterartMoviesDelayEnabledRow', 'CharacterartMoviesSinglePassRow', 'CharacterartMoviesOrderRow'],
-                                        when: [AllChecked(['CharacterartMoviesMultiImage'])], children: []
+                                        when: [AllChecked(['CharacterartMoviesMultiImage'])], children: [{ id: 'ca_movies_randomstart', target: ['CharacterartMoviesRandomStartRow'], when: [ValueIn('CharacterartMoviesOrderMode', ['Sequential']), NoneChecked(['CharacterartMoviesSinglePass'])], children: [] }]
                                     },
                                     {
                                         id: 'ca_movies_delay', target: ['CharacterartMoviesDelayRow'],
@@ -6562,7 +6920,7 @@
                                     {
                                         id: 'ca_tvshows_multiimage',
                                         target: ['CharacterartTvShowsCycleRow', 'CharacterartTvShowsFadeRow', 'CharacterartTvShowsDelayEnabledRow', 'CharacterartTvShowsSinglePassRow', 'CharacterartTvShowsOrderRow'],
-                                        when: [AllChecked(['CharacterartTvShowsMultiImage'])], children: []
+                                        when: [AllChecked(['CharacterartTvShowsMultiImage'])], children: [{ id: 'ca_tvshows_randomstart', target: ['CharacterartTvShowsRandomStartRow'], when: [ValueIn('CharacterartTvShowsOrderMode', ['Sequential']), NoneChecked(['CharacterartTvShowsSinglePass'])], children: [] }]
                                     },
                                     {
                                         id: 'ca_tvshows_delay', target: ['CharacterartTvShowsDelayRow'],
@@ -6633,7 +6991,7 @@
                                 AnyChecked(['BdFormat_jpg_chk', 'BdFormat_jpeg_chk', 'BdFormat_png_chk', 'BdFormat_webp_chk', 'BdFormat_gif_chk', 'BdFormat_tbn_chk', 'BdFormat_svg_chk']),
                                 AllChecked(['BackdropsEnabled'])
                             ],
-                            children: [
+                            children: [{ id: 'backdropsmod_randomstart', target: ['BackdropsRandomStartRow'], when: [ValueIn('BackdropsOrderMode', ['Sequential'])], children: [] }, 
                                 // BUG fixed here (Session 24, user-reported):
                                 // BackdropsShowOnRow sits structurally
                                 // OUTSIDE BackdropsDependentFields in the
@@ -6647,7 +7005,7 @@
                                 { id: 'backdropsmod_episode', structural: true, target: ['BackdropsEpisodeEnabledRow'], when: [AllChecked(['BackdropsShowOnEpisodes'])], children: [] },
                                 { id: 'backdropsmod_episode_basename', structural: true, target: ['BackdropsEpisodeBaseNameRow'], when: [AllChecked(['BackdropsShowOnEpisodes']), AllChecked(['BackdropsEpisodeEnabled'])], children: [] },
                                 { id: 'backdropsmod_episode_files', structural: true, target: ['BackdropsEpisodeBackdropFilesRow'], when: [AllChecked(['BackdropsShowOnEpisodes']), AllChecked(['BackdropsEpisodeEnabled'])], children: [] },
-                                { id: 'backdropsmod_episode_order', structural: true, target: ['BackdropsEpisodeOrderModeRow'], when: [AllChecked(['BackdropsShowOnEpisodes']), AllChecked(['BackdropsEpisodeEnabled']), ValueIn('BackdropsEpisodeBackdropFiles', ['Multiple'])], children: [] },
+                                { id: 'backdropsmod_episode_order', structural: true, target: ['BackdropsEpisodeOrderModeRow'], when: [AllChecked(['BackdropsShowOnEpisodes']), AllChecked(['BackdropsEpisodeEnabled']), ValueIn('BackdropsEpisodeBackdropFiles', ['Multiple'])], children: [{ id: 'backdropsmod_episode_randomstart', target: ['BackdropsEpisodeRandomStartRow'], when: [ValueIn('BackdropsEpisodeOrderMode', ['Sequential'])], children: [] }] },
                                 {
                                     id: 'backdropsmod_kenburns', target: ['BackdropsKenBurnsZoomRow', 'BackdropsKenBurnsPanRow'],
                                     when: [AllChecked(['BackdropsKenBurnsEnabled'])], children: []
@@ -6696,7 +7054,7 @@
                                 // pair as Genre/Tag/Studio/Favorites (rule 3d: shares the
                                 // primary Source condition with _appearancessort).
                                 {
-                                    id: 'peoplebackdrops_appearancestraversal', structural: true, target: ['PeopleBackdropsAppearancesTraversalModeRow'],
+                                    id: 'peoplebackdrops_appearancestraversal', structural: true, target: ['PeopleBackdropsAppearancesTraversalModeRow', 'PeopleBackdropsAppearancesRandomStartRow'],
                                     when: [ValueIn('PeopleBackdropsSourceMode', ['Appearances']), ValueIn('PeopleBackdropsAppearancesSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: []
                                 },
                                 // Phase D2 (Session 101): third source, local files
@@ -6716,7 +7074,7 @@
                                 },
                                 {
                                     id: 'peoplebackdrops_folder_order', structural: true, target: ['PeopleBackdropsFolderOrderModeRow'],
-                                    when: [ValueIn('PeopleBackdropsSourceMode', ['Folder']), ValueIn('PeopleBackdropsFolderBackdropFiles', ['Multiple'])], children: []
+                                    when: [ValueIn('PeopleBackdropsSourceMode', ['Folder']), ValueIn('PeopleBackdropsFolderBackdropFiles', ['Multiple'])], children: [{ id: 'peoplebackdrops_folder_randomstart', target: ['PeopleBackdropsFolderRandomStartRow'], when: [ValueIn('PeopleBackdropsFolderOrderMode', ['Sequential'])], children: [] }]
                                 },
                                 // Fix #6 (Session 105, ported from the sandbox, Sessions
                                 // 74/76): API Key/Order/Max images/Text filter belong
@@ -6728,7 +7086,7 @@
                                 {
                                     id: 'peoplebackdrops_wallpapersettings', structural: true,
                                     target: ['PeopleBackdropsApiKeyRow', 'PeopleBackdropsOrderModeRow', 'PeopleBackdropsMaxImagesRow', 'PeopleBackdropsTextFilterEnabledRow'],
-                                    when: [ValueIn('PeopleBackdropsSourceMode', ['WallpapersCom'])], children: []
+                                    when: [ValueIn('PeopleBackdropsSourceMode', ['WallpapersCom'])], children: [{ id: 'peoplebackdrops_wallpapers_randomstart', target: ['PeopleBackdropsRandomStartRow'], when: [ValueIn('PeopleBackdropsOrderMode', ['Sequential'])], children: [] }]
                                 }
                             ]
                         },
@@ -6779,7 +7137,7 @@
                                 // "Apply to" checkboxes without a collapse
                                 // structure, so they need no own tree node.
                                 { id: 'backdropsgenre_sort', structural: true, target: ['BackdropsGenreSortModeRow'], when: [], children: [] },
-                                { id: 'backdropsgenre_traversal', structural: true, target: ['BackdropsGenreTraversalModeRow'], when: [ValueIn('BackdropsGenreSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: [] }
+                                { id: 'backdropsgenre_traversal', structural: true, target: ['BackdropsGenreTraversalModeRow', 'BackdropsGenreRandomStartRow'], when: [ValueIn('BackdropsGenreSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: [] }
                             ]
                         },
                         // Studio Backdrops - second fully built category.
@@ -6806,7 +7164,7 @@
                                     when: [AllChecked(['BackdropsStudioKenBurnsEnabled'])], children: []
                                 },
                                 { id: 'backdropsstudio_sort', structural: true, target: ['BackdropsStudioSortModeRow'], when: [ValueIn('BackdropsStudioSourceMode', ['Appearances'])], children: [] },
-                                { id: 'backdropsstudio_traversal', structural: true, target: ['BackdropsStudioTraversalModeRow'], when: [ValueIn('BackdropsStudioSourceMode', ['Appearances']), ValueIn('BackdropsStudioSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: [] }
+                                { id: 'backdropsstudio_traversal', structural: true, target: ['BackdropsStudioTraversalModeRow', 'BackdropsStudioRandomStartRow'], when: [ValueIn('BackdropsStudioSourceMode', ['Appearances']), ValueIn('BackdropsStudioSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: [] }
                             ]
                         },
                         // Tag Backdrops - third fully built category.
@@ -6822,7 +7180,7 @@
                             ],
                             children: [
                                 { id: 'backdropstag_sort', structural: true, target: ['BackdropsTagSortModeRow'], when: [], children: [] },
-                                        { id: 'backdropstag_traversal', structural: true, target: ['BackdropsTagTraversalModeRow'], when: [ValueIn('BackdropsTagSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: [] },
+                                        { id: 'backdropstag_traversal', structural: true, target: ['BackdropsTagTraversalModeRow', 'BackdropsTagRandomStartRow'], when: [ValueIn('BackdropsTagSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: [] },
                                 {
                                     id: 'backdropstag_kenburns', target: ['BackdropsTagKenBurnsZoomRow', 'BackdropsTagKenBurnsPanRow'],
                                     when: [AllChecked(['BackdropsTagKenBurnsEnabled'])], children: []
@@ -6855,42 +7213,42 @@
                                 // their Enable alone; the ManageMode condition lives on
                                 // the _sort/_traversal children only.
                                 { id: 'backdropsfavorites_general_sort', structural: true, target: ['BackdropsFavoritesGeneralSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['General'])], children: [] },
-                                { id: 'backdropsfavorites_general_traversal', structural: true, target: ['BackdropsFavoritesGeneralTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['General']), ValueIn('BackdropsFavoritesGeneralSortMode', ['SortName', 'DateCreated'])], children: [] },
+                                { id: 'backdropsfavorites_general_traversal', structural: true, target: ['BackdropsFavoritesGeneralTraversalModeRow', 'BackdropsFavoritesGeneralRandomStartRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['General']), ValueIn('BackdropsFavoritesGeneralSortMode', ['SortName', 'DateCreated'])], children: [] },
                                 {
                                     id: 'backdropsfavorites_movies', headerTarget: ['backdropsFavoritesMovies'],
                                     when: [AllChecked(['BackdropsFavoritesMoviesEnabled'])],
                                     children: [{ id: 'backdropsfavorites_movies_sort', structural: true, target: ['BackdropsFavoritesMoviesSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
-                                        { id: 'backdropsfavorites_movies_traversal', structural: true, target: ['BackdropsFavoritesMoviesTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesMoviesSortMode', ['SortName', 'CommunityRating', 'CriticRating', 'DateCreated', 'DatePlayed', 'OfficialRating', 'PlayCount', 'PremiereDate', 'Runtime'])], children: [] }]
+                                        { id: 'backdropsfavorites_movies_traversal', structural: true, target: ['BackdropsFavoritesMoviesTraversalModeRow', 'BackdropsFavoritesMoviesRandomStartRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesMoviesSortMode', ['SortName', 'CommunityRating', 'CriticRating', 'DateCreated', 'DatePlayed', 'OfficialRating', 'PlayCount', 'PremiereDate', 'Runtime'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_shows', headerTarget: ['backdropsFavoritesShows'],
                                     when: [AllChecked(['BackdropsFavoritesShowsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_shows_sort', structural: true, target: ['BackdropsFavoritesShowsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
-                                        { id: 'backdropsfavorites_shows_traversal', structural: true, target: ['BackdropsFavoritesShowsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesShowsSortMode', ['SortName', 'CommunityRating', 'DateCreated', 'DateLastContentAdded', 'SeriesDatePlayed', 'OfficialRating', 'PremiereDate'])], children: [] }]
+                                        { id: 'backdropsfavorites_shows_traversal', structural: true, target: ['BackdropsFavoritesShowsTraversalModeRow', 'BackdropsFavoritesShowsRandomStartRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesShowsSortMode', ['SortName', 'CommunityRating', 'DateCreated', 'DateLastContentAdded', 'SeriesDatePlayed', 'OfficialRating', 'PremiereDate'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_episodes', headerTarget: ['backdropsFavoritesEpisodes'],
                                     when: [AllChecked(['BackdropsFavoritesEpisodesEnabled'])],
                                     children: [{ id: 'backdropsfavorites_episodes_sort', structural: true, target: ['BackdropsFavoritesEpisodesSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
-                                        { id: 'backdropsfavorites_episodes_traversal', structural: true, target: ['BackdropsFavoritesEpisodesTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesEpisodesSortMode', ['SeriesSortName', 'CommunityRating', 'DateCreated', 'PremiereDate', 'DatePlayed', 'OfficialRating', 'PlayCount', 'Runtime'])], children: [] }]
+                                        { id: 'backdropsfavorites_episodes_traversal', structural: true, target: ['BackdropsFavoritesEpisodesTraversalModeRow', 'BackdropsFavoritesEpisodesRandomStartRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesEpisodesSortMode', ['SeriesSortName', 'CommunityRating', 'DateCreated', 'PremiereDate', 'DatePlayed', 'OfficialRating', 'PlayCount', 'Runtime'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_videos', headerTarget: ['backdropsFavoritesVideos'],
                                     when: [AllChecked(['BackdropsFavoritesVideosEnabled'])],
                                     children: [{ id: 'backdropsfavorites_videos_sort', structural: true, target: ['BackdropsFavoritesVideosSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
-                                        { id: 'backdropsfavorites_videos_traversal', structural: true, target: ['BackdropsFavoritesVideosTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesVideosSortMode', ['SortName', 'DateCreated', 'DatePlayed', 'PlayCount', 'Runtime'])], children: [] }]
+                                        { id: 'backdropsfavorites_videos_traversal', structural: true, target: ['BackdropsFavoritesVideosTraversalModeRow', 'BackdropsFavoritesVideosRandomStartRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesVideosSortMode', ['SortName', 'DateCreated', 'DatePlayed', 'PlayCount', 'Runtime'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_collections', headerTarget: ['backdropsFavoritesCollections'],
                                     when: [AllChecked(['BackdropsFavoritesCollectionsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_collections_sort', structural: true, target: ['BackdropsFavoritesCollectionsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
-                                        { id: 'backdropsfavorites_collections_traversal', structural: true, target: ['BackdropsFavoritesCollectionsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesCollectionsSortMode', ['SortName', 'CommunityRating', 'CriticRating', 'DateCreated', 'PremiereDate', 'OfficialRating'])], children: [] }]
+                                        { id: 'backdropsfavorites_collections_traversal', structural: true, target: ['BackdropsFavoritesCollectionsTraversalModeRow', 'BackdropsFavoritesCollectionsRandomStartRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesCollectionsSortMode', ['SortName', 'CommunityRating', 'CriticRating', 'DateCreated', 'PremiereDate', 'OfficialRating'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_playlists', headerTarget: ['backdropsFavoritesPlaylists'],
                                     when: [AllChecked(['BackdropsFavoritesPlaylistsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_playlists_sort', structural: true, target: ['BackdropsFavoritesPlaylistsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
-                                        { id: 'backdropsfavorites_playlists_traversal', structural: true, target: ['BackdropsFavoritesPlaylistsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesPlaylistsSortMode', ['SortName'])], children: [] }]
+                                        { id: 'backdropsfavorites_playlists_traversal', structural: true, target: ['BackdropsFavoritesPlaylistsTraversalModeRow', 'BackdropsFavoritesPlaylistsRandomStartRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesPlaylistsSortMode', ['SortName'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_people', headerTarget: ['backdropsFavoritesPeople'],
@@ -6903,34 +7261,34 @@
                                         // Session 116: the full People source blocks, mirrored.
                                         { id: 'backdropsfavorites_people_appearancesmainonly', structural: true, target: ['BackdropsFavoritesPeopleAppearancesMainOnlyRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Appearances'])], children: [] },
                                         { id: 'backdropsfavorites_people_appearancessort', structural: true, target: ['BackdropsFavoritesPeopleAppearancesSortModeRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Appearances'])], children: [] },
-                                        { id: 'backdropsfavorites_people_appearancestraversal', structural: true, target: ['BackdropsFavoritesPeopleAppearancesTraversalModeRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Appearances']), ValueIn('BackdropsFavoritesPeopleAppearancesSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: [] },
+                                        { id: 'backdropsfavorites_people_appearancestraversal', structural: true, target: ['BackdropsFavoritesPeopleAppearancesTraversalModeRow', 'BackdropsFavoritesPeopleAppearancesRandomStartRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Appearances']), ValueIn('BackdropsFavoritesPeopleAppearancesSortMode', ['Name', 'SortName', 'DateCreated', 'PremiereDate', 'ProductionYear', 'StartDate', 'CommunityRating', 'CriticRating', 'OfficialRating', 'Runtime', 'PlayCount', 'DatePlayed', 'VideoBitRate', 'IsPlayed', 'IsUnplayed', 'IsFavoriteOrLiked', 'Studio'])], children: [] },
                                         { id: 'backdropsfavorites_people_folder', structural: true, target: ['BackdropsFavoritesPeopleFolderBackdropFilesRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Folder'])], children: [] },
-                                        { id: 'backdropsfavorites_people_folder_order', structural: true, target: ['BackdropsFavoritesPeopleFolderOrderModeRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Folder']), ValueIn('BackdropsFavoritesPeopleFolderBackdropFiles', ['Multiple'])], children: [] }
+                                        { id: 'backdropsfavorites_people_folder_order', structural: true, target: ['BackdropsFavoritesPeopleFolderOrderModeRow'], when: [ValueIn('BackdropsFavoritesPeopleSourceMode', ['Folder']), ValueIn('BackdropsFavoritesPeopleFolderBackdropFiles', ['Multiple'])], children: [{ id: 'backdropsfavorites_people_folder_randomstart', target: ['BackdropsFavoritesPeopleFolderRandomStartRow'], when: [ValueIn('BackdropsFavoritesPeopleFolderOrderMode', ['Sequential'])], children: [] }] }
                                     ]
                                 },
                                 {
                                     id: 'backdropsfavorites_artists', headerTarget: ['backdropsFavoritesArtists'],
                                     when: [AllChecked(['BackdropsFavoritesArtistsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_artists_sort', structural: true, target: ['BackdropsFavoritesArtistsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
-                                        { id: 'backdropsfavorites_artists_traversal', structural: true, target: ['BackdropsFavoritesArtistsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesArtistsSortMode', ['SortName'])], children: [] }]
+                                        { id: 'backdropsfavorites_artists_traversal', structural: true, target: ['BackdropsFavoritesArtistsTraversalModeRow', 'BackdropsFavoritesArtistsRandomStartRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesArtistsSortMode', ['SortName'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_albums', headerTarget: ['backdropsFavoritesAlbums'],
                                     when: [AllChecked(['BackdropsFavoritesAlbumsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_albums_sort', structural: true, target: ['BackdropsFavoritesAlbumsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
-                                        { id: 'backdropsfavorites_albums_traversal', structural: true, target: ['BackdropsFavoritesAlbumsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesAlbumsSortMode', ['SortName', 'AlbumArtist', 'CommunityRating', 'CriticRating', 'ProductionYear', 'DateCreated'])], children: [] }]
+                                        { id: 'backdropsfavorites_albums_traversal', structural: true, target: ['BackdropsFavoritesAlbumsTraversalModeRow', 'BackdropsFavoritesAlbumsRandomStartRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesAlbumsSortMode', ['SortName', 'AlbumArtist', 'CommunityRating', 'CriticRating', 'ProductionYear', 'DateCreated'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_songs', headerTarget: ['backdropsFavoritesSongs'],
                                     when: [AllChecked(['BackdropsFavoritesSongsEnabled'])],
                                     children: [{ id: 'backdropsfavorites_songs_sort', structural: true, target: ['BackdropsFavoritesSongsSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
-                                        { id: 'backdropsfavorites_songs_traversal', structural: true, target: ['BackdropsFavoritesSongsTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesSongsSortMode', ['SortName', 'Album', 'AlbumArtist', 'Artist', 'DateCreated', 'DatePlayed', 'PlayCount', 'PremiereDate', 'Runtime'])], children: [] }]
+                                        { id: 'backdropsfavorites_songs_traversal', structural: true, target: ['BackdropsFavoritesSongsTraversalModeRow', 'BackdropsFavoritesSongsRandomStartRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesSongsSortMode', ['SortName', 'Album', 'AlbumArtist', 'Artist', 'DateCreated', 'DatePlayed', 'PlayCount', 'PremiereDate', 'Runtime'])], children: [] }]
                                 },
                                 {
                                     id: 'backdropsfavorites_books', headerTarget: ['backdropsFavoritesBooks'],
                                     when: [AllChecked(['BackdropsFavoritesBooksEnabled'])],
                                     children: [{ id: 'backdropsfavorites_books_sort', structural: true, target: ['BackdropsFavoritesBooksSortModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual'])], children: [] },
-                                        { id: 'backdropsfavorites_books_traversal', structural: true, target: ['BackdropsFavoritesBooksTraversalModeRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesBooksSortMode', ['SortName', 'DateCreated', 'CommunityRating', 'CriticRating', 'OfficialRating', 'PremiereDate'])], children: [] }]
+                                        { id: 'backdropsfavorites_books_traversal', structural: true, target: ['BackdropsFavoritesBooksTraversalModeRow', 'BackdropsFavoritesBooksRandomStartRow'], when: [ValueIn('BackdropsFavoritesManageMode', ['Individual']), ValueIn('BackdropsFavoritesBooksSortMode', ['SortName', 'DateCreated', 'CommunityRating', 'CriticRating', 'OfficialRating', 'PremiereDate'])], children: [] }]
                                 }
                             ]
                         }
@@ -7235,6 +7593,18 @@
                 // checkbox.
                 epRecomputeDependencyTree();
             }
+            // Session 127: Traversal lost its RandomStartAscending/RandomStartDescending values - the random
+            // start is the checkbox below it now. A saved legacy value becomes its direction plus the checkbox
+            // (the server keeps reading the legacy words the same way until the page is saved again).
+            function epNormalizeLegacyTraversal(config) {
+                Object.keys(EP_FIELDS).forEach(function (id) {
+                    if (id.slice(-13) !== 'TraversalMode') { return; }
+                    var v = config[id];
+                    if (v !== 'RandomStartAscending' && v !== 'RandomStartDescending') { return; }
+                    config[id] = v === 'RandomStartAscending' ? 'BeginAscending' : 'BeginDescending';
+                    config[id.slice(0, -13) + 'RandomStart'] = true;
+                });
+            }
             function epSyncAllBoolSelects() {
                 EP_BOOL_SELECT_PAIRS.forEach(function (pair) {
                     epSyncBoolSelectFromCheckbox(pair[0], pair[1]);
@@ -7408,7 +7778,7 @@
                 if (!sourceEl) { return; }
                 var needsFormat = sourceEl.value !== 'WallpapersCom';
                 if (!needsFormat || epAnyBackdropFormatChecked()) { return; }
-                ['PeopleBackdropsAppearancesFilterRow', 'PeopleBackdropsAppearancesSortModeRow', 'PeopleBackdropsAppearancesMainOnlyRow', 'PeopleBackdropsFolderBackdropFilesRow', 'PeopleBackdropsFolderOrderModeRow'].forEach(epGreyRowForMissingFormat);
+                ['PeopleBackdropsAppearancesFilterRow', 'PeopleBackdropsAppearancesSortModeRow', 'PeopleBackdropsAppearancesMainOnlyRow', 'PeopleBackdropsFolderBackdropFilesRow', 'PeopleBackdropsFolderOrderModeRow', 'PeopleBackdropsFolderRandomStartRow'].forEach(epGreyRowForMissingFormat);
                 var header = document.querySelector('[data-collapse="backdropsPeopleBackdrops"]');
                 if (header && !header.classList.contains('epFieldDisabled')) {
                     var ancestorAlreadyGrey = false;
@@ -8211,6 +8581,7 @@
                 .addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(ArtworkPlusConfig.pluginUniqueId).then(function (config) {
+                        epNormalizeLegacyTraversal(config);
                         Object.keys(EP_FIELDS).forEach(function (id) {
                             epSetFieldValue(id, config[id]);
                         });

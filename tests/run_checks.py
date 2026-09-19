@@ -3,7 +3,7 @@ Runs the standard verification routine for Configuration/configPage.html
 in one go (the manual 7-step checklist from the project guide, steps 1-5):
 
   1. node --check on the page's inline <script> blocks (syntax)
-  2. test_configpage.py            (284 regression tests)
+  2. test_configpage.py            (322 regression tests)
   2b. test_rotation_engine / test_debug_switch / test_backdrops_render (client scripts in a stub page)
   3. test_tree_self_containment.py (no node greys its own trigger)
   4. test_single_grey_level.py     (Fibel rule 14: one grey level only)

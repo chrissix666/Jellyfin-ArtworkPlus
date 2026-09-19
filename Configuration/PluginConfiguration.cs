@@ -403,6 +403,7 @@ public class PluginConfiguration : BasePluginConfiguration
     /// the full mechanism).
     /// </summary>
     public string BackdropsGenreTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsGenreRandomStart { get; set; }
 
     /// <summary>
     /// Movies-library genre list - reached with the Movies library's own
@@ -447,6 +448,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public string BackdropsEpisodeBackdropFiles { get; set; } = "Multiple";
 
     public string BackdropsEpisodeOrderMode { get; set; } = "Shuffle";
+    public bool BackdropsEpisodeRandomStart { get; set; }
 
     /// <summary>See BackdropsGenreEnabled's own doc comment.</summary>
     public bool BackdropsStudioEnabled { get; set; } = true;
@@ -496,6 +498,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Appearances only - see BackdropsGenreTraversalMode.</summary>
     public string BackdropsStudioTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsStudioRandomStart { get; set; }
 
     /// <summary>See BackdropsGenreEnabled's own doc comment.</summary>
     public bool BackdropsTagEnabled { get; set; } = true;
@@ -522,6 +525,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>See BackdropsGenreTraversalMode's own doc comment.</summary>
     public string BackdropsTagTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsTagRandomStart { get; set; }
 
     /// <summary>
     /// Favorites Backdrops - one Enable per section (native order from
@@ -563,6 +567,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Same reasoning as the per-type TraversalMode properties below - only used when BackdropsFavoritesManageMode is "General".</summary>
     public string BackdropsFavoritesGeneralTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesGeneralRandomStart { get; set; }
 
     public int BackdropsFavoritesCycleTimeMs { get; set; } = 10000;
 
@@ -579,6 +584,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>See BackdropsGenreTraversalMode's own doc comment.</summary>
     public string BackdropsFavoritesMoviesTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesMoviesRandomStart { get; set; }
 
     public bool BackdropsFavoritesShowsEnabled { get; set; } = true;
 
@@ -586,6 +592,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>See BackdropsGenreTraversalMode's own doc comment.</summary>
     public string BackdropsFavoritesShowsTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesShowsRandomStart { get; set; }
 
     public bool BackdropsFavoritesEpisodesEnabled { get; set; } = true;
 
@@ -593,6 +600,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>See BackdropsGenreTraversalMode's own doc comment.</summary>
     public string BackdropsFavoritesEpisodesTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesEpisodesRandomStart { get; set; }
 
     public bool BackdropsFavoritesVideosEnabled { get; set; } = true;
 
@@ -600,6 +608,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>See BackdropsGenreTraversalMode's own doc comment.</summary>
     public string BackdropsFavoritesVideosTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesVideosRandomStart { get; set; }
 
     public bool BackdropsFavoritesCollectionsEnabled { get; set; } = true;
 
@@ -607,6 +616,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>See BackdropsGenreTraversalMode's own doc comment.</summary>
     public string BackdropsFavoritesCollectionsTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesCollectionsRandomStart { get; set; }
 
     public bool BackdropsFavoritesPlaylistsEnabled { get; set; } = true;
 
@@ -614,6 +624,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>See BackdropsGenreTraversalMode's own doc comment.</summary>
     public string BackdropsFavoritesPlaylistsTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesPlaylistsRandomStart { get; set; }
 
     /// <summary>
     /// People Backdrops for Favorites - deliberately no Sort field,
@@ -655,10 +666,12 @@ public class PluginConfiguration : BasePluginConfiguration
     public string BackdropsFavoritesPeopleAppearancesSortMode { get; set; } = "Shuffle";
 
     public string BackdropsFavoritesPeopleAppearancesTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesPeopleAppearancesRandomStart { get; set; }
 
     public string BackdropsFavoritesPeopleFolderBackdropFiles { get; set; } = "Single";
 
     public string BackdropsFavoritesPeopleFolderOrderMode { get; set; } = "Sequential";
+    public bool BackdropsFavoritesPeopleFolderRandomStart { get; set; }
 
     public bool BackdropsFavoritesArtistsEnabled { get; set; } = true;
 
@@ -666,6 +679,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>See BackdropsGenreTraversalMode's own doc comment.</summary>
     public string BackdropsFavoritesArtistsTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesArtistsRandomStart { get; set; }
 
     public bool BackdropsFavoritesAlbumsEnabled { get; set; } = true;
 
@@ -673,6 +687,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>See BackdropsGenreTraversalMode's own doc comment.</summary>
     public string BackdropsFavoritesAlbumsTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesAlbumsRandomStart { get; set; }
 
     public bool BackdropsFavoritesSongsEnabled { get; set; } = true;
 
@@ -680,6 +695,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>See BackdropsGenreTraversalMode's own doc comment.</summary>
     public string BackdropsFavoritesSongsTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesSongsRandomStart { get; set; }
 
     public bool BackdropsFavoritesBooksEnabled { get; set; } = true;
 
@@ -687,6 +703,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>See BackdropsGenreTraversalMode's own doc comment.</summary>
     public string BackdropsFavoritesBooksTraversalMode { get; set; } = "BeginAscending";
+    public bool BackdropsFavoritesBooksRandomStart { get; set; }
 
     public bool BackdropsEnabled { get; set; } = true;
 
@@ -826,6 +843,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
     public string ExtraposterMoviesDetailSetOrder { get; set; } = "Ascending";
+    public bool ExtraposterMoviesDetailSetRandomStart { get; set; }
 
     /// <summary>Poster | Postercase | Keyart | AnimatedPoster | AnimatedKeyart - which image of each movie in the Set (Postercase/Keyart = the movie's Custom Poster file, found by the Custom Poster tab's naming rules, regardless of that feature's switches).</summary>
     public string ExtraposterMoviesDetailSetImage { get; set; } = "Poster";
@@ -849,6 +867,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtraposterMoviesDetailSinglePass { get; set; } = false;
+    public bool ExtraposterMoviesDetailRandomStart { get; set; }
 
     /// <summary>How long each image is shown (ms).</summary>
     public int ExtraposterMoviesDetailCycleTimeMs { get; set; } = 5000;
@@ -877,6 +896,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
     public string ExtraposterMoviesLibrarySetOrder { get; set; } = "Ascending";
+    public bool ExtraposterMoviesLibrarySetRandomStart { get; set; }
 
     /// <summary>Poster | Postercase | Keyart | AnimatedPoster | AnimatedKeyart - which image of each movie in the Set (Postercase/Keyart = the movie's Custom Poster file, found by the Custom Poster tab's naming rules, regardless of that feature's switches).</summary>
     public string ExtraposterMoviesLibrarySetImage { get; set; } = "Poster";
@@ -900,6 +920,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtraposterMoviesLibrarySinglePass { get; set; } = false;
+    public bool ExtraposterMoviesLibraryRandomStart { get; set; }
 
     /// <summary>How long each image is shown (ms).</summary>
     public int ExtraposterMoviesLibraryCycleTimeMs { get; set; } = 5000;
@@ -931,6 +952,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Ascending | Descending - season number order.</summary>
     public string ExtraposterTvShowsDetailSeasonOrder { get; set; } = "Ascending";
+    public bool ExtraposterTvShowsDetailSeasonRandomStart { get; set; }
 
     /// <summary>Season 0 (specials) included, always first.</summary>
     public bool ExtraposterTvShowsDetailIncludeSpecials { get; set; } = false;
@@ -942,6 +964,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtraposterTvShowsDetailSinglePass { get; set; } = false;
+    public bool ExtraposterTvShowsDetailRandomStart { get; set; }
 
     /// <summary>How long each image is shown (ms).</summary>
     public int ExtraposterTvShowsDetailCycleTimeMs { get; set; } = 5000;
@@ -967,6 +990,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Ascending | Descending - season number order.</summary>
     public string ExtraposterTvShowsLibrarySeasonOrder { get; set; } = "Ascending";
+    public bool ExtraposterTvShowsLibrarySeasonRandomStart { get; set; }
 
     /// <summary>Season 0 (specials) included, always first.</summary>
     public bool ExtraposterTvShowsLibraryIncludeSpecials { get; set; } = false;
@@ -978,6 +1002,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtraposterTvShowsLibrarySinglePass { get; set; } = false;
+    public bool ExtraposterTvShowsLibraryRandomStart { get; set; }
 
     /// <summary>How long each image is shown (ms).</summary>
     public int ExtraposterTvShowsLibraryCycleTimeMs { get; set; } = 5000;
@@ -1056,6 +1081,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtrakeyartMoviesDetailSinglePass { get; set; } = false;
+    public bool ExtrakeyartMoviesDetailRandomStart { get; set; }
 
     /// <summary>How long each image is shown (ms).</summary>
     public int ExtrakeyartMoviesDetailCycleTimeMs { get; set; } = 5000;
@@ -1095,6 +1121,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtrakeyartMoviesLibrarySinglePass { get; set; } = false;
+    public bool ExtrakeyartMoviesLibraryRandomStart { get; set; }
 
     /// <summary>How long each image is shown (ms).</summary>
     public int ExtrakeyartMoviesLibraryCycleTimeMs { get; set; } = 5000;
@@ -1137,6 +1164,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtrakeyartTvShowsDetailSinglePass { get; set; } = false;
+    public bool ExtrakeyartTvShowsDetailRandomStart { get; set; }
 
     /// <summary>How long each image is shown (ms).</summary>
     public int ExtrakeyartTvShowsDetailCycleTimeMs { get; set; } = 5000;
@@ -1173,6 +1201,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
     public bool ExtrakeyartTvShowsLibrarySinglePass { get; set; } = false;
+    public bool ExtrakeyartTvShowsLibraryRandomStart { get; set; }
 
     /// <summary>How long each image is shown (ms).</summary>
     public int ExtrakeyartTvShowsLibraryCycleTimeMs { get; set; } = 5000;
@@ -1482,6 +1511,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public int CharacterartMoviesDelayMs { get; set; } = 5000;
 
     public bool CharacterartMoviesSinglePass { get; set; }
+    public bool CharacterartMoviesRandomStart { get; set; }
 
     /// <summary>
     /// Only relevant when CharacterartMoviesMultiImage AND
@@ -1544,6 +1574,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public int CharacterartTvShowsDelayMs { get; set; } = 5000;
 
     public bool CharacterartTvShowsSinglePass { get; set; }
+    public bool CharacterartTvShowsRandomStart { get; set; }
 
     /// <summary>
     /// Same as CharacterartMoviesStaySingleImageStatic, for TV shows -
@@ -2010,6 +2041,7 @@ public class PluginConfiguration : BasePluginConfiguration
     public int PeopleBackdropsCycleTimeMs { get; set; } = 10000;
 
     public string PeopleBackdropsOrderMode { get; set; } = "Shuffle";
+    public bool PeopleBackdropsRandomStart { get; set; }
 
     public bool PeopleBackdropsKenBurnsEnabled { get; set; } = true;
 
@@ -2049,6 +2081,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Session 116: Traversal for the Appearances Order, same semantics as BackdropsGenreTraversalMode.</summary>
     public string PeopleBackdropsAppearancesTraversalMode { get; set; } = "BeginAscending";
+    public bool PeopleBackdropsAppearancesRandomStart { get; set; }
 
     /// <summary>
     /// Fix #8 (Session 105, ported aus der Sandbox, Session 76): "Main"
@@ -2083,6 +2116,7 @@ public class PluginConfiguration : BasePluginConfiguration
     /// PeopleBackdropsSourceMode is "Folder".
     /// </summary>
     public string PeopleBackdropsFolderOrderMode { get; set; } = "Sequential";
+    public bool PeopleBackdropsFolderRandomStart { get; set; }
 
     // ───────────────────────── Backdrops tab ─────────────────────────
     // Curriculum section G. A fundamentally different kind of feature than
@@ -2105,6 +2139,7 @@ public class PluginConfiguration : BasePluginConfiguration
     /// simple random number generator).
     /// </summary>
     public string BackdropsOrderMode { get; set; } = "Shuffle";
+    public bool BackdropsRandomStart { get; set; }
 
     /// <summary>
     /// true = Ken Burns effect (zoom/pan) instead of the native plain fade.

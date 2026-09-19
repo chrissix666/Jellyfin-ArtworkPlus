@@ -126,12 +126,11 @@ User objection, justified: the F-2024-01 fix treated Shuffle/Random (Limit=100) 
 
 - **BeginAscending** (default, = previous behaviour, now capped)
 - **BeginDescending**
-- **RandomStartAscending** — fresh random offset per visit (via a cheap `GetCount` query, no materialization): `maxStart = max(0, N-100)`, `StartIndex = Random.Next(0, maxStart+1)`, so the whole sorted list stays reachable over many visits instead of always the first 100
-- **RandomStartDescending** — as above, descending
+- ~~**RandomStartAscending** / **RandomStartDescending**~~ — **Session 127d: removed from the dropdown.** The random offset is now the checkbox **Random start position** right under Traversal (same idea at every multi-image feature of the plugin): fresh random offset per visit (via a cheap `GetCount` query, no materialization): `maxStart = max(0, N-100)`, `StartIndex = Random.Next(0, maxStart+1)`, so the whole sorted list stays reachable over many visits instead of always the first 100. Traversal is the pure direction now (texts `Ascending` / `Descending`, values unchanged). A saved legacy `RandomStart*` value is normalised on page load to direction + checkbox; `Helpers.RandomStart.ForTraversal` keeps honouring it on the server until the page is saved again. Where there is no Traversal (Detail View, Episodes, People Wallpapers.com / Folder, Favorites-People Folder) the checkbox sits under Order and the server rotates the finished list (`RandomStart.Rotate`) before sending/streaming it; Favorites-People Wallpapers.com shuffles its people sample anyway and has no checkbox of its own (it uses the People tab's).
 
 Shared helper `ResolveRotationQuery(sortMode, traversalMode, baseQuery)` in `BackdropsController.cs`, used by `GetGenrePool`/`GetTagPool`/`GetFavoritesPool`. The count query and the item query run on the SAME `InternalItemsQuery` object, so their filters can never drift apart. SQL order confirmed in `SqliteItemRepository`: `ORDER BY`, then `LIMIT`, then `OFFSET`.
 
-Admin UI: a Traversal dropdown after every Order dropdown, gated with `ValueIn` so it is only usable when Order is a real field (not Shuffle/Random). Since the Session 99–101 consolidation there are 1 (Genre) + 1 (Tag) + 1 (Favorites General) + 10 (Favorites individual) pairs.
+Admin UI: a Traversal dropdown after every Order dropdown, gated with `ValueIn` so it is only usable when Order is a real field (not Shuffle/Random). Since the Session 99–101 consolidation there are 1 (Genre) + 1 (Tag) + 1 (Favorites General) + 10 (Favorites individual) pairs. Session 127d: the Random start position row shares each Traversal node's target list (16 pairs incl. Studio/People/Favorites-People Appearances).
 
 ---
 

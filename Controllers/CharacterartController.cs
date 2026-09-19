@@ -145,7 +145,7 @@ public class CharacterartController : ControllerBase
             }
 
             var (folderPath, namingMode, typeName, folderName, multiImage, allowedFormatsCsv,
-                cycleMs, fadeMs, delayEnabled, delayMs, singlePass, staySingleImageStatic, orderMode, isMovie) = resolved.Value;
+                cycleMs, fadeMs, delayEnabled, delayMs, singlePass, staySingleImageStatic, orderMode, isMovie, randomStart) = resolved.Value;
 
             var position = isMovie ? config.CharacterartMoviesPosition : config.CharacterartTvShowsPosition;
             var lastWriteUtc = SafeGetLastWriteTimeUtc(folderPath);
@@ -163,6 +163,8 @@ public class CharacterartController : ControllerBase
             }
 
             var images = ResolveCandidates(folderPath, namingMode, typeName, folderName, multiImage, orderMode, allowedFormatsCsv);
+            // Session 127: Random start position - Sequential + Loop only (the page greys the box otherwise).
+            if (randomStart && orderMode == "Sequential" && !singlePass && multiImage) { images = Helpers.RandomStart.Rotate(images); }
 
             var effectiveFadeMs = Math.Min(fadeMs, cycleMs);
 
@@ -237,7 +239,7 @@ public class CharacterartController : ControllerBase
                 return NotFound();
             }
 
-            var (folderPath, namingMode, typeName, folderName, multiImage, allowedFormatsCsv, _, _, _, _, _, _, orderMode, _) = resolved.Value;
+            var (folderPath, namingMode, typeName, folderName, multiImage, allowedFormatsCsv, _, _, _, _, _, _, orderMode, _, _) = resolved.Value;
             var images = ResolveCandidates(folderPath, namingMode, typeName, folderName, multiImage, orderMode, allowedFormatsCsv);
 
             if (!images.Contains(fileName, StringComparer.Ordinal))
@@ -309,7 +311,7 @@ public class CharacterartController : ControllerBase
     /// regardless of which of the three levels you start from.
     /// </summary>
     private (string FolderPath, string NamingMode, string TypeName, string FolderName, bool MultiImage,
-        string AllowedFormatsCsv, int CycleMs, int FadeMs, bool DelayEnabled, int DelayMs, bool SinglePass, bool StaySingleImageStatic, string OrderMode, bool IsMovie)?
+        string AllowedFormatsCsv, int CycleMs, int FadeMs, bool DelayEnabled, int DelayMs, bool SinglePass, bool StaySingleImageStatic, string OrderMode, bool IsMovie, bool RandomStart)?
         ResolveItem(Guid itemId, PluginConfiguration config)
     {
         var item = _libraryManager.GetItemById(itemId);
@@ -338,7 +340,7 @@ public class CharacterartController : ControllerBase
                 config.CharacterartMoviesFolderName, config.CharacterartMoviesMultiImage, config.CharacterartAllowedFormats,
                 config.CharacterartMoviesCycleTimeMs, config.CharacterartMoviesFadeTimeMs,
                 config.CharacterartMoviesDelayEnabled, config.CharacterartMoviesDelayMs, config.CharacterartMoviesSinglePass,
-                config.CharacterartMoviesStaySingleImageStatic, config.CharacterartMoviesOrderMode, true);
+                config.CharacterartMoviesStaySingleImageStatic, config.CharacterartMoviesOrderMode, true, config.CharacterartMoviesRandomStart);
         }
 
         if (item is BoxSet boxSet)
@@ -367,7 +369,7 @@ public class CharacterartController : ControllerBase
                 config.CharacterartMoviesFolderName, config.CharacterartMoviesMultiImage, config.CharacterartAllowedFormats,
                 config.CharacterartMoviesCycleTimeMs, config.CharacterartMoviesFadeTimeMs,
                 config.CharacterartMoviesDelayEnabled, config.CharacterartMoviesDelayMs, config.CharacterartMoviesSinglePass,
-                config.CharacterartMoviesStaySingleImageStatic, config.CharacterartMoviesOrderMode, true);
+                config.CharacterartMoviesStaySingleImageStatic, config.CharacterartMoviesOrderMode, true, config.CharacterartMoviesRandomStart);
         }
 
         if (item is Series series)
@@ -418,7 +420,7 @@ public class CharacterartController : ControllerBase
             config.CharacterartTvShowsFolderName, config.CharacterartTvShowsMultiImage, config.CharacterartAllowedFormats,
             config.CharacterartTvShowsCycleTimeMs, config.CharacterartTvShowsFadeTimeMs,
             config.CharacterartTvShowsDelayEnabled, config.CharacterartTvShowsDelayMs, config.CharacterartTvShowsSinglePass,
-            config.CharacterartTvShowsStaySingleImageStatic, config.CharacterartTvShowsOrderMode, false);
+            config.CharacterartTvShowsStaySingleImageStatic, config.CharacterartTvShowsOrderMode, false, config.CharacterartTvShowsRandomStart);
     }
 
     /// <summary>

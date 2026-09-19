@@ -63,6 +63,8 @@ Sets (BoxSets): supported by Animated/Custom/Extra since Sessions 87–92 (Movie
 
 ## Cross-cutting
 
+- **Random start position (Session 127d):** 35 checkboxes (Extra 12, Characterart 2, Backdrops 21), all default off, label `Random start position`, each directly under the dropdown that gates it (Playback / Set order / Season order / Order / Traversal), greyed for Shuffle/Random (Extra files and Characterart also for Play once). Server-side only: `Helpers/RandomStart.cs` — `Rotate` for finished lists (Extra files/children, Characterart, Backdrops Detail View/Episodes, People Wallpapers/Folder streams, Favorites-People Folder), `ForTraversal` for the DB-offset pools (Genre/Studio/Tag/Favorites/People Appearances via `ResolveRotationQuery`). Traversal dropdowns keep only Ascending/Descending. Tests: S127d block in `test_configpage.py` (all 35 gates + legacy normaliser + 16 dropdowns).
+
 - **Gate system** (`EP_TREE`/`EP_FIELDS` in configPage.html): every Show-on/Enable/greying rule — Fibel rules 0–26, `tests/run_checks.py`.
 - **Naming modes**: Movies Standalone/Prefixed/Folder; TV Standalone/Folder (series main folder); Sets always Standalone.
 - **Known gaps**: live look at Session 123 (split/Synchronize/tile logos) is the user's; Import button lacks `.raised`; no dedicated tests for Animated Poster/Keyart and the Sets checkboxes. Batch maps must be keyed like the tile `data-id` (no dashes) — `tests/diagnostic_batch_key_format.py`.
