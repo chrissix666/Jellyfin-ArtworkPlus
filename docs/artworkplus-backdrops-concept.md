@@ -6,10 +6,10 @@ Parts A–F describe the design as it is today. Parts G–N record the individua
 
 ---
 
-## Part A — The six categories
+## Part A — The seven categories (six until Session 130)
 
 ### Detail View Backdrops (`BackdropsController.cs`, `Backdrops-v1.js`, first IIFE)
-- Completely replaces Jellyfin's own native multi-backdrop rotation (switches it off via the `enableBackdrops` localStorage key, rebuilds the rotation from scratch). Detail pages only, Chrome/Chromium only (the override technique is not reliably available elsewhere).
+- Completely replaces Jellyfin's own native multi-backdrop rotation on detail pages: vanilla keeps rotating in its own container, which the static prehiding CSS rule hides while ours shows (Part R). **Session 130:** no vanilla-setting gate and no browser gate any more — the old "Details Banner must be on" and "Chromium only / Firefox off" conditions are gone (see Part S); vanilla's settings are neither read nor written by the client.
 - No file search of its own — uses exclusively the images Jellyfin already knows for the item (`BackdropImageTags`/`ParentBackdropImageTags`, i.e. `item.GetImages(ImageType.Backdrop)` — the in-memory image infos filled by the library scan, verified in Session 97).
 - Settings: `CycleTimeMs`, `OrderMode` (Sequential/Shuffle/Random — Sequential: native order, Shuffle: no repeats per round, Random: repeats allowed), `KenBurnsEnabled`, `KenBurnsZoomMs`, `KenBurnsPanMs`.
 - **No cache** — on every navigation to an item everything is fetched fresh (`{cache: 'no-store'}`). Sensible, because only already known, local metadata of a single item is read, no external call.
@@ -266,7 +266,9 @@ Sandbox test caveat (kept for the record): the replica had its own embedded `win
 
 ## Part P — Field-order reference of the whole Backdrops tab
 
-Tab head (Session 118): Allowed image formats → **Listener** (Native/Custom) → **Base name** (Custom only), then the six category collapses.
+Tab head (Session 118): Allowed image formats → **Listener** (Native/Custom) → **Base name** (Custom only), then the seven category collapses (Detail View, **Library View** since Session 130, People, Genre, Studio, Tag, Favorites). Every collapse: intro line + Restore button, then one reserved `epVanillaNotice` line (Session 130, only Detail View and Library View ever fill it), then Enable.
+
+**Library View Backdrops** (Session 130): Enable → Show on (vanilla): Home / Movies / TV shows / Music → Show on (custom): Collections / Search / User settings → `BackdropsLibraryDependentFields`: Home rating cap (PG-13/Off) → Cycle time → Ken Burns (+Zoom/Pan) → Order (Sequential/Shuffle/Random) → Random start position.
 
 Uniform grid since Session 116 (user decision "greatest possible consistency"):
 **Enable → where it applies → Source (if any) → Backdrops per item → Cycle time →
@@ -306,8 +308,9 @@ rows 4, 5, 9, 10 when Studio image is selected; Ken Burns applies to both source
 ## Part Q — Listener (Native / Custom) and episode backdrops (Session 118)
 
 **Listener** (global, under Allowed image formats; applies to Detail View, Genre,
-Studio-Appearances, Tag, Favorites, Favorites-People-Appearances and People
-Appearances — not to People Folder, which is the plugin's own file search anyway):
+Studio-Appearances, Tag, Favorites, Favorites-People-Appearances, People
+Appearances and — since Session 130 — Library View; not to People Folder, which
+is the plugin's own file search anyway):
 
 - **Native** (default): Jellyfin's database images, exactly what its
   `LocalImageProvider.PopulateBackdrops` found at scan time.
@@ -344,6 +347,84 @@ receives the finished list in `settings.Images` (+ `ImageSource`,
 the person-folder file name is configurable; Multiple now includes the plain
 `name.ext` as index 0 before `name1…20` (same rule as the episode files and
 Jellyfin's backdrop stage). Favorites-People-Folder inherits it.
+
+## Part S — Vanilla decoupling and Library View Backdrops (Session 130)
+
+### S1. Facts (jellyfin-web 10.10.7, verified in the source)
+
+- `scripts/autoBackdrops.js`: on `pageshow` of a page with class `backdropPage`
+  (home.html `movie,series,book`; movies.html `movie`; tvrecommended.html
+  `series`; music.html `musicartist`) and the user's **"Backdrops"** display
+  setting on (`enableBackdrops`, **default OFF**), it fetches 20 items with a
+  backdrop (`SortBy: IsFavoriteOrLiked,Random`, `Limit 20`, `ImageTypes Backdrop`,
+  `ParentId` = `topParentId` from the hash, and — without a parent, i.e. on Home —
+  `MaxOfficialRating: 'PG-13'`), caches the list per user+type+library until a
+  reload and rotates it every 24 s. With the setting off it removes the class and
+  calls `clearBackdrop()`. Every other page (every `list.html`, the React search
+  page, the user settings, Live TV) gets `clearBackdrop()`.
+- Quirk kept 1:1 in our replica: `SortBy IsFavoriteOrLiked` without a SortOrder is
+  ASCENDING — favourites sort LAST, so they only reach the 20 when the library has
+  fewer than 20 non-favourites.
+- Detail pages: `renderBackdrop()` paints when `detailsBanner` (**default ON**) OR
+  `enableBackdrops` is on (`backdrop.js:217 isEnabled || enabled()`); the header
+  banner is mobile-layout only. "Details Banner off" alone does NOT stop vanilla's
+  detail backdrop while "Backdrops" is on.
+- Vanilla cannot be switched off from outside without a hack: the image is fetched
+  by `new Image()` before anything reaches the DOM and the module is not reachable
+  from the page. Hence: hide (static CSS rule, Part R) and tell the user.
+- The Firefox exclusion in vanilla (`enableRotation()`, "causes high cpu usage") is
+  an Emby-era comment nobody re-measured; it only disables the rotation, a static
+  backdrop still shows. Our five list categories always ran on Firefox.
+
+### S2. Decisions (user, Session 130)
+
+1. Firefox gate removed everywhere; a yellow-green hint in the tab head instead:
+   `Firefox detected: backdrops may use more CPU or show unexpected behaviour on this browser.`
+2. Detail View no longer requires vanilla's "Details Banner". Nobody is forced to
+   switch the vanilla setting off; while it is on, the admin page shows (yellow-green,
+   one reserved line under the category intro):
+   `Vanilla 'Details Banner' is on: its backdrops are hidden but still loaded. Turn it off to save resources.`
+3. New seventh category **Library View Backdrops** = vanilla's "Backdrops" setting,
+   rebuilt: same pool query (server, `/Backdrops/library-pool`, `[Authorize]`), own
+   cycle time / order / Ken Burns / Random start, Listener Native/Custom applies,
+   per-page switches in two rows — **Show on (vanilla)**: Home (incl. Favourites
+   tab), Movies, TV shows, Music (each = its vanilla page and image type); **Show
+   on (custom)**: Collections (a boxsets library, set backdrops), Search and User
+   settings (both the Home set). **Home rating cap** PG-13 (vanilla) / Off — the cap
+   only ever lowers the user's own parental limit. Hint while vanilla's setting is
+   still on: `Vanilla 'Backdrops' is on: its backdrops are hidden but still loaded. Turn it off to save resources.`
+   Not covered on purpose: Folders, Live TV, Books/Music videos/Home videos/Mixed/
+   Playlists libraries, Dashboard, Metadata editor, Login. Music artist/album
+   detail, playlist detail and Now playing keep vanilla's own item backdrop. The
+   Genre/Studio/Tag/Favorites/People list pages stay with their categories.
+4. The pool is fetched per visit (one page kind + library; tab switches inside
+   Home/Movies/TV/Music are the same visit) — vanilla's until-reload cache is not
+   copied, a fresh 20 every visit is the better behaviour and the query is cheap.
+5. Both hints and the Firefox line are the rule-9 layer of the admin page
+   (`epUpdateBackdropsBrowserState`), never tree conditions, never greying; they
+   read Jellyfin's own per-user localStorage keys and show only while the
+   category's Enable is on. Every category collapse reserves one fixed 15 px
+   line for the hint (in a column with the intro, left of the Restore button,
+   2 px above and below - the user's choice after three rounds) so nothing
+   jumps. `epVanillaNoticePreview` (false) can force all three visible for a look.
+
+### S3. Interplay (both directions)
+
+- **Ours ↔ ours:** the seventh owner is a `Core.createBackdropOwner` like Genre;
+  claim/beginVisit on `hashchange`, so every handover follows Part R3 (crossfade
+  ≤1200 ms, `empty` → fade out at once). Verified by the `LIB` scenarios in
+  `tests/test_backdrops_transitions.py`: Tag→Home, Home→Movie (Detail View),
+  Movie→Movies library, Home→Favourites tab (same visit, no re-fetch), Home→Genre
+  list, Home→Folders list (nobody), Home→Search, Tag→User settings.
+- **Ours ↔ vanilla:** vanilla's rotation keeps running in its own container while
+  ours shows (hidden by the body class); with vanilla's setting off, autoBackdrops
+  removes `.withBackdrop` on these pages — the bus defends it (R8 addendum; the
+  transitions stub simulates that `clearBackdrop()` 120 ms after every hash change).
+  A user who runs only some of our categories gets vanilla everywhere else: a
+  Library page with the category off answers `Enabled=false` → `empty` → the bus
+  clears the class and vanilla is visible again (scenarios "Tag -> Home (nobody)",
+  "Home stays vanilla" keep passing with the category off).
+- **Video page:** the owner pauses like the other six.
 
 ## Part R — The transition system: one model for all six implementations (Session 120)
 
@@ -403,7 +484,7 @@ Responsibility (x) per page, first match wins:
 | `details?id=<Movie/Series/Season/Episode/Set/Video>` | Detail View (enabled + type in Show on + Details banner on + width ≥ 1000, like vanilla) | VANILLA |
 | `list.html?personId=…&type=…` | People (Show on Movies/TV/Episodes lists) | NONE |
 | `list.html?genreId=…` / `studioId=…` / `tag=…` / `IsFavorite=true&type=…` | Genre / Studio / Tag / Favorites | NONE |
-| library home / Home | — | VANILLA (Jellyfin's random rotation) |
+| `home.html` (incl. `?tab=` Favourites), `movies.html`/`tv.html`/`music.html?topParentId=…`, `list.html?parentId=<boxsets library>`, `search.html`, `mypreferences*.html`/`userprofile.html` | Library View (Session 130, Part S; enabled + page in Show on; `list.html?parentId=` only without genreId/studioId/tag/personId/IsFavorite/type, the server answers Enabled=false unless the parent is a boxsets library) | VANILLA on the `backdropPage` pages (Home, Movies, TV, Music) when the user's "Backdrops" setting is on; NONE elsewhere |
 | `video` | (owner pauses) | Jellyfin hides everything |
 | anything else | — | NONE |
 
@@ -537,7 +618,7 @@ gone after grace when nobody claims, body class on only while OURS is showing.
 Then the live variance run: random Tag/Genre/Studio/Favorites list → random
 movie/series/episode/person and back, plus list → Home.
 
-### R6. Inventory of the six implementations (as read, Session 120)
+### R6. Inventory of the six implementations (as read, Session 120; the seventh, Library View, is a Genre-shaped owner — Part S)
 
 | | Detail View | People | Genre | Studio | Tag | Favorites |
 |---|---|---|---|---|---|---|

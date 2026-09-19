@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -165,8 +166,9 @@ public class FavoritesPeoplePoolResult
 /// single settings endpoint plus (CHANGED, real gap fixed per explicit
 /// user correction - "sollte aber schon tied zu den sub below sein") one
 /// filtering endpoint (GetAllowedIndices below). The actual override
-/// happens entirely in backdrops.js (Firefox detection, the
-/// enableBackdrops check, its own rotation) - this controller only
+/// happens entirely in Backdrops-v1.js (page detection, claim on the
+/// transition bus, its own rotation; Session 130: no Firefox or
+/// vanilla-setting check any more) - this controller only
 /// returns HOW the override is configured (GetSettings) and WHICH of the
 /// item's own already-known backdrops are allowed to be shown
 /// (GetAllowedIndices, a display gate on Jellyfin's own already-resolved
@@ -189,10 +191,12 @@ public class BackdropsController : ControllerBase
     private readonly IServerApplicationPaths _appPaths;
     private readonly PeopleBackdropsController _peopleBackdropsController;
     private readonly IUserManager _userManager;
+    private readonly ILocalizationManager _localization;
 
-    public BackdropsController(ILogger<BackdropsController> logger, ILibraryManager libraryManager, IImageProcessor imageProcessor, IServerApplicationPaths appPaths, PeopleBackdropsController peopleBackdropsController, IUserManager userManager)
+    public BackdropsController(ILogger<BackdropsController> logger, ILibraryManager libraryManager, IImageProcessor imageProcessor, IServerApplicationPaths appPaths, PeopleBackdropsController peopleBackdropsController, IUserManager userManager, ILocalizationManager localization)
     {
         _userManager = userManager;
+        _localization = localization;
         _logger = logger;
         _libraryManager = libraryManager;
         _imageProcessor = imageProcessor;
@@ -725,6 +729,125 @@ public class BackdropsController : ControllerBase
         return Ok(result);
     }
 
+
+    /// <summary>
+    /// GET /Backdrops/library-pool?page=X[&amp;parentId=Y] - Library View
+    /// Backdrops (Session 130), the replica of Jellyfin's own random
+    /// library backdrops (jellyfin-web scripts/autoBackdrops.js,
+    /// getBackdropItemIds): 20 items that have a backdrop, SortBy
+    /// IsFavoriteOrLiked,Random, ImageTypes Backdrop, Recursive, per
+    /// library (ParentId) or - for the Home set - across all libraries with
+    /// MaxOfficialRating PG-13. page names the client's page kind:
+    ///   home         Movie+Series+Book, all libraries, rating cap (vanilla Home incl. its Favourites tab)
+    ///   movies       Movie in the library parentId (vanilla movies.html)
+    ///   tv           Series in the library parentId (vanilla tv.html)
+    ///   music        MusicArtist in the library parentId (vanilla music.html)
+    ///   collections  BoxSet, only when parentId is a boxsets library (list.html?parentId - vanilla paints nothing there)
+    ///   search       the Home set (search.html - vanilla paints nothing)
+    ///   usersettings the Home set (mypreferences*.html/userprofile.html - vanilla paints nothing)
+    /// Vanilla quirk kept 1:1: SortBy IsFavoriteOrLiked without a SortOrder is
+    /// ASCENDING, i.e. favourites sort LAST and only reach the 20 when the
+    /// library has fewer than 20 non-favourites. Documented, not "fixed".
+    /// [Authorize]: IsFavoriteOrLiked is per-user data (lesson B15) and the
+    /// user's own parental limit applies through InternalItemsQuery(user);
+    /// the PG-13 cap only ever lowers that limit, never raises it.
+    /// The client rotates the 20 with its own engine (Order/Cycle time/Ken
+    /// Burns); Sequential + Random start rotates the finished list here.
+    /// </summary>
+    [Authorize]
+    [HttpGet("library-pool")]
+    public ActionResult<GenrePoolResult> GetLibraryPool([FromQuery] string page, [FromQuery] Guid? parentId)
+    {
+        var config = Plugin.Instance!.Configuration;
+        var requestUser = GetRequestUser();
+        var categoryEnabled = config.BackdropsTabEnabled && config.BackdropsLibraryEnabled && requestUser is not null;
+
+        var result = new GenrePoolResult
+        {
+            Enabled = false,
+            SortMode = config.BackdropsLibraryOrderMode,
+            MainOnly = true,
+            CycleTimeMs = config.BackdropsLibraryCycleTimeMs,
+            KenBurnsEnabled = config.BackdropsLibraryKenBurnsEnabled,
+            KenBurnsZoomMs = config.BackdropsLibraryKenBurnsZoomMs,
+            KenBurnsPanMs = config.BackdropsLibraryKenBurnsPanMs
+        };
+
+        if (!categoryEnabled)
+        {
+            _logger.LogInformation("Backdrops: GetLibraryPool - page={Page}, category not enabled or anonymous", page);
+            return Ok(result);
+        }
+
+        bool pageEnabled;
+        BaseItemKind[] types;
+        Guid? queryParent = null;
+        var homeSet = false;
+        switch (page)
+        {
+            case "home": pageEnabled = config.BackdropsLibraryShowOnHome; types = new[] { BaseItemKind.Movie, BaseItemKind.Series, BaseItemKind.Book }; homeSet = true; break;
+            case "search": pageEnabled = config.BackdropsLibraryShowOnSearch; types = new[] { BaseItemKind.Movie, BaseItemKind.Series, BaseItemKind.Book }; homeSet = true; break;
+            case "usersettings": pageEnabled = config.BackdropsLibraryShowOnUserSettings; types = new[] { BaseItemKind.Movie, BaseItemKind.Series, BaseItemKind.Book }; homeSet = true; break;
+            case "movies": pageEnabled = config.BackdropsLibraryShowOnMovies; types = new[] { BaseItemKind.Movie }; queryParent = parentId; break;
+            case "tv": pageEnabled = config.BackdropsLibraryShowOnTvShows; types = new[] { BaseItemKind.Series }; queryParent = parentId; break;
+            case "music": pageEnabled = config.BackdropsLibraryShowOnMusic; types = new[] { BaseItemKind.MusicArtist }; queryParent = parentId; break;
+            case "collections":
+                // list.html?parentId=X is every folder-like page (Folders view, Books,
+                // Playlists, ...). Only a boxsets library qualifies; sets are global
+                // in Jellyfin, so the query is not restricted to the folder.
+                var isBoxsetLibrary = parentId.HasValue && _libraryManager.GetItemById(parentId.Value) is CollectionFolder { CollectionType: CollectionType.boxsets };
+                pageEnabled = config.BackdropsLibraryShowOnCollections && isBoxsetLibrary;
+                types = new[] { BaseItemKind.BoxSet };
+                break;
+            default:
+                _logger.LogInformation("Backdrops: GetLibraryPool - unrecognized page {Page}", page);
+                return Ok(result);
+        }
+
+        if (!pageEnabled)
+        {
+            _logger.LogInformation("Backdrops: GetLibraryPool - page={Page}, parentId={ParentId}, not enabled for this page", page, parentId);
+            return Ok(result);
+        }
+
+        var query = new InternalItemsQuery(requestUser)
+        {
+            IncludeItemTypes = types,
+            ImageTypes = new[] { ImageType.Backdrop },
+            Recursive = true,
+            Limit = 20,
+            EnableTotalRecordCount = false,
+            OrderBy = new[] { (ItemSortBy.IsFavoriteOrLiked, SortOrder.Ascending), (ItemSortBy.Random, SortOrder.Ascending) }
+        };
+        if (queryParent.HasValue)
+        {
+            query.ParentId = queryParent.Value;
+        }
+
+        if (homeSet && config.BackdropsLibraryHomeRatingCap == "PG-13")
+        {
+            var cap = _localization.GetRatingLevel("PG-13");
+            if (cap.HasValue && (!query.MaxParentalRating.HasValue || query.MaxParentalRating.Value > cap.Value))
+            {
+                query.MaxParentalRating = cap;
+            }
+        }
+
+        var items = _libraryManager.GetItemList(query);
+        var images = CollectPoolImages(items, mainOnly: true, allowedFormatsCsv: config.BackdropsAllowedFormats);
+        if (config.BackdropsLibraryRandomStart && config.BackdropsLibraryOrderMode == "Sequential")
+        {
+            images = Helpers.RandomStart.Rotate(images);
+        }
+
+        result.Enabled = true;
+        result.Images = images;
+        _logger.LogInformation(
+            "Backdrops: GetLibraryPool - page={Page}, parentId={ParentId}, order={Order}, itemsFound={ItemCount}, imagesReturned={ImageCount}",
+            page, parentId, config.BackdropsLibraryOrderMode, items.Count, images.Count);
+
+        return Ok(result);
+    }
 
     /// <summary>
     /// Session 116: the user behind the request, from Jellyfin's own

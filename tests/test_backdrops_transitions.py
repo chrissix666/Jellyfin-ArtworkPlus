@@ -64,6 +64,7 @@ KB = {"KenBurnsEnabled": False, "KenBurnsZoomMs": 20000, "KenBurnsPanMs": 10000}
 class Stub(BaseHTTPRequestHandler):
     img_delay = 0   # ms, set per scenario
     people_delay = 0
+    library_enabled = False
 
     def log_message(self, *a):
         pass
@@ -135,6 +136,18 @@ class Stub(BaseHTTPRequestHandler):
             self.send_response(200); self.send_header('Content-Type', 'application/x-ndjson'); self.send_header('Content-Length', str(len(body))); self.end_headers(); self.wfile.write(body); return
         if p == '/Backdrops/allowed-indices':
             return self._json([0, 1])
+        if p == '/Backdrops/library-pool':
+            # Session 130: Library View claims Home/library/search/settings pages; the server
+            # decides. Enabled only in the scenarios that switch it on (Stub.library_enabled) and
+            # never for a parentId ending in 0 (a folder that is no boxsets library).
+            page = q.get('page', '')
+            parent = q.get('parentId', '')
+            if not Stub.library_enabled or parent.endswith('0'):
+                return self._json(dict(KB, Enabled=False, SortMode='Sequential', CycleTimeMs=5000, Images=[]))
+            key = 'lib' + page
+            return self._json(dict(KB, Enabled=True, SortMode='Sequential', CycleTimeMs=5000,
+                                   Images=[{"SourceId": key + 'a', "Tag": "t", "Index": 0, "Url": img(key, 0, Stub.img_delay)},
+                                           {"SourceId": key + 'b', "Tag": "t", "Index": 0, "Url": img(key, 1, Stub.img_delay)}]))
         self.send_response(404); self.end_headers()
 
 
@@ -174,6 +187,17 @@ SCENARIOS = [
     # live-found (Session 120): the owner that claimed the new page but got "no images" must fade its OLD content
     ("Movie -> Person (Detail's old image must go)", "#/details?id=m1&serverId=s1", "#/details?id=pa2&serverId=s1", 300, "artworkplus-people-backdrop", "exclusive"),
     ("Person -> Movie (People's old image must go)", "#/details?id=pa2&serverId=s1", "#/details?id=m2&serverId=s1", 300, "artworkplus-own-backdrop", "exclusive"),
+    # Session 130: Library View Backdrops (vanilla's random library backdrops, rebuilt). The
+    # scenarios above keep the category OFF (server answers Enabled=false -> a claim that ends
+    # in `empty`, the page stays vanilla); these switch it on.
+    ("LIB Tag -> Home (Library View)", "#/list.html?tag=Horror&parentId=p1&serverId=s1", "#/home.html", 600, "artworkplus-library-backdrop", True),
+    ("LIB Home -> Movie (Detail View)", "#/home.html", "#/details?id=m1&serverId=s1", 600, "artworkplus-own-backdrop", True),
+    ("LIB Movie -> Movies library", "#/details?id=m1&serverId=s1", "#/movies.html?topParentId=p1&serverId=s1", 600, "artworkplus-library-backdrop", True),
+    ("LIB Home -> Favourites tab (same visit)", "#/home.html", "#/home.html?tab=1", 0, "artworkplus-library-backdrop", True),
+    ("LIB Home -> Genre list (other owner)", "#/home.html", "#/list.html?genreId=g1&parentId=p1&serverId=s1", 600, "artworkplus-genre-backdrop", True),
+    ("LIB Home -> Folders list (nobody)", "#/home.html", "#/list.html?parentId=f0&serverId=s1", 0, None, False),
+    ("LIB Home -> Search (Home set)", "#/home.html", "#/search.html", 600, "artworkplus-library-backdrop", True),
+    ("LIB Tag -> Home with vanilla-style clearBackdrop", "#/list.html?tag=Horror&parentId=p1&serverId=s1", "#/mypreferencesdisplay.html", 600, "artworkplus-library-backdrop", True),
 ]
 
 
@@ -190,6 +214,7 @@ def run(baseline=False):
         for name, frm, to, delay, expect_owner, expect_cls in SCENARIOS:
             Stub.img_delay = delay
             Stub.people_delay = 2000 if 'pw' in to else 0
+            Stub.library_enabled = name.startswith('LIB ')
             page = browser.new_page(viewport={"width": 1280, "height": 800})
             page.goto(f"{origin}/web/index.html{frm}")
             page.add_script_tag(content=APICLIENT)

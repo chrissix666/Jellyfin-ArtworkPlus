@@ -52,7 +52,8 @@
  * manipulating Jellyfin's own "Details Banner" setting entirely (full
  * reasoning + source citations in resolveOverrideState()'s own doc
  * comment below): this project no longer writes detailsBanner at all,
- * under any circumstance. Jellyfin's own native backdrop rotation keeps
+ * under any circumstance. Session 130: it no longer READS it either, and
+ * the Firefox exclusion is gone - see the note inside the IIFE. Jellyfin's own native backdrop rotation keeps
  * running normally, in its own, unmodified `.backdropContainer` element -
  * this project's own version renders into a SEPARATE container (tagged
  * `.artworkplus-own-backdrop`) and covers Jellyfin's own one via a static
@@ -119,33 +120,18 @@ var ArtworkPlusBackdropTransition = {
     var getItemIdFromHash = Core.getItemIdFromHash;
     var isDetailsPage = Core.isDetailsPage;
 
-    function isFirefox() {
-        // Jellyfin itself never rotates backdrops on Firefox (backdrop.js:
-        // enableRotation() -> !browser.firefox, "causes high cpu usage").
-        return navigator.userAgent.toLowerCase().indexOf('firefox') !== -1;
-    }
-
     // -----------------------------------------------------------------
-    // detailsBanner: READ-ONLY. Never written by this project (user
-    // decision, see the curriculum): Jellyfin's own rotation starts
-    // normally from the user's untouched preference and is covered by
-    // our container via the static prehiding CSS rule
-    // (FileTransformationRegistrar.cs) keyed off the body class the
-    // transition bus toggles. Vanilla paints a detail backdrop when
-    // "Details banner" or "Backdrops" is on; we mirror the first, the
-    // one that names the detail page.
+    // Session 130: no vanilla-setting gate any more. Detail View used to
+    // require Jellyfin's own "Details Banner" setting to be on and to stay
+    // off on Firefox (vanilla's enableRotation() skips Firefox with a
+    // 2016-era "causes high cpu usage" comment that nobody re-measured).
+    // Both are gone: the user decides in the admin page, vanilla's own
+    // settings are neither read nor written here. Vanilla's container is
+    // hidden by the static prehiding CSS rule
+    // (FileTransformationRegistrar.cs) keyed off the body class the bus
+    // toggles while ours shows; the admin page shows an amber hint while
+    // the vanilla setting is still on (its backdrops load unseen).
     // -----------------------------------------------------------------
-    function readDetailsBannerPreference() {
-        var userId = window.ApiClient && window.ApiClient.getCurrentUserId ? window.ApiClient.getCurrentUserId() : null;
-        if (!userId) { return true; }
-        try {
-            var stored = localStorage.getItem(userId + '-detailsBanner');
-            return stored === null ? true : stored === 'true';
-        } catch (e) {
-            log('localStorage access failed, treating detailsBanner as its default (on)', e);
-            return true;
-        }
-    }
 
     function isVideoPage() {
         var hash = location.hash || '';
@@ -159,8 +145,6 @@ var ArtworkPlusBackdropTransition = {
     // answers "no images" to exactly one of the two).
     function isResponsibleFor() {
         if (!isDetailsPage()) { return false; }
-        if (isFirefox()) { return false; }
-        if (!readDetailsBannerPreference()) { return false; }
         return !!getItemIdFromHash();
     }
 
@@ -969,6 +953,136 @@ var ArtworkPlusBackdropTransition = {
         if (!settings.Enabled || !urls.length) { log('Favorites Backdrops: not enabled or no images for', detected.type); owner.empty(); return; }
         owner.start(urls, poolSettings(settings));
         log('Favorites Backdrops shown | type:', detected.type, '| images:', urls.length, '| sort:', settings.SortMode);
+    }
+
+    var activeKey = null;
+    var loadToken = 0;
+
+    Core.onNavigation(function () {
+        if (isVideoPage()) { owner.setPaused(true); return; }
+        owner.setPaused(false);
+        var detected = detect();
+        if (!detected) {
+            if (activeKey !== null) { activeKey = null; owner.release(); }
+            return;
+        }
+        if (detected.key === activeKey) { return; }
+        activeKey = detected.key;
+        owner.claim('normal');
+        owner.beginVisit();
+        load(detected, ++loadToken);
+    });
+    setTimeout(Core.dispatchNavigationNow, 1200);
+})();
+
+// =======================================================================
+// LIBRARY VIEW BACKDROPS - seventh, independent IIFE (Session 130). The
+// replica of Jellyfin's own random library backdrops (scripts/
+// autoBackdrops.js: pages with the `backdropPage` class - Home incl. its
+// Favourites tab, movies.html, tv.html, music.html - get 20 random items
+// with a backdrop, rotated every 24 s while the user's "Backdrops" display
+// setting is on). This category paints the same pages with its own pool
+// (server: /Backdrops/library-pool, same query as vanilla), its own cycle
+// time, order and Ken Burns, and additionally the pages vanilla never
+// paints: a Collections library (set backdrops), search.html and the user
+// settings pages (both the Home set). The pool is fetched per visit (vanilla
+// caches its 20 until a reload - ours re-rolls; a visit is one page kind +
+// library, tab switches inside Home/Movies/... are the same visit).
+//
+// Interplay (concept Part R): claim/beginVisit on the hash change like the
+// other six, so the bus decides every handover the same way (OURS(x) ->
+// OURS(library) crossfades, library -> a vanilla detail page fades out at
+// once). Vanilla keeps rotating in its own hidden container while ours
+// shows (nothing of vanilla's is touched); with vanilla's setting off,
+// autoBackdrops calls clearBackdrop() on these pages, which removes
+// .withBackdrop - the bus defends it (R8 addendum). The Genre/Studio/Tag/
+// Favorites/People list pages are NOT this category's: list.html?parentId=
+// is claimed only without any of their parameters, and the server answers
+// Enabled=false unless that parent is a boxsets library.
+// =======================================================================
+(function () {
+    'use strict';
+    var Core = window.ArtworkPlusCore;
+    var DEBUG = true;
+    var log = Core.makeLogger('[ArtworkPlus LibraryBackdrops]', DEBUG);
+
+    var owner = Core.createBackdropOwner({
+        name: 'library',
+        containerClass: 'artworkplus-library-backdrop',
+        kenBurns: { zoomStart: 1, zoomEnd: 1.12, panPx: 30, easing: 'ease-in-out' },
+        preload: 'next',
+        log: log
+    });
+
+    function poolUrls(entries) {
+        return (entries || []).map(function (entry) {
+            if (entry.Url) { return entry.Url; }
+            return window.ApiClient.getScaledImageUrl(entry.SourceId, { type: 'Backdrop', tag: entry.Tag, maxWidth: window.innerWidth, index: entry.Index });
+        });
+    }
+
+    function poolSettings(settings) {
+        return {
+            OrderMode: (settings.SortMode === 'Shuffle' || settings.SortMode === 'Random') ? settings.SortMode : 'Sequential',
+            CycleTimeMs: settings.CycleTimeMs,
+            KenBurnsEnabled: settings.KenBurnsEnabled,
+            KenBurnsZoomMs: settings.KenBurnsZoomMs,
+            KenBurnsPanMs: settings.KenBurnsPanMs
+        };
+    }
+
+    function isVideoPage() {
+        var hash = location.hash || '';
+        return hash.split('?')[0].replace(/^#\/?/, '') === 'video';
+    }
+
+    // Page kinds and their hashes, confirmed against jellyfin-web 10.10.7
+    // apps/stable/routes (legacyRoutes/user.ts, asyncRoutes/user.ts) and
+    // components/router/appRouter.js (a library folder routes to
+    // movies.html/tv.html/music.html?topParentId=, every other folder to
+    // list.html?parentId=; the search page is search.html).
+    var USER_SETTINGS_PAGES = ['mypreferencesmenu.html', 'mypreferencesdisplay.html', 'mypreferenceshome.html', 'mypreferencesplayback.html', 'mypreferencessubtitles.html', 'mypreferencescontrols.html', 'userprofile.html'];
+    var LIST_PARAMS_OF_OTHER_OWNERS = ['genreId', 'studioId', 'tag', 'personId', 'IsFavorite', 'type'];
+
+    function detect() {
+        var hash = window.location.hash || '';
+        var qIndex = hash.indexOf('?');
+        var path = (qIndex === -1 ? hash : hash.slice(0, qIndex)).replace(/^#\/?/, '');
+        var params = new URLSearchParams(qIndex === -1 ? '' : hash.slice(qIndex + 1));
+        if (path === '' || path === 'home.html') { return { key: 'home', page: 'home', parentId: null }; }
+        if (path === 'search.html') { return { key: 'search', page: 'search', parentId: null }; }
+        if (USER_SETTINGS_PAGES.indexOf(path) !== -1) { return { key: 'usersettings', page: 'usersettings', parentId: null }; }
+        var topParentId = params.get('topParentId') || null;
+        if (path === 'movies.html') { return { key: 'movies|' + (topParentId || ''), page: 'movies', parentId: topParentId }; }
+        if (path === 'tv.html') { return { key: 'tv|' + (topParentId || ''), page: 'tv', parentId: topParentId }; }
+        if (path === 'music.html') { return { key: 'music|' + (topParentId || ''), page: 'music', parentId: topParentId }; }
+        if (path === 'list.html') {
+            for (var i = 0; i < LIST_PARAMS_OF_OTHER_OWNERS.length; i++) {
+                if (params.has(LIST_PARAMS_OF_OTHER_OWNERS[i])) { return null; }
+            }
+            var parentId = params.get('parentId');
+            if (!parentId) { return null; }
+            return { key: 'collections|' + parentId, page: 'collections', parentId: parentId };
+        }
+        return null;
+    }
+
+    async function load(detected, myToken) {
+        var poolParams = { page: detected.page };
+        if (detected.parentId) { poolParams.parentId = detected.parentId; }
+        var settings;
+        try {
+            settings = await window.ApiClient.getJSON(window.ApiClient.getUrl('Backdrops/library-pool', poolParams));
+        } catch (e) {
+            log('Could not load library pool', e);
+            if (myToken === loadToken) { owner.empty(); }
+            return;
+        }
+        if (myToken !== loadToken) { return; }
+        var urls = settings.Enabled ? poolUrls(settings.Images) : [];
+        if (!urls.length) { log('Library View Backdrops: not enabled or no images for page', detected.page); owner.empty(); return; }
+        owner.start(urls, poolSettings(settings));
+        log('Library View Backdrops shown | page:', detected.page, '| parentId:', detected.parentId, '| images:', urls.length, '| order:', settings.SortMode);
     }
 
     var activeKey = null;

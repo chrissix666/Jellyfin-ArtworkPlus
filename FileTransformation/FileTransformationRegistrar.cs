@@ -348,8 +348,9 @@ public static class FileTransformCallback
     /// and would otherwise empty OUR container in clearBackdrop()); the
     /// `:not(...)` guard stays as a harmless belt-and-braces. The body
     /// class is now toggled by the transition bus in Core, exactly while
-    /// one of our six implementations shows (or is claimed for) the page
-    /// - never on Home or the library home pages (concept Part R).
+    /// one of our seven implementations shows (or is claimed for) the page
+    /// (concept Part R; since Session 130 that includes Home and the
+    /// library home pages through Library View Backdrops).
     /// </summary>
     private const string BackdropsPrehidingStyleTag =
         "<style id=\"artworkplus-backdrops-prehiding\">body.artworkplus-backdrops-override .backdropContainer:not(.artworkplus-own-backdrop){visibility:hidden!important}</style>";
@@ -538,7 +539,15 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
         // different admin-config gate). Same reasoning: a user with
         // Backdrops disabled gets byte-for-byte unmodified vanilla
         // behavior, no unnecessary CSS.
-        var backdropsPrehidingNeeded = config is not null && config.BackdropsEnabled;
+        // Session 130 (found live: Detail View off + Library View on left
+        // vanilla's Home rotation visible under ours): the body class is
+        // set by the bus for EVERY category, so the rule is needed as soon
+        // as any category of the tab is on - not only Detail View. Before
+        // Library View this never showed because vanilla paints nothing on
+        // the list pages of the other five.
+        var backdropsPrehidingNeeded = config is not null && config.BackdropsTabEnabled
+            && (config.BackdropsEnabled || config.BackdropsLibraryEnabled || config.PeopleBackdropsEnabled
+                || config.BackdropsGenreEnabled || config.BackdropsStudioEnabled || config.BackdropsTagEnabled || config.BackdropsFavoritesEnabled);
         if (backdropsPrehidingNeeded && contents.Contains("</head>", StringComparison.Ordinal))
         {
             if (!result.Contains(BackdropsPrehidingStyleTag, StringComparison.Ordinal))

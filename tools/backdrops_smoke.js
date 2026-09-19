@@ -42,6 +42,7 @@
     var person = await first('Persons', { Limit: 1 });
     var episode = await first('Users/' + uid + '/Items', { Recursive: true, IncludeItemTypes: 'Episode', Limit: 1 });
     var favPersons = (await api.getJSON(api.getUrl('Persons', { UserId: uid, IsFavorite: true, Limit: 1 }))).TotalRecordCount || 0;
+    var setsLib = (await api.getJSON(api.getUrl('Users/' + uid + '/Views'))).Items.find(function (v) { return v.CollectionType === 'boxsets'; });
 
     var checks = [
         // Session 118: settings carries the server-resolved image list (Images/ImageSource)
@@ -55,6 +56,14 @@
         ['studio-settings', 'Backdrops/studio-settings', { studioId: studio && studio.Id }, function (j) { return j && typeof j.HasImage === 'boolean' && typeof j.SourceMode === 'string'; }],
         ['studio-pool', 'Backdrops/studio-pool', { studioId: studio && studio.Id }, function (j) { return j && Array.isArray(j.Images); }],
         ['tag-pool', 'Backdrops/tag-pool', { tag: tag }, function (j) { return j && Array.isArray(j.Images); }],
+        // Session 130: Library View pools - a page that is on must answer images (vanilla's 20), a folder that is
+        // no boxsets library must answer Enabled=false even with the page on
+        ['library-pool (home)', 'Backdrops/library-pool', { page: 'home' }, function (j) { return j && Array.isArray(j.Images) && (!j.Enabled || j.Images.length > 0); }],
+        ['library-pool (movies)', 'Backdrops/library-pool', { page: 'movies', parentId: movieLib && movieLib.Id }, function (j) { return j && Array.isArray(j.Images) && (!j.Enabled || j.Images.length > 0); }],
+        ['library-pool (tv)', 'Backdrops/library-pool', { page: 'tv', parentId: tvLib && tvLib.Id }, function (j) { return j && Array.isArray(j.Images) && (!j.Enabled || j.Images.length > 0); }],
+        ['library-pool (collections)', 'Backdrops/library-pool', { page: 'collections', parentId: setsLib && setsLib.Id }, function (j) { return j && Array.isArray(j.Images) && (!j.Enabled || j.Images.length > 0); }],
+        ['library-pool (collections on a movie library = off)', 'Backdrops/library-pool', { page: 'collections', parentId: movieLib && movieLib.Id }, function (j) { return j && j.Enabled === false; }],
+        ['library-pool (search)', 'Backdrops/library-pool', { page: 'search' }, function (j) { return j && Array.isArray(j.Images) && (!j.Enabled || j.Images.length > 0); }],
         ['favorites-pool (Movie)', 'Backdrops/favorites-pool', { type: 'Movie' }, function (j) { return j && Array.isArray(j.Images); }],
         ['favorites-pool (Series)', 'Backdrops/favorites-pool', { type: 'Series' }, function (j) { return j && Array.isArray(j.Images); }],
         // If the user has favourite persons (checked via Jellyfin's own /Persons?IsFavorite), the pool must not come back empty

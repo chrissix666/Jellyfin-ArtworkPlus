@@ -110,6 +110,31 @@
                         white-space: normal;
                         overflow-wrap: break-word;
                     }
+                    /* Session 130: one reserved line under every Backdrops
+                       category intro for the "vanilla setting still on"
+                       hint (Detail View / Library View) - the same fixed
+                       height in all seven collapses so nothing jumps when
+                       a hint appears; exactly one text line, no extra
+                       margin (user: "sparsam, nur soviel wie die Zeile
+                       wirklich braucht"). Yellow-green = a hint, never an
+                       error (red stays free for real failures). */
+                    #ArtworkPlusConfigPage .epVanillaNotice {
+                        /* its own, minimal spacing (user, Session 130): 1px above the 14px line, nothing below */
+                        height: 15px; min-height: 15px; padding: 1px 0 0 0; margin: 0; box-sizing: border-box;
+                        color: #cddc39; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                    }
+                    /* The intro line and its hint sit together in one column
+                       LEFT of the Restore button (both centred against the
+                       button, so the hint follows the intro directly); the
+                       gap goes AFTER the pair (user, Session 130: "die 2
+                       Zeilen näher beieinander und dafür danach etwas
+                       Abstand"). */
+                    #ArtworkPlusConfigPage .epTabIntroCol { display: flex; flex-direction: column; min-width: 0; }
+                    /* gap after the pair: minimal (user, Session 130 - the hint lines are temporary,
+                       a block with just its intro must stay compact). Combined selector: the base
+                       .epTabHeaderRow rule (margin-bottom: 0) comes later in this stylesheet and would
+                       win at equal specificity. */
+                    #ArtworkPlusConfigPage .epTabHeaderRow.epTabHeaderRowWithNotice { margin-bottom: 2px; }
                     /* Fixed 46px row height + inline description (to the
                        right of the checkbox, on the same line) instead of
                        a description on its own line below - matches the
@@ -3959,7 +3984,7 @@
 
                         <div class="epTabDescArea">
                         <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Various backdrop extensions beyond vanilla Jellyfin.</div>
-                        <div id="epBackdropsNotice" class="epDesc" style="padding-left:0; height:auto; margin-top:0; margin-bottom:6px; color:#ff6161; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+                        <div id="epBackdropsNotice" class="epDesc" style="padding-left:0; height:auto; margin-top:0; margin-bottom:6px; color:#cddc39; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
                         </div>
 
                         <div class="epRow epRowMerged">
@@ -3991,8 +4016,11 @@
 
                         <div class="epCollapseHeader" data-collapse="backdropsMod"><span class="epChevron">▶</span><span>Detail View Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsMod">
-                        <div class="epTabHeaderRow">
-                            <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Overrides Jellyfin's native backdrop rotation on item detail pages only.</div>
+                        <div class="epTabHeaderRow epTabHeaderRowWithNotice">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Replaces vanilla's 'Details Banner' setting: the item's own backdrops behind its detail page, your rules.</div>
+                                <div class="epDesc epVanillaNotice" id="epBackdropsVanillaNotice"></div>
+                            </div>
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="backdropsmod">Restore defaults</button>
                         </div>
                         <div class="epRow epRowCheckbox" id="BackdropsEnabledRow">
@@ -4118,6 +4146,118 @@
                         </div>
                         </div>
 
+
+                        <!-- ═══════════════════════ Library View Backdrops (Session 130) - the
+                             replica of vanilla's "Backdrops" display setting (random library
+                             backdrops on Home/Movies/TV shows/Music) plus the pages vanilla never
+                             paints (Collections, Search, User settings). Same row pattern as
+                             Detail View above; the two Show-on rows sit outside the
+                             DependentFields container like BackdropsShowOnRow. ═══════════════════════ -->
+                        <div class="epCollapseHeader" data-collapse="backdropsLibrary"><span class="epChevron">▶</span><span>Library View Backdrops</span></div>
+                        <div class="epCollapseBody" data-collapsebody="backdropsLibrary">
+                        <div class="epTabHeaderRow epTabHeaderRowWithNotice">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Replaces vanilla's 'Backdrops' display setting: random backdrops behind Home, library and search pages.</div>
+                                <div class="epDesc epVanillaNotice" id="epBackdropsLibraryVanillaNotice"></div>
+                            </div>
+                            <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="backdropslibrary">Restore defaults</button>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsLibraryEnabledRow">
+                            <label for="BackdropsLibraryEnabled">Enable native Backdrops override</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsLibraryEnabled" name="BackdropsLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Replaces Jellyfin's own random library backdrops with this plugin's, on browsing pages.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="epRow epRowMerged" id="BackdropsLibraryShowOnVanillaRow">
+                            <span class="epRowLabelSpan">Show on (vanilla)</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsLibraryShowOnHome" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Home</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsLibraryShowOnMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsLibraryShowOnTvShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">TV shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsLibraryShowOnMusic" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Music</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">The pages vanilla's own setting covers, Home including Favourites. Independent per page.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsLibraryShowOnCustomRow">
+                            <span class="epRowLabelSpan">Show on (custom)</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsLibraryShowOnCollections" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collections</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsLibraryShowOnSearch" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Search</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="BackdropsLibraryShowOnUserSettings" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">User settings</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Pages beyond vanilla's setting. Independent per page.</div>
+                        </div>
+
+                        <div id="BackdropsLibraryDependentFields">
+                        <div class="epRow epRowMerged" id="BackdropsLibraryHomeRatingCapRow">
+                            <label for="BackdropsLibraryHomeRatingCap" class="epRowLabelSpan">Home rating cap</label>
+                            <select is="emby-select" id="BackdropsLibraryHomeRatingCap" name="BackdropsLibraryHomeRatingCap" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="PG-13">PG-13</option>
+                                <option value="Off">Off</option>
+                            </select>
+                            <div class="epDesc">Home and Favourites only: vanilla caps at PG-13. Off shows backdrops of every rating.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="BackdropsLibraryCycleTimeMs" class="epRowLabelSpan">Cycle time</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="1000" class="epNumberCompact" id="BackdropsLibraryCycleTimeMs" name="BackdropsLibraryCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">No artificial upper limit - set freely.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox">
+                            <label for="BackdropsLibraryKenBurnsEnabled">Ken Burns effect</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsLibraryKenBurnsEnabled" name="BackdropsLibraryKenBurnsEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                <span class="epDescInline checkboxLabel">Slow zoom/pan instead of a plain fade.</span>
+                                <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                            </div>
+                        <div class="epRow epRowMerged" id="BackdropsLibraryKenBurnsZoomRow">
+                            <label for="BackdropsLibraryKenBurnsZoomMs" class="epRowLabelSpan">Zoom speed</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="500" step="500" class="epNumberCompact" id="BackdropsLibraryKenBurnsZoomMs" name="BackdropsLibraryKenBurnsZoomMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">One zoom direction's duration (full cycle = twice this). Range/easing stay fixed.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsLibraryKenBurnsPanRow">
+                            <label for="BackdropsLibraryKenBurnsPanMs" class="epRowLabelSpan">Pan speed</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="500" step="500" class="epNumberCompact" id="BackdropsLibraryKenBurnsPanMs" name="BackdropsLibraryKenBurnsPanMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Duration of one pan direction, independent of zoom speed. Distance and easing stay fixed.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="BackdropsLibraryOrderModeRow">
+                            <label for="BackdropsLibraryOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="BackdropsLibraryOrderMode" name="BackdropsLibraryOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Sequential: native order. Shuffle: no repeats/round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="BackdropsLibraryRandomStartRow">
+                            <label for="BackdropsLibraryRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="BackdropsLibraryRandomStart" name="BackdropsLibraryRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sorted orders only: start at a random backdrop and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        </div>
+                        </div>
+
                         <!-- ═══════════════════════ People Backdrops - moved here from the
                              Red Carpet tab (concept-session decision: both features already
                              share the same merged BackdropsPlus.js file, grouping "person
@@ -4130,8 +4270,11 @@
                              it is position-dependent. ═══════════════════════ -->
                         <div class="epCollapseHeader" data-collapse="backdropsPeopleBackdrops"><span class="epChevron">▶</span><span>People Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsPeopleBackdrops">
-                        <div class="epTabHeaderRow">
-                            <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on person pages from their appearances, People folder or <a href="https://wallpapers.com/" target="_blank" style="color:#00a4dc;">Wallpapers.com</a>.</div>
+                        <div class="epTabHeaderRow epTabHeaderRowWithNotice">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on person pages from their appearances, People folder or <a href="https://wallpapers.com/" target="_blank" style="color:#00a4dc;">Wallpapers.com</a>.</div>
+                                <div class="epDesc epVanillaNotice"></div>
+                            </div>
                             <div style="display:flex; gap:8px;">
                                 <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="peoplebackdrops">Restore defaults</button>
                             </div>
@@ -4395,8 +4538,11 @@
                              all three subs, each sub then only Enable + its own Sort. ═══ -->
                         <div class="epCollapseHeader" data-collapse="backdropsGenre"><span class="epChevron">▶</span><span>Genre Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsGenre">
-                        <div class="epTabHeaderRow">
-                            <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on genre pages from the titles of that genre.</div>
+                        <div class="epTabHeaderRow epTabHeaderRowWithNotice">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on genre pages from the titles of that genre.</div>
+                                <div class="epDesc epVanillaNotice"></div>
+                            </div>
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="backdropsgenre">Restore defaults</button>
                         </div>
                         <div class="epRow epRowCheckbox" id="BackdropsGenreEnabledRow">
@@ -4512,8 +4658,11 @@
 
                         <div class="epCollapseHeader" data-collapse="backdropsStudio"><span class="epChevron">▶</span><span>Studio Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsStudio">
-                        <div class="epTabHeaderRow">
-                            <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on studio pages from the Studio image or the studio's titles.</div>
+                        <div class="epTabHeaderRow epTabHeaderRowWithNotice">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on studio pages from the Studio image or the studio's titles.</div>
+                                <div class="epDesc epVanillaNotice"></div>
+                            </div>
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="backdropsstudio">Restore defaults</button>
                         </div>
                         <div class="epRow epRowCheckbox" id="BackdropsStudioEnabledRow">
@@ -4634,8 +4783,11 @@
 
                         <div class="epCollapseHeader" data-collapse="backdropsTag"><span class="epChevron">▶</span><span>Tag Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsTag">
-                        <div class="epTabHeaderRow">
-                            <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on tag pages from the titles carrying that tag.</div>
+                        <div class="epTabHeaderRow epTabHeaderRowWithNotice">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on tag pages from the titles carrying that tag.</div>
+                                <div class="epDesc epVanillaNotice"></div>
+                            </div>
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="backdropstag">Restore defaults</button>
                         </div>
                         <div class="epRow epRowCheckbox" id="BackdropsTagEnabledRow">
@@ -4747,8 +4899,11 @@
                              comment in PluginConfiguration.cs). ═══════════════════════ -->
                         <div class="epCollapseHeader" data-collapse="backdropsFavorites"><span class="epChevron">▶</span><span>Favorites Backdrops</span></div>
                         <div class="epCollapseBody" data-collapsebody="backdropsFavorites">
-                        <div class="epTabHeaderRow">
-                            <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on the Favorites page from your favourite titles and people.</div>
+                        <div class="epTabHeaderRow epTabHeaderRowWithNotice">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Backdrops on the Favorites page from your favourite titles and people.</div>
+                                <div class="epDesc epVanillaNotice"></div>
+                            </div>
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="backdropsfavorites">Restore defaults</button>
                         </div>
                         <div class="epRow epRowCheckbox" id="BackdropsFavoritesEnabledRow">
@@ -5895,6 +6050,22 @@
                 BackdropsKenBurnsEnabled: { type: 'checkbox', def: true, tab: 'backdropsmod' },
                 BackdropsKenBurnsZoomMs: { type: 'number', def: 20000, tab: 'backdropsmod' },
                 BackdropsKenBurnsPanMs: { type: 'number', def: 10000, tab: 'backdropsmod' },
+                // Session 130: Library View Backdrops (vanilla's "Backdrops" setting, rebuilt)
+                BackdropsLibraryEnabled: { type: 'checkbox', def: true, tab: 'backdropslibrary' },
+                BackdropsLibraryShowOnHome: { type: 'checkbox', def: true, tab: 'backdropslibrary' },
+                BackdropsLibraryShowOnMovies: { type: 'checkbox', def: true, tab: 'backdropslibrary' },
+                BackdropsLibraryShowOnTvShows: { type: 'checkbox', def: true, tab: 'backdropslibrary' },
+                BackdropsLibraryShowOnMusic: { type: 'checkbox', def: true, tab: 'backdropslibrary' },
+                BackdropsLibraryShowOnCollections: { type: 'checkbox', def: true, tab: 'backdropslibrary' },
+                BackdropsLibraryShowOnSearch: { type: 'checkbox', def: true, tab: 'backdropslibrary' },
+                BackdropsLibraryShowOnUserSettings: { type: 'checkbox', def: true, tab: 'backdropslibrary' },
+                BackdropsLibraryHomeRatingCap: { type: 'select', def: 'PG-13', tab: 'backdropslibrary' },
+                BackdropsLibraryCycleTimeMs: { type: 'number', def: 10000, tab: 'backdropslibrary' },
+                BackdropsLibraryOrderMode: { type: 'select', def: 'Shuffle', tab: 'backdropslibrary' },
+                BackdropsLibraryRandomStart: { type: 'checkbox', def: false, tab: 'backdropslibrary' },
+                BackdropsLibraryKenBurnsEnabled: { type: 'checkbox', def: true, tab: 'backdropslibrary' },
+                BackdropsLibraryKenBurnsZoomMs: { type: 'number', def: 20000, tab: 'backdropslibrary' },
+                BackdropsLibraryKenBurnsPanMs: { type: 'number', def: 10000, tab: 'backdropslibrary' },
                 // Case (boxes.zip concept session).
                 // Case's own adjustment tool (twice: first the 5-value
                 // relative Offset/Stretch/Size version, then the 4-value
@@ -7012,6 +7183,26 @@
                                 }
                             ]
                         },
+                        // Session 130: Library View Backdrops - the Detail View pattern 1:1.
+                        // Both Show-on rows sit OUTSIDE BackdropsLibraryDependentFields (own
+                        // structural nodes, like backdropsmod_showon); Random start is the
+                        // Order row's refinement child (rule 25b: disjoint targets).
+                        {
+                            id: 'backdropslibrary', target: ['BackdropsLibraryDependentFields'], headerTarget: ['backdropsLibrary'],
+                            when: [
+                                AnyChecked(['BdFormat_jpg_chk', 'BdFormat_jpeg_chk', 'BdFormat_png_chk', 'BdFormat_webp_chk', 'BdFormat_gif_chk', 'BdFormat_tbn_chk', 'BdFormat_svg_chk']),
+                                AllChecked(['BackdropsLibraryEnabled'])
+                            ],
+                            children: [
+                                { id: 'backdropslibrary_randomstart', target: ['BackdropsLibraryRandomStartRow'], when: [ValueIn('BackdropsLibraryOrderMode', ['Sequential'])], children: [] },
+                                { id: 'backdropslibrary_showon_vanilla', structural: true, target: ['BackdropsLibraryShowOnVanillaRow'], when: [], children: [] },
+                                { id: 'backdropslibrary_showon_custom', structural: true, target: ['BackdropsLibraryShowOnCustomRow'], when: [], children: [] },
+                                {
+                                    id: 'backdropslibrary_kenburns', target: ['BackdropsLibraryKenBurnsZoomRow', 'BackdropsLibraryKenBurnsPanRow'],
+                                    when: [AllChecked(['BackdropsLibraryKenBurnsEnabled'])], children: []
+                                }
+                            ]
+                        },
                         // BUG-PEOPLEBACKDROPS-KENBURNS fixed here (Session
                         // 22): the peoplebackdrops_kenburns child node did
                         // not exist before at all - see the curriculum
@@ -7355,66 +7546,54 @@
                 if (row && type) { row.style.display = type.value === 'vivaelite3dcases' ? '' : 'none'; }
             }
 
+            // Session 130: external-state layer (Fibel rule 9) - three hint lines,
+            // no greying. The old behaviour (tab greyed + red line for Firefox and
+            // for "Details Banner" off) is gone: Detail View runs on Firefox and
+            // without vanilla's setting; the plugin only tells the user when a
+            // vanilla setting is still on so its hidden backdrops load for nothing.
+            //   epBackdropsNotice             tab head, Firefox only
+            //   epBackdropsVanillaNotice      Detail View: 'Details Banner' still on (default ON in Jellyfin)
+            //   epBackdropsLibraryVanillaNotice Library View: 'Backdrops' still on (default OFF in Jellyfin)
+            // Both keys are Jellyfin's own per-user localStorage entries
+            // (userSettings.js: <userId>-detailsBanner, <userId>-enableBackdrops),
+            // read only, never written. A hint shows only while its category's
+            // Enable is on - an off category has nothing to save.
+            // epVanillaNoticePreview: set to true to show all three lines
+            // regardless of the real state (used for the user's first look at
+            // position and colour, approved in Session 130; stays false).
+            var epVanillaNoticePreview = false;
+
+            function epReadVanillaUserSetting(name, defaultValue) {
+                try {
+                    var userId = window.ApiClient && window.ApiClient.getCurrentUserId ? window.ApiClient.getCurrentUserId() : null;
+                    if (!userId) { return defaultValue; }
+                    var stored = localStorage.getItem(userId + '-' + name);
+                    if (stored === null) { return defaultValue; }
+                    return stored === 'true';
+                } catch (e) { return defaultValue; }
+            }
+
             function epUpdateBackdropsBrowserState() {
-                var tabBtn = document.querySelector('.epTabBtn[data-tab="backdrops"]');
                 var notice = document.getElementById('epBackdropsNotice');
-                if (!tabBtn || !notice) { return; }
+                var detailNotice = document.getElementById('epBackdropsVanillaNotice');
+                var libraryNotice = document.getElementById('epBackdropsLibraryVanillaNotice');
+                if (!notice || !detailNotice || !libraryNotice) { return; }
 
                 var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') !== -1;
-                var detailsBannerOff = false;
-                try {
-                    // Checks "detailsBanner", not "enableBackdrops" - found
-                    // via direct inspection of the real jellyfin-web
-                    // source (10.10.7):
-                    // src/controllers/itemDetails/index.js:
-                    //   const isBannerEnabled = !layoutManager.tv && userSettings.detailsBanner();
-                    //   setBackdrops([item], null, null, isBannerEnabled);
-                    // On detail pages specifically (this feature's own
-                    // description says "detail pages for now"), the
-                    // fourth argument (isBannerEnabled, driven by
-                    // detailsBanner) gates the backdrop there - not
-                    // enableBackdrops (that one only matters for backdrops
-                    // OUTSIDE detail pages, e.g. library views, which this
-                    // feature deliberately doesn't touch).
-                    //
-                    // SIMPLIFIED after Backdrops-v1.js was rewritten to
-                    // never write detailsBanner at all anymore (see that
-                    // file's own resolveOverrideState() doc comment for
-                    // the full reasoning) - the old marker-key check here
-                    // existed only to distinguish "the user turned it off"
-                    // from "we set it to false ourselves", which is no
-                    // longer a possible ambiguity: whatever is stored here
-                    // is always the user's own, real, untouched
-                    // preference now.
-                    var userId = window.ApiClient && window.ApiClient.getCurrentUserId ? window.ApiClient.getCurrentUserId() : null;
-                    if (userId) {
-                        var stored = localStorage.getItem(userId + '-detailsBanner');
-                        detailsBannerOff = stored === 'false'; // absent/anything-but-"false" defaults to ON, matching userSettings.js's own true default
-                    }
-                } catch (e) { /* localStorage might not be available, in that case just don't gray anything out */ }
+                var detailsBannerOn = epReadVanillaUserSetting('detailsBanner', true);
+                var vanillaBackdropsOn = epReadVanillaUserSetting('enableBackdrops', false);
+                var detailEnabled = !!(document.getElementById('BackdropsEnabled') || {}).checked;
+                var libraryEnabled = !!(document.getElementById('BackdropsLibraryEnabled') || {}).checked;
 
-                if (isFirefox) {
-                    tabBtn.dataset.browserGreyed = 'true';
-                    tabBtn.classList.add('epTabGreyed');
-                    notice.textContent = 'Disabled for Firefox.';
-                    notice.style.display = 'block';
-                } else if (detailsBannerOff) {
-                    tabBtn.dataset.browserGreyed = 'true';
-                    tabBtn.classList.add('epTabGreyed');
-                    notice.textContent = 'Enable \'Details Banner\' in Jellyfin\'s Display settings to activate Backdrops Mod.';
-                    notice.style.display = 'block';
-                } else {
-                    tabBtn.dataset.browserGreyed = 'false';
-                    notice.style.display = 'none';
-                    // No recompute call needed here (and calling
-                    // epRecomputeDependencyTree() here would recurse
-                    // infinitely, since this function is itself called
-                    // FROM it) - EP_TREE's own walk, which always runs
-                    // immediately before this function, already set the
-                    // checkbox-driven state correctly; this branch just
-                    // confirms no browser-based override should be
-                    // layered on top of it.
-                }
+                var showFirefox = epVanillaNoticePreview || isFirefox;
+                notice.textContent = showFirefox ? 'Firefox detected: backdrops may use more CPU or show unexpected behaviour on this browser.' : '';
+                notice.style.display = showFirefox ? 'block' : 'none';
+
+                var showDetail = epVanillaNoticePreview || (detailEnabled && detailsBannerOn);
+                detailNotice.textContent = showDetail ? 'Vanilla \'Details Banner\' is on: its backdrops are hidden but still loaded. Turn it off to save resources.' : '';
+
+                var showLibrary = epVanillaNoticePreview || (libraryEnabled && vanillaBackdropsOn);
+                libraryNotice.textContent = showLibrary ? 'Vanilla \'Backdrops\' is on: its backdrops are hidden but still loaded. Turn it off to save resources.' : '';
             }
 
             // ── Extraposter's own field dependencies. All four functions
@@ -8203,7 +8382,9 @@
                 // one of five structurally identical Enable+Show-on
                 // pairs that got forgotten. Six Show-on boxes here,
                 // not two, unlike the other four.
-                [['BackdropsShowOnMovies', 'BackdropsShowOnSets', 'BackdropsShowOnTvShows', 'BackdropsShowOnSeasons', 'BackdropsShowOnEpisodes', 'BackdropsShowOnVideos'], 'BackdropsEnabled']
+                [['BackdropsShowOnMovies', 'BackdropsShowOnSets', 'BackdropsShowOnTvShows', 'BackdropsShowOnSeasons', 'BackdropsShowOnEpisodes', 'BackdropsShowOnVideos'], 'BackdropsEnabled'],
+                // Session 130: Library View - both Show-on rows count as one group.
+                [['BackdropsLibraryShowOnHome', 'BackdropsLibraryShowOnMovies', 'BackdropsLibraryShowOnTvShows', 'BackdropsLibraryShowOnMusic', 'BackdropsLibraryShowOnCollections', 'BackdropsLibraryShowOnSearch', 'BackdropsLibraryShowOnUserSettings'], 'BackdropsLibraryEnabled']
             ].forEach(function (pair) {
                 var showOnIds = pair[0];
                 var enableId = pair[1];

@@ -1234,6 +1234,84 @@ with sync_playwright() as p:
     check('S127d: all 16 Traversal dropdowns offer exactly Ascending / Descending', len(trav) == 16 and all(x == 'BeginAscending=Ascending|BeginDescending=Descending' for x in trav), str(trav))
     apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
     apage.wait_for_timeout(150)
+    # ─── Session 130: Library View Backdrops (Detail View pattern 1:1) + the vanilla-setting hints ───
+    apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
+    apage.wait_for_timeout(150)
+    apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="backdrops"]').click(); }""")
+    apage.evaluate("""() => { ['BackdropsTabEnabled', 'BackdropsEnabled', 'BackdropsLibraryEnabled'].forEach(function (id) { var e = document.getElementById(id); if (e && !e.checked) { e.checked = true; e.dispatchEvent(new Event('change', { bubbles: true })); } }); }""")
+    def lib_state():
+        return apage.evaluate("""() => {
+            function g(sel) { var n = typeof sel === 'string' && sel.charAt(0) === '.' ? document.querySelector(sel) : document.getElementById(sel); var c = n; while (c) { if (c.classList && c.classList.contains('epFieldDisabled')) { return true; } c = c.parentElement; } return false; }
+            return {
+                hdr: g('.epCollapseHeader[data-collapse="backdropsLibrary"]'),
+                body: g('BackdropsLibraryDependentFields'),
+                showVanilla: g('BackdropsLibraryShowOnVanillaRow'), showCustom: g('BackdropsLibraryShowOnCustomRow'),
+                cap: g('BackdropsLibraryHomeRatingCapRow'), zoom: g('BackdropsLibraryKenBurnsZoomRow'), pan: g('BackdropsLibraryKenBurnsPanRow'),
+                rs: g('BackdropsLibraryRandomStartRow'), rsDis: document.getElementById('BackdropsLibraryRandomStart').disabled,
+                capDis: document.getElementById('BackdropsLibraryHomeRatingCap').disabled,
+                enable: document.getElementById('BackdropsLibraryEnabled').checked,
+                // Detail View reference for the parity checks
+                dvShow: g('BackdropsShowOnRow'), dvBody: g('BackdropsDependentFields'), dvHdr: g('.epCollapseHeader[data-collapse="backdropsMod"]')
+            };
+        }""")
+    st = lib_state()
+    check('S130: Library block active with Enable on', st['hdr'] is False and st['body'] is False and st['cap'] is False and st['showVanilla'] is False and st['showCustom'] is False, str(st))
+    aset('BackdropsLibraryEnabled', False); aset('BackdropsEnabled', False)
+    st = lib_state()
+    check('S130: Enable off greys header + body like Detail View', st['hdr'] is True and st['body'] is True and st['capDis'] is True and st['hdr'] == st['dvHdr'] and st['body'] == st['dvBody'] and st['showVanilla'] == st['dvShow'] and st['showCustom'] == st['dvShow'], str(st))
+    aset('BackdropsLibraryEnabled', True); aset('BackdropsEnabled', True)
+    sel('BackdropsLibraryOrderMode', 'Shuffle'); st = lib_state()
+    check('S130: Random start grey for Shuffle', st['rs'] is True and st['rsDis'] is True, str(st))
+    sel('BackdropsLibraryOrderMode', 'Sequential'); st = lib_state()
+    check('S130: Random start active for Sequential', st['rs'] is False and st['rsDis'] is False, str(st))
+    aset('BackdropsLibraryKenBurnsEnabled', False); st = lib_state()
+    check('S130: Ken Burns off greys Zoom/Pan', st['zoom'] is True and st['pan'] is True, str(st))
+    aset('BackdropsLibraryKenBurnsEnabled', True); st = lib_state()
+    check('S130: Ken Burns on frees Zoom/Pan', st['zoom'] is False and st['pan'] is False, str(st))
+    boxes = ['BackdropsLibraryShowOnHome', 'BackdropsLibraryShowOnMovies', 'BackdropsLibraryShowOnTvShows', 'BackdropsLibraryShowOnMusic', 'BackdropsLibraryShowOnCollections', 'BackdropsLibraryShowOnSearch', 'BackdropsLibraryShowOnUserSettings']
+    for b in boxes[:-1]: aset(b, False)
+    check('S130: Enable stays on with one Show-on box left', lib_state()['enable'] is True)
+    aset(boxes[-1], False)
+    check('S130: all seven Show-on boxes off untick the Enable', lib_state()['enable'] is False)
+    aset(boxes[0], True)
+    check('S130: Enable stays off when a box returns (one way)', lib_state()['enable'] is False)
+    aset('BackdropsLibraryEnabled', True)
+    opts = apage.evaluate("() => Array.prototype.map.call(document.getElementById('BackdropsLibraryHomeRatingCap').options, function (o) { return o.value + '=' + o.text; }).join('|')")
+    check('S130: Home rating cap options', opts == 'PG-13=PG-13|Off=Off', opts)
+    sel('BackdropsLibraryOrderMode', 'Random'); sel('BackdropsLibraryHomeRatingCap', 'Off')
+    apage.evaluate("""() => { document.querySelector('[data-restore-tab="backdropslibrary"]').click(); }""")
+    apage.wait_for_timeout(100)
+    vals = apage.evaluate("() => [document.getElementById('BackdropsLibraryOrderMode').value, document.getElementById('BackdropsLibraryHomeRatingCap').value, document.getElementById('BackdropsLibraryCycleTimeMs').value, document.getElementById('BackdropsLibraryEnabled').checked]")
+    check('S130: Restore defaults of the block', vals == ['Shuffle', 'PG-13', '10000', True], str(vals))
+    texts = apage.evaluate("""() => ({
+        intro: document.querySelector('.epCollapseBody[data-collapsebody="backdropsLibrary"] .epTabHeaderRow .epDesc').textContent,
+        dvIntro: document.querySelector('.epCollapseBody[data-collapsebody="backdropsMod"] .epTabHeaderRow .epDesc').textContent,
+        placeholders: document.querySelectorAll('.epVanillaNotice').length,
+        heights: (function () { ['backdropsMod', 'backdropsLibrary', 'backdropsGenre'].forEach(function (k) { var h = document.querySelector('.epCollapseHeader[data-collapse="' + k + '"]'); if (h && !h.classList.contains('epOpen')) { h.click(); } }); return ['backdropsMod', 'backdropsLibrary', 'backdropsGenre'].map(function (k) { return document.querySelector('.epCollapseBody[data-collapsebody="' + k + '"] .epVanillaNotice').getBoundingClientRect().height; }); })()
+    })""")
+    check('S130: intro texts name the vanilla setting', texts['intro'].startswith("Replaces vanilla's 'Backdrops' display setting") and texts['dvIntro'].startswith("Replaces vanilla's 'Details Banner' setting"), str(texts))
+    check('S130: seven notice placeholders, all the same one-line height', texts['placeholders'] == 7 and len(set(texts['heights'])) == 1 and texts['heights'][0] == 15, str(texts))
+    # the hint layer (Fibel rule 9): preview mode shows all three, real mode follows Enable + vanilla localStorage
+    def notices():
+        return apage.evaluate("""() => ({ ff: document.getElementById('epBackdropsNotice').textContent, dv: document.getElementById('epBackdropsVanillaNotice').textContent, lib: document.getElementById('epBackdropsLibraryVanillaNotice').textContent })""")
+    apage.evaluate("""() => { epVanillaNoticePreview = true; epRecomputeDependencyTree(); }""")
+    n = notices()
+    check('S130: preview mode shows all three hints', n['ff'].startswith('Firefox detected') and n['dv'].startswith("Vanilla 'Details Banner' is on") and n['lib'].startswith("Vanilla 'Backdrops' is on"), str(n))
+    check('S130: hint texts within 105 characters', all(len(v) <= 105 for v in n.values()), str({k: len(v) for k, v in n.items()}))
+    apage.evaluate("""() => { epVanillaNoticePreview = false; window.ApiClient.getCurrentUserId = function () { return 'u1'; }; localStorage.removeItem('u1-detailsBanner'); localStorage.removeItem('u1-enableBackdrops'); epRecomputeDependencyTree(); }""")
+    n = notices()
+    check('S130: real mode, Jellyfin defaults (Details Banner on, Backdrops off): only the Detail View hint', n['dv'] != '' and n['lib'] == '' and n['ff'] == '', str(n))
+    apage.evaluate("""() => { localStorage.setItem('u1-detailsBanner', 'false'); localStorage.setItem('u1-enableBackdrops', 'true'); epRecomputeDependencyTree(); }""")
+    n = notices()
+    check('S130: real mode, user switched both: only the Library View hint', n['dv'] == '' and n['lib'] != '', str(n))
+    aset('BackdropsLibraryEnabled', False)
+    n = notices()
+    check('S130: an off category shows no hint', n['lib'] == '', str(n))
+    aset('BackdropsLibraryEnabled', True)
+    tabGrey = apage.evaluate("() => document.querySelector('.epTabBtn[data-tab=backdrops]').classList.contains('epTabGreyed')")
+    check('S130: the tab button is never greyed by the hint layer', tabGrey is False)
+    apage.evaluate("""() => { localStorage.removeItem('u1-detailsBanner'); localStorage.removeItem('u1-enableBackdrops'); epVanillaNoticePreview = false; document.getElementById('epRestoreAllBtn').click(); }""")
+    apage.wait_for_timeout(150)
     # Animated Keyart: logo per view (Session 126), mirrors the Keyart tab
     apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="animatedposter"]').click(); }""")
     for view, size in [('Detail', '60'), ('Library', '80')]:

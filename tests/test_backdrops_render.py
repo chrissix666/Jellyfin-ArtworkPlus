@@ -65,6 +65,10 @@ CASES = [
       "/Backdrops/studio-pool": POOL},
      ".artworkplus-studio-backdrop"),
     ("Tag", "#/list.html?tag=Horror&parentId=p1&serverId=s1", {"/Backdrops/tag-pool": POOL}, ".artworkplus-tag-backdrop"),
+    # Session 130: Library View Backdrops on Home (vanilla's backdropPage), a library home and a page vanilla never paints
+    ("Library", "#/home.html", {"/Backdrops/library-pool": POOL}, ".artworkplus-library-backdrop"),
+    ("LibMovies", "#/movies.html?topParentId=p1&collectionType=movies", {"/Backdrops/library-pool": POOL}, ".artworkplus-library-backdrop"),
+    ("LibSearch", "#/search.html", {"/Backdrops/library-pool": POOL}, ".artworkplus-library-backdrop"),
     ("Favorites", "#/list.html?type=Movie&IsFavorite=true&serverId=s1", {"/Backdrops/favorites-pool": POOL}, ".artworkplus-favorites-backdrop"),
     # Session 116: Favorites-People with the Folder source delivers ready-made
     # /PeopleBackdrops/{id}/folder-image URLs in WallpaperUrls (same as Wallpapers.com).
@@ -131,7 +135,7 @@ def main():
             fails += 0 if ok else 1
             print(("ok  " if ok else "FAIL"), f"{name:9s}", "" if ok else "; ".join(problems))
             # (a) rapid switch to a second page of the same category must never end empty
-            if not name.startswith("Studio") and name not in ("FavPeople", "DetailView", "Episode") and hsh.count("=") > 1:
+            if not name.startswith("Studio") and not name.startswith("Lib") and name not in ("FavPeople", "DetailView", "Episode") and hsh.count("=") > 1:
                 # Recorded live (Session 116): leave the category page (clear
                 # arms a 1.2 s fallback fade), come back to another page of
                 # the same category before it fires; the new page's first

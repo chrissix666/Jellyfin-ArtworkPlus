@@ -284,9 +284,9 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool CharacterartEnabled { get; set; } = true;
 
     /// <summary>
-    /// Master switch for Backdrops (curriculum section G). Just one of
-    /// three preconditions for the override to actually become active -
-    /// see backdrops.js for the additional Firefox/enableBackdrops check.
+    /// Master switch for Backdrops (curriculum section G). Session 130:
+    /// the only precondition besides the per-type Show on - the old
+    /// Firefox and Details-Banner checks in the client are gone.
     /// </summary>
     /// <summary>
     /// Master switch for the "Backdrops" tab ITSELF - same pattern as
@@ -2121,9 +2121,9 @@ public class PluginConfiguration : BasePluginConfiguration
     // ───────────────────────── Backdrops tab ─────────────────────────
     // Curriculum section G. A fundamentally different kind of feature than
     // all other five - no file matching, but an override of Jellyfin's
-    // native rotation behavior. Only active in Chrome/Chromium (Firefox
-    // keeps running natively unchanged), only when Jellyfin's own
-    // enableBackdrops setting is on (no forcing).
+    // native rotation behavior. Session 130: no browser or vanilla-setting
+    // gate any more - the admin page hints while a vanilla setting is still
+    // on (its backdrops load unseen), nothing is forced or written.
 
     /// <summary>
     /// Our own cycle time in ms instead of the natively hardcoded 24000.
@@ -2170,6 +2170,43 @@ public class PluginConfiguration : BasePluginConfiguration
     /// setting from here on).
     /// </summary>
     public int BackdropsKenBurnsPanMs { get; set; } = 10000;
+
+    // ───────────── Backdrops tab: Library View Backdrops (Session 130) ─────────────
+    // Replica of Jellyfin's own random library backdrops (scripts/
+    // autoBackdrops.js: 20 items with a backdrop, SortBy
+    // IsFavoriteOrLiked,Random, per library or - on Home - across all
+    // libraries with a PG-13 cap), rendered by this plugin through the same
+    // transition bus as the other six categories. Vanilla's "Backdrops"
+    // display setting is neither read nor written (the admin page only shows
+    // a hint while it is still on); its container is hidden while ours
+    // shows, like Detail View does on detail pages.
+
+    /// <summary>Category switch. Off = Jellyfin behaves as the user configured it.</summary>
+    public bool BackdropsLibraryEnabled { get; set; } = true;
+
+    /// <summary>Show on (vanilla): the pages vanilla's own setting covers. Home includes its Favourites tab.</summary>
+    public bool BackdropsLibraryShowOnHome { get; set; } = true;
+    public bool BackdropsLibraryShowOnMovies { get; set; } = true;
+    public bool BackdropsLibraryShowOnTvShows { get; set; } = true;
+    public bool BackdropsLibraryShowOnMusic { get; set; } = true;
+
+    /// <summary>Show on (custom): pages vanilla never paints. Collections = a boxsets library (set backdrops), Search and User settings = the Home set.</summary>
+    public bool BackdropsLibraryShowOnCollections { get; set; } = true;
+    public bool BackdropsLibraryShowOnSearch { get; set; } = true;
+    public bool BackdropsLibraryShowOnUserSettings { get; set; } = true;
+
+    /// <summary>"PG-13" (vanilla's cap on the Home set, autoBackdrops.js MaxOfficialRating) or "Off".</summary>
+    public string BackdropsLibraryHomeRatingCap { get; set; } = "PG-13";
+
+    public int BackdropsLibraryCycleTimeMs { get; set; } = 10000;
+
+    /// <summary>"Sequential" (the pool as vanilla orders it), "Shuffle", "Random" - see BackdropsOrderMode.</summary>
+    public string BackdropsLibraryOrderMode { get; set; } = "Shuffle";
+    public bool BackdropsLibraryRandomStart { get; set; }
+
+    public bool BackdropsLibraryKenBurnsEnabled { get; set; } = true;
+    public int BackdropsLibraryKenBurnsZoomMs { get; set; } = 20000;
+    public int BackdropsLibraryKenBurnsPanMs { get; set; } = 10000;
 
     // ───────────────────────── Case tab (Case Mod) ─────────────────────────
     // Curriculum: "boxes.zip" concept session. Physical disc-case artwork
