@@ -1420,6 +1420,10 @@
     }
 
     var withBackdropObserver = null;
+    /** Jellyfin's playback transparency (setBackdropTransparency Full/Backdrop): the page must stay see-through. */
+    function busPlaybackTransparent(bg) {
+        return bg.classList.contains('backgroundContainer-transparent');
+    }
     function busApplyClasses() {
         // Hide Jellyfin's container (and dim the page like Jellyfin does
         // with .withBackdrop) exactly while one of ours is showing or a
@@ -1429,7 +1433,15 @@
         try { document.body.classList.toggle(OVERRIDE_BODY_CLASS, on); } catch (e) { /* no body yet */ }
         var bg = document.querySelector('.backgroundContainer');
         if (!bg) { return; }
-        bg.classList.toggle('withBackdrop', on);
+        // Session 128 (user: "the video OSD is dimmed"): during playback Jellyfin's
+        // setBackdropTransparency() adds .backgroundContainer-transparent and decides ITSELF
+        // whether .withBackdrop stays: level Full (video OSD) clears it so the page is see-through
+        // (`.backgroundContainer-transparent:not(.withBackdrop)`), level Backdrop (windowed player)
+        // keeps it on purpose. Our observer used to re-add the class the moment Full removed it -
+        // the theme's rgba(0,0,0,.86) curtain over the player. While the container is transparent
+        // we therefore touch the class neither way; once playback ends Jellyfin drops the
+        // transparency class and our defence applies again.
+        if (!busPlaybackTransparent(bg)) { bg.classList.toggle('withBackdrop', on); }
         if (!withBackdropObserver) {
             // Without .withBackdrop the theme paints .backgroundContainer OPAQUE
             // (dark theme: #101010) - everything of ours behind it vanishes.
@@ -1441,6 +1453,7 @@
             // while one of ours is showing or claimed (the old People IIFE
             // had exactly this defense, R4-7 - now it belongs to the bus).
             withBackdropObserver = new MutationObserver(function () {
+                if (busPlaybackTransparent(bg)) { return; } // Jellyfin's playback contract, see above
                 var wanted = !!(bus.showing || claimCount());
                 if (wanted && !bg.classList.contains('withBackdrop')) { bg.classList.add('withBackdrop'); }
             });

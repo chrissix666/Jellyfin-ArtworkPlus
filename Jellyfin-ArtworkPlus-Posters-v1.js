@@ -946,6 +946,13 @@
             var itemId = cardEl.dataset.id;
             if (!container || !itemId) { return null; }
             var bg0 = container.style.backgroundImage;
+            // Session 128 (user: "Extra replaces the chapter images"): a detail page's chapter
+            // cards are `.card.chapterCard` with the MOVIE's data-id/data-type (chaptercardbuilder),
+            // so they looked like poster tiles of that movie. A tile is only ours when its own
+            // image is the item's Primary poster - the chapter card shows /Images/Chapter/n.
+            if (cardEl.classList.contains('chapterCard')) { return null; }
+            var vanilla = container.getAttribute('data-src') || ((bg0 && bg0 !== 'none') ? bg0 : '');
+            if (vanilla && vanilla.indexOf('/Images/Primary') === -1) { return null; }
             st = {
                 card: cardEl, container: container, itemId: itemId, type: cardEl.dataset.type,
                 // Jellyfin's own poster URL - the floor when every participant withdraws

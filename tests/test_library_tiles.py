@@ -53,7 +53,7 @@ function fillImage(entry){var target=entry.target;var source=target.getAttribute
 var lazyObserver=new IntersectionObserver(function(entries){entries.forEach(fillImage);},{rootMargin:'50%',threshold:0});
 function lazyChildren(root){root.querySelectorAll('.lazy').forEach(function(el){lazyObserver.observe(el);});}
 // --- cardBuilder.js replica ---
-window.buildPage=function(items){var html='';items.forEach(function(it,i){html+='<div data-index="'+i+'" data-id="'+it.id+'" data-type="'+it.type+'" class="card portraitCard card-hoverable card-withuserdata"><div class="cardBox cardBox-bottompadded"><div class="cardScalable"><div class="cardPadder cardPadder-portrait"></div><canvas class="blurhash-canvas" aria-hidden="true"></canvas><a href="#" class="cardImageContainer coveredImage cardContent itemAction lazy blurhashed" data-src="/Items/'+it.id+'/Images/Primary?tag=x"><div class="cardIndicators"></div></a><div class="cardOverlayContainer itemAction"><a href="#" class="cardImageContainer"></a><button class="cardOverlayButton">play</button></div></div></div></div>';});var c=document.getElementById('items');c.innerHTML=html;lazyChildren(c);};
+window.buildPage=function(items){var html='';items.forEach(function(it,i){html+='<div data-index="'+i+'" data-id="'+it.id+'" data-type="'+it.type+'" class="card portraitCard card-hoverable card-withuserdata'+(it.cls?' '+it.cls:'')+'"><div class="cardBox cardBox-bottompadded"><div class="cardScalable"><div class="cardPadder cardPadder-portrait"></div><canvas class="blurhash-canvas" aria-hidden="true"></canvas><a href="#" class="cardImageContainer coveredImage cardContent itemAction lazy blurhashed" data-src="'+(it.src||('/Items/'+it.id+'/Images/Primary?tag=x'))+'"><div class="cardIndicators"></div></a><div class="cardOverlayContainer itemAction"><a href="#" class="cardImageContainer"></a><button class="cardOverlayButton">play</button></div></div></div></div>';});var c=document.getElementById('items');c.innerHTML=html;lazyChildren(c);};
 // --- recorder ---
 window.__rec=[];
 (function rec(){var tiles=[];document.querySelectorAll('.card').forEach(function(c){var ic=c.querySelector('.cardImageContainer');var layers=[];ic.querySelectorAll('.extraposter-lib-layer').forEach(function(l){layers.push({bg:l.style.backgroundImage,op:+getComputedStyle(l).opacity});});var cv=c.querySelector('canvas');tiles.push({id:c.dataset.id,bg:ic.style.backgroundImage,op:+getComputedStyle(ic).opacity,pending:ic.classList.contains('artworkplus-tile-pending'),canvasOp:cv?+getComputedStyle(cv).opacity:-1,layers:layers,src:ic.getAttribute('data-src')||''});});window.__rec.push({t:performance.now(),tiles:tiles});requestAnimationFrame(rec);})();
@@ -203,6 +203,7 @@ def run():
         Scenario('S24 child posters: the overlay uses the Url entries', ROWS5, extra={'t01': 2}, extra_per={'t01': {'children': True}}),
         Scenario('S25 set keyart slides: the movie logo follows the slide, none on a slide without one', ROWS5, extra={'t01': 2}, extra_per={'t01': {'children': True, 'slideLogos': True, "SetLogoVerticalPositionPercent": 70, "SetLogoSizePercent": 50, "CycleTimeMs": 700, "FadeTimeMs": 100}}),
         Scenario('S26 animated keyart logo on the tile (animated winner), none on a custom tile', ROWS5, animated={'t01': True}, custom={'t02': True}, animated_logo={"ResolvedType": "animatedkeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 75, "LogoSizePercent": 45, "HasLogo": True}),
+        Scenario('S27 chapter card / non-Primary image card of the same movie stay untouched', ROWS5 + [('t01', 'Movie', 'chapterCard', '/Items/t01/Images/Chapter/0?tag=c'), ('t02', 'Movie', '', '/Items/t02/Images/Thumb?tag=t')], extra={'t01': 2, 't02': 2}),
         Scenario('S16 extrakeyart logo appears with the first overlay image', ROWS5, extra={'t01': 2}, extra_opts={"ResolvedType": "extrakeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 85, "LogoSizePercent": 40, "HasLogo": True}),
     ]
 
@@ -219,7 +220,7 @@ def run():
             page.add_script_tag(content=core)
             page.add_script_tag(content=posters)
             page.wait_for_timeout(100)
-            page.evaluate("items => buildPage(items.map(([id, type]) => ({id, type})))", sc.items)
+            page.evaluate("items => buildPage(items.map(([id, type, cls, src]) => ({id, type, cls, src})))", sc.items)
             page.wait_for_timeout(1500)
             problems = []
             rec = page.evaluate("window.__rec")
@@ -442,6 +443,14 @@ def run():
                 if not (info['t01'] and info['t01']['top'] == '75%' and info['t01']['width'] == '45%' and '/Items/t01/Images/Logo' in info['t01']['src'] and info['t01']['inContainer']):
                     problems.append(f"animated keyart logo wrong: {info['t01']}")
                 if info['t02'] is not None: problems.append(f"custom tile has a logo: {info['t02']}")
+            if sc.name.split(' ')[0] == 'S27':
+                page.wait_for_timeout(1500)
+                info = page.evaluate("(()=>{var out={};document.querySelectorAll('.card').forEach(function(c,i){var ic=c.querySelector('.cardImageContainer');var key=c.dataset.id+(c.classList.contains('chapterCard')?'-chapter':(ic.getAttribute('data-src')||ic.style.backgroundImage).indexOf('Thumb')!==-1?'-thumb':'');out[key]={layers:ic.querySelectorAll('.extraposter-lib-layer').length,pending:ic.classList.contains('artworkplus-tile-pending'),bg:ic.style.backgroundImage,src:ic.getAttribute('data-src')||''};});return out;})()")
+                for k in ('t01-chapter', 't02-thumb'):
+                    x = info.get(k)
+                    if not x or x['layers'] != 0 or x['pending'] or 'extraposter' in (x['bg'] + x['src']).lower():
+                        problems.append(f"{k} was treated as a poster tile: {x}")
+                if not info.get('t01') or info['t01']['layers'] == 0: problems.append(f"real poster tile t01 got no overlay: {info.get('t01')}")
             if sc.name.split(' ')[0] == 'S16':
                 page.wait_for_timeout(300)
                 info = page.evaluate("(()=>{var c=document.querySelector('[data-id=t01]');var l=c.querySelector('.artworkplus-tile-logo');var layer=c.querySelector('.extraposter-lib-layer');return l?{top:l.style.top,afterLayers:!!(layer.compareDocumentPosition(l)&Node.DOCUMENT_POSITION_FOLLOWING)}:null;})()")

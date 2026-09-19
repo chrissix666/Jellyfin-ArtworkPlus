@@ -255,6 +255,41 @@ def run(baseline=False):
             fails += 0 if ok else 1
             print(("ok  " if ok else "FAIL"), f"{name:42s}", "" if ok else "; ".join(problems))
             page.close()
+        # Session 128: playback transparency contract - while Jellyfin's setBackdropTransparency has
+        # made .backgroundContainer transparent, our curtain (.withBackdrop) must be absent even
+        # though ours is still showing/claimed; it comes back when playback ends.
+        Stub.img_delay = 0
+        page = browser.new_page(viewport={"width": 1280, "height": 800})
+        page.goto(f"{origin}/web/index.html#/details?id=m1&serverId=s1")
+        page.add_script_tag(content=APICLIENT)
+        page.add_script_tag(content=core)
+        page.add_script_tag(content=bd)
+        page.evaluate("document.dispatchEvent(new CustomEvent('viewshow'))")
+        page.wait_for_timeout(2500)
+        pb = page.evaluate("""async () => {
+            var bg = document.querySelector('.backgroundContainer');
+            var out = { before: bg.classList.contains('withBackdrop') };
+            // level Full (video OSD): Jellyfin adds the transparency class and removes withBackdrop
+            bg.classList.add('backgroundContainer-transparent'); bg.classList.remove('withBackdrop');
+            await new Promise(r => setTimeout(r, 100));
+            out.fullStaysClear = !bg.classList.contains('withBackdrop');
+            // level Backdrop (windowed player): Jellyfin keeps withBackdrop on purpose - we leave it
+            bg.classList.add('withBackdrop');
+            await new Promise(r => setTimeout(r, 100));
+            out.backdropLevelKept = bg.classList.contains('withBackdrop');
+            bg.classList.remove('withBackdrop');
+            await new Promise(r => setTimeout(r, 100));
+            out.fullStaysClearAgain = !bg.classList.contains('withBackdrop');
+            // playback ends: transparency gone, our curtain comes back while ours is showing
+            bg.classList.remove('backgroundContainer-transparent');
+            await new Promise(r => setTimeout(r, 100));
+            out.afterPlayback = bg.classList.contains('withBackdrop');
+            return out;
+        }""")
+        ok = pb['before'] and pb['fullStaysClear'] and pb['backdropLevelKept'] and pb['fullStaysClearAgain'] and pb['afterPlayback']
+        fails += 0 if ok else 1
+        print(("ok  " if ok else "FAIL"), f"{'playback: curtain yields to transparency':42s}", "" if ok else str(pb))
+        page.close()
         browser.close()
     server.shutdown()
     print("RESULT", "FAILED" if fails else "OK", f"({fails} failure(s))", "[baseline run]" if baseline else "")
