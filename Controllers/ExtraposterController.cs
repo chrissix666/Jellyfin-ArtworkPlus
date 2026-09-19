@@ -323,7 +323,8 @@ public class ExtraposterController : ControllerBase
     private sealed record ExtraViewSettings(
         string OrderMode, bool SinglePass, int CycleTimeMs, int FadeTimeMs, bool DelayEnabled, int DelayMs,
         bool LogoEnabled, int LogoVerticalPositionPercent, int LogoSizePercent, bool SyncEnabled, bool SeamlessEnabled,
-        string UnnumberedMode, bool SourceFiles, bool SourceChildren, bool ChildrenFirst, bool ChildOrderDescending, bool IncludeSpecials, bool SkipSingleSeason);
+        string UnnumberedMode, bool SourceFiles, bool SourceChildren, bool ChildrenFirst, bool ChildOrderDescending, bool IncludeSpecials, bool SkipSingleSeason,
+        string SetImage, string SetFallback);
 
     private ExtraViewSettings GetViewSettings(PluginConfiguration c, Guid itemId, string resolvedType, bool isLibraryScope)
     {
@@ -336,29 +337,29 @@ public class ExtraposterController : ControllerBase
             {
                 return isLibraryScope
                     ? new ExtraViewSettings(c.ExtraposterMoviesLibraryOrderMode, c.ExtraposterMoviesLibrarySinglePass, c.ExtraposterMoviesLibraryCycleTimeMs, c.ExtraposterMoviesLibraryFadeTimeMs, c.ExtraposterMoviesLibraryDelayEnabled, c.ExtraposterMoviesLibraryDelayMs, false, 0, 0, c.ExtraposterMoviesLibrarySyncEnabled, c.ExtraposterMoviesLibrarySeamlessEnabled,
-                        "Ignored", c.ExtraposterMoviesLibrarySourceFiles, c.ExtraposterMoviesLibrarySourceSetPosters, c.ExtraposterMoviesLibrarySourcePriority == "SetPosters", c.ExtraposterMoviesLibrarySetOrder == "Descending", false, false)
+                        "Ignored", c.ExtraposterMoviesLibrarySourceFiles, c.ExtraposterMoviesLibrarySourceSetPosters, c.ExtraposterMoviesLibrarySourcePriority == "SetPosters", c.ExtraposterMoviesLibrarySetOrder == "Descending", false, false, c.ExtraposterMoviesLibrarySetImage, c.ExtraposterMoviesLibrarySetFallback)
                     : new ExtraViewSettings(c.ExtraposterMoviesDetailOrderMode, c.ExtraposterMoviesDetailSinglePass, c.ExtraposterMoviesDetailCycleTimeMs, c.ExtraposterMoviesDetailFadeTimeMs, c.ExtraposterMoviesDetailDelayEnabled, c.ExtraposterMoviesDetailDelayMs, false, 0, 0, false, true,
-                        "Ignored", c.ExtraposterMoviesDetailSourceFiles, c.ExtraposterMoviesDetailSourceSetPosters, c.ExtraposterMoviesDetailSourcePriority == "SetPosters", c.ExtraposterMoviesDetailSetOrder == "Descending", false, false);
+                        "Ignored", c.ExtraposterMoviesDetailSourceFiles, c.ExtraposterMoviesDetailSourceSetPosters, c.ExtraposterMoviesDetailSourcePriority == "SetPosters", c.ExtraposterMoviesDetailSetOrder == "Descending", false, false, c.ExtraposterMoviesDetailSetImage, c.ExtraposterMoviesDetailSetFallback);
             }
             return isLibraryScope
                 ? new ExtraViewSettings(c.ExtraposterTvShowsLibraryOrderMode, c.ExtraposterTvShowsLibrarySinglePass, c.ExtraposterTvShowsLibraryCycleTimeMs, c.ExtraposterTvShowsLibraryFadeTimeMs, c.ExtraposterTvShowsLibraryDelayEnabled, c.ExtraposterTvShowsLibraryDelayMs, false, 0, 0, c.ExtraposterTvShowsLibrarySyncEnabled, c.ExtraposterTvShowsLibrarySeamlessEnabled,
-                        "Ignored", c.ExtraposterTvShowsLibrarySourceFiles, c.ExtraposterTvShowsLibrarySourceSeasonPosters, c.ExtraposterTvShowsLibrarySourcePriority == "SeasonPosters", c.ExtraposterTvShowsLibrarySeasonOrder == "Descending", c.ExtraposterTvShowsLibraryIncludeSpecials, c.ExtraposterTvShowsLibrarySkipSingleSeason)
+                        "Ignored", c.ExtraposterTvShowsLibrarySourceFiles, c.ExtraposterTvShowsLibrarySourceSeasonPosters, c.ExtraposterTvShowsLibrarySourcePriority == "SeasonPosters", c.ExtraposterTvShowsLibrarySeasonOrder == "Descending", c.ExtraposterTvShowsLibraryIncludeSpecials, c.ExtraposterTvShowsLibrarySkipSingleSeason, "Poster", "None")
                 : new ExtraViewSettings(c.ExtraposterTvShowsDetailOrderMode, c.ExtraposterTvShowsDetailSinglePass, c.ExtraposterTvShowsDetailCycleTimeMs, c.ExtraposterTvShowsDetailFadeTimeMs, c.ExtraposterTvShowsDetailDelayEnabled, c.ExtraposterTvShowsDetailDelayMs, false, 0, 0, false, true,
-                        "Ignored", c.ExtraposterTvShowsDetailSourceFiles, c.ExtraposterTvShowsDetailSourceSeasonPosters, c.ExtraposterTvShowsDetailSourcePriority == "SeasonPosters", c.ExtraposterTvShowsDetailSeasonOrder == "Descending", c.ExtraposterTvShowsDetailIncludeSpecials, c.ExtraposterTvShowsDetailSkipSingleSeason);
+                        "Ignored", c.ExtraposterTvShowsDetailSourceFiles, c.ExtraposterTvShowsDetailSourceSeasonPosters, c.ExtraposterTvShowsDetailSourcePriority == "SeasonPosters", c.ExtraposterTvShowsDetailSeasonOrder == "Descending", c.ExtraposterTvShowsDetailIncludeSpecials, c.ExtraposterTvShowsDetailSkipSingleSeason, "Poster", "None");
         }
         if (!tv)
         {
             return isLibraryScope
                 ? new ExtraViewSettings(c.ExtrakeyartMoviesLibraryOrderMode, c.ExtrakeyartMoviesLibrarySinglePass, c.ExtrakeyartMoviesLibraryCycleTimeMs, c.ExtrakeyartMoviesLibraryFadeTimeMs, c.ExtrakeyartMoviesLibraryDelayEnabled, c.ExtrakeyartMoviesLibraryDelayMs, c.ExtrakeyartMoviesLibraryLogoEnabled, c.ExtrakeyartMoviesLibraryLogoVerticalPositionPercent, c.ExtrakeyartMoviesLibraryLogoSizePercent, c.ExtrakeyartMoviesLibrarySyncEnabled, c.ExtrakeyartMoviesLibrarySeamlessEnabled,
-                        c.ExtrakeyartMoviesLibraryUnnumberedMode, c.ExtrakeyartMoviesLibrarySourceFiles, c.ExtrakeyartMoviesLibrarySourceSetPosters, c.ExtrakeyartMoviesLibrarySourcePriority == "SetPosters", c.ExtrakeyartMoviesLibrarySetOrder == "Descending", false, false)
+                        c.ExtrakeyartMoviesLibraryUnnumberedMode, true, false, false, false, false, false, "Poster", "None")
                 : new ExtraViewSettings(c.ExtrakeyartMoviesDetailOrderMode, c.ExtrakeyartMoviesDetailSinglePass, c.ExtrakeyartMoviesDetailCycleTimeMs, c.ExtrakeyartMoviesDetailFadeTimeMs, c.ExtrakeyartMoviesDetailDelayEnabled, c.ExtrakeyartMoviesDetailDelayMs, c.ExtrakeyartMoviesDetailLogoEnabled, c.ExtrakeyartMoviesDetailLogoVerticalPositionPercent, c.ExtrakeyartMoviesDetailLogoSizePercent, false, true,
-                        c.ExtrakeyartMoviesDetailUnnumberedMode, c.ExtrakeyartMoviesDetailSourceFiles, c.ExtrakeyartMoviesDetailSourceSetPosters, c.ExtrakeyartMoviesDetailSourcePriority == "SetPosters", c.ExtrakeyartMoviesDetailSetOrder == "Descending", false, false);
+                        c.ExtrakeyartMoviesDetailUnnumberedMode, true, false, false, false, false, false, "Poster", "None");
         }
         return isLibraryScope
             ? new ExtraViewSettings(c.ExtrakeyartTvShowsLibraryOrderMode, c.ExtrakeyartTvShowsLibrarySinglePass, c.ExtrakeyartTvShowsLibraryCycleTimeMs, c.ExtrakeyartTvShowsLibraryFadeTimeMs, c.ExtrakeyartTvShowsLibraryDelayEnabled, c.ExtrakeyartTvShowsLibraryDelayMs, c.ExtrakeyartTvShowsLibraryLogoEnabled, c.ExtrakeyartTvShowsLibraryLogoVerticalPositionPercent, c.ExtrakeyartTvShowsLibraryLogoSizePercent, c.ExtrakeyartTvShowsLibrarySyncEnabled, c.ExtrakeyartTvShowsLibrarySeamlessEnabled,
-                        c.ExtrakeyartTvShowsLibraryUnnumberedMode, true, false, false, false, false, false)
+                        c.ExtrakeyartTvShowsLibraryUnnumberedMode, true, false, false, false, false, false, "Poster", "None")
             : new ExtraViewSettings(c.ExtrakeyartTvShowsDetailOrderMode, c.ExtrakeyartTvShowsDetailSinglePass, c.ExtrakeyartTvShowsDetailCycleTimeMs, c.ExtrakeyartTvShowsDetailFadeTimeMs, c.ExtrakeyartTvShowsDetailDelayEnabled, c.ExtrakeyartTvShowsDetailDelayMs, c.ExtrakeyartTvShowsDetailLogoEnabled, c.ExtrakeyartTvShowsDetailLogoVerticalPositionPercent, c.ExtrakeyartTvShowsDetailLogoSizePercent, false, true,
-                        c.ExtrakeyartTvShowsDetailUnnumberedMode, true, false, false, false, false, false);
+                        c.ExtrakeyartTvShowsDetailUnnumberedMode, true, false, false, false, false, false, "Poster", "None");
     }
 
 
@@ -382,8 +383,9 @@ public class ExtraposterController : ControllerBase
         return DateTime.MinValue;
     }
 
-    private static PosterEntry ChildEntry(BaseItem child)
+    private static PosterEntry? PrimaryEntry(BaseItem child)
     {
+        if (!child.HasImage(ImageType.Primary, 0)) { return null; }
         var info = child.GetImageInfo(ImageType.Primary, 0);
         var tag = info is null ? "0" : info.DateModified.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture);
         return new PosterEntry
@@ -394,15 +396,41 @@ public class ExtraposterController : ControllerBase
         };
     }
 
-    private List<PosterEntry> ResolveChildPosters(BaseItem item, ExtraViewSettings view)
+    /// <summary>A movie's Postercase/Keyart file as an entry (served by GetChildImage), or null.</summary>
+    private static PosterEntry? CustomEntry(PluginConfiguration config, Movie movie, string posterType)
+    {
+        var path = Helpers.CustomPosterFileResolver.Resolve(config, movie, posterType);
+        if (path is null) { return null; }
+        var v = Helpers.BackdropFileResolver.VersionTag(path);
+        return new PosterEntry
+        {
+            FileName = movie.Id.ToString("N") + "|" + posterType,
+            Version = v,
+            Url = "/Extraposter/child-image?itemId=" + movie.Id.ToString("N") + "&type=" + posterType + "&v=" + v
+        };
+    }
+
+    /// <summary>Session 125: the chosen image of a Set's movie (Poster / Postercase / Keyart), else its fallback, else nothing.</summary>
+    private static PosterEntry? SetMovieEntry(PluginConfiguration config, BaseItem child, string image, string fallback)
+    {
+        PosterEntry? Pick(string kind)
+        {
+            if (kind == "Poster") { return PrimaryEntry(child); }
+            if ((kind == "Postercase" || kind == "Keyart") && child is Movie movie) { return CustomEntry(config, movie, kind.ToLowerInvariant()); }
+            return null;
+        }
+        return Pick(image) ?? (fallback == "None" || fallback == image ? null : Pick(fallback));
+    }
+
+    private List<PosterEntry> ResolveChildPosters(PluginConfiguration config, BaseItem item, ExtraViewSettings view)
     {
         if (item is BoxSet boxSet)
         {
-            var movies = boxSet.GetLinkedChildren().Where(c => c.HasImage(ImageType.Primary, 0)).ToList();
+            var movies = boxSet.GetLinkedChildren().ToList();
             var ordered = view.ChildOrderDescending
                 ? movies.OrderByDescending(PremiereSortDate).ToList()
                 : movies.OrderBy(PremiereSortDate).ToList();
-            return ordered.Select(ChildEntry).ToList();
+            return ordered.Select(c => SetMovieEntry(config, c, view.SetImage, view.SetFallback)).Where(e => e is not null).Select(e => e!).ToList();
         }
         if (item is Series series)
         {
@@ -414,7 +442,7 @@ public class ExtraposterController : ControllerBase
                 : regular.OrderBy(x => x.IndexNumber ?? 0).ToList();
             var usable = view.IncludeSpecials ? specials.Concat(regular).ToList() : regular;
             if (view.SkipSingleSeason && usable.Count <= 1) { return new List<PosterEntry>(); }
-            return usable.Select(ChildEntry).ToList();
+            return usable.Select(PrimaryEntry).Where(e => e is not null).Select(e => e!).ToList();
         }
         return new List<PosterEntry>();
     }
@@ -438,7 +466,7 @@ public class ExtraposterController : ControllerBase
         if (view.SourceChildren)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item is not null) { children = ResolveChildPosters(item, view); }
+            if (item is not null) { children = ResolveChildPosters(config, item, view); }
         }
         if (view.ChildrenFirst) { return children.Count > 0 ? children : files; }
         return files.Count > 0 ? files : children;
@@ -868,6 +896,26 @@ public class ExtraposterController : ControllerBase
     /// settings) - an itemId is of course never both at once, the order is
     /// just the check order.
     /// </summary>
+    /// <summary>
+    /// GET /Extraposter/child-image?itemId=&amp;type=postercase|keyart - a Set
+    /// movie's Custom Poster file for the Set slideshow (Session 125). Found
+    /// by the Custom Poster tab's naming rules only; that feature's own
+    /// switches do not apply here (user decision: the file counts).
+    /// </summary>
+    [HttpGet("child-image")]
+    public ActionResult GetChildImage([FromQuery] Guid itemId, [FromQuery] string? type)
+    {
+        var config = Plugin.Instance!.Configuration;
+        var kind = type == "keyart" ? "keyart" : "postercase";
+        if (_libraryManager.GetItemById(itemId) is not Movie movie) { return NotFound(); }
+        var path = Helpers.CustomPosterFileResolver.Resolve(config, movie, kind);
+        if (path is null || !System.IO.File.Exists(path)) { return NotFound(); }
+        var etag = ComputeETag("child", itemId, kind, Helpers.BackdropFileResolver.VersionTag(path));
+        if (IsETagStillValid(etag)) { return StatusCode(StatusCodes.Status304NotModified); }
+        Response.Headers.CacheControl = "private, max-age=86400";
+        return PhysicalFile(path, Helpers.CustomPosterFileResolver.ContentType(path));
+    }
+
     [HttpGet("{itemId}/image/{fileName}")]
     public ActionResult GetPosterImage([FromRoute] Guid itemId, [FromRoute] string fileName, [FromQuery] string? type)
     {

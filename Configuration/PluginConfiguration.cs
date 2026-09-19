@@ -834,6 +834,12 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
     public string ExtraposterMoviesDetailSetOrder { get; set; } = "Ascending";
 
+    /// <summary>Poster | Postercase | Keyart - which image of each movie in the Set (Postercase/Keyart = the movie's Custom Poster file, found by the Custom Poster tab's naming rules, regardless of that feature's switches).</summary>
+    public string ExtraposterMoviesDetailSetImage { get; set; } = "Poster";
+
+    /// <summary>None | Poster | Postercase | Keyart - used for a movie without the chosen image; None skips the movie.</summary>
+    public string ExtraposterMoviesDetailSetFallback { get; set; } = "None";
+
     public string ExtraposterMoviesDetailOrderMode { get; set; } = "Sequential";
 
     /// <summary>true = one pass, then back to the original poster; false = loop.</summary>
@@ -873,6 +879,12 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
     public string ExtraposterMoviesLibrarySetOrder { get; set; } = "Ascending";
+
+    /// <summary>Poster | Postercase | Keyart - which image of each movie in the Set (Postercase/Keyart = the movie's Custom Poster file, found by the Custom Poster tab's naming rules, regardless of that feature's switches).</summary>
+    public string ExtraposterMoviesLibrarySetImage { get; set; } = "Poster";
+
+    /// <summary>None | Poster | Postercase | Keyart - used for a movie without the chosen image; None skips the movie.</summary>
+    public string ExtraposterMoviesLibrarySetFallback { get; set; } = "None";
 
     public string ExtraposterMoviesLibraryOrderMode { get; set; } = "Sequential";
 
@@ -1041,19 +1053,6 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
     public bool ExtrakeyartMoviesDetailShowOnSets { get; set; } = true;
 
-    // ----- Sources (Session 125): the slideshow of a Set can also be the posters of its movies.
-    /// <summary>Source "Files": the extraposter files of the item itself.</summary>
-    public bool ExtrakeyartMoviesDetailSourceFiles { get; set; } = true;
-
-    /// <summary>Source "Set movie posters": for a Set, the primary posters of the movies it contains (never the Set's own poster).</summary>
-    public bool ExtrakeyartMoviesDetailSourceSetPosters { get; set; } = false;
-
-    /// <summary>Files | SetPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
-    public string ExtrakeyartMoviesDetailSourcePriority { get; set; } = "Files";
-
-    /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
-    public string ExtrakeyartMoviesDetailSetOrder { get; set; } = "Ascending";
-
     public string ExtrakeyartMoviesDetailOrderMode { get; set; } = "Sequential";
     /// <summary>Ignored | Counts - whether a file without a number (keyart.jpg) is picked up as the first image (Session 125: per view).</summary>
     public string ExtrakeyartMoviesDetailUnnumberedMode { get; set; } = "Ignored";
@@ -1092,19 +1091,6 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Show on Sets (collections) in this view - Sets use the Movies settings, always Standalone.</summary>
     public bool ExtrakeyartMoviesLibraryShowOnSets { get; set; } = true;
-
-    // ----- Sources (Session 125): the slideshow of a Set can also be the posters of its movies.
-    /// <summary>Source "Files": the extraposter files of the item itself.</summary>
-    public bool ExtrakeyartMoviesLibrarySourceFiles { get; set; } = true;
-
-    /// <summary>Source "Set movie posters": for a Set, the primary posters of the movies it contains (never the Set's own poster).</summary>
-    public bool ExtrakeyartMoviesLibrarySourceSetPosters { get; set; } = false;
-
-    /// <summary>Files | SetPosters - the preferred source; the other one only when the preferred one has nothing.</summary>
-    public string ExtrakeyartMoviesLibrarySourcePriority { get; set; } = "Files";
-
-    /// <summary>Ascending | Descending - release date order of the Set's movies (Jellyfin's rule: PremiereDate, else 1 Jan of ProductionYear, else first).</summary>
-    public string ExtrakeyartMoviesLibrarySetOrder { get; set; } = "Ascending";
 
     public string ExtrakeyartMoviesLibraryOrderMode { get; set; } = "Sequential";
     /// <summary>Ignored | Counts - whether a file without a number (keyart.jpg) is picked up as the first image (Session 125: per view).</summary>
