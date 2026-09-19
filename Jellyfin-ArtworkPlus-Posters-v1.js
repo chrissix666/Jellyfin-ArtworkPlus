@@ -1820,6 +1820,11 @@
         // -----------------------------------------------------------------
 
         var clocks = {}; // key -> { periodMs, epoch, timer, n }
+        // Tiles that become ready within this window of the clock's start
+        // board the first tick together (a cached page re-entering the
+        // viewport has all its images at once - without the window only the
+        // very first would show and the rest would wait a whole period).
+        var BOARD_MS = 150;
 
         function clockKey(tile) { return tile.resolvedType + '|' + tile.type; }
 
@@ -1866,7 +1871,8 @@
 
         function ensureClock(key, periodMs) {
             if (clocks[key]) { return clocks[key]; }
-            var clock = { periodMs: periodMs, epoch: performance.now(), n: 0, timer: null };
+            // epoch = the first tick (n = 0), BOARD_MS from now.
+            var clock = { periodMs: periodMs, epoch: performance.now() + BOARD_MS, n: -1, timer: null };
             clocks[key] = clock;
             libLog('Page clock', key, 'started, period:', periodMs, 'ms');
             scheduleTick(key);
@@ -1911,8 +1917,7 @@
                 setTimeout(function () { if (tile.active && !tile.joined) { onFirstReady(tile); } }, wait);
                 return;
             }
-            ensureClock(key, tile.cycleMs); // epoch = now = this tile's first appearance
-            firstShow(tile).catch(function () { /* handled by the preload's own catch */ });
+            ensureClock(key, tile.cycleMs); // its first tick (BOARD_MS from now) shows this tile and every other one ready by then
         }
 
         function activateTile(st) {

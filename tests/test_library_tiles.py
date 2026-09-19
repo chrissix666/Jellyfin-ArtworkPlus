@@ -185,6 +185,7 @@ def run():
         Scenario('S13 sync on: a late tile waits for the next tick and then changes together', ROWS5, extra={'t01': 2, 't02': 2}, img_delay={'t02/image/e0': 300}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100, "DelayEnabled": True, "DelayMs": 100}),
         Scenario('S14 sync off: a late tile appears as soon as it is ready', ROWS5, extra={'t01': 2, 't02': 2}, img_delay={'t02/image/e0': 300}, extra_opts={"SyncEnabled": False, "CycleTimeMs": 800, "FadeTimeMs": 100, "DelayEnabled": True, "DelayMs": 100}),
         Scenario('S15 keyart logo on the tile (custom winner), none on an animated tile', ROWS5, custom={'t01': True}, animated={'t02': True}, custom_logo={"ResolvedType": "keyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 80, "LogoSizePercent": 50, "HasLogo": True}),
+        Scenario('S17 sync on: tiles ready within the boarding window appear on the same first tick', ROWS5, extra={'t01': 2, 't02': 2, 't03': 2}, img_delay={'t02/image/e0': 60}, extra_opts={"SyncEnabled": True, "CycleTimeMs": 800, "FadeTimeMs": 100}),
         Scenario('S16 extrakeyart logo appears with the first overlay image', ROWS5, extra={'t01': 2}, extra_opts={"ResolvedType": "extrakeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 85, "LogoSizePercent": 40, "HasLogo": True}),
     ]
 
@@ -290,6 +291,17 @@ def run():
                 t = final_tile(rec, 't01')
                 if not (t and vanilla(t['bg']) and t['op'] > 0.99): problems.append(f"vanilla broken {t}")
 
+            if sc.name.split(' ')[0] == 'S17':
+                page.wait_for_timeout(600)
+                rec = page.evaluate("window.__rec")
+                def fv(tid):
+                    for smp in rec:
+                        for x in smp['tiles']:
+                            if x['id'] == tid and any(l['op'] > 0.9 for l in x['layers']):
+                                return smp['t']
+                    return None
+                ts = [fv('t01'), fv('t02'), fv('t03')]
+                if None in ts or max(ts) - min(ts) > 120: problems.append(f"first appearances not together: {ts}")
             if sc.name.split(' ')[0] in ('S13', 'S14'):
                 page.wait_for_timeout(1400)
                 rec = page.evaluate("window.__rec")
