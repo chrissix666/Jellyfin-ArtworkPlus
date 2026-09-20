@@ -2550,16 +2550,21 @@
         // (the card's `top: -80%` of the container). Kodi never has that: the
         // skin lives in a fixed design frame and is scaled as a whole. Same
         // here now - the camera is fixed RELATIVE TO THE CASE in a design
-        // frame of 1920 x 864 px (the user's maximised window, so the approved
-        // full-screen look is unchanged), scaled by innerWidth / 1920 like
-        // every vw-based case size: screen centre horizontally (the case's
-        // left is %-based, so that is invariant anyway), DESIGN_CAMERA_DY
-        // below the case's top, camera distance from the design height.
-        // Every matrix (rest tilt, retilt, Open Case for all four types)
-        // takes its camera from here.
+        // frame of 1920 x 1024 px (the user's real maximised window, measured
+        // live: innerHeight 1024, front box top 133 -> the old window-centred
+        // camera stood 379 px below the front's top), scaled by
+        // innerWidth / 1920 like every vw-based case size: screen centre
+        // horizontally (the case's left is %-based, so that is invariant
+        // anyway), DESIGN_CAMERA_DY below the case's top, camera distance from
+        // the design height. At 1920 px this reproduces the approved
+        // full-screen matrix exactly; every other window size gets the same
+        // shape. (A first version used 864 / 368 from a SIMULATED 1920 x 1040
+        // window with only 857 px inside - the user saw the stronger
+        // perspective at once.) Every matrix (rest tilt, retilt, Open Case
+        // for all four types) takes its camera from here.
         var DESIGN_SCREEN_W = 1920;
-        var DESIGN_SCREEN_H = 864;
-        var DESIGN_CAMERA_DY = 368;
+        var DESIGN_SCREEN_H = 1024;
+        var DESIGN_CAMERA_DY = 379;
         function designCamera(frontRect) {
             var scale = window.innerWidth / DESIGN_SCREEN_W;
             var screenW = window.innerWidth;
