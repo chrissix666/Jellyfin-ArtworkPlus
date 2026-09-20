@@ -76,7 +76,13 @@
                        anywhere, this value must grow again to match, or
                        that tab's own extra line will get clipped/overlap
                        the row below it. */
-                    #ArtworkPlusConfigPage .epTabDescArea { min-height: 82px; }
+                    /* Session 130 (user): tab-head lines with NO gap between them (the base
+                       .epDesc 4px/1px paddings are removed here), 4px above the block (the old
+                       title gap) and 4px after the last line (inline margin-bottom:4px on the last
+                       line of every tab). 4 (padding) + 4 x 14 + 4 = 64px box for the 4-line maximum
+                       (Animated Poster). */
+                    #ArtworkPlusConfigPage .epTabDescArea { min-height: 60px; padding-top: 4px; } /* content-box: 4 + 60 = 64 */
+                    #ArtworkPlusConfigPage .epTabDescArea .epDesc { padding-top: 0; padding-bottom: 0; }
                     /* !important added here as a targeted attempt, NOT
                        fully verified against Cinema Project's own source
                        (Cinema's equivalent .ccRowMerged rule has no
@@ -350,6 +356,15 @@
                        are exempted. */
                     #ArtworkPlusConfigPage .epTabLocked .epCollapseHeader { opacity: 0.35; }
                     #ArtworkPlusConfigPage .epTabLocked .epTabHeaderRow { pointer-events: auto; }
+                    /* Session 130 (user): the intro's external links stay clickable on a locked tab
+                       (pointer-events:none is inherited from .epTabLocked); and no underline anywhere
+                       in the intros - the link colour is the marker. */
+                    #ArtworkPlusConfigPage .epTabLocked .epTabDescArea a,
+                    #ArtworkPlusConfigPage .epTabLocked .epCollapseBody .epTabIntroCol a { pointer-events: auto; }
+                    #ArtworkPlusConfigPage .epTabDescArea a,
+                    #ArtworkPlusConfigPage .epTabIntroCol a { text-decoration: none; }
+                    #ArtworkPlusConfigPage .epTabDescArea a:hover,
+                    #ArtworkPlusConfigPage .epTabIntroCol a:hover { text-decoration: underline; }
                     /* Session 35 (user-reported): the exemption that used
                        to live here (#CaseModCaseEnabledRow/#CaseModShowOnRow
                        staying opacity:1/pointer-events:auto while the tab
@@ -972,7 +987,7 @@
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="casemod">Restore defaults</button>
                         </div>
                         <div class="epTabDescArea">
-                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:6px; white-space:normal;">Overlays physical disc-case artwork on detail pages</div>
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:4px; white-space:normal;">Overlays physical disc-case artwork on detail pages</div>
                         </div>
 
                         <div class="epRow epRowMerged" id="CaseModShowOnRow">
@@ -1186,7 +1201,7 @@
                         <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:normal;">Animated posters never found their way into any artwork database or API and remained a fan project.</div>
                         <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:normal;">Most available posters can be found on the <a href="https://forum.kodi.tv/showthread.php?tid=215727" target="_blank" style="color:#00a4dc;">Animated Poster Project page</a>.</div>
                         <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:normal;">@moulfo was the main content creator of the project, producing the highest-quality posters in the community.</div>
-                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:6px; white-space:normal;">He sadly passed away in 2020. All credit for this art style goes to him.</div>
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:4px; white-space:normal;">He sadly passed away in 2020. All credit for this art style goes to him.</div>
                         </div>
 
                         <div class="epRow epRowMerged">
@@ -1485,7 +1500,7 @@
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="customposter">Restore defaults</button>
                         </div>
                         <div class="epTabDescArea">
-                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:6px; white-space:normal;">Alternative base poster: Postercase or Keyart.</div>
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:4px; white-space:normal;">Alternative base poster: Postercase or Keyart.</div>
                         </div>
 
                         <div class="epRow epRowMerged">
@@ -1813,7 +1828,7 @@
                         <div class="epTabDescArea">
                         <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:normal;">A niche but delightful multi-image feature, see the <a href="https://linktr.ee/CharacterPosterSets" target="_blank" style="color:#00a4dc;">Character Poster Sets Project page</a> for details.</div>
                         <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:normal;">The project was later handed over to @Konon, who has since created countless high-quality, polished, hand-crafted Sets.</div>
-                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:6px; white-space:normal;">Naming and sorting follow character prominence, based on TMDB or general poster-chronology logic. See the full collection on <a href="https://www.deviantart.com/konon-cat" target="_blank" style="color:#00a4dc;">Deviantart</a>.</div>
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:4px; white-space:normal;">Naming and sorting follow character prominence, based on TMDB or general poster-chronology logic. See the full collection on <a href="https://www.deviantart.com/konon-cat" target="_blank" style="color:#00a4dc;">Deviantart</a>.</div>
                         </div>
 
                         <div class="epRow epRowMerged">
@@ -3137,7 +3152,8 @@
                         <div class="epTabDescArea">
                         <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:normal;">TV show character art has official API support via <a href="https://fanart.tv/tv-fanart/#characterart" target="_blank" style="color:#00a4dc;">fanart.tv</a>.</div>
                         <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:normal;">Movie character art unfortunately has no database/API support - only fan projects.</div>
-                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:6px; white-space:normal;">See the <a href="https://forum.kodi.tv/showthread.php?tid=342468" target="_blank" style="color:#00a4dc;">Character Art Project page</a> for details.</div>
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:normal;">See the <a href="https://forum.kodi.tv/showthread.php?tid=342468" target="_blank" style="color:#00a4dc;">Character Art Project page</a> for details.</div>
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:4px; white-space:normal;">Many more sources can also be found on <a href="https://www.deviantart.com" target="_blank" style="color:#00a4dc;">DeviantArt</a>.</div>
                         </div>
 
                         <div class="epRow epRowMerged">
@@ -3826,7 +3842,7 @@
                         </div>
                         <div class="epTabDescArea">
                         <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:normal;">Originally a project by the Kodi community. <a href="https://kodi.tv/addons/omega/resource.images.actorart/" target="_blank" style="color:#00a4dc;">Download</a> the contents from the Kodi addon page.</div>
-                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:6px; white-space:normal;">For more information, visit the <a href="https://linktr.ee/RedCarpetCandy" target="_blank" style="color:#00a4dc;">Red Carpet Project page</a>.</div>
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:4px; white-space:normal;">For more information, visit the <a href="https://linktr.ee/RedCarpetCandy" target="_blank" style="color:#00a4dc;">Red Carpet Project page</a>.</div>
                         </div>
 
                         <div class="epRow epRowMerged">
@@ -3987,7 +4003,7 @@
 
                         <div class="epTabDescArea">
                         <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Various backdrop extensions beyond vanilla Jellyfin.</div>
-                        <div id="epBackdropsNotice" class="epDesc" style="padding-left:0; height:auto; margin-top:0; margin-bottom:6px; color:#cddc39; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+                        <div id="epBackdropsNotice" class="epDesc" style="padding-left:0; height:auto; margin-top:0; margin-bottom:4px; color:#cddc39; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
                         </div>
 
                         <div class="epRow epRowMerged">
