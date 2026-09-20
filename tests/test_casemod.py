@@ -84,6 +84,7 @@ window.fetch = function (url, opts) {
 };
 """ + MATRIX_FUNCS + """
 window.__computeKodiMatrix3dString = computeKodiMatrix3dString;
+window.__designCamera = designCamera;
 """ + MODULE_SRC + """
 window.__caseMod = CaseModModule;
 window.__setResponse = function (r) { __caseModResponse = r; };
@@ -141,6 +142,9 @@ PAGE = """<!DOCTYPE html><html><head><style>
   .cardContent { position: absolute; top:0; left:0; right:0; bottom:0; }
   .cardScalable .cardImageContainer { height:100%; width:100%; contain: strict; background:#00c000; }
   .detailPageContent { padding: 1em 2em; max-width: 60em; }
+  /* REAL Jellyfin rule (librarybrowser.scss, "@media all and (max-width: 62.5em)") - added in
+     Session 132: below 1000 px the card moves to top: 10%; our boxes must follow it. */
+  @media all and (max-width: 62.5em) { .layout-desktop .detailImageContainer .card { top: 10%; } }
 </style></head><body class="layout-desktop">
 <div class="detailPageWrapperContainer">
   <div class="detailPagePrimaryContainer">
@@ -412,11 +416,12 @@ def run():
                 var to = getComputedStyle(rot).transformOrigin;
                 var b = box.getBoundingClientRect();
                 var hingeXPx = b.left + hingePct / 100 * b.width;
-                var screenW = window.innerWidth, screenH = window.innerHeight;
+                // Session 132: the camera is bound to the case (designCamera), not the window.
+                var cam = window.__designCamera(b);
                 function matrixAt(angleDeg) {
                     return window.__computeKodiMatrix3dString(
-                        angleDeg, hingeXPx, b.left, b.top, screenW, screenH,
-                        screenW * 0.5, screenH * 0.5
+                        angleDeg, hingeXPx, b.left, b.top, cam.screenW, cam.screenH,
+                        cam.cameraX, cam.cameraY
                     );
                 }
                 // Probe exactly AT the hinge (local x = hingeXPx - b.left) -
@@ -684,16 +689,16 @@ def run():
             var rot = box.querySelector('.artworkplus-casemod-rotator');
             var b = box.getBoundingClientRect();
             var hingeXPx = b.left + 13.822 / 100 * b.width;
-            var screenW = window.innerWidth, screenH = window.innerHeight;
+            var cam = window.__designCamera(b); // Session 132: case-bound design camera
             // Sign: a negative angle opens towards the viewer (user
             // finding: with a positive angle the case folded INWARDS
             // instead of OUTWARDS like a book - see the production code
             // comment at "var angleDeg = -response.OpenAngleDegrees").
             var expected150 = window.__computeKodiMatrix3dString(
-                -150, hingeXPx, b.left, b.top, screenW, screenH, screenW * 0.5, screenH * 0.5
+                -150, hingeXPx, b.left, b.top, cam.screenW, cam.screenH, cam.cameraX, cam.cameraY
             );
             var expected90 = window.__computeKodiMatrix3dString(
-                -90, hingeXPx, b.left, b.top, screenW, screenH, screenW * 0.5, screenH * 0.5
+                -90, hingeXPx, b.left, b.top, cam.screenW, cam.screenH, cam.cameraX, cam.cameraY
             );
             return { actual: rot.style.transform, expected150: expected150, expected90: expected90 };
         }""")
@@ -1487,6 +1492,68 @@ def run():
         check('Design frame: page is scrollable in the harness (precondition)', frame['scrollable'], str(frame))
         check('Design frame: first tilt while scrolled equals the tilt at the top', frame['atTop'].startswith('matrix3d') and frame['firstWhileScrolled'] == frame['atTop'], f"top={frame['atTop'][:60]} scrolled={frame['firstWhileScrolled'][:60]}")
         check('Design frame: re-tilt (resize) and a scroll event while scrolled keep the same matrix', frame['retiltWhileScrolled'] == frame['atTop'] and frame['afterScroll'] == frame['atTop'], f"retilt={frame['retiltWhileScrolled'][:60]} afterScroll={frame['afterScroll'][:60]}")
+
+        # ═══ Tests 40-43 (Session 132): the design camera - the projected shape of the 3D case does not
+        # depend on the window size; inner case and disc preview follow the front box's geometry
+        # classes (Jellyfin's top: 10% below 62.5em) instead of an inline top ═══
+        SHAPE_JS = """() => {
+            var proj = (el) => {
+                var M = el.style.transform.replace('matrix3d(', '').replace(')', '').split(',').map(Number);
+                var w = el.offsetWidth, h = el.offsetHeight;
+                var P = (x, y) => { var X = M[0]*x + M[4]*y + M[12], Y = M[1]*x + M[5]*y + M[13], W = M[3]*x + M[7]*y + M[15]; return [X/W, Y/W]; };
+                var tl = P(0,0), tr = P(w,0), bl = P(0,h), br = P(w,h);
+                return { ratio: (br[1]-tr[1]) / (bl[1]-tl[1]), slope: (tr[1]-tl[1]) / (tr[0]-tl[0]), widthFrac: (tr[0]-tl[0]) / window.innerWidth };
+            };
+            var rot = document.querySelector('.artworkplus-casemod-box-front .artworkplus-casemod-rotator');
+            var inner = [...document.querySelectorAll('.artworkplus-casemod-box-front.artworkplus-casemod-3dtune-preview')].pop();
+            var front = document.querySelector('.artworkplus-casemod-box-front:not(.artworkplus-casemod-3dtune-preview)');
+            var disc = document.querySelector('.artworkplus-casemod-3dtune-preview:not(.artworkplus-casemod-box)');
+            var card = document.querySelector('.detailImageContainer .card');
+            return { w: window.innerWidth, rot: proj(rot),
+                     innerCls: inner ? inner.className : null, innerInlineTop: inner ? inner.style.top : null,
+                     innerGapFrac: inner ? (inner.offsetTop - front.offsetTop) / window.innerWidth : null,
+                     innerBelowCard: inner ? inner.offsetTop >= card.offsetTop - 0.3 * window.innerWidth : null,
+                     cardTop: getComputedStyle(card).top,
+                     discCls: disc ? disc.className : null, discInlineTop: disc ? disc.style.top : null };
+        }"""
+        page.evaluate("""async ([top, left, w, h, dtop, dleft, dsize]) => {
+            window.scrollTo(0, 0);
+            // the real container has a height (the percentage tops resolve against it)
+            document.querySelector('.detailImageContainer').style.height = '300px';
+            __setResponse({ IsApplicable: true, CaseType: 'vivaelite3dcases', CaseAngleDegrees: -6,
+                TextureKey: '1080p', BackTextureKey: 'back_1080p', HasDiscart: true,
+                OpenCaseDelayEnabled: true, OpenCaseDelayMs: 60000, OpenCaseOnClickEnabled: false,
+                OpenAngleDegrees: 90, TopPercent: top, LeftPercent: left, WidthVw: w, HeightVw: h,
+                DiscTopPercent: dtop, DiscLeftPercent: dleft, DiscSizeVw: dsize,
+                InnerCaseTopPercent: -4.2, InnerCaseLeftPercent: -1.7, InnerCaseWidthVw: 31.5, InnerCaseHeightVw: 43.7,
+                TuneShowInnerCase: true, TuneShowDisc: true });
+            var posterEl = document.querySelector('.card .cardImageContainer');
+            await __caseMod.check(null, 'cam-a', posterEl, window.__bumpGen());
+            await new Promise(r => setTimeout(r, 400));
+        }""", [top, left, w, h, dtop, dleft, dsize])
+        shapes = {}
+        for vw_w, vw_h in ((1920, 1080), (1280, 720), (958, 854), (1139, 854)):
+            page.set_viewport_size({'width': vw_w, 'height': vw_h})
+            page.wait_for_timeout(150)
+            shapes[vw_w] = page.evaluate(SHAPE_JS)
+        page.set_viewport_size({'width': VW, 'height': 1080})
+        page.evaluate("() => { document.querySelector('.detailImageContainer').style.height = ''; }")
+        page.wait_for_timeout(150)
+        ref = shapes[1920]['rot']
+        worst = max(max(abs(s['rot']['ratio'] - ref['ratio']), abs(s['rot']['slope'] - ref['slope']), abs(s['rot']['widthFrac'] - ref['widthFrac'])) for s in shapes.values())
+        check('Design camera: the projected trapezoid (edge ratio, top slope, width) is the same at 1920/1280/1139/958 px',
+              ref['ratio'] > 1.0 and worst < 0.002,
+              ' '.join(f"{k}: ratio={v['rot']['ratio']:.4f} slope={v['rot']['slope']:.4f}" for k, v in shapes.items()))
+        s958, s1920 = shapes[958], shapes[1920]
+        check('Inner case: geometry through a sized class, no inline top',
+              s1920['innerCls'] is not None and 'artworkplus-casemod-sized-vivaelite3dcases-inner-' in s1920['innerCls'] and not s1920['innerInlineTop'],
+              f"cls={s1920['innerCls']} inlineTop={s1920['innerInlineTop']!r}")
+        check('Inner case: follows the front box below 62.5em (card at top: 10%) - same gap to the front as at 1920 px',
+              s958['cardTop'] != s1920['cardTop'] and s958['innerGapFrac'] is not None and abs(s958['innerGapFrac'] - s1920['innerGapFrac']) < 0.002,
+              f"cardTop 1920={s1920['cardTop']} 958={s958['cardTop']} gap/vw 1920={s1920['innerGapFrac']:.4f} 958={s958['innerGapFrac']:.4f}")
+        check('Disc preview: the real disc geometry class, no inline top',
+              s1920['discCls'] is not None and 'artworkplus-casemod-disc-sized-vivaelite3dcases-' in s1920['discCls'] and not s1920['discInlineTop'],
+              f"cls={s1920['discCls']} inlineTop={s1920['discInlineTop']!r}")
 
         check('No page JS errors (after the new trigger tests)', not page_errors, str(page_errors[:2]))
 

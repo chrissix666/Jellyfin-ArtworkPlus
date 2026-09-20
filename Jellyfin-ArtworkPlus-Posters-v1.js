@@ -2541,6 +2541,36 @@
          *   position, kept for completeness)
          *   row 3 = K[3] (the shared denominator/W part)
          */
+        // Session 132 (user: "in a window the angle changes again, like it did
+        // with the scroll"): the camera used to sit at the WINDOW centre
+        // (innerWidth/2, innerHeight/2) with Kodi's camera distance 2h =
+        // innerHeight - so the projected trapezoid depended on the window size
+        // and aspect ratio (measured: right/left edge ratio 1.027 at 958 px,
+        // 1.053 at 1587 px, 1.064 at 1907 px) and on the page's text height
+        // (the card's `top: -80%` of the container). Kodi never has that: the
+        // skin lives in a fixed design frame and is scaled as a whole. Same
+        // here now - the camera is fixed RELATIVE TO THE CASE in a design
+        // frame of 1920 x 864 px (the user's maximised window, so the approved
+        // full-screen look is unchanged), scaled by innerWidth / 1920 like
+        // every vw-based case size: screen centre horizontally (the case's
+        // left is %-based, so that is invariant anyway), DESIGN_CAMERA_DY
+        // below the case's top, camera distance from the design height.
+        // Every matrix (rest tilt, retilt, Open Case for all four types)
+        // takes its camera from here.
+        var DESIGN_SCREEN_W = 1920;
+        var DESIGN_SCREEN_H = 864;
+        var DESIGN_CAMERA_DY = 368;
+        function designCamera(frontRect) {
+            var scale = window.innerWidth / DESIGN_SCREEN_W;
+            var screenW = window.innerWidth;
+            var screenH = DESIGN_SCREEN_H * scale;
+            return {
+                screenW: screenW, screenH: screenH,
+                cameraX: screenW * 0.5,
+                cameraY: frontRect.top + DESIGN_CAMERA_DY * scale
+            };
+        }
+
         function computeKodiMatrix3dString(angleDeg, hingeXPx, ctrlLeft, ctrlTop,
                                             screenW, screenH, cameraX, cameraY) {
             var angleRad = angleDeg * Math.PI / 180;
@@ -3759,9 +3789,10 @@
                 tiltedEls.forEach(function (el) { el.style.transition = 'none'; el.style.transform = ''; });
                 var rect = measureDesignRect(tiltTarget);
                 if (rect.width && rect.height) {
-                    tiltScreenW = window.innerWidth; tiltScreenH = window.innerHeight;
+                    var cam = designCamera(rect);
+                    tiltScreenW = cam.screenW; tiltScreenH = cam.screenH;
                     tiltHingeXPx = rect.left + (tiltHingePct / 100) * rect.width;
-                    tiltCameraX = tiltScreenW * 0.5; tiltCameraY = tiltScreenH * 0.5;
+                    tiltCameraX = cam.cameraX; tiltCameraY = cam.cameraY;
                     tiltFrontRect = rect;
                     if (tiltCardScalableEl && document.body.contains(tiltCardScalableEl)) { tiltPosterRect = measureDesignRect(tiltCardScalableEl); }
                 }
@@ -3800,9 +3831,10 @@
                 tiltTarget = rotator || frontBox;
                 tiltFrontRect = measureDesignRect(tiltTarget);
                 tiltHingePct = HINGE_ORIGIN_X_PERCENT[tiltHingeKey] || 0;
-                tiltScreenW = window.innerWidth; tiltScreenH = window.innerHeight;
+                var restCam = designCamera(tiltFrontRect);
+                tiltScreenW = restCam.screenW; tiltScreenH = restCam.screenH;
                 tiltHingeXPx = tiltFrontRect.left + (tiltHingePct / 100) * tiltFrontRect.width;
-                tiltCameraX = tiltScreenW * 0.5; tiltCameraY = tiltScreenH * 0.5;
+                tiltCameraX = restCam.cameraX; tiltCameraY = restCam.cameraY;
 
                 applyTilt(tiltTarget, tiltFrontRect);
                 if (tiltCardScalableEl) {
@@ -3906,13 +3938,19 @@
                         // the same applyTilt() as above - otherwise they
                         // would visibly drift apart when case+poster
                         // tilt.
+                        // Session 132 (user: "the inner case moves up in a window"): the
+                        // geometry used to be INLINE (`top: calc(-80% + Xvw)`), which never
+                        // followed Jellyfin's own `top: 10%` below 62.5em (librarybrowser.scss)
+                        // nor the mobile/tv layouts - at < 1000 px the front box (sized class,
+                        // media query included) moved down, the inner case stayed at -80 %
+                        // (measured: 96 px too high at 958 px). Same sized-class mechanism as
+                        // the front box now, keyed by its own geometry.
+                        var innerCaseType = response.CaseType + '-inner';
+                        ensureSizedStylesInjected(innerCaseType, response.InnerCaseTopPercent, response.InnerCaseLeftPercent, response.InnerCaseWidthVw, response.InnerCaseHeightVw);
                         var innerCaseBox = document.createElement('div');
-                        innerCaseBox.className = BOX_CLASS + ' ' + BOX_FRONT_CLASS + ' ' + TUNE_PREVIEW_CLASS;
+                        innerCaseBox.className = BOX_CLASS + ' ' + BOX_FRONT_CLASS + ' ' + TUNE_PREVIEW_CLASS + ' '
+                            + sizedClassName(innerCaseType, response.InnerCaseTopPercent, response.InnerCaseLeftPercent, response.InnerCaseWidthVw, response.InnerCaseHeightVw);
                         innerCaseBox.style.position = 'absolute';
-                        innerCaseBox.style.top = 'calc(-80% + ' + response.InnerCaseTopPercent + 'vw)';
-                        innerCaseBox.style.left = response.InnerCaseLeftPercent + '%';
-                        innerCaseBox.style.width = response.InnerCaseWidthVw + 'vw';
-                        innerCaseBox.style.height = response.InnerCaseHeightVw + 'vw';
                         // Session 46 FIX (real bug, user finding: "still
                         // shown with Viva Elite 3D Case too"): a low
                         // z-index only means "lies behind", NOT
@@ -3955,13 +3993,13 @@
                         detailImageContainer.appendChild(innerCaseBox);
                         applyTilt(innerCaseBox, measureDesignRect(innerCaseBox));
 
+                        // Session 132: same geometry class as the real disc box (the
+                        // preview shows exactly where the disc will be), no inline top.
+                        ensureDiscSizedStylesInjected(response.CaseType, response.DiscTopPercent, response.DiscLeftPercent, response.DiscSizeVw);
                         var discPreviewBox = document.createElement('div');
-                        discPreviewBox.className = TUNE_PREVIEW_CLASS;
+                        discPreviewBox.className = TUNE_PREVIEW_CLASS + ' '
+                            + discSizedClassName(response.CaseType, response.DiscTopPercent, response.DiscLeftPercent, response.DiscSizeVw);
                         discPreviewBox.style.position = 'absolute';
-                        discPreviewBox.style.top = 'calc(-80% + ' + response.DiscTopPercent + 'vw)';
-                        discPreviewBox.style.left = response.DiscLeftPercent + '%';
-                        discPreviewBox.style.width = response.DiscSizeVw + 'vw';
-                        discPreviewBox.style.height = response.DiscSizeVw + 'vw';
                         discPreviewBox.style.zIndex = response.TuneShowDisc ? '999' : '1';
                         discPreviewBox.style.visibility = response.TuneShowDisc ? 'visible' : 'hidden';
                         var discImg = document.createElement('img');
@@ -4124,7 +4162,12 @@
                     var hingePct = (response.CaseType === 'vivaelite3dcases')
                         ? 1.659
                         : (HINGE_ORIGIN_X_PERCENT[response.CaseType] || 0);
-                    var screenW = window.innerWidth, screenH = window.innerHeight;
+                    // Session 132: the camera is bound to the FRONT box (designCamera) for
+                    // the poster too - one camera for the whole case, at every window size.
+                    var frontRect = (el === rotator) ? rect
+                        : (response.CaseType === 'vivaelite3dcases' && tiltFrontRect) ? tiltFrontRect
+                        : measureDesignRect(rotator);
+                    var cam = designCamera(frontRect);
                     var hingeXPx = (hingeXPxOverride !== undefined)
                         ? hingeXPxOverride
                         : rect.left + (hingePct / 100) * rect.width;
@@ -4132,8 +4175,8 @@
                         ctrlLeft: rect.left, ctrlTop: rect.top,
                         ctrlW: rect.width, ctrlH: rect.height,
                         hingeXPx: hingeXPx,
-                        screenW: screenW, screenH: screenH,
-                        cameraX: screenW * 0.5, cameraY: screenH * 0.5
+                        screenW: cam.screenW, screenH: cam.screenH,
+                        cameraX: cam.cameraX, cameraY: cam.cameraY
                     };
                 }
 
@@ -4152,8 +4195,8 @@
                     // CSS rotateY() - geometry is measured ONCE at the
                     // start (angle=0, unrotated state, exactly the "known
                     // real value" from that session's own verification),
-                    // the camera stays fixed at the screen centre (Kodi's
-                    // own default without a <camera> tag). Timeline:
+                    // the camera is the case-bound design camera
+                    // (designCamera, Session 132). Timeline:
                     // 0-1000ms open (from OpenAngleDegrees), 1000-7000ms
                     // hold (the last matrix state simply stays, no
                     // further rAF tick needed), 7000-8000ms close again -

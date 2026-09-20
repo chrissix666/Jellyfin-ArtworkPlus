@@ -15,7 +15,7 @@ The remaining diagnostics (cross-node, nesting, header-consistency,
 gegenaudit) are informational - their known findings are documented in
 the Fibel (rules 3b-3d, 6) - and are run with --all.
 
-test_casemod.py (118 Playwright tests for the 3D case module) is not
+test_casemod.py (123 Playwright tests for the 3D case module) is not
 part of this routine because it tests Posters-v1.js, not the config page;
 run it directly when the CaseMod module changes.
 
