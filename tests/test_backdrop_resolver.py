@@ -26,7 +26,10 @@ HARNESS = os.path.join(HARNESS_DIR, "bin", "Release", "net8.0", "resolver_harnes
 
 
 def build_harness():
-    if os.path.exists(HARNESS):
+    # Session 131: rebuild when a source is newer than the binary - the old
+    # "exists -> skip" silently tested a stale harness after a resolver change.
+    sources = [os.path.join(HARNESS_DIR, "Program.cs"), os.path.join(ROOT, "Helpers", "BackdropFileResolver.cs"), os.path.join(ROOT, "Helpers", "EmptyCachePolicy.cs")]
+    if os.path.exists(HARNESS) and all(os.path.getmtime(s) <= os.path.getmtime(HARNESS) for s in sources if os.path.exists(s)):
         return
     r = subprocess.run(["dotnet", "build", "-c", "Release"], cwd=HARNESS_DIR, capture_output=True, text=True)
     if not os.path.exists(HARNESS):
@@ -113,6 +116,14 @@ def main():
         open(os.path.join(h, "backdrop.jpg"), "wb").close()
         touch(h, "backdrop1.jpg")
         fails += not case("H zero-byte file ignored", run("jellyfin", h, "-", "0", "backdrop"), ["backdrop1.jpg"])
+
+        # ---- I: Session 131 - empty People cache policy (EmptyCachePolicy)
+        now = "2026-09-20T12:00:00Z"
+        fails += not case("I images never expire", run("emptycache", "3", "2020-01-01T00:00:00Z", now, "7"), ["false"])
+        fails += not case("I legacy empty file (no CheckedAt) counts as absent", run("emptycache", "0", "-", now, "7"), ["true"])
+        fails += not case("I fresh empty result is trusted", run("emptycache", "0", "2026-09-18T12:00:00Z", now, "7"), ["false"])
+        fails += not case("I empty result older than 7 days expires", run("emptycache", "0", "2026-09-13T11:59:00Z", now, "7"), ["true"])
+        fails += not case("I exactly 7 days expires", run("emptycache", "0", "2026-09-13T12:00:00Z", now, "7"), ["true"])
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print("RESULT", "FAILED" if fails else "OK", f"({fails} failure(s))")

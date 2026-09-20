@@ -72,6 +72,23 @@ public class PeopleBackdropsCacheFile
     public List<PeopleBackdropsImageEntry> Images { get; set; } = new();
 
     public List<PeopleBackdropsRejectedEntry> RejectedImages { get; set; } = new();
+
+    /// <summary>
+    /// Session 131: why a cache file holds 0 images - "NotFound" (Wallpapers.com
+    /// answered 404 for the slug), "NoCandidates" (200 with an empty list),
+    /// "AllRejected" (candidates existed, none passed the filters), "NoSlug"
+    /// (name without Latin letters). null on files with images and on legacy
+    /// files. Only these definite outcomes are cached; a lookup that failed for
+    /// an unknown reason (network, 401/403/429, 5xx) never writes a file.
+    /// </summary>
+    public string? EmptyReason { get; set; }
+
+    /// <summary>Session 131: UTC time of the lookup that produced an empty file; after EmptyCacheRetryDays the file counts as absent.</summary>
+    public DateTime? CheckedAt { get; set; }
+
+    /// <summary>Transient, never serialized: the lookup failed for a reason that says nothing about the person (network, auth, rate limit, server error).</summary>
+    [JsonIgnore]
+    public bool LookupFailed { get; set; }
 }
 
 /// <summary>
@@ -1018,6 +1035,21 @@ public class PeopleBackdropsController : ControllerBase
     }
 
     /// <remarks>See GetPersonFolder's own remark above.</remarks>
+    /// <summary>Session 131: how long an empty lookup result is trusted before Wallpapers.com is asked again.</summary>
+    internal const int EmptyCacheRetryDays = 7;
+
+    /// <summary>
+    /// Session 131: true when a cache file holds no images and should be treated as
+    /// absent - a legacy empty file (no CheckedAt; written before the "never write
+    /// empty" rule of the sandbox era) or an empty result older than EmptyCacheRetryDays.
+    /// Files with images never expire (only Wipe cache removes them).
+    /// </summary>
+    internal static bool IsEmptyCacheExpired(PeopleBackdropsCacheFile? file)
+    {
+        if (file is null) { return true; }
+        return EmptyCachePolicy.IsExpired(file.Images.Count, file.CheckedAt, DateTime.UtcNow, EmptyCacheRetryDays);
+    }
+
     internal static string GetCacheFilePath(Person person)
     {
         return Path.Combine(GetPersonFolder(person), "backdrops.json");
@@ -1065,8 +1097,17 @@ public class PeopleBackdropsController : ControllerBase
             {
                 var existingJson = await System.IO.File.ReadAllTextAsync(jsonPath).ConfigureAwait(false);
                 var parsed = JsonSerializer.Deserialize<PeopleBackdropsCacheFile>(existingJson);
-                _logger.LogDebug("PeopleBackdrops: ReadOrPopulateCacheFileAsync - cache hit for {PersonName} at \"{Path}\" ({Count} image(s))", person.Name, jsonPath, parsed?.Images.Count ?? 0);
-                return (parsed, false);
+                if (IsEmptyCacheExpired(parsed))
+                {
+                    // Session 131: an empty result is remembered for EmptyCacheRetryDays
+                    // (no Wallpapers.com call on every visit), then checked again.
+                    _logger.LogInformation("PeopleBackdrops: ReadOrPopulateCacheFileAsync - empty cache for {PersonName} ({Reason}, checked {CheckedAt}) is older than {Days} days - looking up Wallpapers.com again", person.Name, parsed?.EmptyReason ?? "legacy", parsed?.CheckedAt, EmptyCacheRetryDays);
+                }
+                else
+                {
+                    _logger.LogDebug("PeopleBackdrops: ReadOrPopulateCacheFileAsync - cache hit for {PersonName} at \"{Path}\" ({Count} image(s){Empty})", person.Name, jsonPath, parsed?.Images.Count ?? 0, parsed?.EmptyReason is null ? string.Empty : ", empty: " + parsed.EmptyReason);
+                    return (parsed, false);
+                }
             }
             catch (Exception ex)
             {
@@ -1165,23 +1206,27 @@ public class PeopleBackdropsController : ControllerBase
 
         _logger.LogInformation("PeopleBackdrops: PopulateAndWriteAsync - population flow for {PersonName} finished with {Count} accepted image(s)", person.Name, populated.Images.Count);
 
-        // Deliberate, explicit user decision: NO file at all - not even
-        // an empty one - gets written when zero images were accepted.
-        // Consciously chosen despite the known, accepted trade-off this
-        // creates: without a cache file to check against, EVERY future
-        // visit to this same person's page re-runs the full population
-        // flow from scratch (a fresh Wallpapers.com API call, since
-        // there is deliberately no other memory of "already tried this
-        // one" - no in-memory cache either, kept simple on purpose).
-        // ReadOrPopulateCacheFileAsync's own file-existence check above
-        // this method is what naturally makes that happen - it treats
-        // "no file" as "never populated yet" regardless of the reason,
-        // so simply not writing here (rather than writing an empty
-        // file, which is what used to happen) is the entire fix.
+        // History: the sandbox era wrote NO file for zero images (user
+        // decision then), so every visit re-ran the lookup. Session 131
+        // revised that (see below): definite empties are cached with a
+        // reason and a retry date, indefinite failures still write nothing.
+        // Session 131 (user decision after the smoke test measured 3.9 s per
+        // Favorites-People visit for four persons without a Wallpapers.com page,
+        // re-fetched every time): a DEFINITE empty outcome (404, empty list, all
+        // candidates rejected, no slug) is now cached with its reason and time
+        // and re-checked after EmptyCacheRetryDays. A lookup that failed for a
+        // reason that says nothing about the person (network, auth, rate limit,
+        // server error) still writes nothing, so the next visit tries again.
         if (populated.Images.Count == 0)
         {
-            _logger.LogDebug("PeopleBackdrops: PopulateAndWriteAsync - {PersonName} -> 0 accepted images, deliberately NOT writing a cache file (explicit user decision - every future visit will re-check Wallpapers.com from scratch for this person)", person.Name);
-            return populated;
+            if (populated.LookupFailed || populated.EmptyReason is null)
+            {
+                _logger.LogInformation("PeopleBackdrops: PopulateAndWriteAsync - {PersonName} -> 0 images but the lookup did not answer definitively (network/auth/rate limit/server error) - not caching, next visit retries", person.Name);
+                return populated;
+            }
+
+            populated.CheckedAt = DateTime.UtcNow;
+            _logger.LogInformation("PeopleBackdrops: PopulateAndWriteAsync - {PersonName} -> 0 images ({Reason}) - caching the empty result for {Days} days", person.Name, populated.EmptyReason, EmptyCacheRetryDays);
         }
 
         try
@@ -1222,6 +1267,7 @@ public class PeopleBackdropsController : ControllerBase
             // for, so stop here with 0 images (a legitimate outcome,
             // same as "no wallpapers found").
             _logger.LogInformation("PeopleBackdrops: PopulateAsync - {PersonName} has no Latin letters to build a Wallpapers.com search slug from - skipping the lookup (0 images)", person.Name);
+            result.EmptyReason = "NoSlug";
             return result;
         }
 
@@ -1252,9 +1298,20 @@ public class PeopleBackdropsController : ControllerBase
                 candidates = response?.Items;
                 _logger.LogDebug("PeopleBackdrops: PopulateAsync - {PersonName} -> API returned {Count} candidate(s) at limit={Limit}", person.Name, candidates?.Count ?? 0, limit);
             }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // Session 131: 404 = Wallpapers.com has no page for this slug - a
+                // definite "no wallpapers" (Morena Baccarin, Michael Bay, ...), cached.
+                _logger.LogInformation("PeopleBackdrops: PopulateAsync - Wallpapers.com has no page for slug \"{Slug}\" ({PersonName}) - 404, a definite empty result ({AcceptedSoFar} image(s) so far)", slug, person.Name, result.Images.Count);
+                if (result.Images.Count == 0) { result.EmptyReason = "NotFound"; }
+                break;
+            }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "PeopleBackdrops: PopulateAsync - Wallpapers.com API request failed for slug \"{Slug}\" ({PersonName}) at limit={Limit}, stopping with whatever was already accepted ({AcceptedSoFar} image(s))", slug, person.Name, limit, result.Images.Count);
+                // Session 131: anything else (no internet, DNS, timeout, 401/403/429,
+                // 5xx) says nothing about the person - never cached as empty.
+                result.LookupFailed = true;
+                _logger.LogWarning(ex, "PeopleBackdrops: PopulateAsync - Wallpapers.com API request failed for slug \"{Slug}\" ({PersonName}) at limit={Limit}, stopping with whatever was already accepted ({AcceptedSoFar} image(s)) - not a definite result, the next visit retries", slug, person.Name, limit, result.Images.Count);
                 break;
             }
 
@@ -1264,6 +1321,7 @@ public class PeopleBackdropsController : ControllerBase
                 // less-known person with no matching wallpapers) -
                 // nothing more to try, even at a higher limit.
                 _logger.LogInformation("PeopleBackdrops: PopulateAsync - {PersonName} -> 0 candidates from Wallpapers.com for slug \"{Slug}\" - nothing to try at a higher limit either, stopping", person.Name, slug);
+                if (result.Images.Count == 0) { result.EmptyReason = "NoCandidates"; }
                 break;
             }
 
@@ -1393,6 +1451,9 @@ public class PeopleBackdropsController : ControllerBase
                 // silently, per this project's own established "0/fewer
                 // available is a legitimate outcome" philosophy.
                 _logger.LogInformation("PeopleBackdrops: PopulateAsync - {PersonName} -> reached the API's own max limit (60) with only {Accepted}/{Target} image(s) accepted (rejected: {AspectRatio} aspect-ratio, {Text} text-detected, {UnsafeUrl} unsafe-url, {DownloadFailed} download-failed) - stopping, this is a legitimate outcome not an error", person.Name, result.Images.Count, targetCount, rejectedAspectRatio, rejectedText, rejectedUnsafeUrl, rejectedDownloadFailed);
+                // Session 131: every candidate was rejected by our own filters - a
+                // definite empty result (cached); failed downloads are not definite.
+                if (result.Images.Count == 0) { if (rejectedDownloadFailed == 0) { result.EmptyReason = "AllRejected"; } else { result.LookupFailed = true; } }
                 break;
             }
 

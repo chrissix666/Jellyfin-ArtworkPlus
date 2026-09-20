@@ -173,8 +173,10 @@ SCENARIOS = [
     # 900 ms image = inside the 1200 ms handover window: must crossfade, no gap
     ("Tag -> Movie (slow image)", "#/list.html?tag=Horror&parentId=p1&serverId=s1", "#/details?id=m1&serverId=s1", 900, "artworkplus-own-backdrop", True),
     ("Movie -> Tag (slow image)", "#/details?id=m1&serverId=s1", "#/list.html?tag=Horror&parentId=p1&serverId=s1", 900, "artworkplus-tag-backdrop", True),
-    # 1500 ms image = beyond the window: the outgoing fades at 1200 ms by design (blank accepted), the incoming still arrives
-    ("Tag -> Movie (beyond window)", "#/list.html?tag=Horror&parentId=p1&serverId=s1", "#/details?id=m1&serverId=s1", 1500, "artworkplus-own-backdrop", "cap"),
+    # Session 131: a 4000 ms image is inside the EXTENDED window (claim still pending -> wait up to 6000 ms): crossfade, no gap
+    ("Tag -> Movie (4 s image, extended window)", "#/list.html?tag=Horror&parentId=p1&serverId=s1", "#/details?id=m1&serverId=s1", 4000, "artworkplus-own-backdrop", True),
+    # 6600 ms image = beyond even the extended window: the outgoing fades at 6000 ms by design (blank accepted), the incoming still arrives
+    ("Tag -> Movie (beyond window)", "#/list.html?tag=Horror&parentId=p1&serverId=s1", "#/details?id=m1&serverId=s1", 6600, "artworkplus-own-backdrop", "cap"),
     ("Genre -> Studio image", "#/list.html?genreId=g1&parentId=p1&serverId=s1", "#/list.html?studioId=s1&parentId=p1&serverId=s1", 600, "artworkplus-studio-backdrop", True),
     ("Movie A -> Movie B (same owner)", "#/details?id=m1&serverId=s1", "#/details?id=m2&serverId=s1", 600, "artworkplus-own-backdrop", True),
     ("Tag -> Home (nobody)", "#/list.html?tag=Horror&parentId=p1&serverId=s1", "#/home.html", 0, None, False),
@@ -229,7 +231,7 @@ def run(baseline=False):
             # background container is opaque without it) - simulated 120 ms after the hash change
             page.evaluate("(h) => { location.hash = h; setTimeout(() => document.dispatchEvent(new CustomEvent('viewshow')), 60); setTimeout(() => document.querySelector('.backgroundContainer').classList.remove('withBackdrop'), 120); }", to)
             samples = []
-            t_end = 4500 + delay + Stub.people_delay
+            t_end = 4500 + delay + Stub.people_delay + (2500 if delay >= 4000 else 0)
             t0 = time.time()
             while (time.time() - t0) * 1000 < t_end:
                 samples.append(page.evaluate(SAMPLE))
@@ -243,7 +245,7 @@ def run(baseline=False):
                 if expect_cls == "cap":
                     # beyond the handover window: outgoing must be gone by 1200 + FADE (+ slack)
                     t_gone = next((s['t'] for s in samples if from_owner and s['per'].get(from_owner, 1) < 0.05), None)
-                    if t_gone is None or (t_gone - samples[0]['t']) > 1200 + FADE + 400:
+                    if t_gone is None or (t_gone - samples[0]['t']) > 6000 + FADE + 400:
                         problems.append(f"cap: outgoing not gone by the handover cap (gone at {None if t_gone is None else int(t_gone - samples[0]['t'])})")
                 # no gap while a successor of ours exists (not for the wallpapers case: blank accepted)
                 if 'pw' not in to and expect_cls != "cap":

@@ -362,6 +362,12 @@ Jellyfin's backdrop stage). Favorites-People-Folder inherits it.
   reload and rotates it every 24 s. With the setting off it removes the class and
   calls `clearBackdrop()`. Every other page (every `list.html`, the React search
   page, the user settings, Live TV) gets `clearBackdrop()`.
+- The PG-13 cap is a numeric age-level compare (`GetRatingLevel("PG-13")` = 13,
+  `Localization/Ratings/us.csv`; SQL `InheritedParentalRatingValue IS NULL OR <= 13`,
+  `SqliteItemRepository.cs:3814`): R, NC-17, TV-MA (17) and TV-14 (14) drop out,
+  **NR / Unrated / items without any rating pass** (level null). Only the user's own
+  "Block unrated items" preference filters those. Kept 1:1 (user, Session 130:
+  "wenn es im source code so ist dann sei es so").
 - Quirk kept 1:1 in our replica: `SortBy IsFavoriteOrLiked` without a SortOrder is
   ASCENDING — favourites sort LAST, so they only reach the 20 when the library has
   fewer than 20 non-favourites.
@@ -425,6 +431,42 @@ Jellyfin's backdrop stage). Favorites-People-Folder inherits it.
   clears the class and vanilla is visible again (scenarios "Tag -> Home (nobody)",
   "Home stays vanilla" keep passing with the category off).
 - **Video page:** the owner pauses like the other six.
+
+### S4. Session 131 — tuning after the smoke test (no bugs, six changes)
+
+Measured on 2026-09-20 (three live runs, 36 transitions with the window
+visible, frame times during the fade recorded):
+
+1. **Empty People cache.** A person without a Wallpapers.com page (404) was
+   re-fetched on every visit; the Favorites-People pool spent 3.9 s per visit
+   on four such persons. Now a DEFINITE empty result is cached
+   (`EmptyReason` NotFound / NoCandidates / AllRejected / NoSlug + `CheckedAt`,
+   re-checked after `EmptyCacheRetryDays` = 7; `Helpers/EmptyCachePolicy`);
+   an indefinite failure (network, 401/403/429, 5xx, failed downloads) still
+   writes nothing. A legacy empty file (no CheckedAt) counts as absent.
+2. **Quiet frames for every owner.** People never stuttered (it waited for 45
+   calm frames); Detail View, Library, Genre and Tag started their 800 ms fade
+   inside the page's own jank (up to 6 frames of 50-300 ms per fade). Every
+   owner now waits for 20 calm frames (cap 1.5 s) before the first fade-in of
+   a visit; the bus re-claims at decode time, so the wait never eats the
+   handover window.
+3. **Adaptive handover cap.** The 1200 ms wait extends up to 6000 ms while a
+   normal-source claim is still pending (request or first image on the way) -
+   on heavy pages (Movies library, big Tag/Genre lists, Collections) the old
+   image stays as the bridge instead of a ~1 s black gap (3000 ms was tried
+   first and still left the gap on the two heaviest pages, 5.6-6.2 s). Wallpapers streams
+   keep 600 ms; `empty` still ends the wait at once.
+4. **Detail View vanilla parity below 1000 px / mobile layout** - no claim
+   there (`renderBackdrop()` condition, evaluated at navigation, no resize
+   reaction). Not shown in the UI.
+5. **Pool cache window** (30 s, per category key + user + config identity)
+   for Genre/Tag/Favorites pools: the Shuffle query (ORDER BY RANDOM + 100
+   candidates) cost 0.9-1.1 s per visit.
+6. Home rating cap description names the whole Home set.
+
+Not changed: Firefox (no run), parallel Wallpapers fetches, the rotation
+crossfades. Known side effects are listed in the memory file
+`session-131-backdrops-block`.
 
 ## Part R — The transition system: one model for all six implementations (Session 120)
 

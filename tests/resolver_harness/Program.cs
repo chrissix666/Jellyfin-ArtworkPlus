@@ -2,10 +2,18 @@
 //   jellyfin <folder> <fileNameWithoutExt|-> <mixed:0|1> <baseName> [allowedCsv]
 //   prefixed <folder> <fileNameWithoutExt> <baseName> <multiple:0|1> [allowedCsv]
 //   plain    <folder> <baseName> <multiple:0|1> [allowedCsv]
+//   emptycache <imageCount> <checkedAtIsoUtc|-> <nowIsoUtc> <retryDays>   (Session 131) prints true|false
 // Prints one resolved path per line, in order.
 using Jellyfin.Plugin.ArtworkPlus.Helpers;
 
 var mode = args[0];
+if (mode == "emptycache")
+{
+    DateTime? checkedAt = args[2] == "-" ? null : DateTime.Parse(args[2], null, System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal);
+    var now = DateTime.Parse(args[3], null, System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal);
+    Console.WriteLine(EmptyCachePolicy.IsExpired(int.Parse(args[1]), checkedAt, now, int.Parse(args[4])) ? "true" : "false");
+    return;
+}
 List<string> result = mode switch
 {
     "jellyfin" => BackdropFileResolver.ResolveLikeJellyfin(args[1], args[2] == "-" ? null : args[2], args[3] == "1", args[4], BackdropFileResolver.ParseAllowedFormats(args.Length > 5 ? args[5] : null)),

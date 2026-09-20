@@ -17,6 +17,7 @@ using MediaBrowser.Model.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.ArtworkPlus.Controllers;
@@ -192,11 +193,24 @@ public class BackdropsController : ControllerBase
     private readonly PeopleBackdropsController _peopleBackdropsController;
     private readonly IUserManager _userManager;
     private readonly ILocalizationManager _localization;
+    private readonly IMemoryCache _cache;
 
-    public BackdropsController(ILogger<BackdropsController> logger, ILibraryManager libraryManager, IImageProcessor imageProcessor, IServerApplicationPaths appPaths, PeopleBackdropsController peopleBackdropsController, IUserManager userManager, ILocalizationManager localization)
+    /// <summary>
+    /// Session 131: a list-page pool (Genre/Tag/Favorites: ORDER BY RANDOM over
+    /// the whole category + 100 x candidates with image cache tags) costs
+    /// 0.9-1.1 s of server time per visit (measured on the Tag list). The
+    /// finished list is kept for this window per category key + user + config
+    /// identity (Jellyfin replaces the config object on every save, so a saved
+    /// change is seen at once). Within the window a return to the same page
+    /// gets the same 100 images (the client still shuffles their order).
+    /// </summary>
+    private static readonly TimeSpan PoolCacheWindow = TimeSpan.FromSeconds(30);
+
+    public BackdropsController(ILogger<BackdropsController> logger, ILibraryManager libraryManager, IImageProcessor imageProcessor, IServerApplicationPaths appPaths, PeopleBackdropsController peopleBackdropsController, IUserManager userManager, ILocalizationManager localization, IMemoryCache cache)
     {
         _userManager = userManager;
         _localization = localization;
+        _cache = cache;
         _logger = logger;
         _libraryManager = libraryManager;
         _imageProcessor = imageProcessor;
@@ -545,29 +559,19 @@ public class BackdropsController : ControllerBase
         }
 
 
-        var items = _libraryManager.GetItemList(query);
-        var random = new Random();
-        var images = new List<GenrePoolImageEntry>();
-        foreach (var item in items)
-        {
-            // Indices must stay the ORIGINAL, unfiltered ones -
-            // GetImageCacheTag below looks up by that original index,
-            // not by position within the filtered subset. Bug caught
-            // before shipping: an earlier version filtered first and
-            // then used the filtered list's own 0-based position,
-            // which silently pointed at the wrong (sometimes disallowed)
-            // image whenever an earlier index was filtered out.
-            var candidates = GetBackdropCandidates(item, config);
-            if (candidates.Count == 0) { continue; }
-            var main = candidates.FirstOrDefault(c => c.Index == 0);
-            images.Add(config.BackdropsGenreMainOnly == "Main" && main is not null ? main : candidates[random.Next(candidates.Count)]);
-        }
+        // Indices stay the ORIGINAL, unfiltered ones - GetImageCacheTag looks
+        // up by that original index (bug caught before shipping: a filtered
+        // list's 0-based position pointed at the wrong image). Session 131:
+        // query + candidates run once per PoolCacheWindow (CachedPool).
+        var poolUser = query.User?.Id.ToString("N") ?? "anon";
+        var (images, fromCache) = CachedPool("genre|" + genreId.ToString("N") + "|" + (parentId?.ToString("N") ?? "") + "|" + poolUser, config,
+            () => CollectPoolImages(_libraryManager.GetItemList(query), config.BackdropsGenreMainOnly == "Main", config.BackdropsAllowedFormats));
 
         result.Images = images;
 
         _logger.LogInformation(
-            "Backdrops: GetGenrePool - genreId={GenreId}, sub={Sub}, sortMode={SortMode}, itemsFound={ItemCount}, imagesReturned={ImageCount}",
-            genreId, subName, sortMode, items.Count, images.Count);
+            "Backdrops: GetGenrePool - genreId={GenreId}, sub={Sub}, sortMode={SortMode}, imagesReturned={ImageCount}, fromCache={FromCache}",
+            genreId, subName, sortMode, images.Count, fromCache);
 
         return Ok(result);
     }
@@ -710,21 +714,15 @@ public class BackdropsController : ControllerBase
         }
 
 
-        var items = _libraryManager.GetItemList(query);
-        var random = new Random();
-        var images = new List<GenrePoolImageEntry>();
-        foreach (var item in items)
-        {
-            var candidates = GetBackdropCandidates(item, config);
-            if (candidates.Count == 0) { continue; }
-            var main = candidates.FirstOrDefault(c => c.Index == 0);
-            images.Add(config.BackdropsTagMainOnly == "Main" && main is not null ? main : candidates[random.Next(candidates.Count)]);
-        }
+        // Session 131: query + candidates once per PoolCacheWindow (CachedPool).
+        var poolUser = query.User?.Id.ToString("N") ?? "anon";
+        var (images, fromCache) = CachedPool("tag|" + tag + "|" + poolUser, config,
+            () => CollectPoolImages(_libraryManager.GetItemList(query), config.BackdropsTagMainOnly == "Main", config.BackdropsAllowedFormats));
 
         result.Images = images;
         _logger.LogInformation(
-            "Backdrops: GetTagPool - tag={Tag}, sortMode={SortMode}, itemsFound={ItemCount}, imagesReturned={ImageCount}",
-            tag, sortMode, items.Count, images.Count);
+            "Backdrops: GetTagPool - tag={Tag}, sortMode={SortMode}, imagesReturned={ImageCount}, fromCache={FromCache}",
+            tag, sortMode, images.Count, fromCache);
 
         return Ok(result);
     }
@@ -952,21 +950,14 @@ public class BackdropsController : ControllerBase
         }
 
 
-        var items = _libraryManager.GetItemList(query);
-        var random = new Random();
-        var images = new List<GenrePoolImageEntry>();
-        foreach (var item in items)
-        {
-            var candidates = GetBackdropCandidates(item, config);
-            if (candidates.Count == 0) { continue; }
-            var main = candidates.FirstOrDefault(c => c.Index == 0);
-            images.Add(config.BackdropsFavoritesMainOnly == "Main" && main is not null ? main : candidates[random.Next(candidates.Count)]);
-        }
+        // Session 131: query + candidates once per PoolCacheWindow (CachedPool, per user).
+        var (images, fromCache) = CachedPool("favorites|" + type + "|" + requestUser!.Id.ToString("N"), config,
+            () => CollectPoolImages(_libraryManager.GetItemList(query), config.BackdropsFavoritesMainOnly == "Main", config.BackdropsAllowedFormats));
 
         result.Images = images;
         _logger.LogInformation(
-            "Backdrops: GetFavoritesPool - type={Type}, sortMode={SortMode}, itemsFound={ItemCount}, imagesReturned={ImageCount}",
-            type, sortMode, items.Count, images.Count);
+            "Backdrops: GetFavoritesPool - type={Type}, sortMode={SortMode}, imagesReturned={ImageCount}, fromCache={FromCache}",
+            type, sortMode, images.Count, fromCache);
 
         return Ok(result);
     }
@@ -1135,6 +1126,12 @@ public class BackdropsController : ControllerBase
                     if (parsed?.Images?.Count > 0)
                     {
                         cachedUrls.AddRange(parsed.Images.Select(i => i.Url));
+                    }
+                    else if (PeopleBackdropsController.IsEmptyCacheExpired(parsed))
+                    {
+                        // Session 131: an empty result older than EmptyCacheRetryDays (or a
+                        // legacy empty file) is looked up again like an uncached person.
+                        uncachedPeople.Add(person);
                     }
                 }
                 catch (Exception ex)
@@ -1333,6 +1330,20 @@ public class BackdropsController : ControllerBase
         Response.Headers.CacheControl = "public, max-age=86400";
         if (Request.Headers.IfNoneMatch.ToString() == etag) { return StatusCode(StatusCodes.Status304NotModified); }
         return PhysicalFile(path, contentType);
+    }
+
+    /// <summary>Session 131: runs <paramref name="build"/> once per PoolCacheWindow for a pool key; the key must include everything the pool depends on (category, user, config identity).</summary>
+    private (List<GenrePoolImageEntry> Images, bool FromCache) CachedPool(string poolKey, PluginConfiguration config, Func<List<GenrePoolImageEntry>> build)
+    {
+        var key = "Backdrops:Pool|" + poolKey + "|" + System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(config);
+        if (_cache.TryGetValue(key, out List<GenrePoolImageEntry>? cached) && cached is not null)
+        {
+            return (cached, true);
+        }
+
+        var built = build();
+        _cache.Set(key, built, new MemoryCacheEntryOptions().SetAbsoluteExpiration(PoolCacheWindow));
+        return (built, false);
     }
 
     private List<GenrePoolImageEntry> CollectPoolImages(IReadOnlyList<BaseItem> items, bool mainOnly, string? allowedFormatsCsv)

@@ -152,6 +152,26 @@ def main():
                 print(("ok  " if vis2 else "FAIL"), f"{name:9s}", "rapid switch" if vis2 else f"rapid switch left the page black: {r2}")
             REQUEST_LOG.clear()
             page.close()
+        # Session 131: Detail View vanilla parity - below 1000 px or with the mobile layout
+        # setting vanilla's renderBackdrop() paints nothing, so Detail View must not claim either
+        # (no container, class off); Library View on Home is unaffected by the width.
+        dv_stubs = CASES[0][2]
+        for label, vp, init in [("DetailView 900px wide", {"width": 900, "height": 700}, ""), ("DetailView layout=mobile", {"width": 1280, "height": 800}, "localStorage.setItem('layout','mobile');")]:
+            page = browser.new_page(viewport=vp)
+            page.route(f"{ORIGIN}/**", lambda route, request, stubs=dv_stubs: _serve(route, stubs))
+            page.goto(f"{ORIGIN}/web/index.html#/details?id=i1&serverId=s1")
+            page.add_script_tag(content=APICLIENT_STUB + init)
+            page.add_script_tag(content=core)
+            page.add_script_tag(content=bd)
+            page.evaluate("document.dispatchEvent(new CustomEvent('viewshow'))")
+            page.wait_for_timeout(2000)
+            r = page.evaluate("() => ({ container: !!document.querySelector('.artworkplus-own-backdrop'), layers: document.querySelectorAll('.artworkplus-own-backdrop .backdropImage').length, cls: document.body.classList.contains('artworkplus-backdrops-override'), settingsCalls: 0 })")
+            calls = [q for q in REQUEST_LOG if '/Backdrops/settings' in q]
+            ok = r['layers'] == 0 and not r['cls'] and not calls
+            fails += 0 if ok else 1
+            print(("ok  " if ok else "FAIL"), f"{label:24s}", "" if ok else f"vanilla paints nothing here but we did: {r}, settings calls {len(calls)}")
+            REQUEST_LOG.clear()
+            page.close()
         browser.close()
     print("RESULT", "FAILED" if fails else "OK", f"({fails} failure(s))")
     sys.exit(1 if fails else 0)

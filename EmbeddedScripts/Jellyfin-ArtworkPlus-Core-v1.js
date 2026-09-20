@@ -1401,7 +1401,8 @@
     // =================================================================
 
     var BACKDROP_FADE_MS = 800;        // Jellyfin's backdrop-fadein keyframe
-    var HANDOVER_MS = 1200;            // max wait for a claimed successor (normal sources)
+    var HANDOVER_MS = 1200;            // wait for a claimed successor (normal sources) ...
+    var HANDOVER_MAX_MS = 6000;        // ... extended up to this while the successor's claim is still pending (Session 131; 3000 left a ~1 s gap on the Movies library and the Collections list, measured 5.6-6.2 s to the first image)
     var HANDOVER_SLOW_MS = 600;        // max wait when the successor streams Wallpapers.com
     var NO_CLAIM_GRACE_MS = 50;        // release and claim of one navigation may arrive in either order
     var OVERRIDE_BODY_CLASS = 'artworkplus-backdrops-override';
@@ -1506,6 +1507,7 @@
         if (bus.showing === owner) { bus.showing = null; }
         var fired = false;
         var timer = null;
+        var releasedAt = performance.now();
         var waiter = {
             fire: function (reason) {
                 if (fired) { return; }
@@ -1520,7 +1522,22 @@
                 if (fired) { return; }
                 if (timer) { clearTimeout(timer); }
                 var ms = claimCount() === 0 ? NO_CLAIM_GRACE_MS : (claimHasWallpapers() ? HANDOVER_SLOW_MS : HANDOVER_MS);
-                timer = setTimeout(function () { waiter.fire(claimCount() ? 'timeout' : 'noclaim'); }, ms);
+                timer = setTimeout(function () {
+                    // Session 131 (measured on heavy pages: the successor's pool request
+                    // and first image need 2-4 s while the page itself blocks the main
+                    // thread; the old fixed 1200 ms left a black gap of ~1 s): while a
+                    // normal-source claim is still pending - its request or first image
+                    // still on the way - keep the old image as the bridge, up to
+                    // HANDOVER_MAX_MS after the release. Wallpapers streams keep their
+                    // short window (blank accepted by design), a resolved claim ends the
+                    // wait through ready/empty as before.
+                    var elapsed = performance.now() - releasedAt;
+                    if (claimCount() && !claimHasWallpapers() && elapsed < HANDOVER_MAX_MS) {
+                        timer = setTimeout(function () { waiter.fire(claimCount() ? 'timeout' : 'noclaim'); }, HANDOVER_MAX_MS - elapsed);
+                        return;
+                    }
+                    waiter.fire(claimCount() ? 'timeout' : 'noclaim');
+                }, ms);
             }
         };
         bus.waiters.push(waiter);
@@ -1569,7 +1586,7 @@
      * page detection, endpoint fetch, URL building, and the claim.
      *
      * options: { name, containerClass, kenBurns: { zoomStart, zoomEnd, panPx, easing },
-     *            quietFrames: bool (People: wait for a calm page before the first fade-in),
+     *            quietFrames: bool (default true since Session 131: wait for a calm page before the first fade-in of a visit; false disables),
      *            log: fn }
      */
     function createBackdropOwner(options) {
@@ -1577,7 +1594,7 @@
         var containerClass = options.containerClass;
         var kb = options.kenBurns || { zoomStart: 1.10, zoomEnd: 1.30, panPx: 15, easing: 'cubic-bezier(0.645, 0.045, 0.355, 1)' };
         var log = options.log || function () {};
-        var quietFrames = !!options.quietFrames;
+        var quietFrames = options.quietFrames !== false;
         // 'all' (small own lists: Detail View) preloads every image at start
         // at low priority; 'next' (100-image pools) only the engine's next
         // pick, on idle - measured in Session 116: bulk preloading a pool
@@ -1726,10 +1743,18 @@
                 };
 
                 if (quietFrames && !visitShown) {
-                    // People: the person page lays out heavily after viewshow (poster
-                    // decode, long tasks); starting the fade during that jank makes
-                    // it stutter. Wait for calm frames (cap 3.5 s), then fade.
-                    var QUIET_FRAMES_NEEDED = 45, QUIET_WAIT_CAP_MS = 3500;
+                    // Every page lays out heavily right after a navigation (poster
+                    // decode, card building, long tasks); a fade that starts inside
+                    // that jank stutters. Session 116 added this wait for People
+                    // (45 calm frames, cap 3.5 s); Session 131 measured it on 36 live
+                    // transitions: People never stuttered, while Detail View, Library,
+                    // Genre and Tag fades ran into 4-6 jank frames of 50-300 ms - the
+                    // page's own jank ends within ~0.1-0.5 s (persons) to ~2 s (big
+                    // lists). So: every owner waits, and 20 calm frames (~0.33 s at
+                    // 60 Hz, cap 1.5 s) is enough - the counter restarts on every
+                    // jank frame, so the fade can never begin inside a burst; only
+                    // the margin after the last jank got shorter.
+                    var QUIET_FRAMES_NEEDED = 20, QUIET_WAIT_CAP_MS = 1500;
                     // The image is decoded - the outgoing owner's handover window
                     // restarts now, so the calm-frames wait does not eat it.
                     busClaim(name, bus.claims[name] || 'normal');

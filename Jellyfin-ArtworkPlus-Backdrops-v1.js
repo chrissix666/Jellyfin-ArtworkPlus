@@ -143,8 +143,32 @@ var ArtworkPlusBackdropTransition = {
     // People both claim a details page; the bus keeps the later claim and
     // ignores an "empty" from the owner that does not hold it (the server
     // answers "no images" to exactly one of the two).
+    // Session 131: vanilla parity for the detail page - itemDetails/index.js
+    // renderBackdrop() paints only when `!layoutManager.mobile &&
+    // dom.getWindowSize().innerWidth >= 1000`, evaluated once when the item is
+    // shown (no resize handler). layoutManager.mobile = the Display setting
+    // "Layout" (appSettings key `layout`: 'mobile' | 'tv' | 'desktop' |
+    // 'experimental' | '' = auto) or, on auto, browser.mobile from the user
+    // agent (browser.js isMobile: mobi/ipad/iphone/ipod/silk/gt-p1000/
+    // nexus 7/kindle fire/opera mini). Same check here, same moment (the
+    // navigation), same absence of a resize reaction.
+    var MOBILE_UA_TERMS = ['mobi', 'ipad', 'iphone', 'ipod', 'silk', 'gt-p1000', 'nexus 7', 'kindle fire', 'opera mini'];
+    function vanillaWouldSkipDetailBackdrop() {
+        var layout = '';
+        try { layout = localStorage.getItem('layout') || ''; } catch (e) { /* storage blocked: treat as auto */ }
+        var mobile;
+        if (layout === 'mobile') { mobile = true; }
+        else if (layout === 'tv' || layout === 'desktop' || layout === 'experimental') { mobile = false; }
+        else {
+            var ua = (navigator.userAgent || '').toLowerCase();
+            mobile = MOBILE_UA_TERMS.some(function (term) { return ua.indexOf(term) !== -1; });
+        }
+        return mobile || window.innerWidth < 1000;
+    }
+
     function isResponsibleFor() {
         if (!isDetailsPage()) { return false; }
+        if (vanillaWouldSkipDetailBackdrop()) { return false; }
         return !!getItemIdFromHash();
     }
 
@@ -364,7 +388,7 @@ var ArtworkPlusBackdropTransition = {
         containerClass: 'artworkplus-people-backdrop',
         kenBurns: { zoomStart: 1.10, zoomEnd: 1.30, panPx: 15, easing: 'cubic-bezier(0.645, 0.045, 0.355, 1)' },
         preload: 'next',
-        quietFrames: true,
+        quietFrames: true, // Session 131: every owner waits now (Core default); kept explicit here as the origin of the mechanism
         log: log
     });
 

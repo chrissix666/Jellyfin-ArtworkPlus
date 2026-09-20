@@ -11,5 +11,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Helpers\BackdropFileResolver.cs" Link="BackdropFileResolver.cs" />
+    <Compile Include="..\..\Helpers\EmptyCachePolicy.cs" Link="EmptyCachePolicy.cs" />
   </ItemGroup>
 </Project>
