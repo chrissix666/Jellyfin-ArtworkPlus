@@ -218,3 +218,54 @@ blocker 0 - bug 2 (S3-01 believe, S3-03 low) - risk 1 (S3-04, privacy) -
 smell 2 (S3-02, S3-05) - design 1 (S3-06). The gate system: no finding
 beyond the suite's known diagnostics.
 
+## Area 4 - Delivery (Session 137d, 2026-09-21)
+
+### Coverage
+
+Read in full: `ArtworkPlus.csproj`, `meta.json`, `tools/deploy.py` (copy set,
+verification, stale reporting). Compared: the build output
+(`bin/Release/net8.0`) against the deployed plugin folder
+(`plugins/ArtworkPlus_1.0.0.0`) file by file (CaseTextures, Fonts), the
+`deps.json` for native references, the Jellyfin host folder for the
+packages the plugin relies on (SkiaSharp ships with the host, ImageSharp
+does not). Build: 0 errors, 2 warnings (both NU1902, the ImageSharp
+advisory).
+
+### Check classes
+
+| class | result |
+|---|---|
+| build warnings | only NU1902 (S4-01) |
+| dependencies with advisories | SixLabors.ImageSharp 3.1.7 - S4-01; SkiaSharp 2.88.9 = the host's own version, nothing shipped; Jellyfin.Controller/Model 10.10.6 compile-only (10.10.7 has no NuGet package, targetAbi stays 10.10.7.0) |
+| files in the plugin folder no build produces | one: `CaseTextures/movieposter_mask_reflect.png` (S4-02) |
+| build output vs deploy set | `runtimes/` (39 MB native SkiaSharp libraries for win/osx) is in the build output but NOT deployed by deploy.py (S4-03) |
+| scripts in the data folder | served bytes verified identical by deploy.py on every deploy |
+| catalog metadata | S4-04 |
+
+### Findings
+
+| ID | file:line | class | sev | finding | evidence | know/believe | recommendation | a fix could break |
+|---|---|---|---|---|---|---|---|---|
+| S4-01 | `ArtworkPlus.csproj` (SixLabors.ImageSharp 3.1.7) | dependency advisory | risk | NU1902: 3.1.7 carries a known moderate advisory (GHSA-rxmq-m78w-7wmc). It matters here more than in most plugins: ImageSharp decodes images DOWNLOADED from the web (People Backdrops aspect check + text detector, `PeopleBackdropsController.cs:1379-1394`), i.e. untrusted input, reachable through the anonymous endpoint (S1-01). The 3.1.x line stays under the free split licence without a key (the pin at 3.1.7 was for the 4.0 licence-key rule, not for 3.1.7 itself). | build warning; csproj comment; download path | know | bump to the latest 3.1.x patch (no licence key, same API), rebuild, run the People smoke | nothing expected - patch line; verify `PassesAspectRatioCheck` and the text detector on the live People fixture |
+| S4-02 | plugin folder `CaseTextures/movieposter_mask_reflect.png` | stale file | smell | Present in the deployed folder, absent from the build output and unreferenced in code (grep in scripts and controllers: 0) - a leftover of an earlier texture set. deploy.py reports it as stale on every deploy and never deletes (by design: no deletions). Harmless. | file diff; grep | know | delete once by hand (user's go - plugin folder) | nothing |
+| S4-03 | `ArtworkPlus.csproj` SkiaSharp reference; `bin/Release/net8.0/runtimes` | packaging trap | smell | `ExcludeAssets="runtime"` on SkiaSharp keeps SkiaSharp.dll out of the output, but the transitive `SkiaSharp.NativeAssets.Win32/macOS` still drop 39 MB of native `libSkiaSharp.*` into `runtimes/`, and `deps.json` lists them. deploy.py does not copy `runtimes/`, so the live server is clean; anyone zipping `bin/Release/net8.0` for a release would ship 39 MB of natives next to a host that already has them - the "native DLL loaded as managed -> Malfunctioned" class the csproj comment describes for ONNX. | build output listing; deps.json grep (4 hits) | know | `PrivateAssets="all"` / `ExcludeAssets="runtime;native"` on SkiaSharp, or exclude `runtimes/**` from the release zip step | only the LogoArt creator if the host's SkiaSharp were ever missing - it is not (host folder lists SkiaSharp.dll + libSkiaSharp.dll) |
+| S4-04 | `meta.json` | catalog metadata | doc | `version` 1.0.0.0 since the first deploy (69 deploys), `changelog` "Initial release", `timestamp` 0001-01-01, `owner` empty, `description`/`overview` "Five independent features" (no CaseMod, Library View Backdrops, Persons, LogoArt...). Fine for a self-deployed folder, wrong for the public repo / a release. No release process exists yet (design: never scoped). | file read | know | a release checklist: version bump + changelog + timestamp + overview at the milestone tag | nothing at runtime; a version change renames the plugin folder (`ArtworkPlus_x.y.z.w`), deploy.py's target path is hard-coded to 1.0.0.0 |
+
+### Counter-audit (area 4)
+
+(a) All four are file facts with two witnesses each (csproj/warning + host
+folder; file diff + grep; output listing + deps.json; meta.json + deploy
+count) -> know. (b) Inversion: every artefact the feature map's delivery
+table lists (DLL, configPage embedded, Core embedded, three scripts in the
+data folder, CaseTextures, Fonts, logo, meta.json) is produced by the build
+and copied by deploy.py - no gap; the reverse (S4-02, S4-03) are the
+findings. (c) Adversarial: a release built by zipping the output folder
+(S4-03); a plugin folder that accumulates files across deploys (S4-02 shows
+deploy.py never deletes - a renamed texture would leave its old file behind
+forever). (d) No contradiction.
+
+### Summary area 4
+
+blocker 0 - bug 0 - risk 1 (S4-01) - smell 2 (S4-02, S4-03) - doc 1
+(S4-04).
+
