@@ -571,11 +571,17 @@
                     }
                     #ArtworkPlusConfigPage #epTabBar .epTabBtn {
                         flex: 1; min-width: 68px; text-align: center;
-                        padding: 10px 2px; font-size: 11.5px; cursor: pointer;
+                        padding: 10px 2px; font-size: 10.5px; cursor: pointer;
                         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                         opacity: 0.65; border-bottom: 2px solid transparent;
                         background: none; border-top: none; border-left: none;
-                        border-right: none; color: inherit;
+                        border-right: none; color: inherit; position: relative;
+                    }
+                    /* Session 134c (user): subtle vertical separators between the tabs - 1 px, 60 % of the
+                       height, centred, not on the last tab, never touching the active underline. */
+                    #ArtworkPlusConfigPage #epTabBar .epTabBtn:not(:last-child)::after {
+                        content: ''; position: absolute; right: 0; top: 20%; height: 60%; width: 1px;
+                        background: rgba(255,255,255,0.15);
                     }
                     #ArtworkPlusConfigPage #epTabBar .epTabBtn.epTabActive {
                         opacity: 1; border-bottom: 2px solid #00a4dc; font-weight: 500;
@@ -639,7 +645,7 @@
                     #ArtworkPlusConfigPage .epFontList .epFormatItem { display: flex; width: 100%; padding: 2px 4px; border-radius: 3px; }
                     #ArtworkPlusConfigPage .epFontList .epFormatItem:hover { background: rgba(255,255,255,.08); }
                     #ArtworkPlusConfigPage .epFontPreview { position: fixed; z-index: 41; pointer-events: none; box-sizing: border-box; padding: 12px; background: rgba(10,10,10,.92); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; box-shadow: 0 6px 18px rgba(0,0,0,.6); flex-direction: column; justify-content: center; align-items: stretch; }
-                    #ArtworkPlusConfigPage .epFontPreviewLine { position: relative; line-height: 1.875; height: 1.875em; white-space: nowrap; text-align: center; }
+                    #ArtworkPlusConfigPage .epFontPreviewLine { position: relative; line-height: 2.25; height: 2.25em; white-space: nowrap; text-align: center; }
                     #ArtworkPlusConfigPage .epFontPreviewLine > span { position: absolute; left: 0; right: 0; top: 0; paint-order: stroke fill; }
                     /* Create logos progress (Jellyfin's own scan bar look) */
                     #ArtworkPlusConfigPage .epRowMerged .epCreateProgress { grid-row: 3 !important; grid-column: 1 / -1 !important; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -3187,6 +3193,7 @@
                         <div class="epTabHeaderRow">
                             <div class="epTabIntroCol">
                                 <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on movie pages: keep, hide, or replace with Clearart or Characterart.</div>
+                                <div class="epDesc epVanillaNotice"></div>
                             </div>
                         </div>
                         <div id="LogoArtMovieDependentFields">
@@ -3404,6 +3411,7 @@
                         <div class="epTabHeaderRow">
                             <div class="epTabIntroCol">
                                 <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on series, season and episode pages, each with its own source.</div>
+                                <div class="epDesc epVanillaNotice"></div>
                             </div>
                         </div>
                         <div class="epCollapseHeader epCollapseNested" data-collapse="logoartTvShowsSeries"><span class="epChevron">▶</span><span>Series</span></div>
@@ -4050,6 +4058,7 @@
                         <div class="epTabHeaderRow">
                             <div class="epTabIntroCol">
                                 <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on collection pages: keep, hide, or replace with Clearart or Characterart.</div>
+                                <div class="epDesc epVanillaNotice"></div>
                             </div>
                         </div>
                         <div id="LogoArtSetDependentFields">
@@ -4265,6 +4274,7 @@
                         <div class="epTabHeaderRow">
                             <div class="epTabIntroCol">
                                 <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on home video and music video pages; a folder logo is inherited like in Jellyfin.</div>
+                                <div class="epDesc epVanillaNotice"></div>
                             </div>
                         </div>
                         <div class="epCollapseHeader epCollapseNested" data-collapse="logoartVideosVideo"><span class="epChevron">▶</span><span>Video</span></div>
@@ -4466,6 +4476,7 @@
                         <div class="epTabHeaderRow">
                             <div class="epTabIntroCol">
                                 <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on album and artist pages; an album without a logo shows the artist's.</div>
+                                <div class="epDesc epVanillaNotice"></div>
                             </div>
                         </div>
                         <div class="epCollapseHeader epCollapseNested" data-collapse="logoartMusicAlbum"><span class="epChevron">▶</span><span>Album</span></div>
@@ -4656,6 +4667,7 @@
                         <div class="epTabHeaderRow">
                             <div class="epTabIntroCol">
                                 <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on book and audiobook pages: keep, hide, or replace with Clearart.</div>
+                                <div class="epDesc epVanillaNotice"></div>
                             </div>
                         </div>
                         <div id="LogoArtBookDependentFields">
@@ -4748,6 +4760,7 @@
                         <div class="epTabHeaderRow">
                             <div class="epTabIntroCol">
                                 <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">A logo for person pages, where Jellyfin shows none: file or rendered name.</div>
+                                <div class="epDesc epVanillaNotice"></div>
                             </div>
                         </div>
                         <div id="LogoArtPersonsDependentFields">
@@ -10573,7 +10586,7 @@
             // Other preview names are scaled by their character count against the default ones.
             // 2026-09-21 (user): 25 % smaller panel (the font size follows), 50 % more line height so tall
             // ascenders/descenders fit; both names stay centred. Tune these two numbers by eye.
-            var EP_LOGOART_PREVIEW_W = 480, EP_LOGOART_PREVIEW_LINE = 1.875;
+            var EP_LOGOART_PREVIEW_W = 480, EP_LOGOART_PREVIEW_LINE = 2.25;
             var EP_LOGOART_DEFAULT_NAMES = 'Scarlett Johansson, Keanu Reeves';
             function epLogoArtPreviewNames() {
                 return ((document.getElementById('LogoArtPersonsPreviewNames') || {}).value || EP_LOGOART_DEFAULT_NAMES).split(',').map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 4);

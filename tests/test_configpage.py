@@ -1286,7 +1286,7 @@ with sync_playwright() as p:
     texts = apage.evaluate("""() => ({
         intro: document.querySelector('.epCollapseBody[data-collapsebody="backdropsLibrary"] .epTabHeaderRow .epDesc').textContent,
         dvIntro: document.querySelector('.epCollapseBody[data-collapsebody="backdropsMod"] .epTabHeaderRow .epDesc').textContent,
-        placeholders: document.querySelectorAll('.epVanillaNotice').length,
+        placeholders: document.querySelectorAll('.epTabPage[data-tabpage=backdrops] .epVanillaNotice').length,
         heights: (function () { ['backdropsMod', 'backdropsLibrary', 'backdropsGenre'].forEach(function (k) { var h = document.querySelector('.epCollapseHeader[data-collapse="' + k + '"]'); if (h && !h.classList.contains('epOpen')) { h.click(); } }); return ['backdropsMod', 'backdropsLibrary', 'backdropsGenre'].map(function (k) { return document.querySelector('.epCollapseBody[data-collapsebody="' + k + '"] .epVanillaNotice').getBoundingClientRect().height; }); })()
     })""")
     check('S130: intro texts name the vanilla setting', texts['intro'].startswith("Replaces vanilla's 'Backdrops' display setting") and texts['dvIntro'].startswith("Replaces vanilla's 'Details Banner' setting"), str(texts))
@@ -1483,6 +1483,10 @@ with sync_playwright() as p:
     apage.wait_for_timeout(100)
     rd = apage.evaluate("() => [document.getElementById('LogoArtSeriesSource').value, document.getElementById('LogoArtPersonsSource').value, document.getElementById('LogoArtPersonsFontPool').value, document.getElementById('LogoArtPersonsFonts').value, document.getElementById('LogoArtMovieOrderMode').value, document.getElementById('LogoArtSetSettings').value]")
     check('S134: Restore defaults of the tab', rd == ['VanillaLogo', 'Off', 'Signature', '*', 'Shuffle', 'TakeOverMovies'], str(rd))
+    blanks = apage.evaluate("() => Array.prototype.map.call(document.querySelectorAll('.epTabPage[data-tabpage=logoart] .epTabIntroCol'), function (c) { var n = c.querySelector('.epVanillaNotice'); return n ? getComputedStyle(n).minHeight : '-'; })")
+    check('S134c: a blank 14 px line after every group intro (Backdrops parity)', len(blanks) == 7 and all(b == '14px' for b in blanks), str(blanks))
+    tabcss = apage.evaluate("() => { var b = document.querySelector('.epTabBtn'); var cs = getComputedStyle(b); var sep = getComputedStyle(b, '::after'); var last = getComputedStyle(document.querySelector('.epTabBtn:last-child'), '::after'); return { size: cs.fontSize, sep: sep.width, sepH: sep.height, last: last.width }; }")
+    check('S134c: tab buttons 10.5 px with a 1 px separator, none after the last tab', tabcss['size'] == '10.5px' and tabcss['sep'] == '1px' and tabcss['last'] in ('auto', '0px'), str(tabcss))
     check('S134: no JS errors on the LogoArt tab', not aerrors, str(aerrors[:3]))
     apage.close()
 
