@@ -69,6 +69,8 @@ var Core = {
 // Session 121: the module holds/releases the view-level poster pending class (defined in the
 // shared file scope in production); stubs here, plus a probe of the hold state.
 var navTimers = { track: function (h) { return h; }, clearTimers: function () {} };
+var __genDisposers = []; function onGenerationEnd(fn) { __genDisposers.push(fn); } window.__runGenerationEnd = function () { var l = __genDisposers; __genDisposers = []; l.forEach(function (f) { f(); }); return l.length; };
+window.__resizeAdds = 0; window.__resizeRemoves = 0; var __ael = window.addEventListener.bind(window), __rel = window.removeEventListener.bind(window); window.addEventListener = function (t, f, o) { if (t === 'resize') { window.__resizeAdds++; } return __ael(t, f, o); }; window.removeEventListener = function (t, f, o) { if (t === 'resize') { window.__resizeRemoves++; } return __rel(t, f, o); };
 var __caseModHoldCalls = [];
 var caseTiltHold = { view: null };
 function caseTiltExpected() { return window.__tiltExpected !== false; }
@@ -1453,6 +1455,19 @@ def run():
         check('Tilt hold: flat case and not-applicable release immediately',
               hold_flat['flat'] == ['hold', 'release'] and hold_flat['notApplicable'] == ['hold', 'release'], f"{hold_flat}")
         remembered = page.evaluate("() => window.__tiltRemembered")
+        # Session 138 (audit S2-06): the resize listener of a generation is released at the generation's end
+        rl = page.evaluate("""async () => {
+            window.__resizeAdds = 0; window.__resizeRemoves = 0;
+            window.__setResponse({ IsApplicable: true, CaseType: 'vivaelite3dcases', CaseAngleDegrees: -6, TextureKey: '1080p', BackTextureKey: 'back_1080p', HasDiscart: false, OpenAngleDegrees: 90, TopPercent: -4.3, LeftPercent: 2.8, WidthVw: 27.35, HeightVw: 42.6, DiscTopPercent: 5.2, DiscLeftPercent: 4.05, DiscSizeVw: 23.6 });
+            var posterEl = document.querySelector('.cardImageContainer');
+            await __caseMod.check(null, 'gen-item', posterEl, window.__bumpGen());
+            await new Promise(function (r) { setTimeout(r, 1500); });
+            var adds = window.__resizeAdds;
+            var disposed = window.__runGenerationEnd();
+            return { adds: adds, removes: window.__resizeRemoves, disposed: disposed };
+        }""")
+        check('S2-06: the resize listener added for a generation is removed when the generation ends (no wait for the next resize)',
+              rl['adds'] >= 1 and rl['removes'] >= rl['adds'] and rl['disposed'] >= 1, str(rl))
         check('Tilt hold: a flat-case answer is remembered as "no tilt expected" (next viewshow will not hold)',
               remembered is False, f"{remembered}")
 

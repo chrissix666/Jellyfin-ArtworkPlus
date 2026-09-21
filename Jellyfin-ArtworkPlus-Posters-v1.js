@@ -739,6 +739,17 @@
     // =====================================================================
 
     var navGeneration = 0;
+    // Audit S2-06 (Session 138): listeners / observers a detail module attaches
+    // for ONE generation register a disposer here; scheduleDetail() runs them
+    // before it bumps the generation, so nothing waits for the next resize
+    // to notice it is stale (the old page's card subtree stayed reachable).
+    var generationDisposers = [];
+    function onGenerationEnd(fn) { generationDisposers.push(fn); }
+    function runGenerationDisposers() {
+        var list = generationDisposers;
+        generationDisposers = [];
+        list.forEach(function (fn) { try { fn(); } catch (e) { /* a stale disposer must not stop the others */ } });
+    }
     var navTimers = Core.createTimerTracker();
     var contentReady = false;
 
@@ -3901,13 +3912,16 @@
                     queueRetilt();
                 };
                 window.addEventListener('resize', onViewportChange);
+                var tiltRo = null;
                 if (window.ResizeObserver && realCard) {
-                    var tiltRo = new ResizeObserver(function () {
+                    tiltRo = new ResizeObserver(function () {
                         if (myGeneration !== currentGeneration()) { tiltRo.disconnect(); return; }
                         queueRetilt();
                     });
                     tiltRo.observe(realCard);
                 }
+                // Audit S2-06: released at the end of this generation, not lazily on the next resize.
+                onGenerationEnd(function () { window.removeEventListener('resize', onViewportChange); if (tiltRo) { tiltRo.disconnect(); } });
 
                 // Session 66 (user finding: "on fast page changes I see
                 // the inner-case texture and discart in the background"
@@ -4568,6 +4582,7 @@
 
     function scheduleDetail() {
         navTimers.clearTimers();
+        runGenerationDisposers(); // audit S2-06
         navGeneration++;
         var myGeneration = navGeneration;
         contentReady = false;
