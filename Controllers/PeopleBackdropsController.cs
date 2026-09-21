@@ -189,12 +189,19 @@ public class PeopleBackdropsStreamLine
 // [Authorize(Policy = Policies.RequiresElevation)] below - an earlier
 // draft had it here and would have left WipeCache completely
 // unprotected, reachable by anyone including unauthenticated users.
-// [AllowAnonymous] is instead applied individually, only to the two
-// endpoints that genuinely need it. Note: RedCarpetController.cs has
-// [AllowAnonymous] at its own class level too, but that controller has
-// no [Authorize]-protected endpoint at all to conflict with - not a
-// precedent for doing the same here, since this controller specifically
-// does have one (WipeCache).
+// [AllowAnonymous] is instead applied individually to the endpoint that
+// needs it (GetPeopleBackdrops). Audit 2026-09 (S1-05): GetFolderImage
+// (Session 101) carries NO attribute and is anonymous all the same -
+// Jellyfin 10.10.7 registers no fallback authorization policy
+// (Jellyfin.Server/Extensions/ApiServiceCollectionExtensions.cs, only a
+// DefaultPolicy that applies where [Authorize] stands), so an attribute-less
+// action is reachable without a token, which the <img> requests of the
+// client rely on. Functionally identical to a marked endpoint; the
+// earlier wording "the two endpoints" predates Session 101. Note:
+// RedCarpetController.cs has [AllowAnonymous] at its own class level
+// too, but that controller has no [Authorize]-protected endpoint at all
+// to conflict with - not a precedent for doing the same here, since this
+// controller specifically does have one (WipeCache).
 public class PeopleBackdropsController : ControllerBase
 {
     private const string WallpapersApiBase = "https://wallpapers.com/api/v1";

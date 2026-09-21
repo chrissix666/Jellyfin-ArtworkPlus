@@ -186,6 +186,10 @@ public class CaseModInfoResult
 /// </summary>
 [ApiController]
 [Route("CaseMod")]
+// No authorization attribute on purpose-by-convention (audit 2026-09, S1-05):
+// both routes are read by <img>/fetch without a token, and Jellyfin 10.10.7
+// has no fallback authorization policy, so an attribute-less action is
+// anonymous - the same state [AllowAnonymous] would declare explicitly.
 public class CaseModController : ControllerBase
 {
     /// <summary>
