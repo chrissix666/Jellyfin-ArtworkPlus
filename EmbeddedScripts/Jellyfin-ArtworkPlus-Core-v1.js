@@ -865,6 +865,16 @@
      * already caught up, so it correctly sees no further change and
      * stays silent for that navigation.
      */
+    /**
+     * Audit S2-02 (Session 138): true when a 'viewshow' arrives within the boot
+     * window (3 s) for the page a module's run already started on - the
+     * cold-start timer / viewshow race of a hard reload, not a navigation.
+     */
+    var BOOT_RACE_WINDOW_MS = 3000;
+    function isBootRaceRepeat(startedFor) {
+        return !!(startedFor && startedFor.hash === location.hash && performance.now() - startedFor.at < BOOT_RACE_WINDOW_MS);
+    }
+
     function watchForNavigation(onChange, pollMs) {
         var lastHash = location.hash;
         document.addEventListener('viewshow', function () { lastHash = location.hash; });
@@ -1906,6 +1916,7 @@
         findVisibleDetailPage: findVisibleDetailPage,
         createTimerTracker: createTimerTracker,
         watchForNavigation: watchForNavigation,
+        isBootRaceRepeat: isBootRaceRepeat,
         fisherYatesShuffle: fisherYatesShuffle,
         createBackdropRotationEngine: createBackdropRotationEngine,
         createBackdropOwner: createBackdropOwner,

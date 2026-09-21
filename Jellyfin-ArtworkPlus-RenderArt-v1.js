@@ -79,6 +79,7 @@
     var track = tracker.track;
     var navTracker = Core.createTimerTracker();
     var contentReady = false;
+    var startedFor = null; // audit S2-02: { hash, at } of the run in flight
     // "This page should currently be showing a container" - set only at the
     // exact point start() commits to rendering; the presence heartbeat
     // below recovers a container that vanished (e.g. a view re-render).
@@ -152,6 +153,7 @@
         var itemId = getItemIdFromHash();
         if (!itemId) { return; }
         contentReady = true;
+        startedFor = { hash: location.hash, at: performance.now() };
         log('Starting for item', itemId);
 
         var result;
@@ -278,7 +280,13 @@
         }, navTracker.track);
     }
 
-    document.addEventListener('viewshow', function () { schedule(); });
+    // Audit S2-02 (Session 138): on a hard reload the 1 200 ms cold-start timer
+    // below fires BEFORE Jellyfin's first 'viewshow' (~200 ms later), and the
+    // viewshow used to restart the run - two fetches per page load. A viewshow
+    // within the boot window for the page a run already started on is the same
+    // navigation, not a new one; hash changes, the poll and the heartbeat keep
+    // their unconditional schedule().
+    document.addEventListener('viewshow', function () { if (Core.isBootRaceRepeat(startedFor)) { return; } schedule(); });
     Core.watchForNavigation(function () { schedule(); });
     Core.startPresenceHeartbeat(
         function () { return !shouldHaveContainer || !!document.querySelector('.characterart-container'); },
@@ -327,6 +335,7 @@
     var clearTimers = tracker.clearTimers;
     var navTracker = Core.createTimerTracker();
     var contentReady = false;
+    var startedFor = null; // audit S2-02: { hash, at } of the run in flight
     var currentPersonId = null;
 
     function preloadImage(url) {
@@ -389,6 +398,7 @@
         }
         fadeOutAndRemoveContainer();
         contentReady = true;
+        startedFor = { hash: location.hash, at: performance.now() };
 
         var result;
         try {
@@ -440,7 +450,8 @@
         }, navTracker.track);
     }
 
-    document.addEventListener('viewshow', schedule);
+    // Audit S2-02 (Session 138): see the Characterart note on the boot race.
+    document.addEventListener('viewshow', function () { if (Core.isBootRaceRepeat(startedFor)) { return; } schedule(); });
     Core.watchForNavigation(schedule);
     track(setTimeout(function () {
         if (contentReady) { return; }
@@ -499,6 +510,7 @@
     var track = tracker.track;
     var navTracker = Core.createTimerTracker();
     var contentReady = false;
+    var startedFor = null; // audit S2-02: { hash, at } of the run in flight
     var shouldHaveContainer = false;
     var resizeHandler = null;
 
@@ -714,6 +726,7 @@
         var itemId = getItemIdFromHash();
         if (!itemId) { return; }
         contentReady = true;
+        startedFor = { hash: location.hash, at: performance.now() };
 
         var result = null;
         try {
@@ -807,7 +820,13 @@
         }, navTracker.track);
     }
 
-    document.addEventListener('viewshow', function () { schedule(); });
+    // Audit S2-02 (Session 138): on a hard reload the 1 200 ms cold-start timer
+    // below fires BEFORE Jellyfin's first 'viewshow' (~200 ms later), and the
+    // viewshow used to restart the run - two fetches per page load. A viewshow
+    // within the boot window for the page a run already started on is the same
+    // navigation, not a new one; hash changes, the poll and the heartbeat keep
+    // their unconditional schedule().
+    document.addEventListener('viewshow', function () { if (Core.isBootRaceRepeat(startedFor)) { return; } schedule(); });
     Core.watchForNavigation(function () { schedule(); });
     Core.startPresenceHeartbeat(
         function () { return !shouldHaveContainer || !!document.querySelector('.' + CONTAINER_CLASS); },

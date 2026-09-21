@@ -209,6 +209,29 @@ def main():
         check("RC stays on the filmography list (same person)", r3.get("box") and any(i["op"] > 0.9 for i in r3["imgs"]), str(r3))
         page.close()
 
+        # ---- Session 138 (audit S2-02): hard-reload boot race - the 1 200 ms cold-start timer runs first,
+        # Jellyfin's first viewshow lands ~200 ms later: one fetch per endpoint, not two
+        page = browser.new_page(viewport={"width": 1600, "height": 900})
+        page.add_init_script("Object.defineProperty(window.screen, 'height', { get: () => 4000 });")
+        hits = {"n": 0, "urls": []}
+        def counting(route, request):
+            if ("/Characterart/i9" in request.url or "/LogoArt/i9" in request.url or "/RedCarpet/i9" in request.url) and "/image" not in request.url:
+                hits["n"] += 1
+                hits["urls"].append(request.url[len(ORIGIN):].split("?")[0])
+            serve(route, {"/Characterart/i9": ca("TopRight", ["a.png"]), "/LogoArt/i9": {"IsApplicable": False}, "/RedCarpet/i9": {"IsApplicable": False}})
+        page.route(f"{ORIGIN}/**", counting)
+        page.goto(f"{ORIGIN}/web/index.html#/details?id=i9&serverId=s1")
+        page.add_script_tag(content=core)
+        page.add_script_tag(content=ra)
+        page.wait_for_timeout(1400)          # the cold-start timers have fired
+        page.evaluate("document.dispatchEvent(new CustomEvent('viewshow'))")  # the late first viewshow
+        page.wait_for_timeout(1500)
+        check("boot race: one fetch per RenderArt endpoint on a hard reload (timer, then viewshow)", hits["n"] == 3, "fetches=%d %s" % (hits["n"], hits["urls"]))
+        page.evaluate("location.hash = '#/details?id=i9x&serverId=s1'; document.dispatchEvent(new CustomEvent('viewshow'))")
+        page.wait_for_timeout(1200)
+        check("a real navigation after the boot window still starts a run", hits["n"] >= 4, "fetches=%d %s" % (hits["n"], hits["urls"]))
+        page.close()
+
         browser.close()
     print("RESULT", "FAILED" if fails else "OK", f"({fails} failure(s))")
     sys.exit(1 if fails else 0)
