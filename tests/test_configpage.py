@@ -1464,8 +1464,15 @@ with sync_playwright() as p:
     sel('LogoArtPersonsSource', 'Off')
     grey = apage.evaluate("() => Array.prototype.every.call(document.querySelectorAll('#LogoArtPersonsFontsList input[type=checkbox]'), function (b) { return b.disabled; })")
     check('S134: greyed Text block disables the checklist boxes and the dropdown button', grey is True and apage.evaluate("() => document.getElementById('LogoArtPersonsFontsBtn').disabled === true"))
-    # Create logos: warning first (cancel = nothing sent), then the job status is drawn as a bar
+    # Create logos with no font selected: red hint, no warning, no request; selecting a font clears it
     sel('LogoArtPersonsSource', 'FolderLogo')
+    apage.evaluate("""() => { window.__confirmMsgs = []; window.confirm = function (m) { window.__confirmMsgs.push(m); return true; }; window.__posted = []; ApiClient.ajax = function (o) { window.__posted.push(o.url); return Promise.resolve({}); }; ApiClient.getUrl = function (p) { return '/' + p; }; document.getElementById('LogoArtPersonsFontsUncheckAllBtn').click(); document.getElementById('LogoArtPersonsCreateBtn').click(); }""")
+    apage.wait_for_timeout(50)
+    nf = apage.evaluate("() => ({ msgs: window.__confirmMsgs.length, posted: window.__posted.length, text: document.getElementById('LogoArtPersonsCreateText').textContent, color: document.getElementById('LogoArtPersonsCreateText').style.color, shown: document.getElementById('LogoArtPersonsCreateResult').style.display, bar: document.getElementById('LogoArtPersonsCreateBar').style.display })")
+    check('S134e: no font selected -> red hint, no warning, no request', nf['msgs'] == 0 and nf['posted'] == 0 and nf['text'] == 'No font(s) selected - select at least one.' and nf['color'] == 'rgb(255, 138, 138)' and nf['shown'] == 'block' and nf['bar'] == 'none', str(nf))
+    apage.evaluate("() => document.getElementById('LogoArtPersonsFontsCheckAllBtn').click()")
+    check('S134e: selecting fonts clears the hint', apage.evaluate("() => document.getElementById('LogoArtPersonsCreateText').textContent === '' && document.getElementById('LogoArtPersonsCreateResult').style.display === 'none'"))
+    # Create logos: warning first (cancel = nothing sent), then the job status is drawn as a bar
     apage.evaluate("""() => { window.__confirmMsgs = []; window.confirm = function (m) { window.__confirmMsgs.push(m); return false; }; window.__posted = []; ApiClient.ajax = function (o) { window.__posted.push(o.url); return Promise.resolve({ Running: true, Persons: 1000, Done: 250, Written: 200, Skipped: 50, Failed: 0, Current: 'Keanu Reeves', Mode: 'Update' }); }; ApiClient.getUrl = function (p) { return '/' + p; }; document.getElementById('LogoArtPersonsCreateBtn').click(); }""")
     apage.wait_for_timeout(50)
     cw = apage.evaluate("() => ({ msgs: window.__confirmMsgs, posted: window.__posted })")

@@ -4813,7 +4813,7 @@
                                 </div>
                                 <div class="epFontPreview" id="LogoArtPersonsFontsPreview" style="display:none;"></div>
                             </div>
-                            <div class="epDesc">Opens a list to tick fonts; hover one for a preview. One: for everyone. Several: one per person by name.</div>
+                            <div class="epDesc">Opens a list to select fonts; hover one for a preview. One: for everyone. Several: one per person.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtPersonsPreviewNamesRow">
                             <label for="LogoArtPersonsPreviewNames" class="epRowLabelSpan">Preview names</label>
@@ -10746,8 +10746,31 @@
                     if (!window.ApiClient || typeof ApiClient.ajax !== 'function') { return; }
                     ApiClient.ajax({ type: 'GET', url: ApiClient.getUrl('LogoArt/create-logos/status'), dataType: 'json' }).then(epLogoArtShowJob).catch(function () { /* not admin or server away - stop polling */ if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } });
                 }
+                // No font selected: no warning, no request - a red line like the API-key test's failure
+                // (user decision); it disappears as soon as a font is selected again.
+                function epLogoArtNoFontSelected() {
+                    var ticked = epLogoArtTickedSet();
+                    if (ticked === null) { return epLogoArtPoolFonts().length === 0; }
+                    return Object.keys(ticked).length === 0;
+                }
+                function epLogoArtClearNoFontHint() {
+                    if (textEl.dataset.epNoFont) { delete textEl.dataset.epNoFont; textEl.style.color = ''; textEl.textContent = ''; resultEl.style.display = 'none'; }
+                }
+                document.getElementById('LogoArtPersonsFontsList').addEventListener('change', epLogoArtClearNoFontHint);
+                document.getElementById('LogoArtPersonsFontsCheckAllBtn').addEventListener('click', epLogoArtClearNoFontHint);
+                document.getElementById('LogoArtPersonsFontPool').addEventListener('change', epLogoArtClearNoFontHint);
                 btn.addEventListener('click', function () {
                     var mode = document.getElementById('LogoArtPersonsCreateMode').value;
+                    if (epLogoArtNoFontSelected()) {
+                        resultEl.style.display = 'block';
+                        barEl.style.display = 'none';
+                        cancelBtn.style.display = 'none';
+                        textEl.dataset.epNoFont = '1';
+                        textEl.style.color = '#ff8a8a';
+                        textEl.textContent = 'No font(s) selected - select at least one.';
+                        return;
+                    }
+                    epLogoArtClearNoFontHint();
                     if (!confirm('This will create thousands of .png files in ProgramData\\Jellyfin\\Server\\metadata\\People. No undo. Continue?')) { return; }
                     btn.disabled = true;
                     resultEl.style.display = 'block';
