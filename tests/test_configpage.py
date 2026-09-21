@@ -1552,6 +1552,31 @@ with sync_playwright() as p:
     aset('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded', True); aset('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded', False)
     check('S136: an empty Also-on row does not untick the Library Enable (library view only is a valid state)',
           apage.evaluate("() => document.getElementById('ExtraposterMoviesLibraryEnabled').checked && !document.getElementById('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded').checked"))
+    # Session 138 (audit S3-03 / S3-04): the backup code carries the 28 case-tune values and never the API key
+    ie = apage.evaluate("""() => {
+        // the preview stub loads an empty config - give the page a last-loaded state for the three non-active types
+        epLastLoadedConfig = {};
+        Object.keys(ACTIVE_CASE_TUNE_PROPERTY_MAP).forEach(function (t) { Object.keys(ACTIVE_CASE_TUNE_PROPERTY_MAP[t]).forEach(function (k, i) { epLastLoadedConfig[ACTIVE_CASE_TUNE_PROPERTY_MAP[t][k]] = 10 + i; }); });
+        document.getElementById('CaseModType').value = 'vivaelitecases';
+        document.getElementById('CaseModType').dispatchEvent(new Event('change', { bubbles: true }));
+        epSetFieldValue('ActiveCaseTuneTop', -7.25);
+        epSetFieldValue('PeopleBackdropsApiKey', 'SECRET-KEY-123');
+        document.getElementById('epGenerateBtn').click();
+        var code = document.getElementById('epCodeBox').value;
+        var data = JSON.parse(decodeURIComponent(escape(atob(code))));
+        var tuneKeys = Object.keys(data).filter(function (k) { return /^(ClearCase|VortexCase|VivaEliteCase|CaseMod3D)Tune(Top|Left|Width|Height|DiscTop|DiscLeft|DiscSize)$/.test(k); });
+        var status = document.getElementById('epIeStatus').textContent;
+        // change, then import the code back
+        epSetFieldValue('ActiveCaseTuneTop', 1.5);
+        epSetFieldValue('PeopleBackdropsApiKey', 'OTHER');
+        document.getElementById('epImportBtn').click();
+        var cfg = {}; epApplyActiveCaseTuneFieldsToConfig(cfg);
+        return { keyInCode: code.indexOf(btoa('SECRET')) !== -1 || JSON.stringify(data).indexOf('SECRET-KEY-123') !== -1, hasKeyField: 'PeopleBackdropsApiKey' in data,
+                 tuneCount: tuneKeys.length, viva: data.VivaEliteCaseTuneTop, status: status,
+                 vortex: data.VortexCaseTuneTop, restored: epGetFieldValue('ActiveCaseTuneTop'), keyAfterImport: epGetFieldValue('PeopleBackdropsApiKey'), savedViva: cfg.VivaEliteCaseTuneTop, savedOthers: Object.keys(cfg).length };
+    }""")
+    check('S138b: the code carries all 28 case-tune values (active type from the fields) and not the API key', ie['tuneCount'] == 28 and ie['viva'] == -7.25 and ie['vortex'] == 10 and not ie['hasKeyField'] and not ie['keyInCode'] and 'API key not included' in ie['status'], str(ie))
+    check('S138b: import restores the active tune field, buffers the other types for the save, leaves the key alone', ie['restored'] == -7.25 and ie['keyAfterImport'] == 'OTHER' and ie['savedViva'] == -7.25 and ie['savedOthers'] == 28, str(ie))
     check('S136: no JS errors on the Extra tabs', not aerrors, str(aerrors[:3]))
     apage.close()
 

@@ -8779,7 +8779,14 @@
                 epSetFieldValue('ActiveCaseTuneDiscSize', d.discSize);
             }
 
+            // Session 138 (audit S3-03): tune values of the NON-active case types that an
+            // import brought in - written on the next save (the visible fields hold only
+            // the active type), cleared afterwards.
+            var epImportedCaseTune = {};
+
             function epApplyActiveCaseTuneFieldsToConfig(config) {
+                Object.keys(epImportedCaseTune).forEach(function (prop) { config[prop] = epImportedCaseTune[prop]; });
+                epImportedCaseTune = {};
                 var caseType = document.getElementById('CaseModType').value;
                 var map = ACTIVE_CASE_TUNE_PROPERTY_MAP[caseType] || ACTIVE_CASE_TUNE_PROPERTY_MAP.vivaelitecases;
                 config[map.top] = epGetFieldValue('ActiveCaseTuneTop');
@@ -11373,6 +11380,24 @@
                 data.BackdropsAllowedFormats = epGetAllowedFormats('BdFormat_');
                 data.AnimatedPosterAllowedFormats = epGetAllowedFormats('ApFormat_', AP_FORMAT_IDS);
                 data.CustomPosterAllowedFormats = epGetAllowedFormats('CpFormat_');
+                // Session 138 (audit S3-03): the 28 case-tune values - the active type from
+                // the visible fields, the other three from the last loaded server state.
+                var activeType = document.getElementById('CaseModType').value;
+                Object.keys(ACTIVE_CASE_TUNE_PROPERTY_MAP).forEach(function (type) {
+                    var map = ACTIVE_CASE_TUNE_PROPERTY_MAP[type];
+                    Object.keys(map).forEach(function (key) {
+                        var prop = map[key];
+                        if (type === activeType) {
+                            data[prop] = epGetFieldValue('ActiveCaseTune' + key.charAt(0).toUpperCase() + key.slice(1));
+                        } else if (prop in epImportedCaseTune) {
+                            data[prop] = epImportedCaseTune[prop];
+                        } else if (epLastLoadedConfig && typeof epLastLoadedConfig[prop] === 'number') {
+                            data[prop] = epLastLoadedConfig[prop];
+                        }
+                    });
+                });
+                // Session 138 (audit S3-04): the Wallpapers.com API key never leaves the page in a code.
+                delete data.PeopleBackdropsApiKey;
                 var box = document.getElementById('epCodeBox');
                 var status = document.getElementById('epIeStatus');
                 var code;
@@ -11387,7 +11412,7 @@
                     document.getElementById('epCopyBtn').disabled = false;
                     box.focus();
                     box.select();
-                    status.textContent = 'Code generated - copy (Ctrl+C), or use the Copy to Clipboard button';
+                    status.textContent = 'Code generated (API key not included) - copy (Ctrl+C), or use the Copy to Clipboard button';
                     status.className = 'epIeStatus epIeSuccess';
                 } else {
                     status.textContent = 'Failed to generate a code.';
@@ -11438,10 +11463,26 @@
                 }
                 var applied = 0;
                 Object.keys(data).forEach(function (id) {
+                    if (id === 'PeopleBackdropsApiKey') { return; } // Session 138 (audit S3-04): a code never carries or overwrites the key
                     if (EP_FIELDS[id]) {
                         epSetFieldValue(id, data[id]);
                         applied++;
                     }
+                });
+                // Session 138 (audit S3-03): case-tune values of all four types
+                var importActiveType = document.getElementById('CaseModType').value;
+                Object.keys(ACTIVE_CASE_TUNE_PROPERTY_MAP).forEach(function (type) {
+                    var map = ACTIVE_CASE_TUNE_PROPERTY_MAP[type];
+                    Object.keys(map).forEach(function (key) {
+                        var prop = map[key];
+                        if (typeof data[prop] !== 'number') { return; }
+                        if (type === importActiveType) {
+                            epSetFieldValue('ActiveCaseTune' + key.charAt(0).toUpperCase() + key.slice(1), data[prop]);
+                        } else {
+                            epImportedCaseTune[prop] = data[prop];
+                        }
+                        applied++;
+                    });
                 });
                 if (typeof data.AllowedFormats === 'string') {
                     epSetAllowedFormats('Format_', data.AllowedFormats);
@@ -11479,7 +11520,7 @@
                 // always stay in sync, even if the save logic changes
                 // later.
                 var status = document.getElementById('epIeStatus');
-                status.textContent = 'Saved ' + (Object.keys(EP_FIELDS).length + 4) + ' settings';
+                status.textContent = 'Saved ' + (Object.keys(EP_FIELDS).length + 6 + 28) + ' settings';
                 status.className = 'epIeStatus epIeSuccess';
                 document.getElementById('ArtworkPlusConfigForm').requestSubmit();
             }
