@@ -82,3 +82,75 @@ S1-12 - verified deliberate, not fix candidates) · doc 0 (S1-10 withdrawn). Top
 Not verified in this pass: the full PeopleBackdrops parsing path (1 634
 lines, read in part) and the CharacterartController body beyond the file
 endpoint.
+
+## Area 2 - Client (Session 137b, 2026-09-21)
+
+### Coverage
+
+Read in full: Core's presence heartbeat, navigation watcher and dispatcher
+(`Core-v1.js:600-626, 860-880, 1583-1612`), the rotation engine's tick /
+stop path, RenderArt's LogoArt `start()`/`schedule()` and the Characterart /
+RedCarpet fetch sites, the Backdrops People stream reader, the CaseMod
+listener lifecycle, the tile scanner (`scan()`, `stateFor`). Grep-driven
+over all 8 485 lines: every `setInterval` / `clearInterval`, `setTimeout`,
+`requestAnimationFrame`, `MutationObserver` / `disconnect`,
+`addEventListener` / `removeEventListener`, `fetch` / `.ok` / `.json()` /
+`.catch`, every DOM selector string, function definitions referenced only
+once. Dynamic (tab HIDDEN the whole time - the adversarial "covered tab"
+case, so image timing was not measured): hard reload of a movie detail page
+with all plugin requests grouped, request timeline of the RenderArt
+endpoints, tile-scan cost on the 580-card Movies library via a
+`querySelectorAll` wrapper, a LiveTV Program page for the LogoArt release
+class, the 7-owner boot dispatch. Selectors: all 31 Jellyfin selector tokens
+the scripts use exist in jellyfin-web 10.10.7 (`src/**`).
+
+### Check classes
+
+| class | result |
+|---|---|
+| cleanup on navigation | RenderArt: `schedule()` clears timers, containers, the resize listener; Backdrops: per-visit `AbortController`, owners release through the bus, engine ticks are tracked timeouts; Posters: generation counters, `seenCards` WeakSet; one self-removing pattern with a delay (S2-06) |
+| double initialisation | every module guards with a run token / visit id / generation; measured: 7 boot dispatches, `settings` fetched once (S2-04); RenderArt fetches twice per page (S2-02) |
+| 404 / 500 / JSON errors | every fetch sits in try/catch; a non-JSON body is caught at `.json()`; the feature stays off for that page and logs - except the LogoArt prehiding (S2-01) |
+| races between owners / participants | bus with claims, handover cap, quiet frames (Session 131, transitions matrix 23 cases); tile arbiter priorities + safety net (29 scenarios); the stress test's "37 of 79 fast steps settled" is the designed async tail, not a race |
+| hidden tab | all dynamic checks ran hidden: scripts initialise, fetch once, no runaway timers; rAF-bound rendering pauses by browser design |
+| dead code | S2-07 |
+| selectors vs jellyfin-web 10.10.7 | 31 / 31 found |
+
+### Findings
+
+| ID | file:line | class | sev | finding | evidence | know/believe | recommendation | a fix could break |
+|---|---|---|---|---|---|---|---|---|
+| S2-01 | `RenderArt-v1.js:720-731` with `FileTransformationRegistrar.cs:373-374` | prehiding not released | bug (narrow) | While LogoArt intervenes for at least one type, index.html carries `.detailLogo:not(.artworkplus-logoart-vanilla){visibility:hidden}`. `start()` adds the release class only on `ZeroIntervention`; the paths `fetch` error (server restarting, 500) and `!result.IsApplicable` (item types without a LogoArt block: Trailer, Playlist, Photo, LiveTV Program/Channel, Audio) `return` WITHOUT releasing - the vanilla logo of such a page stays invisible until the next navigation. Not reproducible in the user's library today: no Trailer/Playlist with a logo, the Program page renders no logo, and the current config injects no prehiding (`prehideStyle=false` measured). | code read (two return paths before the release); live check on a Program page: no logo rendered, no prehiding active | believe | release the class on every early return after `findLogo` (error, not applicable), same as `ZeroIntervention` | nothing - `Hide` keeps its own path |
+| S2-02 | `RenderArt-v1.js:281, 443, 802` + `Core.watchForNavigation` / heartbeat | duplicate work | smell | Characterart, RedCarpet and LogoArt each fetch their endpoint twice on every detail-page load (measured 1 781 ms and 1 958 ms after reload, 7-12 ms each): `viewshow` schedules once, the initial poll / heartbeat schedules again; the run token makes the first result dead. Harmless, 2x server resolve per page. | request timeline | know | debounce `schedule()` by hash (skip when the hash and item are unchanged and a run is in flight) | the recovery path of the heartbeat if the guard is too strict - keep the recover call unconditional |
+| S2-03 | Backdrops People owner, RedCarpet | client has no item type | design | On every detail page - also movies - the person-only features ask `/PeopleBackdrops/{id}?scope=info` and `/RedCarpet/{id}` because the client cannot tell a person page from a movie page without a request (part of S1-12's nine requests). Deliberate: no extra item fetch in the client. | request list on a movie page | know | none (a shared item-kind answer would trade one request for three) | - |
+| S2-04 | `Backdrops-v1.js:235, 565, 677, 795, 889, 999, 1129` | boot burst | smell | Seven owner IIFEs each schedule `Core.dispatchNavigationNow` at 1 200 ms; each dispatch calls all 7 listeners (`source==='viewshow'` bypasses the hash dedupe) = 49 listener runs at boot. The owners dedupe by visit id - `settings` was fetched once (measured). Cost negligible; duplicated boiler-plate of the copy-per-owner pattern. | code + measured single settings fetch | know | one boot dispatch in Core after the last owner registers | nothing (idempotent today) |
+| S2-05 | `Core-v1.js:871, 1608`, `Posters-v1.js:4617`, `RenderArt-v1.js:444`, heartbeats `RenderArt-v1.js:283, 804`, tile scanner `Posters-v1.js:1181` | standing observers | smell / design | Permanently: three 1 s hash polls (Core dispatcher, Posters `watchForNavigation`, RenderArt `watchForNavigation`), two 750 ms heartbeats with two body-wide debounced MutationObservers, one body-wide UNdebounced tile scanner (`querySelectorAll` of three card selectors per mutation batch). Measured hidden on the 580-card library: 8 scans, 6.8 ms total (0.85 ms each), 12 mutation records; visible-tab lazy loading adds mutations (blurhash canvases) - not measured. Historic: `watchForNavigation` predates `Core.onNavigation` (Session 120), both kept. | code + measurement | know (hidden), believe (visible) | route Posters/RenderArt through `Core.onNavigation` (one poll), debounce the scanner by a frame | navigation timing of the detail modules (the 1 s poll is their backup); the scanner's pre-paint pending mark must stay synchronous for the first insertion |
+| S2-06 | `Posters-v1.js:3926-3940` | delayed listener release | smell | The CaseMod `resize` listener and `ResizeObserver` of a page visit remove themselves only when the NEXT resize / observe callback sees a stale generation; until a resize happens the closures keep the old page's card subtree alive. Heap over the 27-minute stress run: 35 -> 38 MB, peak 56, no trend - negligible in practice. | code; heap trend | believe | remove both in the generation-change path instead of lazily | nothing |
+| S2-07 | `Posters-v1.js:2500-2513, 2677-2718`, `Core-v1.js:1895` | dead code | smell | `mat4ColMulVec`, `rowVecMulMat4`, `computeKodiMatrix3dStringWithOffset` (~45 lines, CaseMod matrix experiments) are never called; Core exports `ensureBodyIsPositioned` which nothing uses. | reference count = definition only | know | delete (the CaseMod suite's 123 tests guard the live matrix path) | nothing |
+| S2-08 | `Backdrops-v1.js:488` | contract note for S1-01 | design | The People stream is fetched with a plain `fetch` (no token, `AbortController` per visit). Any `[Authorize]` on `/PeopleBackdrops/{id}` (S1-01) must first switch this call to a token header - the Session 116 pattern (`ApiClient.getJSON`) does not stream; a `fetch` with an `Authorization: MediaBrowser Token=...` header built from `ApiClient.accessToken()` would. | code | know | part of the S1-01 dossier, not a finding of its own | People Backdrops entirely, if the auth lands before the client |
+
+### Counter-audit (area 2)
+
+(a) S2-02, S2-04, S2-05 (hidden) code + measurement -> know; S2-03, S2-07,
+S2-08 code + request list / reference count -> know; S2-01 and S2-06 static
+only -> believe (S2-01 needs a Trailer with a logo or a server restart
+mid-session; S2-06 a heap snapshot after N visits without resize). (b)
+Inversion: every feature of the feature map has its client section (Posters:
+CaseMod, Custom, Animated, Extra detail + the tile arbiter with three
+participants; RenderArt: Characterart, RedCarpet, LogoArt; Backdrops: 7
+`Core.onNavigation` owners = 7 categories) - no gap. (c) Adversarial: the
+covered-tab case was the whole dynamic pass (hidden = true throughout):
+initialisation, single fetches, no runaway; 580-card list scanned in 6.8 ms;
+malformed / non-2xx bodies covered statically (every `.json()` inside
+try/catch). (d) No contradiction; the counter-audit turned the "double init"
+hypothesis into the measured S2-02 and cleared the 7-dispatch burst (S2-04)
+as cost-free.
+
+### Summary area 2
+
+blocker 0 - bug 1 (S2-01, narrow, believe) - risk 0 - smell 5 (S2-02, S2-04,
+S2-05, S2-06, S2-07) - design 2 (S2-03, S2-08). Top by relevance: S2-01
+(the only user-visible failure mode: a logo that never appears), S2-05
+(the only standing cost), S2-02 (2x server work per detail page). Pending:
+the visible-tab scan measurement (S2-05) when the Chrome window is visible.
+
