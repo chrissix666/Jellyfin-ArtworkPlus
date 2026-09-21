@@ -11005,8 +11005,19 @@
                     });
                 });
                 // A job started earlier (or from another tab) is shown again when the page opens.
-                if (window.ApiClient && typeof ApiClient.ajax === 'function' && typeof ApiClient.getUrl === 'function') {
-                    ApiClient.ajax({ type: 'GET', url: ApiClient.getUrl('LogoArt/create-logos/status'), dataType: 'json' }).then(function (job) { if (job && (job.Running || job.Message)) { epLogoArtShowJob(job); } }).catch(function () { /* stub page / not admin */ });
+                function epLogoArtPickUpJob() {
+                    if (window.ApiClient && typeof ApiClient.ajax === 'function' && typeof ApiClient.getUrl === 'function') {
+                        ApiClient.ajax({ type: 'GET', url: ApiClient.getUrl('LogoArt/create-logos/status'), dataType: 'json' }).then(function (job) { if (job && (job.Running || job.Message)) { epLogoArtShowJob(job); } }).catch(function () { /* stub page / not admin */ });
+                    }
+                }
+                epLogoArtPickUpJob();
+                // Audit S3-05 (Session 138): the 1 s poll stops when the view is hidden
+                // (Jellyfin's viewManager dispatches 'viewhide' on the page element) and
+                // a running job is picked up again on 'viewshow' - no poll outlives the page.
+                var epLogoArtPageEl = document.getElementById('ArtworkPlusConfigPage');
+                if (epLogoArtPageEl) {
+                    epLogoArtPageEl.addEventListener('viewhide', function () { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } });
+                    epLogoArtPageEl.addEventListener('viewshow', function () { if (!pollTimer) { epLogoArtPickUpJob(); } });
                 }
             })();
 
