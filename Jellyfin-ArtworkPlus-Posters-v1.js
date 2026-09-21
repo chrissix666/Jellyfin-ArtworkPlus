@@ -2497,21 +2497,6 @@
                 [0, 0, 0, 1]
             ];
         }
-        function mat4ColMulVec(M, v) {
-            var out = [0, 0, 0, 0];
-            for (var i = 0; i < 4; i++) {
-                out[i] = M[i][0] * v[0] + M[i][1] * v[1] + M[i][2] * v[2] + M[i][3] * v[3];
-            }
-            return out;
-        }
-        function rowVecMulMat4(v, M) {
-            // Zeilenvektor-Konvention: out[i] = sum_j v[j] * M[j][i]
-            var out = [0, 0, 0, 0];
-            for (var i = 0; i < 4; i++) {
-                out[i] = v[0] * M[0][i] + v[1] * M[1][i] + v[2] * M[2][i] + v[3] * M[3][i];
-            }
-            return out;
-        }
         function buildCameraMatrices(cameraX, cameraY, screenW, screenH) {
             var offsetX = cameraX - screenW * 0.5;
             var offsetY = cameraY - screenH * 0.5;
@@ -2667,21 +2652,6 @@
             var RobjOpen = setYRotationMatrix(openRad, rotHingeX, rotHingeZ);
             var RobjTotal = mat4Mul(RobjOpen, RobjStatic);
             return finishKodiMatrix(RobjTotal, ctrlLeft, ctrlTop, ctrlLeft, ctrlTop, 0, screenW, screenH, cameraX, cameraY);
-        }
-
-        // Like computeKodiMatrix3dString, but with an additional fixed
-        // translation (offsetX/Y/Z) on the Tcol shift - the screen
-        // reference point (ctrlLeft/ctrlTop in row0/row1) stays
-        // UNTOUCHED, only where the object is actually moved changes.
-        // This lets the compensation above be applied directly.
-        function computeKodiMatrix3dStringWithOffset(angleDeg, hingeXPx, ctrlLeft, ctrlTop,
-                                                       offsetX, offsetY, offsetZ,
-                                                       screenW, screenH, cameraX, cameraY) {
-            var angleRad = angleDeg * Math.PI / 180;
-            var Robj = setYRotationMatrix(angleRad, hingeXPx, 0);
-            return finishKodiMatrix(Robj, ctrlLeft, ctrlTop,
-                ctrlLeft + offsetX, ctrlTop + offsetY, offsetZ,
-                screenW, screenH, cameraX, cameraY);
         }
 
         function finishKodiMatrix(Robj, origCtrlLeft, origCtrlTop, tcolLeft, tcolTop, tcolZ, screenW, screenH, cameraX, cameraY) {
