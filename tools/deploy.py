@@ -5,7 +5,7 @@
                                      the controllers read them per request)
     python tools/deploy.py full      after the server was shut down through the
                                      API: wait for the process to exit, copy
-                                     DLL/pdb/deps/logo/meta/CaseTextures into the
+                                     DLL/pdb/deps/logo/meta/CaseTextures/Fonts into the
                                      plugin folder, copy the scripts, start the
                                      server via the tray menu, wait for the API,
                                      grep today's log
@@ -84,11 +84,14 @@ def deploy_plugin():
         shutil.copy2(src, PLUGIN_DIR / src.name)
         if not filecmp.cmp(src, PLUGIN_DIR / src.name, shallow=False):
             raise SystemExit(f"copy mismatch: {src.name}")
-    shutil.copytree(OUT / "CaseTextures", PLUGIN_DIR / "CaseTextures", dirs_exist_ok=True)
-    d = filecmp.dircmp(OUT / "CaseTextures", PLUGIN_DIR / "CaseTextures")
-    extra = d.right_only
-    say(f"plugin files copied and verified ({len(PLUGIN_FILES)} files + CaseTextures"
-        + (f", stale in target: {extra}" if extra else "") + ")")
+    # Session 134: Fonts (LogoArt pools + manifest + licences) travel next to the DLL like CaseTextures.
+    stale = []
+    for folder in ("CaseTextures", "Fonts"):
+        shutil.copytree(OUT / folder, PLUGIN_DIR / folder, dirs_exist_ok=True)
+        d = filecmp.dircmp(OUT / folder, PLUGIN_DIR / folder)
+        stale += [folder + "/" + x for x in d.right_only]
+    say(f"plugin files copied and verified ({len(PLUGIN_FILES)} files + CaseTextures + Fonts"
+        + (f", stale in target: {stale}" if stale else "") + ")")
 
 
 def fail(reason):

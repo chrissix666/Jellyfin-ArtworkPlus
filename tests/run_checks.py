@@ -3,7 +3,7 @@ Runs the standard verification routine for Configuration/configPage.html
 in one go (the manual 7-step checklist from the project guide, steps 1-5):
 
   1. node --check on the page's inline <script> blocks (syntax)
-  2. test_configpage.py            (341 regression tests)
+  2. test_configpage.py            (383 regression tests)
   2b. test_rotation_engine / test_debug_switch / test_backdrops_render (client scripts in a stub page)
   3. test_tree_self_containment.py (no node greys its own trigger)
   4. test_single_grey_level.py     (Fibel rule 14: one grey level only)
@@ -48,6 +48,8 @@ GATING = [
     'test_renderart_render.py',     # Session 119: Characterart/Red Carpet as the CSS clearlogo replica (anchors, units, cycle/delay/fade, hide, fullscreen class)
     'test_library_tiles.py',        # Session 122: library tile arbiter (flash prevention, order, fallback, safety net) against a Jellyfin tile replica
     'test_backdrops_transitions.py',  # Session 120: the handover matrix of all six backdrop owners + Jellyfin (concept Part R)
+    'test_logoart_render.py',       # Session 134: the logo slot container (zero intervention, slot/floor geometry, chain, Hide, rotation, text fit)
+    'test_logoart_fonts.py',        # Session 134: the bundled LogoArt font pools (manifest = files, 60 + 60, punctuation, csproj, licences)
 ]
 INFORMATIONAL = [
     'diagnostic_cross_node_check.py',

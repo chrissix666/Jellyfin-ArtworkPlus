@@ -630,6 +630,20 @@
                        regardless of the exact mechanism, which could not
                        be pinned down more precisely from the code alone
                        without a real browser's layout engine to inspect. */
+                    /* Session 134: LogoArt's font dropdown (multi-select with a hover preview overlay) */
+                    #ArtworkPlusConfigPage .epFontDropdown { position: relative; display: inline-block; }
+                    #ArtworkPlusConfigPage .epFontDropdownBtn { display: inline-flex; align-items: center; justify-content: space-between; text-align: left; cursor: pointer; }
+                    #ArtworkPlusConfigPage .epFontDropdownChevron { margin-left: 8px; font-size: 11px; opacity: .8; }
+                    #ArtworkPlusConfigPage .epFontPanel { position: absolute; left: 0; top: 100%; z-index: 40; min-width: 320px; max-height: 340px; overflow-y: auto; background: #202020; border: 1px solid rgba(255,255,255,.18); border-radius: 4px; box-shadow: 0 6px 18px rgba(0,0,0,.6); padding: 6px; }
+                    #ArtworkPlusConfigPage .epFontPanelHead { display: flex; gap: 8px; padding: 2px 4px 6px; border-bottom: 1px solid rgba(255,255,255,.1); margin-bottom: 4px; }
+                    #ArtworkPlusConfigPage .epFontList .epFormatItem { display: flex; width: 100%; padding: 2px 4px; border-radius: 3px; }
+                    #ArtworkPlusConfigPage .epFontList .epFormatItem:hover { background: rgba(255,255,255,.08); }
+                    #ArtworkPlusConfigPage .epFontPreview { position: fixed; z-index: 41; pointer-events: none; padding: 8px 14px; background: rgba(10,10,10,.92); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; box-shadow: 0 6px 18px rgba(0,0,0,.6); }
+                    #ArtworkPlusConfigPage .epFontPreviewHead { font-size: 11px; color: #999; margin-bottom: 4px; white-space: nowrap; }
+                    #ArtworkPlusConfigPage .epFontPreviewLine { position: relative; font-size: 44px; line-height: 1.15; height: 1.15em; white-space: nowrap; }
+                    #ArtworkPlusConfigPage .epFontPreviewLine > span { position: absolute; left: 0; top: 0; paint-order: stroke fill; }
+                    #ArtworkPlusConfigPage .epFontPreviewFill { color: #fff; -webkit-text-stroke: calc(var(--la-stroke, 0) * 0.02em) #fff; }
+                    #ArtworkPlusConfigPage .epFontPreviewRim { color: #000; -webkit-text-stroke: calc((var(--la-outline, 1) + var(--la-stroke, 0)) * 0.02em) #000; }
                     #ArtworkPlusConfigPage .epFormatItem {
                         display: flex; align-items: center; gap: 6px;
                         flex: 0 0 auto;
@@ -871,6 +885,7 @@
                         <button type="button" class="epTabBtn" data-tab="animatedposter">Animated Poster</button>
                         <button type="button" class="epTabBtn" data-tab="customposter">Custom Poster</button>
                         <button type="button" class="epTabBtn" data-tab="extraposter">Extraposter</button>
+                        <button type="button" class="epTabBtn" data-tab="logoart">LogoArt</button>
                         <button type="button" class="epTabBtn" data-tab="characterart">Characterart</button>
                         <button type="button" class="epTabBtn" data-tab="redcarpet">Red Carpet</button>
                         <button type="button" class="epTabBtn" data-tab="backdrops">Backdrops</button>
@@ -920,6 +935,16 @@
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="ExtraposterTabEnabled" name="ExtraposterTabEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
                                 <span class="epDescInline checkboxLabel">Character-poster slideshow overlay.</span>
+                                <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                            </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtEnabledRow">
+                            <label for="LogoArtEnabled">LogoArt</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtEnabled" name="LogoArtEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                <span class="epDescInline checkboxLabel">Logo slot per item type, person logos.</span>
                                 <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
@@ -3138,6 +3163,1149 @@
                         </div>
                         </div>
                         </div>
+                        </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══════════════════════ LogoArt (Session 134) ═══════════════════════ -->
+                    <div class="epTabPage" data-tabpage="logoart">
+                        <div class="epTabHeaderRow">
+                            <h3>LogoArt</h3>
+                            <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="logoart">Restore defaults</button>
+                        </div>
+                        <div class="epTabDescArea">
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:normal;">Logo and clearart from Jellyfin, <a href="https://fanart.tv" target="_blank" style="color:#00a4dc;">fanart.tv</a> or our own Characterart in the logo slot of detail pages.</div>
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0; white-space:normal;">Person logos from a file in the person folder, or the name rendered in a bundled signature or title font.</div>
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:4px; white-space:normal;">A type at Vanilla logo / 100 / 0 / 0 is never touched - Jellyfin draws its logo alone.</div>
+                        </div>
+
+                        <div class="epCollapseHeader" data-collapse="logoartMovies"><span class="epChevron">▶</span><span>Movies</span></div>
+                        <div class="epCollapseBody" data-collapsebody="logoartMovies">
+                        <div class="epTabHeaderRow">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on movie pages: keep, hide, or replace with Clearart or Characterart.</div>
+                            </div>
+                        </div>
+                        <div id="LogoArtMovieDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtMovieSourceRow">
+                            <label for="LogoArtMovieSource" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="LogoArtMovieSource" name="LogoArtMovieSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                                <option value="Hide">Hide</option>
+                            </select>
+                            <div class="epDesc">Vanilla logo: Jellyfin's own. Clearart: the clearart image. Characterart: our art. Hide: empty slot.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieFallbackRow">
+                            <label for="LogoArtMovieFallback" class="epRowLabelSpan">Fallback</label>
+                            <select is="emby-select" id="LogoArtMovieFallback" name="LogoArtMovieFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                            </select>
+                            <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieSecondFallbackRow">
+                            <label for="LogoArtMovieSecondFallback" class="epRowLabelSpan">Second fallback</label>
+                            <select is="emby-select" id="LogoArtMovieSecondFallback" name="LogoArtMovieSecondFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                            </select>
+                            <div class="epDesc">Used when source and fallback both have no image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieSourceModeRow">
+                            <label for="LogoArtMovieSourceMode" class="epRowLabelSpan">Source mode</label>
+                            <select is="emby-select" id="LogoArtMovieSourceMode" name="LogoArtMovieSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Default">Default</option>
+                                <option value="ItemOnly">Item only</option>
+                                <option value="Parent">Parent folder</option>
+                                <option value="Grandparent">Grandparent folder</option>
+                            </select>
+                            <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieSizeRow">
+                            <label for="LogoArtMovieSizePercent" class="epRowLabelSpan">Size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtMovieSizePercent" name="LogoArtMovieSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieOffsetRow">
+                            <label for="LogoArtMovieOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtMovieOffsetVw" name="LogoArtMovieOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieVerticalOffsetRow">
+                            <label for="LogoArtMovieVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtMovieVerticalOffsetVh" name="LogoArtMovieVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        <div id="LogoArtMovieRotationFields">
+                        <div class="epRow epRowMerged" id="LogoArtMovieMultiImageRow">
+                            <label for="LogoArtMovieMultiImageSelect" class="epRowLabelSpan">Image mode</label>
+                            <select id="LogoArtMovieMultiImageSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Single image</option>
+                                <option value="true">Multi image</option>
+                            </select>
+                            <input type="checkbox" id="LogoArtMovieMultiImage" name="LogoArtMovieMultiImage" style="display:none;" />
+                            <div class="epDesc">Characterart in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieOrderRow">
+                            <label for="LogoArtMovieOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="LogoArtMovieOrderMode" name="LogoArtMovieOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Multi-image only. Sequential: in order. Shuffle: no repeats/round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieSinglePassRow">
+                            <label for="LogoArtMovieSinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="LogoArtMovieSinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="LogoArtMovieSinglePass" name="LogoArtMovieSinglePass" style="display:none;" />
+                            <div class="epDesc">Multi-image only. Loop: runs forever. Play once: fades back after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtMovieRandomStartRow">
+                            <label for="LogoArtMovieRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtMovieRandomStart" name="LogoArtMovieRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random image and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtMovieStaySingleImageStaticRow">
+                            <label for="LogoArtMovieStaySingleImageStatic">If only 1 image is found</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtMovieStaySingleImageStatic" name="LogoArtMovieStaySingleImageStatic" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Stay static (unchecked: still fades out after one display duration, like Play once normally does).</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieCycleRow">
+                            <label for="LogoArtMovieCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="600000" step="100" class="epNumberCompact" id="LogoArtMovieCycleTimeMs" name="LogoArtMovieCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Multi-image only. How long each characterart image stays before the next one.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieFadeRow">
+                            <label for="LogoArtMovieFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="60000" step="50" class="epNumberCompact" id="LogoArtMovieFadeTimeMs" name="LogoArtMovieFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                        </div>
+                            <div class="epDesc">0 = instant switch. Can never exceed the display duration above.</div>
+                        </div>
+                        </div>
+                        </div>
+
+                        <div class="epCollapseHeader" data-collapse="logoartTvShows"><span class="epChevron">▶</span><span>TV shows</span></div>
+                        <div class="epCollapseBody" data-collapsebody="logoartTvShows">
+                        <div class="epTabHeaderRow">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on series, season and episode pages, each with its own source.</div>
+                            </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested" data-collapse="logoartTvShowsSeries"><span class="epChevron">▶</span><span>Series</span></div>
+                        <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartTvShowsSeries">
+                        <div id="LogoArtSeriesDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtSeriesSourceRow">
+                            <label for="LogoArtSeriesSource" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="LogoArtSeriesSource" name="LogoArtSeriesSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                                <option value="Hide">Hide</option>
+                            </select>
+                            <div class="epDesc">Vanilla logo: Jellyfin's own. Clearart: the clearart image. Characterart: our art. Hide: empty slot.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesFallbackRow">
+                            <label for="LogoArtSeriesFallback" class="epRowLabelSpan">Fallback</label>
+                            <select is="emby-select" id="LogoArtSeriesFallback" name="LogoArtSeriesFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                            </select>
+                            <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesSecondFallbackRow">
+                            <label for="LogoArtSeriesSecondFallback" class="epRowLabelSpan">Second fallback</label>
+                            <select is="emby-select" id="LogoArtSeriesSecondFallback" name="LogoArtSeriesSecondFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                            </select>
+                            <div class="epDesc">Used when source and fallback both have no image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesSizeRow">
+                            <label for="LogoArtSeriesSizePercent" class="epRowLabelSpan">Size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtSeriesSizePercent" name="LogoArtSeriesSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesOffsetRow">
+                            <label for="LogoArtSeriesOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSeriesOffsetVw" name="LogoArtSeriesOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesVerticalOffsetRow">
+                            <label for="LogoArtSeriesVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSeriesVerticalOffsetVh" name="LogoArtSeriesVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        <div id="LogoArtSeriesRotationFields">
+                        <div class="epRow epRowMerged" id="LogoArtSeriesMultiImageRow">
+                            <label for="LogoArtSeriesMultiImageSelect" class="epRowLabelSpan">Image mode</label>
+                            <select id="LogoArtSeriesMultiImageSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Single image</option>
+                                <option value="true">Multi image</option>
+                            </select>
+                            <input type="checkbox" id="LogoArtSeriesMultiImage" name="LogoArtSeriesMultiImage" style="display:none;" />
+                            <div class="epDesc">Characterart in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesOrderRow">
+                            <label for="LogoArtSeriesOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="LogoArtSeriesOrderMode" name="LogoArtSeriesOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Multi-image only. Sequential: in order. Shuffle: no repeats/round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesSinglePassRow">
+                            <label for="LogoArtSeriesSinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="LogoArtSeriesSinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="LogoArtSeriesSinglePass" name="LogoArtSeriesSinglePass" style="display:none;" />
+                            <div class="epDesc">Multi-image only. Loop: runs forever. Play once: fades back after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtSeriesRandomStartRow">
+                            <label for="LogoArtSeriesRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtSeriesRandomStart" name="LogoArtSeriesRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random image and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtSeriesStaySingleImageStaticRow">
+                            <label for="LogoArtSeriesStaySingleImageStatic">If only 1 image is found</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtSeriesStaySingleImageStatic" name="LogoArtSeriesStaySingleImageStatic" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Stay static (unchecked: still fades out after one display duration, like Play once normally does).</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesCycleRow">
+                            <label for="LogoArtSeriesCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="600000" step="100" class="epNumberCompact" id="LogoArtSeriesCycleTimeMs" name="LogoArtSeriesCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Multi-image only. How long each characterart image stays before the next one.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesFadeRow">
+                            <label for="LogoArtSeriesFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="60000" step="50" class="epNumberCompact" id="LogoArtSeriesFadeTimeMs" name="LogoArtSeriesFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                        </div>
+                            <div class="epDesc">0 = instant switch. Can never exceed the display duration above.</div>
+                        </div>
+                        </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested" data-collapse="logoartTvShowsSeason"><span class="epChevron">▶</span><span>Season</span></div>
+                        <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartTvShowsSeason">
+                        <div id="LogoArtSeasonDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtSeasonSourceRow">
+                            <label for="LogoArtSeasonSource" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="LogoArtSeasonSource" name="LogoArtSeasonSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                                <option value="Hide">Hide</option>
+                            </select>
+                            <div class="epDesc">Vanilla logo: Jellyfin's own. Clearart: the clearart image. Characterart: our art. Hide: empty slot.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonFallbackRow">
+                            <label for="LogoArtSeasonFallback" class="epRowLabelSpan">Fallback</label>
+                            <select is="emby-select" id="LogoArtSeasonFallback" name="LogoArtSeasonFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                            </select>
+                            <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonSecondFallbackRow">
+                            <label for="LogoArtSeasonSecondFallback" class="epRowLabelSpan">Second fallback</label>
+                            <select is="emby-select" id="LogoArtSeasonSecondFallback" name="LogoArtSeasonSecondFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                            </select>
+                            <div class="epDesc">Used when source and fallback both have no image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonSourceModeRow">
+                            <label for="LogoArtSeasonSourceMode" class="epRowLabelSpan">Source mode</label>
+                            <select is="emby-select" id="LogoArtSeasonSourceMode" name="LogoArtSeasonSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Default">Default</option>
+                                <option value="SeasonOnly">Season only</option>
+                                <option value="Series">Series</option>
+                            </select>
+                            <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonSizeRow">
+                            <label for="LogoArtSeasonSizePercent" class="epRowLabelSpan">Size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtSeasonSizePercent" name="LogoArtSeasonSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonOffsetRow">
+                            <label for="LogoArtSeasonOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSeasonOffsetVw" name="LogoArtSeasonOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonVerticalOffsetRow">
+                            <label for="LogoArtSeasonVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSeasonVerticalOffsetVh" name="LogoArtSeasonVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        <div id="LogoArtSeasonRotationFields">
+                        <div class="epRow epRowMerged" id="LogoArtSeasonMultiImageRow">
+                            <label for="LogoArtSeasonMultiImageSelect" class="epRowLabelSpan">Image mode</label>
+                            <select id="LogoArtSeasonMultiImageSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Single image</option>
+                                <option value="true">Multi image</option>
+                            </select>
+                            <input type="checkbox" id="LogoArtSeasonMultiImage" name="LogoArtSeasonMultiImage" style="display:none;" />
+                            <div class="epDesc">Characterart in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonOrderRow">
+                            <label for="LogoArtSeasonOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="LogoArtSeasonOrderMode" name="LogoArtSeasonOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Multi-image only. Sequential: in order. Shuffle: no repeats/round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonSinglePassRow">
+                            <label for="LogoArtSeasonSinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="LogoArtSeasonSinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="LogoArtSeasonSinglePass" name="LogoArtSeasonSinglePass" style="display:none;" />
+                            <div class="epDesc">Multi-image only. Loop: runs forever. Play once: fades back after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtSeasonRandomStartRow">
+                            <label for="LogoArtSeasonRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtSeasonRandomStart" name="LogoArtSeasonRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random image and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtSeasonStaySingleImageStaticRow">
+                            <label for="LogoArtSeasonStaySingleImageStatic">If only 1 image is found</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtSeasonStaySingleImageStatic" name="LogoArtSeasonStaySingleImageStatic" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Stay static (unchecked: still fades out after one display duration, like Play once normally does).</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonCycleRow">
+                            <label for="LogoArtSeasonCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="600000" step="100" class="epNumberCompact" id="LogoArtSeasonCycleTimeMs" name="LogoArtSeasonCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Multi-image only. How long each characterart image stays before the next one.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonFadeRow">
+                            <label for="LogoArtSeasonFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="60000" step="50" class="epNumberCompact" id="LogoArtSeasonFadeTimeMs" name="LogoArtSeasonFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                        </div>
+                            <div class="epDesc">0 = instant switch. Can never exceed the display duration above.</div>
+                        </div>
+                        </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested" data-collapse="logoartTvShowsEpisode"><span class="epChevron">▶</span><span>Episode</span></div>
+                        <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartTvShowsEpisode">
+                        <div id="LogoArtEpisodeDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeSourceRow">
+                            <label for="LogoArtEpisodeSource" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="LogoArtEpisodeSource" name="LogoArtEpisodeSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                                <option value="Hide">Hide</option>
+                            </select>
+                            <div class="epDesc">Vanilla logo: Jellyfin's own. Clearart: the clearart image. Characterart: our art. Hide: empty slot.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeFallbackRow">
+                            <label for="LogoArtEpisodeFallback" class="epRowLabelSpan">Fallback</label>
+                            <select is="emby-select" id="LogoArtEpisodeFallback" name="LogoArtEpisodeFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                            </select>
+                            <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeSecondFallbackRow">
+                            <label for="LogoArtEpisodeSecondFallback" class="epRowLabelSpan">Second fallback</label>
+                            <select is="emby-select" id="LogoArtEpisodeSecondFallback" name="LogoArtEpisodeSecondFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                            </select>
+                            <div class="epDesc">Used when source and fallback both have no image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeSourceModeRow">
+                            <label for="LogoArtEpisodeSourceMode" class="epRowLabelSpan">Source mode</label>
+                            <select is="emby-select" id="LogoArtEpisodeSourceMode" name="LogoArtEpisodeSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Default">Default</option>
+                                <option value="Season">Season</option>
+                                <option value="Series">Series</option>
+                            </select>
+                            <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeSizeRow">
+                            <label for="LogoArtEpisodeSizePercent" class="epRowLabelSpan">Size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtEpisodeSizePercent" name="LogoArtEpisodeSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeOffsetRow">
+                            <label for="LogoArtEpisodeOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtEpisodeOffsetVw" name="LogoArtEpisodeOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeVerticalOffsetRow">
+                            <label for="LogoArtEpisodeVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtEpisodeVerticalOffsetVh" name="LogoArtEpisodeVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        <div id="LogoArtEpisodeRotationFields">
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeMultiImageRow">
+                            <label for="LogoArtEpisodeMultiImageSelect" class="epRowLabelSpan">Image mode</label>
+                            <select id="LogoArtEpisodeMultiImageSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Single image</option>
+                                <option value="true">Multi image</option>
+                            </select>
+                            <input type="checkbox" id="LogoArtEpisodeMultiImage" name="LogoArtEpisodeMultiImage" style="display:none;" />
+                            <div class="epDesc">Characterart in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeOrderRow">
+                            <label for="LogoArtEpisodeOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="LogoArtEpisodeOrderMode" name="LogoArtEpisodeOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Multi-image only. Sequential: in order. Shuffle: no repeats/round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeSinglePassRow">
+                            <label for="LogoArtEpisodeSinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="LogoArtEpisodeSinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="LogoArtEpisodeSinglePass" name="LogoArtEpisodeSinglePass" style="display:none;" />
+                            <div class="epDesc">Multi-image only. Loop: runs forever. Play once: fades back after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtEpisodeRandomStartRow">
+                            <label for="LogoArtEpisodeRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtEpisodeRandomStart" name="LogoArtEpisodeRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random image and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtEpisodeStaySingleImageStaticRow">
+                            <label for="LogoArtEpisodeStaySingleImageStatic">If only 1 image is found</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtEpisodeStaySingleImageStatic" name="LogoArtEpisodeStaySingleImageStatic" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Stay static (unchecked: still fades out after one display duration, like Play once normally does).</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeCycleRow">
+                            <label for="LogoArtEpisodeCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="600000" step="100" class="epNumberCompact" id="LogoArtEpisodeCycleTimeMs" name="LogoArtEpisodeCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Multi-image only. How long each characterart image stays before the next one.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeFadeRow">
+                            <label for="LogoArtEpisodeFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="60000" step="50" class="epNumberCompact" id="LogoArtEpisodeFadeTimeMs" name="LogoArtEpisodeFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                        </div>
+                            <div class="epDesc">0 = instant switch. Can never exceed the display duration above.</div>
+                        </div>
+                        </div>
+                        </div>
+                        </div>
+
+                        <div class="epCollapseHeader" data-collapse="logoartSets"><span class="epChevron">▶</span><span>Sets</span></div>
+                        <div class="epCollapseBody" data-collapsebody="logoartSets">
+                        <div class="epTabHeaderRow">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on collection pages: keep, hide, or replace with Clearart or Characterart.</div>
+                            </div>
+                        </div>
+                        <div id="LogoArtSetDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtSetSourceRow">
+                            <label for="LogoArtSetSource" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="LogoArtSetSource" name="LogoArtSetSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                                <option value="Hide">Hide</option>
+                            </select>
+                            <div class="epDesc">Vanilla logo: Jellyfin's own. Clearart: the clearart image. Characterart: our art. Hide: empty slot.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetFallbackRow">
+                            <label for="LogoArtSetFallback" class="epRowLabelSpan">Fallback</label>
+                            <select is="emby-select" id="LogoArtSetFallback" name="LogoArtSetFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                            </select>
+                            <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetSecondFallbackRow">
+                            <label for="LogoArtSetSecondFallback" class="epRowLabelSpan">Second fallback</label>
+                            <select is="emby-select" id="LogoArtSetSecondFallback" name="LogoArtSetSecondFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Characterart">Characterart</option>
+                            </select>
+                            <div class="epDesc">Used when source and fallback both have no image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetSizeRow">
+                            <label for="LogoArtSetSizePercent" class="epRowLabelSpan">Size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtSetSizePercent" name="LogoArtSetSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetOffsetRow">
+                            <label for="LogoArtSetOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSetOffsetVw" name="LogoArtSetOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetVerticalOffsetRow">
+                            <label for="LogoArtSetVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSetVerticalOffsetVh" name="LogoArtSetVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        <div id="LogoArtSetRotationFields">
+                        <div class="epRow epRowMerged" id="LogoArtSetMultiImageRow">
+                            <label for="LogoArtSetMultiImageSelect" class="epRowLabelSpan">Image mode</label>
+                            <select id="LogoArtSetMultiImageSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Single image</option>
+                                <option value="true">Multi image</option>
+                            </select>
+                            <input type="checkbox" id="LogoArtSetMultiImage" name="LogoArtSetMultiImage" style="display:none;" />
+                            <div class="epDesc">Characterart in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetOrderRow">
+                            <label for="LogoArtSetOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="LogoArtSetOrderMode" name="LogoArtSetOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Multi-image only. Sequential: in order. Shuffle: no repeats/round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetSinglePassRow">
+                            <label for="LogoArtSetSinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="LogoArtSetSinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="LogoArtSetSinglePass" name="LogoArtSetSinglePass" style="display:none;" />
+                            <div class="epDesc">Multi-image only. Loop: runs forever. Play once: fades back after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtSetRandomStartRow">
+                            <label for="LogoArtSetRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtSetRandomStart" name="LogoArtSetRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random image and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtSetStaySingleImageStaticRow">
+                            <label for="LogoArtSetStaySingleImageStatic">If only 1 image is found</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtSetStaySingleImageStatic" name="LogoArtSetStaySingleImageStatic" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Stay static (unchecked: still fades out after one display duration, like Play once normally does).</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetCycleRow">
+                            <label for="LogoArtSetCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="600000" step="100" class="epNumberCompact" id="LogoArtSetCycleTimeMs" name="LogoArtSetCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Multi-image only. How long each characterart image stays before the next one.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetFadeRow">
+                            <label for="LogoArtSetFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="60000" step="50" class="epNumberCompact" id="LogoArtSetFadeTimeMs" name="LogoArtSetFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                        </div>
+                            <div class="epDesc">0 = instant switch. Can never exceed the display duration above.</div>
+                        </div>
+                        </div>
+                        </div>
+
+                        <div class="epCollapseHeader" data-collapse="logoartVideos"><span class="epChevron">▶</span><span>Videos</span></div>
+                        <div class="epCollapseBody" data-collapsebody="logoartVideos">
+                        <div class="epTabHeaderRow">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on home video and music video pages; a folder logo is inherited like in Jellyfin.</div>
+                            </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested" data-collapse="logoartVideosVideo"><span class="epChevron">▶</span><span>Video</span></div>
+                        <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartVideosVideo">
+                        <div id="LogoArtVideoDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtVideoSourceRow">
+                            <label for="LogoArtVideoSource" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="LogoArtVideoSource" name="LogoArtVideoSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Hide">Hide</option>
+                            </select>
+                            <div class="epDesc">Vanilla logo: Jellyfin's own. Clearart: the clearart image. Hide: empty slot.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtVideoFallbackRow">
+                            <label for="LogoArtVideoFallback" class="epRowLabelSpan">Fallback</label>
+                            <select is="emby-select" id="LogoArtVideoFallback" name="LogoArtVideoFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                            </select>
+                            <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtVideoSecondFallbackRow">
+                            <label for="LogoArtVideoSecondFallback" class="epRowLabelSpan">Second fallback</label>
+                            <select is="emby-select" id="LogoArtVideoSecondFallback" name="LogoArtVideoSecondFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                            </select>
+                            <div class="epDesc">Used when source and fallback both have no image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtVideoSourceModeRow">
+                            <label for="LogoArtVideoSourceMode" class="epRowLabelSpan">Source mode</label>
+                            <select is="emby-select" id="LogoArtVideoSourceMode" name="LogoArtVideoSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Default">Default</option>
+                                <option value="ItemOnly">Item only</option>
+                                <option value="Parent">Parent folder</option>
+                                <option value="Grandparent">Grandparent folder</option>
+                            </select>
+                            <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtVideoSizeRow">
+                            <label for="LogoArtVideoSizePercent" class="epRowLabelSpan">Size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtVideoSizePercent" name="LogoArtVideoSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtVideoOffsetRow">
+                            <label for="LogoArtVideoOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtVideoOffsetVw" name="LogoArtVideoOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtVideoVerticalOffsetRow">
+                            <label for="LogoArtVideoVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtVideoVerticalOffsetVh" name="LogoArtVideoVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested" data-collapse="logoartVideosMusicVideo"><span class="epChevron">▶</span><span>Music video</span></div>
+                        <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartVideosMusicVideo">
+                        <div id="LogoArtMusicVideoDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoSourceRow">
+                            <label for="LogoArtMusicVideoSource" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="LogoArtMusicVideoSource" name="LogoArtMusicVideoSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Hide">Hide</option>
+                            </select>
+                            <div class="epDesc">Vanilla logo: Jellyfin's own. Clearart: the clearart image. Hide: empty slot.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoFallbackRow">
+                            <label for="LogoArtMusicVideoFallback" class="epRowLabelSpan">Fallback</label>
+                            <select is="emby-select" id="LogoArtMusicVideoFallback" name="LogoArtMusicVideoFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                            </select>
+                            <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoSecondFallbackRow">
+                            <label for="LogoArtMusicVideoSecondFallback" class="epRowLabelSpan">Second fallback</label>
+                            <select is="emby-select" id="LogoArtMusicVideoSecondFallback" name="LogoArtMusicVideoSecondFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                            </select>
+                            <div class="epDesc">Used when source and fallback both have no image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoSourceModeRow">
+                            <label for="LogoArtMusicVideoSourceMode" class="epRowLabelSpan">Source mode</label>
+                            <select is="emby-select" id="LogoArtMusicVideoSourceMode" name="LogoArtMusicVideoSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Default">Default</option>
+                                <option value="ItemOnly">Item only</option>
+                                <option value="Parent">Parent folder</option>
+                                <option value="Grandparent">Grandparent folder</option>
+                            </select>
+                            <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoSizeRow">
+                            <label for="LogoArtMusicVideoSizePercent" class="epRowLabelSpan">Size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtMusicVideoSizePercent" name="LogoArtMusicVideoSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoOffsetRow">
+                            <label for="LogoArtMusicVideoOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtMusicVideoOffsetVw" name="LogoArtMusicVideoOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoVerticalOffsetRow">
+                            <label for="LogoArtMusicVideoVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtMusicVideoVerticalOffsetVh" name="LogoArtMusicVideoVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        </div>
+                        </div>
+
+                        <div class="epCollapseHeader" data-collapse="logoartMusic"><span class="epChevron">▶</span><span>Music</span></div>
+                        <div class="epCollapseBody" data-collapsebody="logoartMusic">
+                        <div class="epTabHeaderRow">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on album and artist pages; an album without a logo shows the artist's.</div>
+                            </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested" data-collapse="logoartMusicAlbum"><span class="epChevron">▶</span><span>Album</span></div>
+                        <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartMusicAlbum">
+                        <div id="LogoArtAlbumDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtAlbumSourceRow">
+                            <label for="LogoArtAlbumSource" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="LogoArtAlbumSource" name="LogoArtAlbumSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Hide">Hide</option>
+                            </select>
+                            <div class="epDesc">Vanilla logo: Jellyfin's own. Clearart: the clearart image. Hide: empty slot.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtAlbumFallbackRow">
+                            <label for="LogoArtAlbumFallback" class="epRowLabelSpan">Fallback</label>
+                            <select is="emby-select" id="LogoArtAlbumFallback" name="LogoArtAlbumFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                            </select>
+                            <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtAlbumSecondFallbackRow">
+                            <label for="LogoArtAlbumSecondFallback" class="epRowLabelSpan">Second fallback</label>
+                            <select is="emby-select" id="LogoArtAlbumSecondFallback" name="LogoArtAlbumSecondFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                            </select>
+                            <div class="epDesc">Used when source and fallback both have no image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtAlbumSourceModeRow">
+                            <label for="LogoArtAlbumSourceMode" class="epRowLabelSpan">Source mode</label>
+                            <select is="emby-select" id="LogoArtAlbumSourceMode" name="LogoArtAlbumSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Default">Default</option>
+                                <option value="AlbumOnly">Album only</option>
+                                <option value="Artist">Artist</option>
+                            </select>
+                            <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtAlbumSizeRow">
+                            <label for="LogoArtAlbumSizePercent" class="epRowLabelSpan">Size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtAlbumSizePercent" name="LogoArtAlbumSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtAlbumOffsetRow">
+                            <label for="LogoArtAlbumOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtAlbumOffsetVw" name="LogoArtAlbumOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtAlbumVerticalOffsetRow">
+                            <label for="LogoArtAlbumVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtAlbumVerticalOffsetVh" name="LogoArtAlbumVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        </div>
+                        <div class="epCollapseHeader epCollapseNested" data-collapse="logoartMusicArtist"><span class="epChevron">▶</span><span>Artist</span></div>
+                        <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartMusicArtist">
+                        <div id="LogoArtArtistDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtArtistSourceRow">
+                            <label for="LogoArtArtistSource" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="LogoArtArtistSource" name="LogoArtArtistSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Hide">Hide</option>
+                            </select>
+                            <div class="epDesc">Vanilla logo: Jellyfin's own. Clearart: the clearart image. Hide: empty slot.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtArtistFallbackRow">
+                            <label for="LogoArtArtistFallback" class="epRowLabelSpan">Fallback</label>
+                            <select is="emby-select" id="LogoArtArtistFallback" name="LogoArtArtistFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                            </select>
+                            <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtArtistSecondFallbackRow">
+                            <label for="LogoArtArtistSecondFallback" class="epRowLabelSpan">Second fallback</label>
+                            <select is="emby-select" id="LogoArtArtistSecondFallback" name="LogoArtArtistSecondFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                            </select>
+                            <div class="epDesc">Used when source and fallback both have no image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtArtistSizeRow">
+                            <label for="LogoArtArtistSizePercent" class="epRowLabelSpan">Size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtArtistSizePercent" name="LogoArtArtistSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtArtistOffsetRow">
+                            <label for="LogoArtArtistOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtArtistOffsetVw" name="LogoArtArtistOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtArtistVerticalOffsetRow">
+                            <label for="LogoArtArtistVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtArtistVerticalOffsetVh" name="LogoArtArtistVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        </div>
+                        </div>
+
+                        <div class="epCollapseHeader" data-collapse="logoartBooks"><span class="epChevron">▶</span><span>Books</span></div>
+                        <div class="epCollapseBody" data-collapsebody="logoartBooks">
+                        <div class="epTabHeaderRow">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on book and audiobook pages: keep, hide, or replace with Clearart.</div>
+                            </div>
+                        </div>
+                        <div id="LogoArtBookDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtBookSourceRow">
+                            <label for="LogoArtBookSource" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="LogoArtBookSource" name="LogoArtBookSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                                <option value="Hide">Hide</option>
+                            </select>
+                            <div class="epDesc">Vanilla logo: Jellyfin's own. Clearart: the clearart image. Hide: empty slot.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtBookFallbackRow">
+                            <label for="LogoArtBookFallback" class="epRowLabelSpan">Fallback</label>
+                            <select is="emby-select" id="LogoArtBookFallback" name="LogoArtBookFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                            </select>
+                            <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtBookSecondFallbackRow">
+                            <label for="LogoArtBookSecondFallback" class="epRowLabelSpan">Second fallback</label>
+                            <select is="emby-select" id="LogoArtBookSecondFallback" name="LogoArtBookSecondFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="VanillaLogo">Vanilla logo</option>
+                                <option value="Clearart">Clearart</option>
+                            </select>
+                            <div class="epDesc">Used when source and fallback both have no image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtBookSizeRow">
+                            <label for="LogoArtBookSizePercent" class="epRowLabelSpan">Size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtBookSizePercent" name="LogoArtBookSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtBookOffsetRow">
+                            <label for="LogoArtBookOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtBookOffsetVw" name="LogoArtBookOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtBookVerticalOffsetRow">
+                            <label for="LogoArtBookVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtBookVerticalOffsetVh" name="LogoArtBookVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        </div>
+
+                        <div class="epCollapseHeader" data-collapse="logoartPersons"><span class="epChevron">▶</span><span>Persons</span></div>
+                        <div class="epCollapseBody" data-collapsebody="logoartPersons">
+                        <div class="epTabHeaderRow">
+                            <div class="epTabIntroCol">
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">A logo for person pages, where Jellyfin shows none: file or rendered name.</div>
+                            </div>
+                        </div>
+                        <div id="LogoArtPersonsDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtPersonsSourceRow">
+                            <label for="LogoArtPersonsSource" class="epRowLabelSpan">Source</label>
+                            <select is="emby-select" id="LogoArtPersonsSource" name="LogoArtPersonsSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="FolderLogo">Folder logo</option>
+                                <option value="Text">Text</option>
+                                <option value="Hide">Hide</option>
+                            </select>
+                            <div class="epDesc">Folder logo: file in the person folder. Text: the name in a bundled font. Hide: empty slot.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtPersonsFallbackRow">
+                            <label for="LogoArtPersonsFallback" class="epRowLabelSpan">Fallback</label>
+                            <select is="emby-select" id="LogoArtPersonsFallback" name="LogoArtPersonsFallback" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="None">None (Skip)</option>
+                                <option value="FolderLogo">Folder logo</option>
+                                <option value="Text">Text</option>
+                            </select>
+                            <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtPersonsBaseNameRow">
+                            <label for="LogoArtPersonsBaseName" class="epRowLabelSpan">Base name</label>
+                            <input type="text" class="epTextCompact" id="LogoArtPersonsBaseName" name="LogoArtPersonsBaseName" />
+                            <div class="epDesc">name.ext in the person's folder; png, webp or jpg, first found wins.</div>
+                        </div>
+                        <div id="LogoArtPersonsTextFields">
+                        <div class="epRow epRowMerged" id="LogoArtPersonsFontPoolRow">
+                            <label for="LogoArtPersonsFontPool" class="epRowLabelSpan">Font pool</label>
+                            <select is="emby-select" id="LogoArtPersonsFontPool" name="LogoArtPersonsFontPool" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Signature">Signature</option>
+                                <option value="Title">Title</option>
+                                <option value="Both">Both</option>
+                            </select>
+                            <div class="epDesc">Signature: 60 handwriting fonts. Title: 60 headline fonts. Both: all 120.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtPersonsFontsRow">
+                            <span class="epRowLabelSpan">Fonts</span>
+                            <div class="epFontDropdown" id="LogoArtPersonsFontsDropdown">
+                                <button type="button" class="emby-select-withcolor emby-select epSelectCompact epFontDropdownBtn" id="LogoArtPersonsFontsBtn" aria-haspopup="listbox" aria-expanded="false"><span id="LogoArtPersonsFontsCount">Fonts</span><span class="epFontDropdownChevron">&#9662;</span></button>
+                                <input type="text" id="LogoArtPersonsFonts" name="LogoArtPersonsFonts" style="display:none;" />
+                                <div class="epFontPanel" id="LogoArtPersonsFontsPanel" style="display:none;">
+                                    <div class="epFontPanelHead">
+                                        <button type="button" is="emby-button" class="raised epActionBtn emby-button" id="LogoArtPersonsFontsCheckAllBtn">Check all</button>
+                                        <button type="button" is="emby-button" class="raised epActionBtn emby-button" id="LogoArtPersonsFontsUncheckAllBtn">Uncheck all</button>
+                                    </div>
+                                    <div class="epFontList" id="LogoArtPersonsFontsList"></div>
+                                </div>
+                                <div class="epFontPreview" id="LogoArtPersonsFontsPreview" style="display:none;"></div>
+                            </div>
+                            <div class="epDesc">Opens a list to tick fonts; hover one for a preview. One: for everyone. Several: one per person by name.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtPersonsPreviewNamesRow">
+                            <label for="LogoArtPersonsPreviewNames" class="epRowLabelSpan">Preview names</label>
+                            <input type="text" class="epTextCompact" id="LogoArtPersonsPreviewNames" name="LogoArtPersonsPreviewNames" />
+                            <div class="epDesc">Comma-separated names shown in the hover preview.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtPersonsTextStrokeRow">
+                            <label for="LogoArtPersonsTextStroke" class="epRowLabelSpan">Text stroke</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="10" step="0.5" class="epNumberCompact" id="LogoArtPersonsTextStroke" name="LogoArtPersonsTextStroke" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Thickens the white letters, in percent of the text size. 0 = font as drawn.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtPersonsOutlineRow">
+                            <label for="LogoArtPersonsOutline" class="epRowLabelSpan">Outline</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" max="10" step="0.5" class="epNumberCompact" id="LogoArtPersonsOutline" name="LogoArtPersonsOutline" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Black rim around the letters, in percent of the text size. 0 = none, 1 = a fine line.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="LogoArtPersonsUppercaseRow">
+                            <label for="LogoArtPersonsUppercase">Uppercase</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="LogoArtPersonsUppercase" name="LogoArtPersonsUppercase" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Title fonts only: render the name in capitals. Signature fonts keep their case.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtPersonsCreateRow">
+                            <label for="LogoArtPersonsCreateMode" class="epRowLabelSpan">Create logos</label>
+                            <div style="display:flex; align-items:center; justify-content:space-between;">
+                                <select id="LogoArtPersonsCreateMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                    <option value="Update">Update</option>
+                                    <option value="Replace">Replace</option>
+                                </select>
+                                <button type="button" is="emby-button" class="raised epActionBtn emby-button" id="LogoArtPersonsCreateBtn">Create logos</button>
+                            </div>
+                            <div class="epDesc">Writes "Base name".png (800 x 310) with the ticked fonts. Update: missing only. Replace: all.</div>
+                            <div id="LogoArtPersonsCreateResult" class="epDesc" style="padding-left:0; height:auto; white-space:normal; display:none;"></div>
+                        </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtPersonsSizeRow">
+                            <label for="LogoArtPersonsSizePercent" class="epRowLabelSpan">Size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtPersonsSizePercent" name="LogoArtPersonsSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtPersonsOffsetRow">
+                            <label for="LogoArtPersonsOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtPersonsOffsetVw" name="LogoArtPersonsOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtPersonsVerticalOffsetRow">
+                            <label for="LogoArtPersonsVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtPersonsVerticalOffsetVh" name="LogoArtPersonsVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
                         </div>
                         </div>
                         </div>
@@ -5666,6 +6834,121 @@
                 ExtraposterTvShowsLibrarySeamlessEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 ExtraposterTvShowsLibrarySyncEnabled: { type: 'checkbox', def: true, tab: 'extraposterfeature' },
                 // Characterart
+                // ── LogoArt (Session 134) ──
+                LogoArtEnabled: { type: 'checkbox', def: true, tab: 'general' },
+                LogoArtMovieSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
+                LogoArtMovieFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtMovieSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtMovieSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
+                LogoArtMovieSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtMovieOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMovieVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMovieMultiImage: { type: 'checkbox', def: true, tab: 'logoart' },
+                LogoArtMovieOrderMode: { type: 'select', def: 'Shuffle', tab: 'logoart' },
+                LogoArtMovieSinglePass: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtMovieRandomStart: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtMovieStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtMovieCycleTimeMs: { type: 'number', def: 5000, tab: 'logoart' },
+                LogoArtMovieFadeTimeMs: { type: 'number', def: 1000, tab: 'logoart' },
+                LogoArtSeriesSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
+                LogoArtSeriesFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtSeriesSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtSeriesSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtSeriesOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeriesVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeriesMultiImage: { type: 'checkbox', def: true, tab: 'logoart' },
+                LogoArtSeriesOrderMode: { type: 'select', def: 'Shuffle', tab: 'logoart' },
+                LogoArtSeriesSinglePass: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtSeriesRandomStart: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtSeriesStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtSeriesCycleTimeMs: { type: 'number', def: 5000, tab: 'logoart' },
+                LogoArtSeriesFadeTimeMs: { type: 'number', def: 1000, tab: 'logoart' },
+                LogoArtSeasonSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
+                LogoArtSeasonFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtSeasonSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtSeasonSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
+                LogoArtSeasonSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtSeasonOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeasonVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeasonMultiImage: { type: 'checkbox', def: true, tab: 'logoart' },
+                LogoArtSeasonOrderMode: { type: 'select', def: 'Shuffle', tab: 'logoart' },
+                LogoArtSeasonSinglePass: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtSeasonRandomStart: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtSeasonStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtSeasonCycleTimeMs: { type: 'number', def: 5000, tab: 'logoart' },
+                LogoArtSeasonFadeTimeMs: { type: 'number', def: 1000, tab: 'logoart' },
+                LogoArtEpisodeSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
+                LogoArtEpisodeFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtEpisodeSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtEpisodeSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
+                LogoArtEpisodeSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtEpisodeOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtEpisodeVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtEpisodeMultiImage: { type: 'checkbox', def: true, tab: 'logoart' },
+                LogoArtEpisodeOrderMode: { type: 'select', def: 'Shuffle', tab: 'logoart' },
+                LogoArtEpisodeSinglePass: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtEpisodeRandomStart: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtEpisodeStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtEpisodeCycleTimeMs: { type: 'number', def: 5000, tab: 'logoart' },
+                LogoArtEpisodeFadeTimeMs: { type: 'number', def: 1000, tab: 'logoart' },
+                LogoArtSetSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
+                LogoArtSetFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtSetSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtSetSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtSetOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSetVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSetMultiImage: { type: 'checkbox', def: true, tab: 'logoart' },
+                LogoArtSetOrderMode: { type: 'select', def: 'Shuffle', tab: 'logoart' },
+                LogoArtSetSinglePass: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtSetRandomStart: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtSetStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtSetCycleTimeMs: { type: 'number', def: 5000, tab: 'logoart' },
+                LogoArtSetFadeTimeMs: { type: 'number', def: 1000, tab: 'logoart' },
+                LogoArtVideoSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
+                LogoArtVideoFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtVideoSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtVideoSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
+                LogoArtVideoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtVideoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtVideoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMusicVideoSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
+                LogoArtMusicVideoFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtMusicVideoSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtMusicVideoSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
+                LogoArtMusicVideoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtMusicVideoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMusicVideoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtAlbumSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
+                LogoArtAlbumFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtAlbumSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtAlbumSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
+                LogoArtAlbumSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtAlbumOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtAlbumVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtArtistSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
+                LogoArtArtistFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtArtistSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtArtistSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtArtistOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtArtistVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtBookSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
+                LogoArtBookFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtBookSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
+                LogoArtBookSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtBookOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtBookVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtPersonsSource: { type: 'select', def: 'FolderLogo', tab: 'logoart' },
+                LogoArtPersonsFallback: { type: 'select', def: 'Text', tab: 'logoart' },
+                LogoArtPersonsBaseName: { type: 'text', def: 'clearlogo', tab: 'logoart' },
+                LogoArtPersonsFontPool: { type: 'select', def: 'Signature', tab: 'logoart' },
+                LogoArtPersonsFonts: { type: 'text', def: '*', tab: 'logoart' },
+                LogoArtPersonsPreviewNames: { type: 'text', def: 'Scarlett Johansson, Keanu Reeves', tab: 'logoart' },
+                LogoArtPersonsTextStroke: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtPersonsOutline: { type: 'number', def: 1, tab: 'logoart' },
+                LogoArtPersonsUppercase: { type: 'checkbox', def: false, tab: 'logoart' },
+                LogoArtPersonsSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtPersonsOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtPersonsVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
                 CharacterartShowOnMovies: { type: 'checkbox', def: true, tab: 'characterart' },
                 CharacterartShowOnSets: { type: 'checkbox', def: true, tab: 'characterart' },
                 CharacterartShowOnTvShows: { type: 'checkbox', def: true, tab: 'characterart' },
@@ -6673,6 +7956,18 @@
                 // Session 126: the tree re-toggles the second-fallback row on every recompute (it is a
                 // _setrows target), so the chain grey (first fallback = None) is re-applied afterwards.
                 ['ExtraposterMoviesDetail', 'ExtraposterMoviesLibrary'].forEach(epSyncSetFallback);
+                // Session 134: same for LogoArt's chains, then the font checklist follows the field.
+                if (typeof epSyncLogoArtChain === 'function') {
+                    EP_LOGOART_TYPES.concat(['Persons']).forEach(epSyncLogoArtChain);
+                    epLogoArtRenderFonts();
+                    var laList = document.getElementById('LogoArtPersonsFontsList');
+                    if (laList) {
+                        var laGrey = laList.closest('.epFieldDisabled') !== null;
+                        laList.querySelectorAll('input[type=checkbox]').forEach(function (b) { b.disabled = laGrey; });
+                        document.getElementById('LogoArtPersonsFontsBtn').disabled = laGrey;
+                        if (laGrey) { document.getElementById('LogoArtPersonsFontsPanel').style.display = 'none'; }
+                    }
+                }
             }
 
 
@@ -7060,6 +8355,134 @@
                                         }]
                                     }]
                                 }
+                            ]
+                        }
+                    ]
+                },
+
+                // ─────────────────────── LogoArt (Session 134) ───────────────────────
+                // Group nodes manage the six group collapses (headings, always
+                // active), one terminal node per item type below them (always
+                // active too - a type at its vanilla default is zero-
+                // intervention, not "dead"). The rotation rows live in their
+                // own RotationFields container so every child target sits
+                // inside its parent's target (rule 14 containment); they appear
+                // while any chain stage is Characterart and the source is not
+                // Hide (Hide ends the chain, the greyed fallbacks do not count).
+                // Persons' Base name / Text rows follow their own chain.
+                {
+                    id: 'logoart', isTabRoot: true, when: [AllChecked(['LogoArtEnabled'])],
+                    children: [
+                        {
+                            id: 'la_group_movies', target: ['logoartMovies'], when: [],
+                            children: [
+                            {
+                                id: 'la_movie', terminal: true, target: ['LogoArtMovieDependentFields'], when: [],
+                                children: [{
+                                    id: 'la_movie_rotation', target: ['LogoArtMovieRotationFields'],
+                                    when: [ValueIn('LogoArtMovieSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtMovieSource', 'LogoArtMovieFallback', 'LogoArtMovieSecondFallback'], ['Characterart'])],
+                                    children: [
+                                        { id: 'la_movie_multi', target: ['LogoArtMovieOrderRow', 'LogoArtMovieSinglePassRow', 'LogoArtMovieCycleRow', 'LogoArtMovieFadeRow'], when: [AllChecked(['LogoArtMovieMultiImage'])], children: [{ id: 'la_movie_randomstart', target: ['LogoArtMovieRandomStartRow'], when: [ValueIn('LogoArtMovieOrderMode', ['Sequential']), NoneChecked(['LogoArtMovieSinglePass'])], children: [] }] },
+                                        { id: 'la_movie_staysingle', target: ['LogoArtMovieStaySingleImageStaticRow'], when: [AllChecked(['LogoArtMovieMultiImage', 'LogoArtMovieSinglePass'])], children: [] }
+                                    ]
+                                }]
+                            }
+                            ]
+                        },
+                        {
+                            id: 'la_group_tvshows', target: ['logoartTvShows'], when: [],
+                            children: [
+                            {
+                                id: 'la_series', terminal: true, target: ['logoartTvShowsSeries'], when: [],
+                                children: [{
+                                    id: 'la_series_rotation', target: ['LogoArtSeriesRotationFields'],
+                                    when: [ValueIn('LogoArtSeriesSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSeriesSource', 'LogoArtSeriesFallback', 'LogoArtSeriesSecondFallback'], ['Characterart'])],
+                                    children: [
+                                        { id: 'la_series_multi', target: ['LogoArtSeriesOrderRow', 'LogoArtSeriesSinglePassRow', 'LogoArtSeriesCycleRow', 'LogoArtSeriesFadeRow'], when: [AllChecked(['LogoArtSeriesMultiImage'])], children: [{ id: 'la_series_randomstart', target: ['LogoArtSeriesRandomStartRow'], when: [ValueIn('LogoArtSeriesOrderMode', ['Sequential']), NoneChecked(['LogoArtSeriesSinglePass'])], children: [] }] },
+                                        { id: 'la_series_staysingle', target: ['LogoArtSeriesStaySingleImageStaticRow'], when: [AllChecked(['LogoArtSeriesMultiImage', 'LogoArtSeriesSinglePass'])], children: [] }
+                                    ]
+                                }]
+                            },
+                            {
+                                id: 'la_season', terminal: true, target: ['logoartTvShowsSeason'], when: [],
+                                children: [{
+                                    id: 'la_season_rotation', target: ['LogoArtSeasonRotationFields'],
+                                    when: [ValueIn('LogoArtSeasonSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSeasonSource', 'LogoArtSeasonFallback', 'LogoArtSeasonSecondFallback'], ['Characterart'])],
+                                    children: [
+                                        { id: 'la_season_multi', target: ['LogoArtSeasonOrderRow', 'LogoArtSeasonSinglePassRow', 'LogoArtSeasonCycleRow', 'LogoArtSeasonFadeRow'], when: [AllChecked(['LogoArtSeasonMultiImage'])], children: [{ id: 'la_season_randomstart', target: ['LogoArtSeasonRandomStartRow'], when: [ValueIn('LogoArtSeasonOrderMode', ['Sequential']), NoneChecked(['LogoArtSeasonSinglePass'])], children: [] }] },
+                                        { id: 'la_season_staysingle', target: ['LogoArtSeasonStaySingleImageStaticRow'], when: [AllChecked(['LogoArtSeasonMultiImage', 'LogoArtSeasonSinglePass'])], children: [] }
+                                    ]
+                                }]
+                            },
+                            {
+                                id: 'la_episode', terminal: true, target: ['logoartTvShowsEpisode'], when: [],
+                                children: [{
+                                    id: 'la_episode_rotation', target: ['LogoArtEpisodeRotationFields'],
+                                    when: [ValueIn('LogoArtEpisodeSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtEpisodeSource', 'LogoArtEpisodeFallback', 'LogoArtEpisodeSecondFallback'], ['Characterart'])],
+                                    children: [
+                                        { id: 'la_episode_multi', target: ['LogoArtEpisodeOrderRow', 'LogoArtEpisodeSinglePassRow', 'LogoArtEpisodeCycleRow', 'LogoArtEpisodeFadeRow'], when: [AllChecked(['LogoArtEpisodeMultiImage'])], children: [{ id: 'la_episode_randomstart', target: ['LogoArtEpisodeRandomStartRow'], when: [ValueIn('LogoArtEpisodeOrderMode', ['Sequential']), NoneChecked(['LogoArtEpisodeSinglePass'])], children: [] }] },
+                                        { id: 'la_episode_staysingle', target: ['LogoArtEpisodeStaySingleImageStaticRow'], when: [AllChecked(['LogoArtEpisodeMultiImage', 'LogoArtEpisodeSinglePass'])], children: [] }
+                                    ]
+                                }]
+                            }
+                            ]
+                        },
+                        {
+                            id: 'la_group_sets', target: ['logoartSets'], when: [],
+                            children: [
+                            {
+                                id: 'la_set', terminal: true, target: ['LogoArtSetDependentFields'], when: [],
+                                children: [{
+                                    id: 'la_set_rotation', target: ['LogoArtSetRotationFields'],
+                                    when: [ValueIn('LogoArtSetSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSetSource', 'LogoArtSetFallback', 'LogoArtSetSecondFallback'], ['Characterart'])],
+                                    children: [
+                                        { id: 'la_set_multi', target: ['LogoArtSetOrderRow', 'LogoArtSetSinglePassRow', 'LogoArtSetCycleRow', 'LogoArtSetFadeRow'], when: [AllChecked(['LogoArtSetMultiImage'])], children: [{ id: 'la_set_randomstart', target: ['LogoArtSetRandomStartRow'], when: [ValueIn('LogoArtSetOrderMode', ['Sequential']), NoneChecked(['LogoArtSetSinglePass'])], children: [] }] },
+                                        { id: 'la_set_staysingle', target: ['LogoArtSetStaySingleImageStaticRow'], when: [AllChecked(['LogoArtSetMultiImage', 'LogoArtSetSinglePass'])], children: [] }
+                                    ]
+                                }]
+                            }
+                            ]
+                        },
+                        {
+                            id: 'la_group_videos', target: ['logoartVideos'], when: [],
+                            children: [
+                            {
+                                id: 'la_video', terminal: true, target: ['logoartVideosVideo'], when: [],
+                                children: []
+                            },
+                            {
+                                id: 'la_musicvideo', terminal: true, target: ['logoartVideosMusicVideo'], when: [],
+                                children: []
+                            }
+                            ]
+                        },
+                        {
+                            id: 'la_group_music', target: ['logoartMusic'], when: [],
+                            children: [
+                            {
+                                id: 'la_album', terminal: true, target: ['logoartMusicAlbum'], when: [],
+                                children: []
+                            },
+                            {
+                                id: 'la_artist', terminal: true, target: ['logoartMusicArtist'], when: [],
+                                children: []
+                            }
+                            ]
+                        },
+                        {
+                            id: 'la_group_books', target: ['logoartBooks'], when: [],
+                            children: [
+                            {
+                                id: 'la_book', terminal: true, target: ['LogoArtBookDependentFields'], when: [],
+                                children: []
+                            }
+                            ]
+                        },
+                        {
+                            id: 'la_persons', terminal: true, target: ['logoartPersons'], when: [],
+                            children: [
+                                { id: 'la_persons_folder', target: ['LogoArtPersonsBaseNameRow'], when: [ValueIn('LogoArtPersonsSource', ['FolderLogo', 'Text']), AnyValueIn(['LogoArtPersonsSource', 'LogoArtPersonsFallback'], ['FolderLogo'])], children: [] },
+                                { id: 'la_persons_text', target: ['LogoArtPersonsTextFields'], when: [ValueIn('LogoArtPersonsSource', ['FolderLogo', 'Text']), AnyValueIn(['LogoArtPersonsSource', 'LogoArtPersonsFallback'], ['Text'])], children: [] }
                             ]
                         }
                     ]
@@ -7763,6 +9186,16 @@
                 ['ExtrakeyartMoviesLibrarySinglePass', 'ExtrakeyartMoviesLibrarySinglePassSelect'],
                 ['ExtrakeyartTvShowsDetailSinglePass', 'ExtrakeyartTvShowsDetailSinglePassSelect'],
                 ['ExtrakeyartTvShowsLibrarySinglePass', 'ExtrakeyartTvShowsLibrarySinglePassSelect'],
+                ['LogoArtMovieMultiImage', 'LogoArtMovieMultiImageSelect'],
+                ['LogoArtMovieSinglePass', 'LogoArtMovieSinglePassSelect'],
+                ['LogoArtSeriesMultiImage', 'LogoArtSeriesMultiImageSelect'],
+                ['LogoArtSeriesSinglePass', 'LogoArtSeriesSinglePassSelect'],
+                ['LogoArtSeasonMultiImage', 'LogoArtSeasonMultiImageSelect'],
+                ['LogoArtSeasonSinglePass', 'LogoArtSeasonSinglePassSelect'],
+                ['LogoArtEpisodeMultiImage', 'LogoArtEpisodeMultiImageSelect'],
+                ['LogoArtEpisodeSinglePass', 'LogoArtEpisodeSinglePassSelect'],
+                ['LogoArtSetMultiImage', 'LogoArtSetMultiImageSelect'],
+                ['LogoArtSetSinglePass', 'LogoArtSetSinglePassSelect'],
                 ['CharacterartMoviesMultiImage', 'CharacterartMoviesMultiImageSelect'],
                 ['CharacterartMoviesSinglePass', 'CharacterartMoviesSinglePassSelect'],
                 ['CharacterartTvShowsMultiImage', 'CharacterartTvShowsMultiImageSelect'],
@@ -8286,14 +9719,29 @@
                 var fallback2 = document.getElementById(prefix + 'SetFallback2');
                 if (!image || !fallback || !fallback2) { return; }
                 [image, fallback, fallback2].forEach(epRelabelSetImageOptions);
+                epSyncFallbackChain(image, fallback, fallback2, document.getElementById(prefix + 'SetFallback2Row'));
+            }
+            // Session 134: the chain rule on its own (Set image / Set fallback / Set second fallback
+            // and LogoArt's Source / Fallback / Second fallback share it): later stages cannot
+            // repeat an earlier value, None ends the chain, a Hide/None first stage ends it too.
+            function epSyncFallbackChain(image, fallback, fallback2, row2) {
+                var terminalFirst = image.value === 'Hide';
                 Array.prototype.forEach.call(fallback.options, function (opt) { opt.disabled = opt.value === image.value; });
                 if (fallback.value === image.value) { fallback.value = 'None'; }
+                if (!fallback2) {
+                    epSetChainGrey(document.getElementById(fallback.id + 'Row'), fallback, terminalFirst);
+                    return;
+                }
                 Array.prototype.forEach.call(fallback2.options, function (opt) { opt.disabled = opt.value === image.value || (opt.value !== 'None' && opt.value === fallback.value); });
                 if (fallback2.value === image.value || (fallback2.value !== 'None' && fallback2.value === fallback.value)) { fallback2.value = 'None'; }
-                // The second fallback is pointless while the first is None: greyed by this function alone
-                // (own marker, rule 26 - taken back only by this marker), never doubling an ancestor's grey (rule 14).
-                var row2 = document.getElementById(prefix + 'SetFallback2Row');
-                var chainEnded = fallback.value === 'None';
+                epSetChainGrey(document.getElementById(fallback.id + 'Row'), fallback, terminalFirst);
+                var chainEnded = terminalFirst || fallback.value === 'None' || fallback.value === 'Hide';
+                epSetChainGrey(row2, fallback2, chainEnded);
+            }
+            // The greying part of the old epSyncSetFallback, as a helper: greyed by the chain alone
+            // (own marker, rule 26 - taken back only by this marker), never doubling an ancestor's grey (rule 14).
+            function epSetChainGrey(row2, fallback2, chainEnded) {
+                if (!row2) { return; }
                 var ancestorGrey = false, n = row2.parentElement;
                 while (n) { if (n.classList && n.classList.contains('epFieldDisabled')) { ancestorGrey = true; break; } n = n.parentElement; }
                 if (chainEnded) {
@@ -8316,6 +9764,214 @@
                 var el = document.getElementById(id);
                 if (el) { el.addEventListener('input', function () { epSyncSetFallback('ExtraposterMoviesDetail'); epSyncSetFallback('ExtraposterMoviesLibrary'); }); }
             });
+
+            // ── LogoArt (Session 134) ─────────────────────────────────────
+            var EP_LOGOART_TYPES = ['Movie', 'Series', 'Season', 'Episode', 'Set', 'Video', 'MusicVideo', 'Album', 'Artist', 'Book'];
+            function epSyncLogoArtChain(type) {
+                var p = 'LogoArt' + type;
+                var source = document.getElementById(p + 'Source');
+                var fallback = document.getElementById(p + 'Fallback');
+                var fallback2 = document.getElementById(p + 'SecondFallback');
+                if (!source || !fallback) { return; }
+                epSyncFallbackChain(source, fallback, fallback2, fallback2 ? document.getElementById(p + 'SecondFallbackRow') : null);
+            }
+            EP_LOGOART_TYPES.concat(['Persons']).forEach(function (type) {
+                ['Source', 'Fallback', 'SecondFallback'].forEach(function (k) {
+                    var el = document.getElementById('LogoArt' + type + k);
+                    if (el) { el.addEventListener('change', function () { epSyncLogoArtChain(type); }); }
+                });
+                epSyncLogoArtChain(type);
+            });
+
+            // The font checklist (concept Part D2, Part E: the tab's one new UI form). The list comes
+            // from /LogoArt/fonts (the bundled manifest); the ticked files live in the hidden text
+            // field LogoArtPersonsFonts as CSV, "*" = every font of the pool. Hovering a font renders
+            // the preview names as live text in that font (@font-face from /LogoArt/font/...).
+            var epLogoArtFonts = null;
+            var epLogoArtFontFaces = {};
+            var epLogoArtFontsRendered = '';
+            function epLogoArtFontUrl(file) {
+                var rel = 'LogoArt/font/' + file.split('/').map(encodeURIComponent).join('/');
+                return (window.ApiClient && typeof ApiClient.getUrl === 'function') ? ApiClient.getUrl(rel) : '/' + rel;
+            }
+            function epLogoArtEnsureFontFace(font) {
+                if (epLogoArtFontFaces[font.file]) { return; }
+                epLogoArtFontFaces[font.file] = true;
+                try {
+                    var face = new FontFace('ArtworkPlus ' + font.family, 'url(' + epLogoArtFontUrl(font.file) + ')');
+                    face.load().then(function (loaded) { document.fonts.add(loaded); }).catch(function () { /* the preview then falls back to the page font */ });
+                } catch (e) { /* no FontFace API */ }
+            }
+            function epLogoArtPoolFonts() {
+                var pool = (document.getElementById('LogoArtPersonsFontPool') || {}).value || 'Signature';
+                return (epLogoArtFonts || []).filter(function (f) { return pool === 'Both' || (f.group || '').toLowerCase() === pool.toLowerCase(); });
+            }
+            function epLogoArtTickedSet() {
+                var raw = (document.getElementById('LogoArtPersonsFonts') || {}).value || '';
+                if (raw.trim() === '*') { return null; }
+                var set = {};
+                raw.split(',').forEach(function (s) { s = s.trim(); if (s) { set[s.toLowerCase()] = true; } });
+                return set;
+            }
+            function epLogoArtWriteTicked() {
+                var list = document.getElementById('LogoArtPersonsFontsList');
+                var boxes = Array.prototype.slice.call(list.querySelectorAll('input[type=checkbox]'));
+                var ticked = boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.dataset.file; });
+                var field = document.getElementById('LogoArtPersonsFonts');
+                field.value = boxes.length && ticked.length === boxes.length ? '*' : ticked.join(',');
+                epLogoArtFontsRendered = field.value + '|' + document.getElementById('LogoArtPersonsFontPool').value;
+                epLogoArtUpdateCount();
+            }
+            function epLogoArtUpdateCount() {
+                var list = document.getElementById('LogoArtPersonsFontsList');
+                var boxes = list.querySelectorAll('input[type=checkbox]');
+                var n = list.querySelectorAll('input[type=checkbox]:checked').length;
+                var el = document.getElementById('LogoArtPersonsFontsCount');
+                var pool = document.getElementById('LogoArtPersonsFontPool').value;
+                el.textContent = epLogoArtFonts ? (n + ' of ' + boxes.length + ' ' + (pool === 'Both' ? 'fonts' : pool + ' fonts') + (n === 1 ? ' - same for everyone' : n > 1 ? ' - one per person' : ' - none')) : 'Font list unavailable (needs the server)';
+            }
+            function epLogoArtRenderFonts() {
+                var list = document.getElementById('LogoArtPersonsFontsList');
+                if (!list) { return; }
+                var field = document.getElementById('LogoArtPersonsFonts');
+                var key = field.value + '|' + document.getElementById('LogoArtPersonsFontPool').value;
+                if (key === epLogoArtFontsRendered && list.children.length) { return; }
+                epLogoArtFontsRendered = key;
+                list.innerHTML = '';
+                var ticked = epLogoArtTickedSet();
+                var greyed = list.closest('.epFieldDisabled') !== null;
+                epLogoArtPoolFonts().forEach(function (font) {
+                    var label = document.createElement('label');
+                    label.className = 'epFormatItem emby-checkbox-label';
+                    var box = document.createElement('input');
+                    box.type = 'checkbox';
+                    box.setAttribute('is', 'emby-checkbox');
+                    box.setAttribute('data-embycheckbox', 'true');
+                    box.className = 'emby-checkbox';
+                    box.dataset.file = font.file;
+                    box.checked = ticked === null || !!ticked[font.file.toLowerCase()];
+                    box.disabled = greyed;
+                    box.addEventListener('change', epLogoArtWriteTicked);
+                    var text = document.createElement('span');
+                    text.className = 'checkboxLabel';
+                    text.textContent = font.family;
+                    label.appendChild(box);
+                    label.appendChild(document.createTextNode(' '));
+                    label.appendChild(text);
+                    label.insertAdjacentHTML('beforeend', '<span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>');
+                    label.addEventListener('mouseenter', function () { epLogoArtShowPreview(font, label); });
+                    label.addEventListener('mouseleave', epLogoArtHidePreview);
+                    list.appendChild(label);
+                });
+                epLogoArtUpdateCount();
+            }
+            function epLogoArtShowPreview(font, anchorEl) {
+                var panel = document.getElementById('LogoArtPersonsFontsPreview');
+                epLogoArtEnsureFontFace(font);
+                var names = ((document.getElementById('LogoArtPersonsPreviewNames') || {}).value || 'Scarlett Johansson, Keanu Reeves').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+                var upper = document.getElementById('LogoArtPersonsUppercase').checked && (font.group || '').toLowerCase() === 'title';
+                var stroke = parseFloat(document.getElementById('LogoArtPersonsTextStroke').value) || 0;
+                var outline = document.getElementById('LogoArtPersonsOutline').value === '' ? 1 : (parseFloat(document.getElementById('LogoArtPersonsOutline').value) || 0);
+                panel.innerHTML = '';
+                panel.style.setProperty('--la-stroke', String(stroke));
+                panel.style.setProperty('--la-outline', String(outline));
+                var head = document.createElement('div');
+                head.className = 'epFontPreviewHead';
+                head.textContent = font.family + ' (' + (font.group || '') + ', ' + (font.licence || '') + ')';
+                panel.appendChild(head);
+                names.forEach(function (name) {
+                    // Two stacked layers exactly like the live Text stage (rim under fill).
+                    var line = document.createElement('div');
+                    line.className = 'epFontPreviewLine';
+                    ['epFontPreviewRim', 'epFontPreviewFill'].forEach(function (cls) {
+                        var span = document.createElement('span');
+                        span.className = cls;
+                        span.style.fontFamily = "'ArtworkPlus " + font.family.replace(/'/g, "\\'") + "', 'Noto Sans', sans-serif";
+                        span.textContent = upper ? name.toUpperCase() : name;
+                        line.appendChild(span);
+                    });
+                    panel.appendChild(line);
+                });
+                panel.style.display = 'block';
+                // Overlay to the right of the hovered entry (position:fixed, so the panel's own
+                // scrolling does not clip it); flips to the left when the window is too narrow.
+                if (anchorEl && anchorEl.getBoundingClientRect) {
+                    var r = anchorEl.getBoundingClientRect();
+                    var list = document.getElementById('LogoArtPersonsFontsPanel').getBoundingClientRect();
+                    var w = panel.offsetWidth, h = panel.offsetHeight;
+                    var x = list.right + 10;
+                    if (x + w > window.innerWidth - 8) { x = Math.max(8, list.left - w - 10); }
+                    var y = Math.min(Math.max(8, r.top - h / 2 + r.height / 2), window.innerHeight - h - 8);
+                    panel.style.left = x + 'px';
+                    panel.style.top = y + 'px';
+                }
+            }
+            function epLogoArtHidePreview() {
+                var panel = document.getElementById('LogoArtPersonsFontsPreview');
+                if (panel) { panel.style.display = 'none'; }
+            }
+            function epLogoArtLoadFonts() {
+                var done = function (fonts) { epLogoArtFonts = Array.isArray(fonts) ? fonts : []; epLogoArtFontsRendered = ''; epLogoArtRenderFonts(); };
+                try {
+                    if (window.ApiClient && typeof ApiClient.ajax === 'function' && typeof ApiClient.getUrl === 'function') {
+                        ApiClient.ajax({ type: 'GET', url: ApiClient.getUrl('LogoArt/fonts'), dataType: 'json' }).then(done).catch(function () { done(window.epLogoArtFontsFallback || null); });
+                    } else {
+                        done(window.epLogoArtFontsFallback || null);
+                    }
+                } catch (e) { done(null); }
+            }
+            (function () {
+                var list = document.getElementById('LogoArtPersonsFontsList');
+                if (!list) { return; }
+                document.getElementById('LogoArtPersonsFontPool').addEventListener('change', function () { epLogoArtFontsRendered = ''; epLogoArtRenderFonts(); });
+                // Dropdown open/close: the button toggles, a click outside or Escape closes (the
+                // preview overlay closes with it). Disabled (greyed) = does not open.
+                var btn = document.getElementById('LogoArtPersonsFontsBtn');
+                var panel = document.getElementById('LogoArtPersonsFontsPanel');
+                function epLogoArtSetOpen(open) {
+                    panel.style.display = open ? 'block' : 'none';
+                    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    if (!open) { epLogoArtHidePreview(); }
+                }
+                btn.addEventListener('click', function () { if (btn.disabled) { return; } epLogoArtSetOpen(panel.style.display === 'none'); });
+                document.addEventListener('click', function (e) { if (panel.style.display !== 'none' && !document.getElementById('LogoArtPersonsFontsDropdown').contains(e.target)) { epLogoArtSetOpen(false); } });
+                document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.style.display !== 'none') { epLogoArtSetOpen(false); } });
+                document.getElementById('LogoArtPersonsFontsCheckAllBtn').addEventListener('click', function () {
+                    list.querySelectorAll('input[type=checkbox]').forEach(function (b) { b.checked = true; });
+                    epLogoArtWriteTicked();
+                });
+                document.getElementById('LogoArtPersonsFontsUncheckAllBtn').addEventListener('click', function () {
+                    list.querySelectorAll('input[type=checkbox]').forEach(function (b) { b.checked = false; });
+                    epLogoArtWriteTicked();
+                });
+                epLogoArtLoadFonts();
+
+                // Create logos - POST like PeopleBackdrops/wipe (ApiClient.ajax carries the token; the
+                // endpoint is admin-only). Result line under the row, like Test API Key.
+                var btn = document.getElementById('LogoArtPersonsCreateBtn');
+                var resultEl = document.getElementById('LogoArtPersonsCreateResult');
+                btn.addEventListener('click', function () {
+                    var mode = document.getElementById('LogoArtPersonsCreateMode').value;
+                    if (!confirm((mode === 'Replace' ? 'Write a new logo file for EVERY person, replacing existing ones?' : 'Write a logo file for every person that has none yet?') + ' Uses the SAVED settings - save the page first.')) { return; }
+                    btn.disabled = true;
+                    resultEl.style.display = 'block';
+                    resultEl.textContent = 'Creating logos...';
+                    ApiClient.ajax({
+                        type: 'POST',
+                        url: ApiClient.getUrl('LogoArt/create-logos'),
+                        data: JSON.stringify({ Mode: mode }),
+                        contentType: 'application/json',
+                        dataType: 'json'
+                    }).then(function (data) {
+                        resultEl.textContent = (data && data.Message) ? data.Message : 'Done.';
+                    }).catch(function (e) {
+                        console.error('[LogoArt] Create logos failed - a 401/403 means you are not logged in as an administrator', e);
+                        resultEl.textContent = 'Failed - see the browser console and the server log for "LogoArt: CreateLogos".';
+                    }).finally(function () {
+                        btn.disabled = false;
+                    });
+                });
+            })();
 
             // Session 36 (user-reported, systematic sweep after two
             // similar load-time bugs were found): named as a variable

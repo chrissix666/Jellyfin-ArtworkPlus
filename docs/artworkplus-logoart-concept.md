@@ -63,9 +63,11 @@ instantiated by a resolver — lesson A15: a class alone proves nothing)
 | — | Live TV | remote only, unusual | out of scope |
 
 ### A5 Clearart facts
-`ImageType.Art`, file `clearart.*`, inherited like the logo (`ParentArt*`), available on
-every detail page without an extra request (`DtoOptions` default = all image types),
-URL `/Items/{id}/Images/Art`. Never rendered by the web client. Fanart.tv norm: **1000 × 562
+`ImageType.Art`, file `clearart.*`, the item's OWN clearart is in every detail DTO
+(`DtoOptions` default = all image types), URL `/Items/{id}/Images/Art`. **Correction
+(Session 134, source):** `DtoService.AddInheritedImages` hard-codes `artLimit = 0` ("Emby
+apps are not using this") - vanilla never fills `ParentArt*`; clearart inheritance up the
+parent chain exists only through our own `/LogoArt/{itemId}` walk. Never rendered by the web client. Fanart.tv norm: **1000 × 562
 (16:9)**, transparent, character + logo.
 
 ### A6 Our own related pieces
@@ -125,7 +127,9 @@ the user's own OSD script (`movieSourceMode: default | file | parent | grandpare
 season → series; album → artist). "Item only" = the vanilla "no fallback"; "Episode only"
 does not exist (episodes never own a logo/art file). The chain selects use the
 `epSyncSetFallback` pattern (later stages disable chosen values, None ends the chain);
-the Source mode applies to every stage alike.
+the Source mode applies to the Vanilla logo and Clearart stages alike (both are the
+server's inheritance chain); the Characterart stage ignores it (our controller resolves
+Season/Episode to the series folder regardless).
 
 Resolution (`/LogoArt/{itemId}`, server): walks the parent chain once (`GetParent()`,
 `Series`/`Season`/`MusicArtist` links) and returns per level the Logo/Art tags, plus the
@@ -147,6 +151,15 @@ acts on the group; our own element shows the winning source — also when "Vanil
 loader, Characterart's DOM anchor untouched. **Zero-intervention rule:** a group whose chain
 is Vanilla logo / Size 100 / Offset 0 / nothing hidden is not touched at all — vanilla works
 alone.
+
+Prehiding, sharpened (2026-09-21): a FileTransformation style cannot know the item type,
+so the style hides `.detailLogo` **globally** as soon as at least one type deviates from
+Vanilla logo / 100 / 0 / 0 (all types at that default → no style, nothing at all). The
+client asks `/LogoArt/{itemId}`, which also returns the type; for a zero-intervention type
+it adds ONE class that releases `.detailLogo` again and touches nothing else (no container,
+no image, no geometry). Source facts: `itemDetails/index.html:4` — `.detailLogo` is empty
+in the template; the image arrives only in `renderLogo()` (`index.js:678-687`) after the
+item fetch through the lazy loader, so the release class never races with a painted logo.
 
 ### B4 Geometry (hard-coded per source; Size/Offset shared by the whole chain)
 | | Vanilla logo | Clearart | Characterart | Text (Persons) |
@@ -178,8 +191,15 @@ top or stands on the ribbon line — nothing on the page moves (absolute positio
 - Vanilla parity for hiding: below 68.75em and in the mobile/TV layouts our container is
   hidden exactly like `.detailLogo` (the user only uses the desktop web layout).
 - Preload before show; a failed image = next stage (B2).
-- Characterart in the slot reuses the Characterart tab's MultiImage fields (Order/Cycle/
-  Fade/Play once/Random start) — visible only when a stage is Characterart.
+- Characterart in the slot is **independent of the Characterart tab's behaviour** (user
+  decision 2026-09-21): its Enable and Show-on flags have no effect on the slot, and the
+  slot has its own rotation rows (Image mode/Order/Playback/Random start/Stay static/
+  Display duration/Transition duration per type, visible only when a stage is
+  Characterart). Only the FILE LOOKUP is shared: the Characterart tab's Naming mode, Type
+  name, Folder name and Allowed formats define what a characterart file is called on disk,
+  so the same files feed both places (no second naming block, rule 28). Server side: the
+  file-list part of `CharacterartController.ResolveItem` becomes a shared helper; the
+  Show-on gate stays in the Characterart endpoint only.
 - Double image with the Characterart tab (same picture in the slot AND at Characterart Top)
   is the user's business — no automatic precedence (decision 2026-09-20). The description
   says so in one line.
@@ -207,10 +227,10 @@ piece. Chain for Persons: **Folder logo → Text → None**.
 | `Fallback` | None (Skip) · Folder logo · Text | Used when the source has no image. None: the slot stays empty. |
 | `Base name` | `clearlogo` | name.ext in the person's folder; png, webp or jpg, first found wins. |
 | `Font pool` | Signature · Title · Both | Signature: 60 handwriting fonts. Title: 60 headline fonts. Both: all 120. |
-| `Fonts` (checklist, `Check all` / `Uncheck all`) | | One ticked: used for everyone. Several: one per person, fixed by name. Hover a font for a preview. |
+| `Fonts` (multi-select dropdown, `Check all` / `Uncheck all` in the panel) | | Opens a list to tick fonts; hover one for a preview. One: for everyone. Several: one per person by name. |
 | `Preview names` | `Scarlett Johansson, Keanu Reeves` | Comma-separated names shown in the hover preview. |
-| `Text stroke` | 0 | Thickens the white letters, relative to the text size. 0 = font as drawn. |
-| `Outline` | 1 | Black rim around the letters, relative to the text size. 0 = none. |
+| `Text stroke` | 0 | Thickens the white letters, in percent of the text size. 0 = font as drawn. |
+| `Outline` | 1 | Black rim around the letters, in percent of the text size. 0 = none, 1 = a fine line. |
 | `Uppercase` | checkbox, off | Title fonts only: render the name in capitals. Signature fonts keep their case. |
 | `Size` / `Offset` / `Vertical offset` | as B2 | |
 | `Create logos` button + `Mode` Update · Replace + result line | | Writes "Base name".png (800 x 310) with the ticked fonts. Update: missing only. Replace: all. |
@@ -270,7 +290,7 @@ piece. Chain for Persons: **Folder logo → Text → None**.
 ## Part E — Where a parallel structure is allowed (and why)
 | Piece | Existing pattern | New part | Reason |
 |---|---|---|---|
-| Font checklist + hover preview | checkbox rows, Restore buttons | live-text preview panel, per-font `@font-face` | no other feature chooses among 120 visual options |
+| Font dropdown (multi-select) + hover preview overlay | checkbox rows, `epSelectCompact` look | closed = select-like button with the summary, open = floating panel with one checkbox per font, hovering an entry floats a live-text preview next to it (user's idea 2026-09-21) | no other feature chooses among 120 visual options |
 | Font endpoint `/LogoArt/font/{file}` | `/CaseMod/Texture/{type}/{key}` (no auth, ETag) | — | same pattern |
 | Bulk creator | People Backdrops POST buttons | SkiaSharp text rendering | server-side rendering exists nowhere else yet |
 
@@ -292,8 +312,9 @@ lifecycle, logging, tests) is existing vocabulary.
 ---
 
 ## Part G — Open before implementation
-1. Fibel Part C row for LogoArt (drafted below, to be approved).
-2. Labels and one-line descriptions for every field (user chooses from proposals, rule 27).
+1. ~~Fibel Part C row~~ — done 2026-09-21 (in the Fibel, Part C).
+2. ~~Labels and descriptions~~ — done: the user delegated the wording ("ich vertraue dir");
+   the texts in B2, B2a and D1a are final.
 3. Exact `EP_TREE` nodes: group blocks as sibling collapses under the tab root
    (`epCollapseNested` per depth), chain selects + Size/Offset inside `LogoArt<Group>
    DependentFields`, Hide main switch greying the Hide row, Persons block with the
@@ -308,3 +329,50 @@ lifecycle, logging, tests) is existing vocabulary.
 
 ### Draft Fibel Part C row
 | **LogoArt** (Session 133) | no format list (sources are DB images / own endpoints) | no in-tab Enable; General switch only (Case-Mod pattern) | yes: eleven item-type blocks under six group collapses + Persons (Folder/Text/Creator) | chain selects + Source mode + Size/Offsets inside `LogoArt<Type>DependentFields` (one per type); Persons' checklist inside `LogoArtPersonsTextFields` | yes, per type | Chain selects follow `epSyncSetFallback` (later stages disable chosen values, None ends); Characterart option only in Movies/TV/Sets; MultiImage rows gated by `AnyValueIn(chain, Characterart)`; the font checklist's hover preview is the tab's one new UI form (Part E) |
+
+
+---
+
+## Part H — Implementation (Session 134, 2026-09-21)
+
+Everything of Parts A–G is implemented, tested and deployed (deploys #54/#55). Deviations
+from the design, each with its reason:
+
+- **Fonts ship as `.otf`, not WOFF2.** SkiaSharp (the bulk creator) cannot open WOFF2;
+  `.otf` is the one extension valid for both TrueType and CFF outlines (34 of the 120 pool
+  fonts are CFF). 11.6 MB total; a font loads only when hovered or shown. Anton's licence
+  corrected to OFL (it came from the user's collection, not the download report).
+- **Stroke / Outline in percent of the font size** (not em): 1 = 0.01em, a fine rim like
+  the user's 1 px script line; em would have been 100 x too thick (seen in the preview).
+- **Glyph rule on the server**: `LogoTextRenderer.GlyphSafeText` opens the real font with
+  SkiaSharp and returns the normalised name when a glyph is missing; the client renders
+  `stage.Text` as delivered - live text and PNG cannot disagree.
+- **Font pick on the server** (`PickFont`, FNV-1a of the NFC name mod ticked count) for the
+  same reason.
+- **Fonts UI = dropdown** (user decision during the build): a select-like button with the
+  summary ("60 of 60 Signature fonts - one per person"), a floating panel with the
+  checkboxes and Check all / Uncheck all, a hover overlay with the preview names in the
+  hovered font (two stacked layers exactly like the live text).
+- **Characterart stage** uses `CharacterartController.ResolveSlotImages` (shared file
+  lookup, no Show-on gate, the LogoArt type's own rotation fields) and its own image
+  endpoint `/LogoArt/{id}/characterart/{file}`; the Characterart controller only gained
+  methods (`git diff`: 0 removed lines).
+- **Prehiding** as sharpened in B3: `FileTransformationRegistrar.LogoArtIntervenes` decides
+  per index.html load; the release class is `artworkplus-logoart-vanilla`.
+- **`POST /LogoArt/create-logos` takes an optional `Names`** (comma-separated, API only) to
+  run for a few persons - the library has 79 907 persons.
+- **EP_TREE**: group nodes manage the six group collapses, terminal type nodes the nested
+  collapses / `DependentFields`; the rotation rows sit in `LogoArt<Type>RotationFields` so
+  every child target is inside its parent's (a row targeted by parent AND child is cleared
+  by the containment skip - found by the first test run). The rotation / Text / Base name
+  gates also require a non-Hide source (Hide ends the chain, greyed fallbacks do not count).
+
+Tests: `test_configpage.py` S134 block (386 total), `test_logoart_render.py` (24 DOM
+checks: zero intervention, slot/floor geometry, Size/Offset, chain skip, Hide, rotation,
+real font fitted + re-fitted), `test_logoart_fonts.py` (14), description length 552 at 1920
+px, all diagnostics; `run_checks.py --all` 18/18. Live (2026-09-21): Star Trek: Nemesis
+Clearart standing on the ribbon line (box bottom = `.detailRibbon` top to the pixel),
+episode inheriting the series logo with Source mode Series, Season Hide, Keanu Reeves as
+live Biancha text and, after `Create logos` with `Names`, as the written 800 x 310 PNG in
+the same font; admin dropdown + overlay on the real endpoint. The user's config was
+restored byte-identical afterwards.

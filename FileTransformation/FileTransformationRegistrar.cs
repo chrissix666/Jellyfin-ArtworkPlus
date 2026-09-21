@@ -5,6 +5,7 @@ using System.Runtime.Loader;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Plugin.ArtworkPlus.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.DependencyInjection;
@@ -356,6 +357,48 @@ public static class FileTransformCallback
         "<style id=\"artworkplus-backdrops-prehiding\">body.artworkplus-backdrops-override .backdropContainer:not(.artworkplus-own-backdrop){visibility:hidden!important}</style>";
 
     /// <summary>
+    /// LogoArt (Session 134, concept B3 sharpened 2026-09-21): a static
+    /// rule cannot know the item type, so vanilla's .detailLogo is hidden
+    /// globally as soon as at least one item type deviates from
+    /// VanillaLogo / 100 / 0 / 0. The client asks /LogoArt/{itemId}; for a
+    /// zero-intervention type it adds ONE class (artworkplus-logoart-vanilla)
+    /// that releases the logo again and touches nothing else, for every
+    /// other type our own container shows the winning stage. Source facts:
+    /// itemDetails/index.html:4 has an empty .detailLogo, the image arrives
+    /// only in renderLogo() (index.js:678-687) after the item fetch through
+    /// the lazy loader - so the release class never races a painted logo.
+    /// visibility (not display): Characterart's top anchor uses .detailLogo
+    /// as its DOM insertion point and the layout must not change.
+    /// </summary>
+    private const string LogoArtPrehidingStyleTag =
+        "<style id=\"artworkplus-logoart-prehiding\">.detailLogo:not(.artworkplus-logoart-vanilla){visibility:hidden!important}</style>";
+
+    /// <summary>true when at least one item type of the LogoArt tab is not at its zero-intervention default (Persons never need prehiding - vanilla shows nothing there).</summary>
+    internal static bool LogoArtIntervenes(PluginConfiguration c)
+    {
+        if (!c.LogoArtEnabled) { return false; }
+        var chains = new[]
+        {
+            (c.LogoArtMovieSource, c.LogoArtMovieSizePercent, c.LogoArtMovieOffsetVw, c.LogoArtMovieVerticalOffsetVh),
+            (c.LogoArtSeriesSource, c.LogoArtSeriesSizePercent, c.LogoArtSeriesOffsetVw, c.LogoArtSeriesVerticalOffsetVh),
+            (c.LogoArtSeasonSource, c.LogoArtSeasonSizePercent, c.LogoArtSeasonOffsetVw, c.LogoArtSeasonVerticalOffsetVh),
+            (c.LogoArtEpisodeSource, c.LogoArtEpisodeSizePercent, c.LogoArtEpisodeOffsetVw, c.LogoArtEpisodeVerticalOffsetVh),
+            (c.LogoArtSetSource, c.LogoArtSetSizePercent, c.LogoArtSetOffsetVw, c.LogoArtSetVerticalOffsetVh),
+            (c.LogoArtVideoSource, c.LogoArtVideoSizePercent, c.LogoArtVideoOffsetVw, c.LogoArtVideoVerticalOffsetVh),
+            (c.LogoArtMusicVideoSource, c.LogoArtMusicVideoSizePercent, c.LogoArtMusicVideoOffsetVw, c.LogoArtMusicVideoVerticalOffsetVh),
+            (c.LogoArtAlbumSource, c.LogoArtAlbumSizePercent, c.LogoArtAlbumOffsetVw, c.LogoArtAlbumVerticalOffsetVh),
+            (c.LogoArtArtistSource, c.LogoArtArtistSizePercent, c.LogoArtArtistOffsetVw, c.LogoArtArtistVerticalOffsetVh),
+            (c.LogoArtBookSource, c.LogoArtBookSizePercent, c.LogoArtBookOffsetVw, c.LogoArtBookVerticalOffsetVh)
+        };
+        foreach (var (source, size, offset, vertical) in chains)
+        {
+            if (source != "VanillaLogo" || size != 100 || offset != 0 || vertical != 0) { return true; }
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Deliberately standalone, minimal, inline - NOT part of Core.js or
     /// anything delivered via JavaScript Injector - specifically so this
     /// safety net still works even if that larger delivery path fails
@@ -563,6 +606,21 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
         else
         {
             logger?.LogInformation("ArtworkPlus: TransformIndexHtml - Backdrops prehiding skipped, Backdrops is disabled");
+        }
+
+        // LogoArt prehiding (Session 134) - see LogoArtPrehidingStyleTag.
+        var logoArtPrehidingNeeded = config is not null && LogoArtIntervenes(config);
+        if (logoArtPrehidingNeeded && contents.Contains("</head>", StringComparison.Ordinal))
+        {
+            if (!result.Contains(LogoArtPrehidingStyleTag, StringComparison.Ordinal))
+            {
+                result = result.Replace("</head>", LogoArtPrehidingStyleTag + "</head>", StringComparison.Ordinal);
+                logger?.LogInformation("ArtworkPlus: TransformIndexHtml - LogoArt prehiding style inserted");
+            }
+        }
+        else
+        {
+            logger?.LogInformation("ArtworkPlus: TransformIndexHtml - LogoArt prehiding skipped (every type at its vanilla default or LogoArt off)");
         }
 
         // Check/insert all three script tags independently of each other -

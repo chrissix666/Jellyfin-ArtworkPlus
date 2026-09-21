@@ -16,10 +16,11 @@ Fibel, Backdrops concept.
 | `Jellyfin-ArtworkPlus-RenderArt-v1.js` | data folder | `/RenderArt/script.js` | scripts |
 | `Jellyfin-ArtworkPlus-Backdrops-v1.js` | data folder | `/Backdrops/script.js` | scripts |
 | `CaseTextures/**` | next to DLL | `/CaseMod/Texture/{caseType}/{key}` | full |
-| index.html injection (4 script tags + FOOC styles) | `FileTransformation/FileTransformationRegistrar.cs` via File Transformation plugin | — | full |
+| `Fonts/**` (120 .otf + fonts.json + licences) | next to DLL | `/LogoArt/font/{group}/{file}`, `/LogoArt/fonts` | full |
+| index.html injection (4 script tags + FOOC styles + LogoArt prehiding) | `FileTransformation/FileTransformationRegistrar.cs` via File Transformation plugin | — | full |
 
 Data folder = `C:\ProgramData\Jellyfin\Server\plugins\Jellyfin.Plugin.ArtworkPlus\`.
-Admin tabs (`data-tab`): general, casemod, animatedposter, customposter, extraposter, characterart, redcarpet, backdrops.
+Admin tabs (`data-tab`): general, casemod, animatedposter, customposter, extraposter, logoart, characterart, redcarpet, backdrops.
 
 ## Features
 
@@ -47,6 +48,7 @@ Sets (BoxSets): supported by Animated/Custom/Extra since Sessions 87–92 (Movie
 |---|---|---|---|---|---|---|
 | Characterart | detail pages (Movie/Series/Season/Episode/Set), up to 4 screen positions; since Session 119 pure-CSS clearlogo replica (anchor on the ribbon line / logo edges, vw/vh box, `object-fit:contain`) | `Characterart`: `{itemId}`, `{itemId}/image/{fileName}` | `Characterart*` (95) | characterart | ✅ live (Session 119: 9 random Movie/TV/Set, MultiImage cycle+fade; F11/small window = user's hand) | random picks via `/Characterart/{id}` Images>1 |
 | Red Carpet | person detail pages, actor-art overlay; since Session 119 pure-CSS box (`position:fixed`, vw/vh) | `RedCarpet`: `{personId}`, `{personId}/image` | `RedCarpet*` (24); master switch on General tab only | redcarpet | ✅ live (Session 119: 5 random persons over person page + Movies/Series/Episodes lists) | `metadata\Red Carpet\<Name>.png` matched via `/Persons` |
+| LogoArt (Session 134) | the logo slot of detail pages (Movie, Series, Season, Episode, Set, Video, Music video, Album, Artist, Book): per type a chain Source > Fallback > Second fallback of Vanilla logo / Clearart / Characterart / Hide, Source mode = inheritance level, Size/Offset/Vertical offset; our `.logoart-container` right after `.detailLogo` (vanilla box for logos/text, 16:9 / 1:1 box standing on the ribbon line for Clearart/Characterart); vanilla's logo prehidden by `FileTransformationRegistrar.LogoArtPrehidingStyleTag` once any type deviates, released by one class for zero-intervention types; Persons: Folder logo (`Base name`.png/webp/jpg in the person folder) > Text (name rendered live in a bundled font, FNV-1a(name) pick, glyph-safe normalisation server-side, stroke/outline in % of the font size) | `LogoArt`: `{itemId}` (resolved chain), `{itemId}/characterart/{fileName}`, `person/{personId}/image`, `fonts`, `font/{group}/{file}`, POST `create-logos` (admin, `{Mode, Names?}`, SkiaSharp 800 x 310) | `LogoArt*` (114) | logoart (before Characterart; General switch only) | ✅ live Session 134 (Star Trek: Nemesis Clearart on the ribbon line, episode inherits the series logo with Source mode Series, Season Hide, Keanu Reeves as Biancha text, font dropdown + hover preview on the real endpoint) | `Fonts/Signature` 60 + `Fonts/Title` 60 (.otf next to the DLL), person `metadata\People\K\Keanu Reeves\clearlogo.png` after Create logos |
 
 ### Backdrops (`Backdrops-v1.js`, seven independent IIFEs on the Core transition bus; Session 130: no Firefox gate, no vanilla-setting gate — the admin page only hints while a vanilla setting is still on, concept Part S)
 

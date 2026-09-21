@@ -1322,7 +1322,32 @@
         // Fullscreen offset: only while the <body> carries the class set by
         // installFullscreenClass() - the sole remaining piece of JS in the
         // positioning, because CSS :fullscreen cannot see the browser\'s F11.
-        'body.artworkplus-fullscreen .artworkplus-art-box{--ap-fs:var(--ap-fs-offset);}'
+        'body.artworkplus-fullscreen .artworkplus-art-box{--ap-fs:var(--ap-fs-offset);}',
+        // LogoArt (Session 134, concept B4): our own box in vanilla's logo
+        // slot. Shared by every stage: width 25vw x Size, centre 62.5vw
+        // (+ Offset), Vertical offset, hidden at the clearlogo's own
+        // breakpoints. Logo / Folder logo / Text = the vanilla box (16vh
+        // high, top 10vh, image centred). Clearart (16:9) and Characterart
+        // (1:1) stand with their bottom edge on the ribbon line
+        // (40vh - 7.2em, the Characterart top anchor's line) and shrink
+        // until they fit below 10vh; the image sits at the bottom.
+        '.logoart-container{position:absolute;pointer-events:none;z-index:1;--la-size:1;--la-offset:0vw;--la-voffset:0vh;left:calc(62.5vw + var(--la-offset));}',
+        '.logoart-container>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center center;}',
+        '.logoart-container.logoart-slot{top:calc(10vh + var(--la-voffset));width:calc(25vw * var(--la-size));height:calc(16vh * var(--la-size));transform:translateX(-50%);}',
+        '.logoart-container.logoart-floor{top:calc(40vh - 7.2em + var(--la-voffset));width:auto;transform:translate(-50%,-100%);}',
+        '.logoart-container.logoart-floor>img{object-position:center bottom;}',
+        '.logoart-container.logoart-clearart{aspect-ratio:16/9;height:min(calc(25vw * var(--la-size) * 9 / 16), calc(30vh - 7.2em));}',
+        '.logoart-container.logoart-characterart{aspect-ratio:1/1;height:min(calc(25vw * var(--la-size)), calc(30vh - 7.2em));}',
+        '@media all and (max-height:31.25em){.logoart-container.logoart-floor{top:calc(52vh - 7.2em + var(--la-voffset));}}',
+        '@media all and (max-width:68.75em){.logoart-container{display:none;}}',
+        '.layout-mobile .logoart-container,.layout-tv .logoart-container{display:none;}',
+        // Text stage (Persons): two stacked layers like the bulk creator's
+        // PNG - a black rim (outline + stroke wide) under a white body
+        // thickened by the stroke; both in percent of the font size (1 = 0.01em,
+        // stroke width doubled because half of a CSS stroke lies inside the glyph).
+        '.logoart-container>.logoart-text{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;line-height:1.1;color:#fff;font-weight:normal;-webkit-text-stroke-color:#fff;-webkit-text-stroke-width:calc(var(--la-stroke, 0) * 0.02em);paint-order:stroke fill;}',
+        '.logoart-container>.logoart-text.logoart-text-rim{color:#000;-webkit-text-stroke-color:#000;-webkit-text-stroke-width:calc((var(--la-outline, 1) + var(--la-stroke, 0)) * 0.02em);}',
+        '.logoart-container>.logoart-text.logoart-text-measure{visibility:hidden;left:0;top:0;transform:none;}'
     ].join('\n');
 
     function ensureRenderArtStyles() {

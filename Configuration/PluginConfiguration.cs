@@ -752,6 +752,336 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public string RedCarpetAllowedFormats { get; set; } = "png";
 
+    // ───────────────────────── LogoArt tab ─────────────────────────
+    // Session 134 (concept: docs/artworkplus-logoart-concept.md). One block
+    // per item type: a source chain (Source -> Fallback -> Second fallback)
+    // for the logo slot of detail pages, the inheritance level (Source
+    // mode, inheriting types only), the shared geometry override
+    // (Size/Offset/Vertical offset, valid for every stage so a fallback
+    // never jumps) and, where Characterart is a possible stage
+    // (Movie/Series/Season/Episode/Set), the slot's OWN rotation fields -
+    // independent of the Characterart tab (user decision 2026-09-21; only
+    // the file lookup is shared). Defaults are "zero intervention":
+    // VanillaLogo / None / None / Default / 100 / 0 / 0 - the client never
+    // touches such a type (concept B3).
+
+    /// <summary>Master switch for LogoArt (General tab). Server-side kill switch, see LogoArtController.</summary>
+    public bool LogoArtEnabled { get; set; } = true;
+
+    // --- LogoArt: Movie ---
+    /// <summary>VanillaLogo / Clearart / Characterart / Hide - the first stage of the Movie chain.</summary>
+    public string LogoArtMovieSource { get; set; } = "VanillaLogo";
+
+    /// <summary>None / VanillaLogo / Clearart / Characterart - used when the source has no image.</summary>
+    public string LogoArtMovieFallback { get; set; } = "None";
+
+    public string LogoArtMovieSecondFallback { get; set; } = "None";
+
+    /// <summary>Default / ItemOnly / Parent / Grandparent - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
+    public string LogoArtMovieSourceMode { get; set; } = "Default";
+
+    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtMovieSizePercent { get; set; } = 100;
+
+    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
+    public double LogoArtMovieOffsetVw { get; set; }
+
+    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
+    public double LogoArtMovieVerticalOffsetVh { get; set; }
+
+    /// <summary>Rotation of the Characterart stage in the slot - same meaning as the Characterart tab's fields, but its own values.</summary>
+    public bool LogoArtMovieMultiImage { get; set; } = true;
+
+    public string LogoArtMovieOrderMode { get; set; } = "Shuffle";
+
+    public bool LogoArtMovieSinglePass { get; set; }
+
+    public bool LogoArtMovieRandomStart { get; set; }
+
+    public bool LogoArtMovieStaySingleImageStatic { get; set; }
+
+    public int LogoArtMovieCycleTimeMs { get; set; } = 5000;
+
+    public int LogoArtMovieFadeTimeMs { get; set; } = 1000;
+
+    // --- LogoArt: Series ---
+    /// <summary>VanillaLogo / Clearart / Characterart / Hide - the first stage of the Series chain.</summary>
+    public string LogoArtSeriesSource { get; set; } = "VanillaLogo";
+
+    /// <summary>None / VanillaLogo / Clearart / Characterart - used when the source has no image.</summary>
+    public string LogoArtSeriesFallback { get; set; } = "None";
+
+    public string LogoArtSeriesSecondFallback { get; set; } = "None";
+
+    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtSeriesSizePercent { get; set; } = 100;
+
+    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
+    public double LogoArtSeriesOffsetVw { get; set; }
+
+    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
+    public double LogoArtSeriesVerticalOffsetVh { get; set; }
+
+    /// <summary>Rotation of the Characterart stage in the slot - same meaning as the Characterart tab's fields, but its own values.</summary>
+    public bool LogoArtSeriesMultiImage { get; set; } = true;
+
+    public string LogoArtSeriesOrderMode { get; set; } = "Shuffle";
+
+    public bool LogoArtSeriesSinglePass { get; set; }
+
+    public bool LogoArtSeriesRandomStart { get; set; }
+
+    public bool LogoArtSeriesStaySingleImageStatic { get; set; }
+
+    public int LogoArtSeriesCycleTimeMs { get; set; } = 5000;
+
+    public int LogoArtSeriesFadeTimeMs { get; set; } = 1000;
+
+    // --- LogoArt: Season ---
+    /// <summary>VanillaLogo / Clearart / Characterart / Hide - the first stage of the Season chain.</summary>
+    public string LogoArtSeasonSource { get; set; } = "VanillaLogo";
+
+    /// <summary>None / VanillaLogo / Clearart / Characterart - used when the source has no image.</summary>
+    public string LogoArtSeasonFallback { get; set; } = "None";
+
+    public string LogoArtSeasonSecondFallback { get; set; } = "None";
+
+    /// <summary>Default / SeasonOnly / Series - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
+    public string LogoArtSeasonSourceMode { get; set; } = "Default";
+
+    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtSeasonSizePercent { get; set; } = 100;
+
+    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
+    public double LogoArtSeasonOffsetVw { get; set; }
+
+    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
+    public double LogoArtSeasonVerticalOffsetVh { get; set; }
+
+    /// <summary>Rotation of the Characterart stage in the slot - same meaning as the Characterart tab's fields, but its own values.</summary>
+    public bool LogoArtSeasonMultiImage { get; set; } = true;
+
+    public string LogoArtSeasonOrderMode { get; set; } = "Shuffle";
+
+    public bool LogoArtSeasonSinglePass { get; set; }
+
+    public bool LogoArtSeasonRandomStart { get; set; }
+
+    public bool LogoArtSeasonStaySingleImageStatic { get; set; }
+
+    public int LogoArtSeasonCycleTimeMs { get; set; } = 5000;
+
+    public int LogoArtSeasonFadeTimeMs { get; set; } = 1000;
+
+    // --- LogoArt: Episode ---
+    /// <summary>VanillaLogo / Clearart / Characterart / Hide - the first stage of the Episode chain.</summary>
+    public string LogoArtEpisodeSource { get; set; } = "VanillaLogo";
+
+    /// <summary>None / VanillaLogo / Clearart / Characterart - used when the source has no image.</summary>
+    public string LogoArtEpisodeFallback { get; set; } = "None";
+
+    public string LogoArtEpisodeSecondFallback { get; set; } = "None";
+
+    /// <summary>Default / Season / Series - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
+    public string LogoArtEpisodeSourceMode { get; set; } = "Default";
+
+    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtEpisodeSizePercent { get; set; } = 100;
+
+    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
+    public double LogoArtEpisodeOffsetVw { get; set; }
+
+    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
+    public double LogoArtEpisodeVerticalOffsetVh { get; set; }
+
+    /// <summary>Rotation of the Characterart stage in the slot - same meaning as the Characterart tab's fields, but its own values.</summary>
+    public bool LogoArtEpisodeMultiImage { get; set; } = true;
+
+    public string LogoArtEpisodeOrderMode { get; set; } = "Shuffle";
+
+    public bool LogoArtEpisodeSinglePass { get; set; }
+
+    public bool LogoArtEpisodeRandomStart { get; set; }
+
+    public bool LogoArtEpisodeStaySingleImageStatic { get; set; }
+
+    public int LogoArtEpisodeCycleTimeMs { get; set; } = 5000;
+
+    public int LogoArtEpisodeFadeTimeMs { get; set; } = 1000;
+
+    // --- LogoArt: Set ---
+    /// <summary>VanillaLogo / Clearart / Characterart / Hide - the first stage of the Set chain.</summary>
+    public string LogoArtSetSource { get; set; } = "VanillaLogo";
+
+    /// <summary>None / VanillaLogo / Clearart / Characterart - used when the source has no image.</summary>
+    public string LogoArtSetFallback { get; set; } = "None";
+
+    public string LogoArtSetSecondFallback { get; set; } = "None";
+
+    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtSetSizePercent { get; set; } = 100;
+
+    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
+    public double LogoArtSetOffsetVw { get; set; }
+
+    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
+    public double LogoArtSetVerticalOffsetVh { get; set; }
+
+    /// <summary>Rotation of the Characterart stage in the slot - same meaning as the Characterart tab's fields, but its own values.</summary>
+    public bool LogoArtSetMultiImage { get; set; } = true;
+
+    public string LogoArtSetOrderMode { get; set; } = "Shuffle";
+
+    public bool LogoArtSetSinglePass { get; set; }
+
+    public bool LogoArtSetRandomStart { get; set; }
+
+    public bool LogoArtSetStaySingleImageStatic { get; set; }
+
+    public int LogoArtSetCycleTimeMs { get; set; } = 5000;
+
+    public int LogoArtSetFadeTimeMs { get; set; } = 1000;
+
+    // --- LogoArt: Video ---
+    /// <summary>VanillaLogo / Clearart / Hide - the first stage of the Video chain.</summary>
+    public string LogoArtVideoSource { get; set; } = "VanillaLogo";
+
+    /// <summary>None / VanillaLogo / Clearart - used when the source has no image.</summary>
+    public string LogoArtVideoFallback { get; set; } = "None";
+
+    public string LogoArtVideoSecondFallback { get; set; } = "None";
+
+    /// <summary>Default / ItemOnly / Parent / Grandparent - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
+    public string LogoArtVideoSourceMode { get; set; } = "Default";
+
+    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtVideoSizePercent { get; set; } = 100;
+
+    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
+    public double LogoArtVideoOffsetVw { get; set; }
+
+    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
+    public double LogoArtVideoVerticalOffsetVh { get; set; }
+
+    // --- LogoArt: Music video ---
+    /// <summary>VanillaLogo / Clearart / Hide - the first stage of the Music video chain.</summary>
+    public string LogoArtMusicVideoSource { get; set; } = "VanillaLogo";
+
+    /// <summary>None / VanillaLogo / Clearart - used when the source has no image.</summary>
+    public string LogoArtMusicVideoFallback { get; set; } = "None";
+
+    public string LogoArtMusicVideoSecondFallback { get; set; } = "None";
+
+    /// <summary>Default / ItemOnly / Parent / Grandparent - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
+    public string LogoArtMusicVideoSourceMode { get; set; } = "Default";
+
+    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtMusicVideoSizePercent { get; set; } = 100;
+
+    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
+    public double LogoArtMusicVideoOffsetVw { get; set; }
+
+    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
+    public double LogoArtMusicVideoVerticalOffsetVh { get; set; }
+
+    // --- LogoArt: Album ---
+    /// <summary>VanillaLogo / Clearart / Hide - the first stage of the Album chain.</summary>
+    public string LogoArtAlbumSource { get; set; } = "VanillaLogo";
+
+    /// <summary>None / VanillaLogo / Clearart - used when the source has no image.</summary>
+    public string LogoArtAlbumFallback { get; set; } = "None";
+
+    public string LogoArtAlbumSecondFallback { get; set; } = "None";
+
+    /// <summary>Default / AlbumOnly / Artist - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
+    public string LogoArtAlbumSourceMode { get; set; } = "Default";
+
+    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtAlbumSizePercent { get; set; } = 100;
+
+    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
+    public double LogoArtAlbumOffsetVw { get; set; }
+
+    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
+    public double LogoArtAlbumVerticalOffsetVh { get; set; }
+
+    // --- LogoArt: Artist ---
+    /// <summary>VanillaLogo / Clearart / Hide - the first stage of the Artist chain.</summary>
+    public string LogoArtArtistSource { get; set; } = "VanillaLogo";
+
+    /// <summary>None / VanillaLogo / Clearart - used when the source has no image.</summary>
+    public string LogoArtArtistFallback { get; set; } = "None";
+
+    public string LogoArtArtistSecondFallback { get; set; } = "None";
+
+    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtArtistSizePercent { get; set; } = 100;
+
+    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
+    public double LogoArtArtistOffsetVw { get; set; }
+
+    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
+    public double LogoArtArtistVerticalOffsetVh { get; set; }
+
+    // --- LogoArt: Book ---
+    /// <summary>VanillaLogo / Clearart / Hide - the first stage of the Book chain.</summary>
+    public string LogoArtBookSource { get; set; } = "VanillaLogo";
+
+    /// <summary>None / VanillaLogo / Clearart - used when the source has no image.</summary>
+    public string LogoArtBookFallback { get; set; } = "None";
+
+    public string LogoArtBookSecondFallback { get; set; } = "None";
+
+    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtBookSizePercent { get; set; } = 100;
+
+    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
+    public double LogoArtBookOffsetVw { get; set; }
+
+    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
+    public double LogoArtBookVerticalOffsetVh { get; set; }
+
+    // --- LogoArt: Persons (concept Part D - the deliberate "add" exception,
+    // vanilla never shows a logo on a person page) ---
+    /// <summary>FolderLogo / Text / Hide - FolderLogo = "Base name".png|webp|jpg in the person's metadata folder, Text = the name rendered in a bundled font.</summary>
+    public string LogoArtPersonsSource { get; set; } = "FolderLogo";
+
+    /// <summary>None / FolderLogo / Text.</summary>
+    public string LogoArtPersonsFallback { get; set; } = "Text";
+
+    /// <summary>File name without extension in the person's folder (png, webp or jpg, first found wins) - also what the bulk creator writes.</summary>
+    public string LogoArtPersonsBaseName { get; set; } = "clearlogo";
+
+    /// <summary>Signature / Title / Both - which bundled pool the checklist shows (Fonts/fonts.json).</summary>
+    public string LogoArtPersonsFontPool { get; set; } = "Signature";
+
+    /// <summary>
+    /// Comma-separated font files (manifest "file" values) that are ticked
+    /// in the checklist; "*" = every font of the pool. One font = the same
+    /// font for everyone; several = one per person, chosen by a stable hash
+    /// of the name (LogoArtController.PickFont) - the bulk creator uses the
+    /// same pick, so live text and written files always agree.
+    /// </summary>
+    public string LogoArtPersonsFonts { get; set; } = "*";
+
+    /// <summary>Comma-separated sample names for the checklist's hover preview.</summary>
+    public string LogoArtPersonsPreviewNames { get; set; } = "Scarlett Johansson, Keanu Reeves";
+
+    /// <summary>White stroke that thickens the glyphs, in percent of the font size (0 = font as drawn).</summary>
+    public double LogoArtPersonsTextStroke { get; set; }
+
+    /// <summary>Black rim around the letters, in percent of the font size (0 = none, 1 = a fine line).</summary>
+    public double LogoArtPersonsOutline { get; set; } = 1;
+
+    /// <summary>Title fonts only: render the name in capitals. Signature fonts always keep their case.</summary>
+    public bool LogoArtPersonsUppercase { get; set; }
+
+    public double LogoArtPersonsSizePercent { get; set; } = 100;
+
+    public double LogoArtPersonsOffsetVw { get; set; }
+
+    public double LogoArtPersonsVerticalOffsetVh { get; set; }
+
     // ───────────────────────── Extraposter tab ─────────────────────────
     // Tab label in the config page: "Extraposter aka Character Poster
     // (Sets)" - the internal name stays "Extraposter" everywhere, see

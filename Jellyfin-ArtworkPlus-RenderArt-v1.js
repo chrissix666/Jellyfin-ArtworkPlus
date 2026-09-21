@@ -1,5 +1,5 @@
 /*!
- * ArtworkPlus - RenderArt (CharacterArt + RedCarpet, merged)
+ * ArtworkPlus - RenderArt (CharacterArt + RedCarpet, merged; LogoArt since Session 134)
  * ------------------------------------------------------
  * FILE-LEVEL CONSOLIDATION ONLY - explicit user requirement: nothing about
  * either feature's own behavior, its own admin-UI section, or its own
@@ -444,6 +444,336 @@
     Core.watchForNavigation(schedule);
     track(setTimeout(function () {
         if (contentReady) { return; }
+        start();
+    }, 1200));
+})();
+
+/*!
+ * LogoArt - the logo slot of detail pages (Session 134)
+ * ------------------------------------------------------
+ * Concept: docs/artworkplus-logoart-concept.md. The server
+ * (/LogoArt/{itemId}) resolves everything - item type, inheritance levels,
+ * Source mode, the stage chain, Characterart files, the person's font -
+ * and this section only preloads and shows: the first stage whose image
+ * loads wins, there is no live switching between sources (only the
+ * Characterart stage's own rotation).
+ *
+ * The slot: vanilla's .detailLogo stays in the DOM (Characterart's top
+ * anchor is inserted before it) and is hidden from the first paint by the
+ * FileTransformation style whenever any item type deviates from its
+ * vanilla default; our own .logoart-container is inserted right AFTER it,
+ * in the same containing block, so every position is the same CSS the
+ * clearlogo uses (Core.ensureRenderArtStyles: 25vw wide, centre 62.5vw,
+ * top 10vh - or bottom on the ribbon line for Clearart/Characterart).
+ * Zero intervention: a type at VanillaLogo / 100 / 0 / 0 gets ONE class
+ * on .detailLogo that releases the prehiding - nothing else is touched.
+ *
+ * Persons (concept Part D): the same chain shape with FolderLogo (a file
+ * in the person folder, served by /LogoArt/person/{id}/image) and Text
+ * (the name rendered live in a bundled font from /LogoArt/font/..., fitted
+ * into the box by a binary search on the font size, re-fitted on resize).
+ */
+(function () {
+    'use strict';
+
+    if (!window.ArtworkPlusCore.claimSingleton('LogoArt')) { return; }
+
+    var DEBUG = true;
+    var PRELOAD_TIMEOUT_MS = 8000;
+    var MAX_CONSECUTIVE_FAILURES = 6;
+    var CONTAINER_CLASS = 'logoart-container';
+    var RELEASE_CLASS = 'artworkplus-logoart-vanilla';
+    var FLOOR_KINDS = { Clearart: 'logoart-clearart', Characterart: 'logoart-characterart' };
+    var loadedFonts = {};
+
+    var Core = window.ArtworkPlusCore;
+    var log = Core.makeLogger('[LogoArt]', DEBUG);
+    var getItemIdFromHash = Core.getItemIdFromHash;
+    var isDetailsPage = Core.isDetailsPage;
+
+    Core.ensureRenderArtStyles();
+
+    var runToken = 0;
+    var tracker = Core.createTimerTracker();
+    var clearTimers = tracker.clearTimers;
+    var track = tracker.track;
+    var navTracker = Core.createTimerTracker();
+    var contentReady = false;
+    var shouldHaveContainer = false;
+    var resizeHandler = null;
+
+    function waitFor(fn, timeoutMs) {
+        return new Promise(function (resolve) {
+            var t0 = Date.now();
+            (function poll() {
+                var el = fn();
+                if (el) { return resolve(el); }
+                if (Date.now() - t0 > (timeoutMs || 8000)) { return resolve(null); }
+                track(setTimeout(poll, 150));
+            })();
+        });
+    }
+
+    function preloadImage(url) {
+        return Core.preloadImage(url, { resolveWith: 'image', timeoutMs: PRELOAD_TIMEOUT_MS, track: track });
+    }
+
+    function findLogo() {
+        var root = Core.findVisibleDetailPage() || document;
+        return root.querySelector('.detailLogo');
+    }
+
+    function removeContainers() {
+        document.querySelectorAll('.' + CONTAINER_CLASS).forEach(function (el) { el.remove(); });
+        if (resizeHandler) { window.removeEventListener('resize', resizeHandler); resizeHandler = null; }
+    }
+
+    /// One box per page, right after .detailLogo (same containing block as
+    /// the clearlogo). Geometry class per stage kind: the vanilla slot for
+    /// VanillaLogo / FolderLogo / Text, the floor (ribbon line) for
+    /// Clearart / Characterart. Size/Offset/Vertical offset are custom
+    /// properties for the stylesheet - shared by every stage, so a
+    /// fallback never moves anything.
+    function createContainer(logo, result, kind) {
+        removeContainers();
+        var box = document.createElement('div');
+        box.className = CONTAINER_CLASS + ' ' + (FLOOR_KINDS[kind] ? 'logoart-floor ' + FLOOR_KINDS[kind] : 'logoart-slot') + ' logoart-kind-' + kind.toLowerCase();
+        box.style.setProperty('--la-size', String((result.SizePercent > 0 ? result.SizePercent : 100) / 100));
+        box.style.setProperty('--la-offset', (result.OffsetVw || 0) + 'vw');
+        box.style.setProperty('--la-voffset', (result.VerticalOffsetVh || 0) + 'vh');
+        logo.parentNode.insertBefore(box, logo.nextSibling);
+        return box;
+    }
+
+    function createImageLayer(container, fadeMs) {
+        var img = document.createElement('img');
+        img.className = 'logoart-layer';
+        img.style.opacity = '0';
+        img.style.transition = 'opacity ' + fadeMs + 'ms ease';
+        container.appendChild(img);
+        return img;
+    }
+
+    /// The Characterart stage's rotation - the same cycle / fade / order /
+    /// single-pass / stay-static behaviour as the Characterart section
+    /// above, driven by the LogoArt type's OWN fields (independent of the
+    /// Characterart tab, user decision 2026-09-21).
+    function runRotation(container, imageUrls, result, myToken) {
+        var layers = [createImageLayer(container, result.FadeTimeMs), createImageLayer(container, result.FadeTimeMs)];
+        var visibleIndex = -1;
+        var slideIndex = 0;
+        var consecutiveFailures = 0;
+        var fadeInGeneration = 0;
+
+        async function showNext() {
+            if (myToken !== runToken || !document.body.contains(container)) { return; }
+            if (result.SinglePass && slideIndex >= imageUrls.length) {
+                var visibleLayer = visibleIndex === -1 ? null : layers[visibleIndex];
+                if (visibleLayer) { visibleLayer.style.opacity = '0'; }
+                log('Characterart stage: single pass complete');
+                return;
+            }
+            var url = imageUrls[slideIndex % imageUrls.length];
+            try {
+                await preloadImage(url);
+            } catch (e) {
+                log('Characterart stage: image skipped (load error)', e);
+                slideIndex++;
+                consecutiveFailures++;
+                if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) { log('Giving up after', consecutiveFailures, 'consecutive failures'); return; }
+                track(setTimeout(showNext, 50));
+                return;
+            }
+            if (myToken !== runToken) { return; }
+            consecutiveFailures = 0;
+            var nextLayerIndex = visibleIndex === 0 ? 1 : 0;
+            var nextLayer = layers[nextLayerIndex];
+            var prevLayer = visibleIndex === -1 ? null : layers[visibleIndex];
+            var myGeneration = ++fadeInGeneration;
+            nextLayer.src = url;
+            nextLayer.style.zIndex = '2';
+            nextLayer.style.opacity = '0';
+            void nextLayer.offsetWidth;
+            if (prevLayer) { prevLayer.style.zIndex = '1'; prevLayer.style.opacity = '0'; }
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    if (myToken !== runToken || myGeneration !== fadeInGeneration) { return; }
+                    nextLayer.style.opacity = '1';
+                });
+            });
+            visibleIndex = nextLayerIndex;
+            slideIndex++;
+            var isSingleImageThatShouldStillEnd = imageUrls.length === 1 && result.SinglePass && !result.StaySingleImageStatic;
+            if ((result.MultiImage && imageUrls.length > 1) || isSingleImageThatShouldStillEnd) {
+                track(setTimeout(showNext, result.CycleTimeMs));
+            }
+        }
+
+        showNext();
+    }
+
+    /// Text stage: loads the font once (@font-face from our endpoint),
+    /// then fits the name into the box (binary search on the font size,
+    /// like the bulk creator) and keeps it fitted on resize. Two stacked
+    /// layers: black rim under the white body (stylesheet). The glyph
+    /// rule (a font without an accented letter gets the normalised name)
+    /// is applied by the server with the real font file - stage.Text
+    /// arrives ready to render, identical to what the bulk creator writes.
+    async function ensureFont(family, file) {
+        if (loadedFonts[file]) { return loadedFonts[file]; }
+        var url = '/LogoArt/font/' + file.split('/').map(encodeURIComponent).join('/');
+        var face = new FontFace(family, 'url(' + url + ')');
+        var p = face.load().then(function (loaded) { document.fonts.add(loaded); return family; });
+        loadedFonts[file] = p;
+        return p;
+    }
+
+    function fitText(container, layers, measure) {
+        var maxW = container.clientWidth;
+        var maxH = container.clientHeight;
+        if (!maxW || !maxH) { return; }
+        var lo = 6, hi = 400, best = 6;
+        while (hi - lo > 0.5) {
+            var mid = (lo + hi) / 2;
+            measure.style.fontSize = mid + 'px';
+            var r = measure.getBoundingClientRect();
+            if (r.width <= maxW && r.height <= maxH) { best = mid; lo = mid; } else { hi = mid; }
+        }
+        layers.forEach(function (l) { l.style.fontSize = best + 'px'; });
+    }
+
+    async function showText(container, stage, result, myToken) {
+        var family;
+        try {
+            family = await ensureFont(stage.FontFamily, stage.FontFile);
+        } catch (e) {
+            log('Text stage: font failed to load', stage.FontFile, e);
+            return false;
+        }
+        if (myToken !== runToken) { return false; }
+        var text = stage.Uppercase ? stage.Text.toUpperCase() : stage.Text;
+        container.style.setProperty('--la-stroke', String(result.TextStroke || 0));
+        container.style.setProperty('--la-outline', String(result.Outline === undefined ? 1 : result.Outline));
+        var quoted = "'" + family.replace(/'/g, "\\'") + "', 'Noto Sans', sans-serif";
+        var measure = document.createElement('span');
+        measure.className = 'logoart-text logoart-text-measure';
+        measure.style.fontFamily = quoted;
+        measure.textContent = text;
+        container.appendChild(measure);
+        var layers = ['logoart-text logoart-text-rim', 'logoart-text'].map(function (cls) {
+            var span = document.createElement('span');
+            span.className = cls;
+            span.style.fontFamily = quoted;
+            span.textContent = text;
+            container.appendChild(span);
+            return span;
+        });
+        fitText(container, layers, measure);
+        resizeHandler = function () { if (document.body.contains(container)) { fitText(container, layers, measure); } };
+        window.addEventListener('resize', resizeHandler);
+        return true;
+    }
+
+    async function start() {
+        clearTimers();
+        var myToken = ++runToken;
+
+        var itemId = getItemIdFromHash();
+        if (!itemId) { return; }
+        contentReady = true;
+
+        var result;
+        try {
+            result = await fetch('/LogoArt/' + encodeURIComponent(itemId), { cache: 'no-store' }).then(function (r) { return r.json(); });
+        } catch (e) {
+            log('Error fetching', e);
+            return;
+        }
+        if (myToken !== runToken) { return; }
+        if (!result.IsApplicable) { log('Not applicable for', itemId); return; }
+
+        var logo = await waitFor(findLogo);
+        if (myToken !== runToken) { return; }
+        if (!logo) { log('No .detailLogo element on this page'); return; }
+
+        if (result.ZeroIntervention) {
+            logo.classList.add(RELEASE_CLASS);
+            log('Zero intervention for', result.ItemType, '- vanilla logo released');
+            return;
+        }
+        logo.classList.remove(RELEASE_CLASS);
+
+        var stages = Array.isArray(result.Stages) ? result.Stages : [];
+        log('Chain for', result.ItemType, ':', stages.map(function (s) { return s.Kind + (s.Level ? '@' + s.Level : ''); }).join(' > '));
+        for (var i = 0; i < stages.length; i++) {
+            var stage = stages[i];
+            if (myToken !== runToken) { return; }
+            if (stage.Kind === 'Hide') {
+                log('Hide: the slot stays empty');
+                return;
+            }
+            if (stage.Kind === 'Characterart') {
+                if (!Array.isArray(stage.Images) || stage.Images.length === 0) { continue; }
+                var urls = stage.Images.map(function (entry) {
+                    return '/LogoArt/' + encodeURIComponent(itemId) + '/characterart/' + encodeURIComponent(entry.FileName) + '?v=' + encodeURIComponent(entry.Version);
+                });
+                var caBox = createContainer(logo, result, 'Characterart');
+                shouldHaveContainer = true;
+                log('Showing Characterart in the slot,', urls.length, 'image(s) | MultiImage:', result.MultiImage, '| order:', result.OrderMode);
+                runRotation(caBox, urls, result, myToken);
+                return;
+            }
+            if (stage.Kind === 'Text') {
+                if (!stage.FontFile || !stage.Text) { continue; }
+                var textBox = createContainer(logo, result, 'Text');
+                if (await showText(textBox, stage, result, myToken)) {
+                    shouldHaveContainer = true;
+                    log('Showing the name as text | font:', stage.FontFamily, '| size:', textBox.style.width || '25vw');
+                    return;
+                }
+                removeContainers();
+                continue;
+            }
+            if (!stage.Url) { continue; }
+            try {
+                await preloadImage(stage.Url);
+            } catch (e) {
+                log('Stage', stage.Kind, 'skipped - image failed to load');
+                continue;
+            }
+            if (myToken !== runToken) { return; }
+            var box = createContainer(logo, result, stage.Kind);
+            var img = document.createElement('img');
+            img.src = stage.Url;
+            box.appendChild(img);
+            shouldHaveContainer = true;
+            log('Showing', stage.Kind, 'from level', stage.Level, '| size:', result.SizePercent + '%', '| offset:', result.OffsetVw, '/', result.VerticalOffsetVh);
+            return;
+        }
+        log('No stage delivered an image - the slot stays empty');
+    }
+
+    function schedule() {
+        clearTimers();
+        navTracker.clearTimers();
+        runToken++;
+        removeContainers();
+        contentReady = false;
+        shouldHaveContainer = false;
+        Core.scheduleNavigationBurst(function () {
+            if (contentReady || !isDetailsPage()) { return; }
+            start();
+        }, navTracker.track);
+    }
+
+    document.addEventListener('viewshow', function () { schedule(); });
+    Core.watchForNavigation(function () { schedule(); });
+    Core.startPresenceHeartbeat(
+        function () { return !shouldHaveContainer || !!document.querySelector('.' + CONTAINER_CLASS); },
+        function () { log('Presence heartbeat: container missing, recovering'); schedule(); }
+    );
+    track(setTimeout(function () {
+        if (contentReady || !isDetailsPage()) { return; }
         start();
     }, 1200));
 })();

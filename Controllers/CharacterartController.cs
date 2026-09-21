@@ -424,6 +424,70 @@ public class CharacterartController : ControllerBase
     }
 
     /// <summary>
+    /// Session 134: the Characterart stage of LogoArt's logo-slot chain
+    /// (docs/artworkplus-logoart-concept.md, Part C). Returns the SAME
+    /// files this tab would show for the item - Naming mode / Type name /
+    /// Folder name / Allowed formats are the tab's - but deliberately
+    /// WITHOUT this tab's Enable and Show-on gates and without its
+    /// rotation settings: the slot is independent of the Characterart tab
+    /// (user decision 2026-09-21), only the file lookup is shared so there
+    /// is no second naming block in the admin page (Fibel rule 28).
+    /// multiImage/orderMode come from the LogoArt type's own fields.
+    /// Called by LogoArtController (controllers are DI-resolvable here -
+    /// BackdropsController already receives PeopleBackdropsController).
+    /// </summary>
+    internal (string FolderPath, List<string> Images)? ResolveSlotImages(MediaBrowser.Controller.Entities.BaseItem item, PluginConfiguration config, bool multiImage, string orderMode)
+    {
+        string? folderPath;
+        string namingMode;
+        string typeName;
+        string folderName;
+        if (item is Movie movie)
+        {
+            folderPath = movie.ContainingFolderPath;
+            namingMode = config.CharacterartMoviesNamingMode;
+            typeName = config.CharacterartMoviesTypeName;
+            folderName = config.CharacterartMoviesFolderName;
+        }
+        else if (item is BoxSet boxSet)
+        {
+            folderPath = boxSet.ContainingFolderPath;
+            namingMode = "Standalone"; // same exception as ResolveItem's BoxSet branch
+            typeName = config.CharacterartMoviesTypeName;
+            folderName = config.CharacterartMoviesFolderName;
+        }
+        else if (item is Series || item is Season || item is Episode)
+        {
+            folderPath = item is Series s ? s.ContainingFolderPath : item is Season se ? se.Series?.ContainingFolderPath : ((Episode)item).Series?.ContainingFolderPath;
+            namingMode = config.CharacterartTvShowsNamingMode;
+            typeName = config.CharacterartTvShowsTypeName;
+            folderName = config.CharacterartTvShowsFolderName;
+        }
+        else
+        {
+            return null;
+        }
+
+        if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
+        {
+            _logger.LogInformation("Characterart: ResolveSlotImages - folder not found for {ItemId}: \"{Path}\"", item.Id, folderPath ?? "(empty)");
+            return null;
+        }
+
+        var images = ResolveCandidates(folderPath, namingMode, typeName, folderName, multiImage, orderMode, config.CharacterartAllowedFormats);
+        return (folderPath, images);
+    }
+
+    /// <summary>Session 134: the file bytes of one slot image (validated against the candidate list like GetCharacterartImage). Null = not a candidate / gone.</summary>
+    internal (string FullPath, string ContentType)? ResolveSlotImageFile(MediaBrowser.Controller.Entities.BaseItem item, PluginConfiguration config, string fileName)
+    {
+        var resolved = ResolveSlotImages(item, config, true, "Sequential");
+        if (resolved is null || !resolved.Value.Images.Contains(fileName, StringComparer.Ordinal)) { return null; }
+        var fullPath = Path.Combine(resolved.Value.FolderPath, fileName);
+        return System.IO.File.Exists(fullPath) ? (fullPath, GetContentType(fullPath)) : null;
+    }
+
+    /// <summary>
     /// Sizing is configured separately per position AND per content type
     /// (Movies vs. TV shows) - each of the four spots on the page is
     /// different enough that reusing one shared value never made sense

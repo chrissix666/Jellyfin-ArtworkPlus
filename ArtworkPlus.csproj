@@ -108,6 +108,12 @@
          before that requirement was introduced) to avoid this extra
          setup friction entirely for anyone building this plugin. -->
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
+    <!-- Session 134: LogoArt's bulk clearlogo creator renders text with
+         SkiaSharp. Jellyfin 10.10.7 ships SkiaSharp 2.88.9 (+ libSkiaSharp)
+         for its own image pipeline (jellyfin.deps.json), so the plugin
+         compiles against exactly that version and ships nothing - the
+         same ExcludeAssets reasoning as Jellyfin.Controller above. -->
+    <PackageReference Include="SkiaSharp" Version="2.88.9" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>
@@ -191,6 +197,14 @@
          automatically without listing every file - unlike EmbeddedResource,
          where that would be necessary. -->
     <Content Include="CaseTextures\**\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- Session 134: the two bundled LogoArt font pools (Fonts/Signature,
+         Fonts/Title, 60 + 60 OpenType files), their manifest and the
+         licence texts - the same "travels next to the DLL" reasoning as
+         CaseTextures; served by /LogoArt/font/{group}/{file}, whitelisted
+         through fonts.json. -->
+    <Content Include="Fonts\**\*.otf;Fonts\fonts.json;Fonts\LICENSE-*.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <!-- Plugin catalog logo (1280x720, icon + title + subtitle). Originally
