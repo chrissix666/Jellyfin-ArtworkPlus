@@ -233,7 +233,7 @@ piece. Chain for Persons: **Folder logo → Text → None**.
 | `Outline` | 1 | Black rim around the letters, in percent of the text size. 0 = none, 1 = a fine line. |
 | `Uppercase` | checkbox, off | Title fonts only: render the name in capitals. Signature fonts keep their case. |
 | `Size` / `Offset` / `Vertical offset` | as B2 | |
-| `Create logos` button + `Mode` Update · Replace + result line | | Writes "Base name".png (800 x 310) with the ticked fonts. Update: missing only. Replace: all. |
+| `Create logos` button + `Mode` Update · Replace + result line | | Writes "Base name".png for every person. Update: missing only. Replace: all. |
 
 ### D2 Text mode (rendered live in the browser)
 - **Font pool** dropdown: Signature / Title / Both.
