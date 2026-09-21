@@ -1444,18 +1444,18 @@ with sync_playwright() as p:
     check('S134: clicking the button opens the panel with the summary on the button', apage.evaluate("() => document.getElementById('LogoArtPersonsFontsPanel').style.display === 'block' && /1 of 3 fonts - same for everyone/.test(document.getElementById('LogoArtPersonsFontsCount').textContent)"), apage.evaluate("() => document.getElementById('LogoArtPersonsFontsCount').textContent"))
     apage.evaluate("""() => { var lbl = document.querySelector('#LogoArtPersonsFontsList label'); lbl.dispatchEvent(new Event('mouseenter')); }""")
     prev = apage.evaluate("() => { var p = document.getElementById('LogoArtPersonsFontsPreview'); return { shown: p.style.display, w: p.style.width, lines: document.querySelectorAll('#LogoArtPersonsFontsPreview .epFontPreviewLine').length, head: !!document.querySelector('#LogoArtPersonsFontsPreview .epFontPreviewHead'), text: (document.querySelector('#LogoArtPersonsFontsPreview .epFontPreviewFill') || {}).textContent, px: parseFloat(document.querySelector('#LogoArtPersonsFontsPreview .epFontPreviewLine').style.fontSize), align: getComputedStyle(document.querySelector('#LogoArtPersonsFontsPreview .epFontPreviewLine')).textAlign }; }")
-    # widest of the pool (Both) = 16 em -> (640 - 24) / 16 = 38 px, the same size for every font, no head line, centred
-    check('S134b: hover shows a fixed-size preview, font size from the manifest (widest font), no head line, centred', prev['shown'] == 'flex' and prev['w'] == '640px' and prev['lines'] == 2 and not prev['head'] and prev['text'] == 'Scarlett Johansson' and prev['px'] == 38 and prev['align'] == 'center', str(prev))
+    # widest of the pool (Both) = 16 em -> (480 - 24) / 16 = 28 px, the same size for every font, no head line, centred
+    check('S134b: hover shows a fixed-size preview, font size from the manifest (widest font), no head line, centred', prev['shown'] == 'flex' and prev['w'] == '480px' and prev['lines'] == 2 and not prev['head'] and prev['text'] == 'Scarlett Johansson' and prev['px'] == 28 and prev['align'] == 'center', str(prev))
     apage.evaluate("""() => { document.querySelectorAll('#LogoArtPersonsFontsList label')[2].dispatchEvent(new Event('mouseenter')); }""")
     px2 = apage.evaluate("() => parseFloat(document.querySelector('#LogoArtPersonsFontsPreview .epFontPreviewLine').style.fontSize)")
-    check('S134b: every font of the pool uses the same preview size', px2 == 38, str(px2))
+    check('S134b: every font of the pool uses the same preview size', px2 == 28, str(px2))
     apage.evaluate("() => { var e = document.getElementById('LogoArtPersonsTextStroke'); e.value = '2'; e.dispatchEvent(new Event('input', { bubbles: true })); }")
     live = apage.evaluate("() => document.getElementById('LogoArtPersonsFontsPreview').style.getPropertyValue('--la-stroke')")
     check('S134b: an open preview follows Text stroke at once', live == '2', live)
     aset('LogoArtPersonsUppercase', True)
     up = apage.evaluate("() => ({ text: document.querySelector('#LogoArtPersonsFontsPreview .epFontPreviewFill').textContent, px: parseFloat(document.querySelector('#LogoArtPersonsFontsPreview .epFontPreviewLine').style.fontSize) })")
     # uppercase: the widest is now Beta Sig's previewUpperEm? no - uppercase applies to title fonts only: max(8, 16, 12) = 16 -> still 38 px; the hovered title font is shown in capitals
-    check('S134b: Uppercase re-renders the open preview (title font in capitals, size from the pool)', up['text'] == 'SCARLETT JOHANSSON' and up['px'] == 38, str(up))
+    check('S134b: Uppercase re-renders the open preview (title font in capitals, size from the pool)', up['text'] == 'SCARLETT JOHANSSON' and up['px'] == 28, str(up))
     aset('LogoArtPersonsUppercase', False)
     apage.evaluate("""() => { document.querySelectorAll('#LogoArtPersonsFontsList label')[2].dispatchEvent(new Event('mouseleave')); }""")
     check('S134: leaving hides the preview', apage.evaluate("() => document.getElementById('LogoArtPersonsFontsPreview').style.display") == 'none')

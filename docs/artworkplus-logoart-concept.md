@@ -138,8 +138,8 @@ Characterart image list — the client never fetches parent items itself (the sc
 switching between sources (only Characterart's own rotation).
 
 ### B2a Tab head and group intros (house style: one line per category = what, where, whence)
-- Tab head: `Logo and clearart from Jellyfin, fanart.tv or our own Characterart in the logo slot of detail pages.` /
-  `Person logos from a file in the person folder, or the name rendered in a bundled signature or title font.`
+- Tab head (user's wording 2026-09-21): `Logo and Art customizer for detail pages: source, size and position per item type, or no logo at all.` /
+  `New for person pages: a logo from the person folder, or the name in a bundled signature or title font.`
 - Movies: `Logo slot on movie pages: keep, hide, or replace with Clearart or Characterart.`
 - TV shows: `Logo slot on series, season and episode pages, each with its own source.`
 - Sets, Videos, Music, Books: same pattern; Persons: `A logo for person pages, where Jellyfin shows none: file or rendered name.`
@@ -407,3 +407,10 @@ restored byte-identical afterwards.
    "done / total · written · skipped · current name" and a `Cancel` button
    (`POST create-logos/cancel`); the summary stays in the line, a running job is picked up
    again when the page opens. One job at a time.
+
+6. **Preview size by eye** (2026-09-21): the width metric is the advance width, no height
+   was measured (the user caught it) - instead of a full ink measurement the user chose:
+   panel 480 px (25 % smaller, the font size follows), line height 1.875 em (+50 %), both
+   names centred; the two numbers `EP_LOGOART_PREVIEW_W` / `EP_LOGOART_PREVIEW_LINE` are
+   tuned by eye. A real ink measurement (fontTools glyph bounds: width, ascent, descent per
+   font) stays the honest fix if a font still clips.
