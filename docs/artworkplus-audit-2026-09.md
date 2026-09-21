@@ -269,3 +269,60 @@ forever). (d) No contradiction.
 blocker 0 - bug 0 - risk 1 (S4-01) - smell 1 (S4-03) - design 1 (S4-02,
 kept on purpose) - doc 1 (S4-04).
 
+## Area 5 - Docs vs code (Session 137e, 2026-09-21)
+
+### Coverage
+
+Feature map read whole and every countable claim recomputed from the code
+(field counts per config prefix, total settings, endpoint lists, test
+counts, the logging.json claim, the Import-button gap); `CLAUDE.md` state
+list and verification routine checked against today's suite output and the
+Fibel; the LogoArt concept's source-line claims (A5 `artLimit = 0`) and the
+Backdrops concept spot-checked against the controllers; README.md looked at.
+Lessons and the Fibel bug log are narrative history and were not re-verified
+line by line.
+
+### Findings
+
+| ID | file:line | class | sev | finding | evidence | know/believe | recommendation | a fix could break |
+|---|---|---|---|---|---|---|---|---|
+| S5-01 | `docs/artworkplus-feature-map.md` (delivery table, config-prefix column, cross-cutting) | drift | doc | Counts drifted since the map was generated in Session 114: "PluginConfiguration.cs (369 settings)" vs 763 today; prefix counts off for 10 of 19 prefixes (Extraposter "7 + 4x7 + 2 sync" vs 101 incl. the 48 Also-on fields, Extrakeyart 87, Backdrops 130, PeopleBackdrops 19 vs 24, BackdropsFavorites 39 vs 60, BackdropsFavoritesPeople 3 vs 10, CaseMod 27 vs 28, Characterart 95 vs 97, Genre/Studio/Tag +1 each = Random start, BackdropsLibrary 16 vs 15); "Fibel rules 0-26" (27 exists, 27b/28 too); "Server side: `config\logging.json` overrides ... to Debug" - it has been Information since Session 127e (lesson B25, verified in the live file). The Import-button `.raised` gap is still true. | counts recomputed from C#; live logging.json read | know | regenerate the counts by script (the map says "generated from the code" - make that a tool, `tools/feature_map_counts.py`, and run it in run_checks as informational) | nothing |
+| S5-02 | `CLAUDE.md:20, 103, 142-143` | drift | doc | "rules (0-26)", "`test_configpage.py` 406 tests", "run_checks.py --all 19/19 (406 config tests, 27 tile scenarios" - today: 413 tests, 20/20, 29 scenarios, rules 0-28. The state list is otherwise current (Sessions 135/136 appended). | suite output of this session | know | update the three lines with the next state edit | nothing |
+| S5-03 | `README.md` | empty | doc | The public repository's README is empty (0 lines) - the repo has no user-facing description, install note or feature list; `meta.json` (S4-04) is the only description and it is stale. | file size | know | a README from the feature map's feature list + install (data-folder scripts, File Transformation dependency) | nothing |
+| S5-04 | `docs/artworkplus-logoart-concept.md`, `docs/artworkplus-backdrops-concept.md` | spot check | doc (no finding) | The concept claims sampled (A5 `artLimit = 0` in `DtoService.AddInheritedImages`; the seven owners on the transition bus; Part S library pool pages) match the 10.10.7 source and the code. Not read line by line. | source lines | know (sampled) | - | - |
+
+### Counter-audit (area 5)
+
+(a) Every count was recomputed by script and the logging claim read from
+the live file -> know. (b) Inversion (code -> docs): every controller,
+script section, tab and test file of today's code has a row or line in the
+map / CLAUDE.md; the Session 135 stress tooling and the audit skills are in
+CLAUDE.md; nothing undocumented found. (c) Adversarial: a reader following
+the map's logging line would switch the plugin to Debug and reintroduce the
+Session 127e slowdown (lesson B25) - the one doc error with a cost. (d) No
+contradiction.
+
+### Summary area 5
+
+blocker 0 - bug 0 - risk 0 - smell 0 - doc 3 (S5-01, S5-02, S5-03).
+
+## Overall summary (areas 1-5, 2026-09-21)
+
+| severity | count | IDs |
+|---|---|---|
+| blocker | 0 | - |
+| bug | 4 | S1-02 (stuck create-logos job, believe), S2-01 (LogoArt prehiding not released, narrow, believe), S3-01 (Display duration 0 spins the rotation, believe), S3-03 (Export/Import loses the 28 case-tune values) |
+| risk | 5 | S1-01 (anonymous People amplification - design share), S1-03 (log volume 80 %, design share), S3-04 (API key in the export code), S4-01 (ImageSharp advisory on downloaded images) |
+| smell | 13 | S1-04, S1-07, S1-08, S2-02, S2-04, S2-05, S2-06, S2-07, S3-02, S3-05, S4-03 (+ S1-05 resolved by comments) |
+| design | 8 | S1-06, S1-09, S1-11, S1-12, S2-03, S2-08, S3-06, S4-02 - verified deliberate, not fix candidates |
+| doc | 4 | S4-04, S5-01, S5-02, S5-03 (S1-10 withdrawn) |
+
+Top 10 by risk to the user: S4-01, S3-04, S3-01, S1-03, S2-01, S1-02,
+S3-03, S1-01, S2-05, S2-02.
+
+Fix order proposal (leaf-first, per `/fix` rulebook, after the dependency
+map): S1-02 -> S1-04 -> S1-08 -> S3-05 -> S2-07 -> S3-03 -> S3-04 -> S2-01
+-> S3-01 (server floor) -> S1-03 -> S4-01 (rebuild + People smoke) -> S2-02
+-> S2-04 -> S2-06 -> S3-02 -> S4-03 -> S2-05 -> S1-07 -> docs S5-01..03,
+S4-04 -> S1-01 last (client + server contract).
+
