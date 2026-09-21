@@ -65,6 +65,8 @@ public class CoreScriptController : ControllerBase
                 return NotFound();
             }
 
+            // Audit S2-09 (Session 138): revalidate on every load, 304 when this build is already in the browser.
+            if (Helpers.ScriptCaching.NotModified(Request, Response, Helpers.ScriptCaching.AssemblyTag(assembly))) { stream.Dispose(); return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status304NotModified); }
             return File(stream, "application/javascript");
         }
         catch (Exception ex)

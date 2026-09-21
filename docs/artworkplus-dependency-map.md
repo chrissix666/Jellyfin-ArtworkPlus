@@ -882,6 +882,7 @@ Properties no server file reads (2): `CaseModDeveloperSettingsEnabled`, `LogoArt
 | `tests/diagnostic_js_cs_defaults_sync.py` | `Configuration/PluginConfiguration.cs`, `Configuration/configPage.html` |
 | `tests/diagnostic_nested_collapse_check.py` | - |
 | `tests/diagnostic_nesting_check.py` | - |
+| `tests/diagnostic_script_endpoints_cache.py` | - |
 | `tests/run_checks.py` | `Configuration/configPage.html` |
 | `tests/test_alsoon_mapping.py` | `Configuration/PluginConfiguration.cs`, `Controllers/ExtraposterController.cs` |
 | `tests/test_backdrop_resolver.py` | `Helpers/BackdropFileResolver.cs`, `Helpers/EmptyCachePolicy.cs` |

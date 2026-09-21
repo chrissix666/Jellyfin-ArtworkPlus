@@ -1533,6 +1533,8 @@ public class BackdropsController : ControllerBase
                 return NotFound();
             }
 
+            // Audit S2-09 (Session 138): revalidate on every load, 304 when unchanged.
+            if (Helpers.ScriptCaching.NotModified(Request, Response, Helpers.ScriptCaching.FileTag(scriptPath))) { return StatusCode(StatusCodes.Status304NotModified); }
             var stream = System.IO.File.OpenRead(scriptPath);
             return File(stream, "application/javascript");
         }
