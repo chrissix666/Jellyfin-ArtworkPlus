@@ -11,3 +11,9 @@ _backup/
 # Python
 __pycache__/
 *.pyc
+
+# Stress-test fixtures/results (local paths, config snapshots)
+tools/stress/*.json
+tools/stress/results/
+
+tools/stress/inject_*.js
