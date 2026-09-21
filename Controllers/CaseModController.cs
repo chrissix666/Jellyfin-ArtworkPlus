@@ -462,7 +462,9 @@ public class CaseModController : ControllerBase
             // underlying file.
             Response.Headers.CacheControl = "public, max-age=2592000, immutable";
 
-            return PhysicalFile(texturePath, "image/png");
+            // Audit S1-04b (Session 138): opened here, inside the try - a PhysicalFile
+            // result opens the file only when it executes, outside the catch.
+            return File(System.IO.File.OpenRead(texturePath), "image/png");
         }
         catch (Exception ex)
         {

@@ -696,7 +696,9 @@ public class LogoArtController : ControllerBase
             }
 
             Response.Headers.CacheControl = "public, max-age=2592000, immutable";
-            return PhysicalFile(path, "font/otf");
+            // Audit S1-04b (Session 138): opened here, inside the try - a PhysicalFile
+            // result opens the file only when it executes, outside the catch.
+            return File(System.IO.File.OpenRead(path), "font/otf");
         }
         catch (Exception ex)
         {
@@ -828,7 +830,9 @@ public class LogoArtController : ControllerBase
             return StatusCode(StatusCodes.Status304NotModified);
         }
 
-        return PhysicalFile(fullPath, contentType);
+        // Audit S1-04b (Session 138): opened here, inside the caller's try - a
+        // PhysicalFile result opens the file only when it executes, outside the catch.
+        return File(System.IO.File.OpenRead(fullPath), contentType);
     }
 
     private static string VersionOf(string path)
