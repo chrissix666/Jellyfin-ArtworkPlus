@@ -768,50 +768,60 @@ public class PeopleBackdropsController : ControllerBase
     [HttpGet("{personId}/folder-image")]
     public ActionResult GetFolderImage([FromRoute] Guid personId, [FromQuery] int index, [FromQuery] string? mode)
     {
-        var config = Plugin.Instance!.Configuration;
-        var item = _libraryManager.GetItemById(personId);
-        if (item is not Person person)
+        // Audit S1-04 (Session 138): guarded like every other file endpoint -
+        // a locked or vanished file answers 404 + a warning, not a 500.
+        try
         {
+            var config = Plugin.Instance!.Configuration;
+            var item = _libraryManager.GetItemById(personId);
+            if (item is not Person person)
+            {
+                return NotFound();
+            }
+
+            // Session 116: "mode" lets the Favorites-People pool address its
+            // own Backdrop files setting (Single/Multiple) - without it the
+            // index would resolve against the standalone People setting.
+            var filesMode = mode == "Single" || mode == "Multiple" ? mode : config.PeopleBackdropsFolderBackdropFiles;
+            var personFolder = GetPersonFolder(person);
+            var paths = ResolveFolderBackdropPaths(personFolder, filesMode, config.BackdropsAllowedFormats, config.PeopleBackdropsFolderBaseName);
+            if (index < 0 || index >= paths.Count)
+            {
+                return NotFound();
+            }
+
+            var fullPath = paths[index];
+            if (!System.IO.File.Exists(fullPath))
+            {
+                return NotFound();
+            }
+
+            var contentType = Path.GetExtension(fullPath).ToLowerInvariant() switch
+            {
+                ".webp" => "image/webp",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".svg" => "image/svg+xml",
+                _ => "image/jpeg"
+            };
+            var fileInfo = new FileInfo(fullPath);
+            var imageEtag = "\"" + fileInfo.LastWriteTimeUtc.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-" + fileInfo.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\"";
+            Response.Headers.ETag = imageEtag;
+            Response.Headers.CacheControl = "public, max-age=86400";
+            var ifNoneMatch = Request.Headers.IfNoneMatch.ToString();
+            if (!string.IsNullOrEmpty(ifNoneMatch) && ifNoneMatch == imageEtag)
+            {
+                return StatusCode(StatusCodes.Status304NotModified);
+            }
+
+            var stream = System.IO.File.OpenRead(fullPath);
+            return File(stream, contentType);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "PeopleBackdrops: GetFolderImage 404 - the folder image of {PersonId} index {Index} could not be served", personId, index);
             return NotFound();
         }
-
-        // Session 116: "mode" lets the Favorites-People pool address its
-        // own Backdrop files setting (Single/Multiple) - without it the
-        // index would resolve against the standalone People setting.
-        var filesMode = mode == "Single" || mode == "Multiple" ? mode : config.PeopleBackdropsFolderBackdropFiles;
-        var personFolder = GetPersonFolder(person);
-        var paths = ResolveFolderBackdropPaths(personFolder, filesMode, config.BackdropsAllowedFormats, config.PeopleBackdropsFolderBaseName);
-        if (index < 0 || index >= paths.Count)
-        {
-            return NotFound();
-        }
-
-        var fullPath = paths[index];
-        if (!System.IO.File.Exists(fullPath))
-        {
-            return NotFound();
-        }
-
-        var contentType = Path.GetExtension(fullPath).ToLowerInvariant() switch
-        {
-            ".webp" => "image/webp",
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            ".svg" => "image/svg+xml",
-            _ => "image/jpeg"
-        };
-        var fileInfo = new FileInfo(fullPath);
-        var imageEtag = "\"" + fileInfo.LastWriteTimeUtc.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-" + fileInfo.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\"";
-        Response.Headers.ETag = imageEtag;
-        Response.Headers.CacheControl = "public, max-age=86400";
-        var ifNoneMatch = Request.Headers.IfNoneMatch.ToString();
-        if (!string.IsNullOrEmpty(ifNoneMatch) && ifNoneMatch == imageEtag)
-        {
-            return StatusCode(StatusCodes.Status304NotModified);
-        }
-
-        var stream = System.IO.File.OpenRead(fullPath);
-        return File(stream, contentType);
     }
 
     /// <summary>

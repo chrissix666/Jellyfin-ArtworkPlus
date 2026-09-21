@@ -401,12 +401,23 @@ public class BackdropsController : ControllerBase
     [HttpGet("episode-image")]
     public ActionResult GetEpisodeImage([FromQuery] Guid itemId, [FromQuery] int index)
     {
-        var config = Plugin.Instance!.Configuration;
-        if (_libraryManager.GetItemById(itemId) is not Episode episode || !episode.IsFileProtocol || string.IsNullOrEmpty(episode.Path)) { return NotFound(); }
-        var baseName = string.IsNullOrWhiteSpace(config.BackdropsEpisodeBaseName) ? "backdrop" : config.BackdropsEpisodeBaseName.Trim();
-        var files = Helpers.BackdropFileResolver.ResolvePrefixed(episode.ContainingFolderPath, episode.FileNameWithoutExtension, baseName, config.BackdropsEpisodeBackdropFiles == "Multiple", Helpers.BackdropFileResolver.ParseAllowedFormats(config.BackdropsAllowedFormats));
-        if (index < 0 || index >= files.Count) { return NotFound(); }
-        return ServeLocalImage(files[index]);
+        // Audit S1-04 (Session 138): the file part is guarded like every other
+        // file endpoint - a file locked by a writing tool or removed between
+        // the scan and the open answers 404 + a warning, not a 500.
+        try
+        {
+            var config = Plugin.Instance!.Configuration;
+            if (_libraryManager.GetItemById(itemId) is not Episode episode || !episode.IsFileProtocol || string.IsNullOrEmpty(episode.Path)) { return NotFound(); }
+            var baseName = string.IsNullOrWhiteSpace(config.BackdropsEpisodeBaseName) ? "backdrop" : config.BackdropsEpisodeBaseName.Trim();
+            var files = Helpers.BackdropFileResolver.ResolvePrefixed(episode.ContainingFolderPath, episode.FileNameWithoutExtension, baseName, config.BackdropsEpisodeBackdropFiles == "Multiple", Helpers.BackdropFileResolver.ParseAllowedFormats(config.BackdropsAllowedFormats));
+            if (index < 0 || index >= files.Count) { return NotFound(); }
+            return ServeLocalImage(files[index]);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Backdrops: GetEpisodeImage 404 - the file of {ItemId} index {Index} could not be served", itemId, index);
+            return NotFound();
+        }
     }
 
     /// <summary>
@@ -1302,15 +1313,24 @@ public class BackdropsController : ControllerBase
     [HttpGet("custom-image")]
     public ActionResult GetCustomImage([FromQuery] Guid itemId, [FromQuery] int index)
     {
-        var config = Plugin.Instance!.Configuration;
-        // Session 118b: nothing is reachable "through the back door" while the
-        // Listener is Native - the endpoint only exists for the Custom lists.
-        if (config.BackdropsListener != "Custom") { return NotFound(); }
-        var item = _libraryManager.GetItemById(itemId);
-        if (item is null) { return NotFound(); }
-        var files = ResolveCustomFiles(item, config, Helpers.BackdropFileResolver.ParseAllowedFormats(config.BackdropsAllowedFormats));
-        if (index < 0 || index >= files.Count) { return NotFound(); }
-        return ServeLocalImage(files[index]);
+        // Audit S1-04 (Session 138): guarded like GetEpisodeImage.
+        try
+        {
+            var config = Plugin.Instance!.Configuration;
+            // Session 118b: nothing is reachable "through the back door" while the
+            // Listener is Native - the endpoint only exists for the Custom lists.
+            if (config.BackdropsListener != "Custom") { return NotFound(); }
+            var item = _libraryManager.GetItemById(itemId);
+            if (item is null) { return NotFound(); }
+            var files = ResolveCustomFiles(item, config, Helpers.BackdropFileResolver.ParseAllowedFormats(config.BackdropsAllowedFormats));
+            if (index < 0 || index >= files.Count) { return NotFound(); }
+            return ServeLocalImage(files[index]);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Backdrops: GetCustomImage 404 - the file of {ItemId} index {Index} could not be served", itemId, index);
+            return NotFound();
+        }
     }
 
     /// <summary>
@@ -1321,6 +1341,10 @@ public class BackdropsController : ControllerBase
     /// </summary>
     private ActionResult ServeLocalImage(string path)
     {
+        // Audit S1-04 (Session 138): the stream is opened HERE, inside the caller's
+        // try - a PhysicalFile result opens the file only when the result executes,
+        // outside any try/catch of the action, so a locked or vanished file used to
+        // surface as a 500 from Jellyfin's ExceptionMiddleware.
         var contentType = Path.GetExtension(path).ToLowerInvariant() switch
         {
             ".png" => "image/png", ".webp" => "image/webp", ".gif" => "image/gif", ".svg" => "image/svg+xml", _ => "image/jpeg"
@@ -1329,7 +1353,8 @@ public class BackdropsController : ControllerBase
         Response.Headers.ETag = etag;
         Response.Headers.CacheControl = "public, max-age=86400";
         if (Request.Headers.IfNoneMatch.ToString() == etag) { return StatusCode(StatusCodes.Status304NotModified); }
-        return PhysicalFile(path, contentType);
+        var stream = System.IO.File.OpenRead(path);
+        return File(stream, contentType);
     }
 
     /// <summary>Session 131: runs <paramref name="build"/> once per PoolCacheWindow for a pool key; the key must include everything the pool depends on (category, user, config identity).</summary>
@@ -1455,31 +1480,40 @@ public class BackdropsController : ControllerBase
     [HttpGet("studio-image")]
     public ActionResult GetStudioImage([FromQuery] Guid studioId)
     {
-        var studioItem = _libraryManager.GetItemById(studioId);
-        if (studioItem is null)
+        // Audit S1-04 (Session 138): guarded like GetEpisodeImage.
+        try
         {
+            var studioItem = _libraryManager.GetItemById(studioId);
+            if (studioItem is null)
+            {
+                return NotFound();
+            }
+
+            var fullPath = ResolveStudioImagePath(studioItem.Name);
+            if (fullPath is null)
+            {
+                return NotFound();
+            }
+
+            var contentType = Path.GetExtension(fullPath).Equals(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" : "image/jpeg";
+            var fileInfo = new FileInfo(fullPath);
+            var imageEtag = "\"" + fileInfo.LastWriteTimeUtc.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-" + fileInfo.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\"";
+            Response.Headers.ETag = imageEtag;
+            Response.Headers.CacheControl = "public, max-age=86400";
+            var ifNoneMatch = Request.Headers.IfNoneMatch.ToString();
+            if (!string.IsNullOrEmpty(ifNoneMatch) && ifNoneMatch == imageEtag)
+            {
+                return StatusCode(StatusCodes.Status304NotModified);
+            }
+
+            var stream = System.IO.File.OpenRead(fullPath);
+            return File(stream, contentType);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Backdrops: GetStudioImage 404 - the studio image of {StudioId} could not be served", studioId);
             return NotFound();
         }
-
-        var fullPath = ResolveStudioImagePath(studioItem.Name);
-        if (fullPath is null)
-        {
-            return NotFound();
-        }
-
-        var contentType = Path.GetExtension(fullPath).Equals(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" : "image/jpeg";
-        var fileInfo = new FileInfo(fullPath);
-        var imageEtag = "\"" + fileInfo.LastWriteTimeUtc.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-" + fileInfo.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\"";
-        Response.Headers.ETag = imageEtag;
-        Response.Headers.CacheControl = "public, max-age=86400";
-        var ifNoneMatch = Request.Headers.IfNoneMatch.ToString();
-        if (!string.IsNullOrEmpty(ifNoneMatch) && ifNoneMatch == imageEtag)
-        {
-            return StatusCode(StatusCodes.Status304NotModified);
-        }
-
-        var stream = System.IO.File.OpenRead(fullPath);
-        return File(stream, contentType);
     }
 
     /// <summary>

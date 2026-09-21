@@ -51,6 +51,7 @@ GATING = [
     'test_logoart_render.py',       # Session 134: the logo slot container (zero intervention, slot/floor geometry, chain, Hide, rotation, text fit)
     'test_logoart_fonts.py',        # Session 134: the bundled LogoArt font pools (manifest = files, 60 + 60, punctuation, csproj, licences)
     'test_alsoon_mapping.py',       # Session 136: "Also on" contract client page classes <-> server mapping <-> C# fields <-> page checkboxes
+    'diagnostic_file_endpoints_guarded.py',  # Session 138 (audit S1-04): every file-serving action inside try/catch; PhysicalFile sites listed (S1-04b)
 ]
 INFORMATIONAL = [
     'diagnostic_cross_node_check.py',

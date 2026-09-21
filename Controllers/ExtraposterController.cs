@@ -1063,16 +1063,29 @@ public class ExtraposterController : ControllerBase
     [HttpGet("child-image")]
     public ActionResult GetChildImage([FromQuery] Guid itemId, [FromQuery] string? type)
     {
-        var config = Plugin.Instance!.Configuration;
-        var kind = type switch { "keyart" => "keyart", "animatedposter" => "animatedposter", "animatedkeyart" => "animatedkeyart", _ => "postercase" };
-        if (_libraryManager.GetItemById(itemId) is not Movie movie) { return NotFound(); }
-        var animated = kind.StartsWith("animated", StringComparison.Ordinal);
-        var path = animated ? Helpers.AnimatedPosterFileResolver.Resolve(config, movie, kind) : Helpers.CustomPosterFileResolver.Resolve(config, movie, kind);
-        if (path is null || !System.IO.File.Exists(path)) { return NotFound(); }
-        var etag = ComputeETag("child", itemId, kind, Helpers.BackdropFileResolver.VersionTag(path));
-        if (IsETagStillValid(etag)) { return StatusCode(StatusCodes.Status304NotModified); }
-        Response.Headers.CacheControl = "private, max-age=86400";
-        return PhysicalFile(path, animated ? Helpers.AnimatedPosterFileResolver.ContentType(path) : Helpers.CustomPosterFileResolver.ContentType(path));
+        // Audit S1-04 (Session 138): the fifth unguarded file action, found by
+        // tests/diagnostic_file_endpoints_guarded.py - guarded like the others,
+        // and the stream is opened here (a PhysicalFile result opens outside
+        // the try), so a locked or vanished file answers 404 + a warning.
+        try
+        {
+            var config = Plugin.Instance!.Configuration;
+            var kind = type switch { "keyart" => "keyart", "animatedposter" => "animatedposter", "animatedkeyart" => "animatedkeyart", _ => "postercase" };
+            if (_libraryManager.GetItemById(itemId) is not Movie movie) { return NotFound(); }
+            var animated = kind.StartsWith("animated", StringComparison.Ordinal);
+            var path = animated ? Helpers.AnimatedPosterFileResolver.Resolve(config, movie, kind) : Helpers.CustomPosterFileResolver.Resolve(config, movie, kind);
+            if (path is null || !System.IO.File.Exists(path)) { return NotFound(); }
+            var etag = ComputeETag("child", itemId, kind, Helpers.BackdropFileResolver.VersionTag(path));
+            if (IsETagStillValid(etag)) { return StatusCode(StatusCodes.Status304NotModified); }
+            Response.Headers.CacheControl = "private, max-age=86400";
+            var stream = System.IO.File.OpenRead(path);
+            return File(stream, animated ? Helpers.AnimatedPosterFileResolver.ContentType(path) : Helpers.CustomPosterFileResolver.ContentType(path));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Extraposter: GetChildImage 404 - the {Kind} file of {ItemId} could not be served", type, itemId);
+            return NotFound();
+        }
     }
 
     [HttpGet("{itemId}/image/{fileName}")]
