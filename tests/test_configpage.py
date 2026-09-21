@@ -1485,8 +1485,8 @@ with sync_playwright() as p:
     check('S134: Restore defaults of the tab', rd == ['VanillaLogo', 'Off', 'Signature', '*', 'Shuffle', 'TakeOverMovies'], str(rd))
     blanks = apage.evaluate("() => Array.prototype.map.call(document.querySelectorAll('.epTabPage[data-tabpage=logoart] .epTabIntroCol'), function (c) { var n = c.querySelector('.epVanillaNotice'); return n ? getComputedStyle(n).minHeight : '-'; })")
     check('S134c: a blank 14 px line after every group intro (Backdrops parity)', len(blanks) == 7 and all(b == '14px' for b in blanks), str(blanks))
-    tabcss = apage.evaluate("() => { var b = document.querySelector('.epTabBtn'); var cs = getComputedStyle(b); var sep = getComputedStyle(b, '::after'); var last = getComputedStyle(document.querySelector('.epTabBtn:last-child'), '::after'); return { size: cs.fontSize, sep: sep.width, sepH: sep.height, last: last.width }; }")
-    check('S134c: tab buttons 10.5 px with a 1 px separator, none after the last tab', tabcss['size'] == '10.5px' and tabcss['sep'] == '1px' and tabcss['last'] in ('auto', '0px'), str(tabcss))
+    tabcss = apage.evaluate("() => { var b = document.querySelector('.epTabBtn'); var seps = document.querySelectorAll('#epTabBar .epTabSep'); var s = getComputedStyle(seps[0]); var bar = document.getElementById('epTabBar'); return { size: getComputedStyle(b).fontSize, n: seps.length, tabs: bar.querySelectorAll('.epTabBtn').length, w: s.width, op: s.opacity, lastIsBtn: bar.lastElementChild.classList.contains('epTabBtn'), greyedOp: getComputedStyle(document.querySelector('.epTabBtn.epTabGreyed') || b).opacity }; }")
+    check('S134d: tab buttons 10.5 px, 2 px separators as own elements (one fewer than tabs, never greyed, none after the last)', tabcss['size'] == '10.5px' and tabcss['n'] == tabcss['tabs'] - 1 and tabcss['w'] == '2px' and tabcss['op'] == '1' and tabcss['lastIsBtn'], str(tabcss))
     check('S134: no JS errors on the LogoArt tab', not aerrors, str(aerrors[:3]))
     apage.close()
 

@@ -577,11 +577,11 @@
                         background: none; border-top: none; border-left: none;
                         border-right: none; color: inherit; position: relative;
                     }
-                    /* Session 134c (user): subtle vertical separators between the tabs - 1 px, 60 % of the
-                       height, centred, not on the last tab, never touching the active underline. */
-                    #ArtworkPlusConfigPage #epTabBar .epTabBtn:not(:last-child)::after {
-                        content: ''; position: absolute; right: 0; top: 20%; height: 60%; width: 1px;
-                        background: rgba(255,255,255,0.15);
+                    /* Session 134c/d (user): vertical separators between the tabs - own elements inserted by
+                       epInsertTabSeparators (a ::after on the button would inherit the button's greying),
+                       2 px, 60 % of the height, centred, never touching the active underline. */
+                    #ArtworkPlusConfigPage #epTabBar .epTabSep {
+                        flex: 0 0 2px; width: 2px; height: 60%; align-self: center; background: rgba(255,255,255,0.15);
                     }
                     #ArtworkPlusConfigPage #epTabBar .epTabBtn.epTabActive {
                         opacity: 1; border-bottom: 2px solid #00a4dc; font-weight: 500;
@@ -645,7 +645,7 @@
                     #ArtworkPlusConfigPage .epFontList .epFormatItem { display: flex; width: 100%; padding: 2px 4px; border-radius: 3px; }
                     #ArtworkPlusConfigPage .epFontList .epFormatItem:hover { background: rgba(255,255,255,.08); }
                     #ArtworkPlusConfigPage .epFontPreview { position: fixed; z-index: 41; pointer-events: none; box-sizing: border-box; padding: 12px; background: rgba(10,10,10,.92); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; box-shadow: 0 6px 18px rgba(0,0,0,.6); flex-direction: column; justify-content: center; align-items: stretch; }
-                    #ArtworkPlusConfigPage .epFontPreviewLine { position: relative; line-height: 2.25; height: 2.25em; white-space: nowrap; text-align: center; }
+                    #ArtworkPlusConfigPage .epFontPreviewLine { position: relative; line-height: 2.7; height: 2.7em; white-space: nowrap; text-align: center; }
                     #ArtworkPlusConfigPage .epFontPreviewLine > span { position: absolute; left: 0; right: 0; top: 0; paint-order: stroke fill; }
                     /* Create logos progress (Jellyfin's own scan bar look) */
                     #ArtworkPlusConfigPage .epRowMerged .epCreateProgress { grid-row: 3 !important; grid-column: 1 / -1 !important; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -8124,6 +8124,20 @@
             }
 
             // ── Tab switching, taken 1:1 from VideoOSD Tweaks and Candy ──
+            // Session 134d: separators as siblings of the buttons so the buttons' opacity (0.65 /
+            // greyed 0.35 / active 1) never dims them - the user wants the lines always the same.
+            (function epInsertTabSeparators() {
+                var bar = document.getElementById('epTabBar');
+                if (!bar) { return; }
+                var btns = Array.prototype.slice.call(bar.querySelectorAll('.epTabBtn'));
+                btns.forEach(function (btn, i) {
+                    if (i === btns.length - 1) { return; }
+                    var sep = document.createElement('span');
+                    sep.className = 'epTabSep';
+                    sep.setAttribute('aria-hidden', 'true');
+                    btn.parentNode.insertBefore(sep, btn.nextSibling);
+                });
+            })();
             document.querySelectorAll('.epTabBtn').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     document.querySelectorAll('.epTabBtn').forEach(function (b) { b.classList.remove('epTabActive'); });
@@ -10586,7 +10600,7 @@
             // Other preview names are scaled by their character count against the default ones.
             // 2026-09-21 (user): 25 % smaller panel (the font size follows), 50 % more line height so tall
             // ascenders/descenders fit; both names stay centred. Tune these two numbers by eye.
-            var EP_LOGOART_PREVIEW_W = 480, EP_LOGOART_PREVIEW_LINE = 2.25;
+            var EP_LOGOART_PREVIEW_W = 480, EP_LOGOART_PREVIEW_LINE = 2.7;
             var EP_LOGOART_DEFAULT_NAMES = 'Scarlett Johansson, Keanu Reeves';
             function epLogoArtPreviewNames() {
                 return ((document.getElementById('LogoArtPersonsPreviewNames') || {}).value || EP_LOGOART_DEFAULT_NAMES).split(',').map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 4);
