@@ -55,6 +55,27 @@ def jellyfin_running():
     return b"jellyfin.exe" in r.stdout
 
 
+def tray_running():
+    r = subprocess.run(["tasklist", "/FI", "IMAGENAME eq Jellyfin.Windows.Tray.exe", "/NH"], capture_output=True)
+    return b"Jellyfin.Windows.Tray.exe" in r.stdout
+
+
+TRAY_EXE = Path(r"C:\Program Files\Jellyfin\Server\jellyfin-windows-tray\Jellyfin.Windows.Tray.exe")
+
+
+def tray_relaunch():
+    """Deploys #61/#64/#66 (2026-09-21): after the copy step the tray app itself
+    was gone three times (cause unknown - it vanished right after the first
+    right-click on its icon). Hunting the icon is pointless then; launching the
+    tray app starts the server on its own (verified by hand twice)."""
+    if not TRAY_EXE.exists():
+        say(f"tray app not found at {TRAY_EXE}")
+        return False
+    subprocess.Popen([str(TRAY_EXE)], cwd=str(TRAY_EXE.parent), creationflags=getattr(subprocess, "DETACHED_PROCESS", 0))
+    say("tray app relaunched (it starts the server itself)")
+    return wait(jellyfin_running, 20, "jellyfin.exe running")
+
+
 def http(path, timeout=3):
     try:
         with urllib.request.urlopen(BASE + path, timeout=timeout) as r:
@@ -204,7 +225,11 @@ def main():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     for name in SCRIPTS:
         shutil.copy2(ROOT / name, DATA_DIR / name)
-    if not tray_start():
+    started = tray_start() if tray_running() else tray_relaunch()
+    if not started and not jellyfin_running():
+        # the tray app may have died during the menu attempts - one relaunch before giving up
+        started = tray_relaunch()
+    if not started:
         fail("server not started - start Jellyfin from the tray by hand, the files are deployed")
     if not wait(lambda: http("/System/Info/Public")[0] == 200, 90, "API up"):
         fail("API did not come up within 90 s")
