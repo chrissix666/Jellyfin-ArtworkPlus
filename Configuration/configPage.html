@@ -645,7 +645,7 @@
                     #ArtworkPlusConfigPage .epFontList .epFormatItem { display: flex; width: 100%; padding: 2px 4px; border-radius: 3px; }
                     #ArtworkPlusConfigPage .epFontList .epFormatItem:hover { background: rgba(255,255,255,.08); }
                     #ArtworkPlusConfigPage .epFontPreview { position: fixed; z-index: 41; pointer-events: none; box-sizing: border-box; padding: 12px; background: rgba(10,10,10,.92); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; box-shadow: 0 6px 18px rgba(0,0,0,.6); flex-direction: column; justify-content: center; align-items: stretch; }
-                    #ArtworkPlusConfigPage .epFontPreviewLine { position: relative; line-height: 2.7; height: 2.7em; white-space: nowrap; text-align: center; }
+                    #ArtworkPlusConfigPage .epFontPreviewLine { position: relative; line-height: 3; height: 3em; white-space: nowrap; text-align: center; }
                     #ArtworkPlusConfigPage .epFontPreviewLine > span { position: absolute; left: 0; right: 0; top: 0; paint-order: stroke fill; }
                     /* Create logos progress (Jellyfin's own scan bar look) */
                     #ArtworkPlusConfigPage .epRowMerged .epCreateProgress { grid-row: 3 !important; grid-column: 1 / -1 !important; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -10600,7 +10600,7 @@
             // Other preview names are scaled by their character count against the default ones.
             // 2026-09-21 (user): 25 % smaller panel (the font size follows), 50 % more line height so tall
             // ascenders/descenders fit; both names stay centred. Tune these two numbers by eye.
-            var EP_LOGOART_PREVIEW_W = 480, EP_LOGOART_PREVIEW_LINE = 2.7;
+            var EP_LOGOART_PREVIEW_W = 480, EP_LOGOART_PREVIEW_LINE = 3;
             var EP_LOGOART_DEFAULT_NAMES = 'Scarlett Johansson, Keanu Reeves';
             function epLogoArtPreviewNames() {
                 return ((document.getElementById('LogoArtPersonsPreviewNames') || {}).value || EP_LOGOART_DEFAULT_NAMES).split(',').map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 4);
