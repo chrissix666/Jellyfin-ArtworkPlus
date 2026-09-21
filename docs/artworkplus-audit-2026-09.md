@@ -154,3 +154,67 @@ S2-05, S2-06, S2-07) - design 2 (S2-03, S2-08). Top by relevance: S2-01
 (the only standing cost), S2-02 (2x server work per detail page). Pending:
 the visible-tab scan measurement (S2-05) when the Chrome window is visible.
 
+## Area 3 - Admin page (Session 137c, 2026-09-21)
+
+### Coverage
+
+The gate system itself is covered mechanically by the suite that ran green
+today (`run_checks.py --all` 20/20: 413 page tests incl. every Show-on /
+Enable / greying chain, self-containment 0 violations, single grey level 0,
+duplicate ids 0, JS <-> C# default sync, nested-collapse classes,
+description length wraps=0 / over-105=0, cross-node 3 known, nesting 3 known,
+header 60 keys, gegenaudit 1 known). This pass audited what the suite does
+not: the load / save / restore / import / export paths (read in full),
+`epGetFieldValue` / `epSetFieldValue`, the active case-tune mapping, the
+create-logos poll, the untick-pair list against rule 0, and three
+cross-checks by script: EP_FIELDS (729) vs C# properties (763) vs DOM inputs,
+type match per field, functions defined but never referenced. Server-side
+counterpart of every page value checked for floors where the page allows 0.
+
+### Check classes
+
+| class | result |
+|---|---|
+| Fibel rules 0-27 per node | suite green (see coverage); rule 0 verified by hand: none of the 8 tab-root switches is a target of the Show-on -> Enable untick list |
+| JS <-> C# default sync | diagnostic green for the 729 EP_FIELDS; the 34 C# properties outside EP_FIELDS (6 format csv + 28 per-case-type tune values) compared by hand: all equal |
+| description length | green (wraps 0, over-105 0) |
+| fields without DOM / DOM without field | 0 EP_FIELDS without element; 69 inputs outside EP_FIELDS, all wired: 34 format checkboxes -> csv, 20 `*Select` twins of checkbox pairs, 7 `ActiveCaseTune*` -> per-type map, `LogoArtPersonsCreateMode` -> request body, `epCodeBox` |
+| load / save | save re-reads the server config and overwrites only the page's fields + csv + the ACTIVE case type's tune values - server-only and other-type values survive (verified in code) |
+| Restore | Restore-all covers EP_FIELDS + angle sign + active tune + all six csv; per-tab restore covers the tab's csv |
+| Import / Export | S3-03, S3-04 |
+| dead JS | none (`epInsertTabSeparators` is an IIFE) |
+
+### Findings
+
+| ID | file:line | class | sev | finding | evidence | know/believe | recommendation | a fix could break |
+|---|---|---|---|---|---|---|---|---|
+| S3-01 | `configPage.html:8312-8314` (`parseFloat(...) \|\| 0`), inputs `min="0"`; `RenderArt-v1.js:256, 641`, `Posters-v1.js:1703`; no server floor | numeric floor | bug (believe) | A cleared or 0 "Display duration" saves as 0 (empty -> `parseFloat` -> 0, and `min="0"` accepts 0). Characterart, LogoArt (Characterart stage) and the Extraposter detail slideshow then run `setTimeout(showNext, 0)` - an image switch every timer tick (~4 ms) on that page, CPU-bound, until navigation. Backdrops (`Core-v1.js:1815`, floor 1.5 x fade) and the Extra tiles (`Posters-v1.js:2074`, floor 250 ms) have floors; the server clamps only `OpenAngleDegrees`. Never observed - the user never saved 0. | code read at three sites | believe (a probe would need a saved 0) | a floor on the server where the DTO is built (`Math.Max(..., 250)`) or `min="100"`-style validation in `epGetFieldValue`; keep both engines untouched | nothing if the floor sits in the server DTO; a page-side floor changes what a saved 0 means |
+| S3-02 | `configPage.html:8289-8316`, save path 11589-11611 | input validation | smell | Numeric fields are read with `parseFloat` and no range check - the HTML `min` / `max` / `step` attributes only guard the spinner, typed values (negative, huge, decimals where an int is expected) reach the server and are cast by the JSON binder (a decimal into an `int` field is rejected by the server as a 400 without a page message). | code read | know | one `clamp(min, max)` in `epGetFieldValue` from the element's attributes | any field whose attributes are stricter than the server actually needs - check the 211 `min` attributes first |
+| S3-03 | `configPage.html:11356-11369` (export), `11406-11463` (import) | transfer gap | bug (low) | The Export / Import code carries EP_FIELDS + the six format csv but NOT the 28 per-case-type tune values (`*CaseTune*`, `CaseMod3DTune*`) - the 3D case geometry a user tuned is silently left at the target server's defaults after an import. The status text "Saved N + 4 settings" also counts 4 where 6 csv are written. | code read (export builds from EP_FIELDS + 6 csv only) | know | include the 28 tune properties from `epLastLoadedConfig` + the active fields in the export, apply them in the import | nothing (additive) |
+| S3-04 | `configPage.html:11358` | secret in export | risk (low) | `PeopleBackdropsApiKey` is an EP_FIELDS text field and therefore part of the Export code (base64 of JSON, not encrypted) - a code pasted into a forum or repo ships the Wallpapers.com key. Never considered, not a decision. | code read | know | exclude the key from the export (and say so in the status line), or mask it | anyone relying on the export to move the key |
+| S3-05 | `configPage.html:10957-10964` | poll teardown | smell | The create-logos status poll (1 req/s) starts when a job runs and stops only when the job ends or the request fails; leaving the plugin page keeps it running until then (the config page has no `viewhide` teardown). Cost: one small admin GET per second during a job. | code read | know | clear the interval on `viewhide` / `pagehide` and re-arm on `pageshow` | nothing |
+| S3-06 | `configPage.html:11527-11530`, `8752-8792` | active-type editing model | design | The seven visible case-tune fields belong to the selected case type: switching the type reloads them from the last LOADED server state, so unsaved edits of the previous type are dropped without notice, and a save writes only the active type (Session 49 decision: "one visible field writes only the current type's storage"). Deliberate. | code read | know | none; a hint line when switching with unsaved edits would be an enhancement | - |
+
+### Counter-audit (area 3)
+
+(a) S3-02 through S3-06 are code-proven on two sites each (page path + the
+consuming side: server binder, export/import pair, poll start/stop, type
+switch + save) -> know; S3-01 static only (three code sites but no saved 0
+observed) -> believe. (b) Inversion per feature: every feature's settings
+block in the page maps to EP_FIELDS -> C# (0 EP_FIELDS without C#, 0 without
+DOM), every server-only property is either composed (csv) or mapped (tune)
+on save - no field is lost on Save; Export/Import is the one path with a gap
+(S3-03). (c) Adversarial: a hostile import code (`btoa` of arbitrary JSON)
+is applied field by field with `EP_FIELDS[id]` as the whitelist and
+`!!value` / `el.value` casts - no code execution path, unknown keys ignored,
+`JSON.parse` failures caught; an empty numeric field -> 0 (S3-01); a
+decimal in an int field -> server 400 without a page message (S3-02). (d)
+No contradiction with the suite: the suite tests states the page can reach
+by clicks; S3-01/S3-02 are typed values the suite never enters.
+
+### Summary area 3
+
+blocker 0 - bug 2 (S3-01 believe, S3-03 low) - risk 1 (S3-04, privacy) -
+smell 2 (S3-02, S3-05) - design 1 (S3-06). The gate system: no finding
+beyond the suite's known diagnostics.
+
