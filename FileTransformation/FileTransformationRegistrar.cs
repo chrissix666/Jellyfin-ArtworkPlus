@@ -503,7 +503,11 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
 
         if (!contents.Contains("</body>", StringComparison.Ordinal))
         {
-            logger?.LogWarning("ArtworkPlus: TransformIndexHtml - no </body> found in the given HTML, can't insert script tags");
+            // Audit S1-08 (Session 138): the "index.html" pattern also matches
+            // other HTML the File Transformation plugin hands us (three calls
+            // with 1 134 / 5 062 / 11 361 bytes against the real 11 108 on
+            // 2026-09-20/21) - not our page, nothing to insert, no warning.
+            logger?.LogDebug("ArtworkPlus: TransformIndexHtml - no </body> in the given HTML ({Length} bytes), not the SPA index - returned unchanged", contents.Length);
             return contents;
         }
 
