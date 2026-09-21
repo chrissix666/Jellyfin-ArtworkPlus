@@ -414,3 +414,9 @@ restored byte-identical afterwards.
    names centred; the two numbers `EP_LOGOART_PREVIEW_W` / `EP_LOGOART_PREVIEW_LINE` are
    tuned by eye. A real ink measurement (fontTools glyph bounds: width, ascent, descent per
    font) stays the honest fix if a font still clips.
+
+7. **Characterart block defaults = the Characterart tab's Top left set** (2026-09-21, user):
+   Height 20 vh / max width 12 vw, Width / max height empty (C# 11.5 / 0 like the tab),
+   the tab's two description texts. The earlier "Height 0 = ribbon line to page top" is
+   no longer offered (min 1 like the tab); the client keeps the full-height class only as
+   dead compatibility code.

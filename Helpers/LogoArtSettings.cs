@@ -24,9 +24,9 @@ public sealed class LogoArtSettings
     public double ClearartOffsetVw;
     public double ClearartVerticalOffsetVh;
     public string CharacterartScaleMode = "Height";
-    public double CharacterartHeightVh;
-    public double CharacterartMaxWidthVw;
-    public double CharacterartWidthVw = 20;
+    public double CharacterartHeightVh = 20;
+    public double CharacterartMaxWidthVw = 12;
+    public double CharacterartWidthVw = 11.5;
     public double CharacterartMaxHeightVh;
     public string CharacterartHorizontalAlign = "Center";
     public double CharacterartOffsetVw;

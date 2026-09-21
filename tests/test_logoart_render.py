@@ -7,7 +7,7 @@ with the vanilla CSS) and asserts the DOM artefact per case (lesson G-render):
   - VanillaLogo / FolderLogo / Text stage: the vanilla slot (25vw x 16vh, top
     10vh, centre 62.5vw), Size / Offset / Vertical offset applied as CSS
   - Clearart (16:9, own Size/Offsets, no cap) / Characterart (the Characterart
-    sizing block, Height 0 = ribbon line up to the page top): bottom edge on the
+    sizing block, defaults 20 vh / max 12 vw): bottom edge on the
     ribbon line (40vh - 7.2em), centre 62.5vw
   - chain: a stage whose image fails to load is skipped, the next one shows
   - Hide: nothing, .detailLogo stays hidden
@@ -54,7 +54,7 @@ FONT_FILE = "Signature/Activity.otf"
 def result(stages, **kw):
     r = dict(IsApplicable=True, ItemType="Movie", ZeroIntervention=False, Stages=stages, SizePercent=100, OffsetVw=0, VerticalOffsetVh=0,
              ClearartSizePercent=100, ClearartOffsetVw=0, ClearartVerticalOffsetVh=0,
-             ScaleMode="Height", HeightVh=0, MaxWidthVw=0, WidthVw=20, MaxHeightVh=0, HorizontalAlign="Center", HorizontalOffsetVw=0,
+             ScaleMode="Height", HeightVh=20, MaxWidthVw=12, WidthVw=11.5, MaxHeightVh=0, HorizontalAlign="Center", HorizontalOffsetVw=0,
              MultiImage=True, OrderMode="Sequential", SinglePass=False, StaySingleImageStatic=False, CycleTimeMs=1200, FadeTimeMs=300,
              TextStroke=0, Outline=1)
     r.update(kw)
@@ -209,7 +209,7 @@ def main():
         page.wait_for_timeout(1500)
         r = page.evaluate(PROBE)
         line = 0.4 * r["vh"] - 115.2
-        check("Characterart: floor box, bottom on the ribbon line, Height 0 = up to the page top (1:1 image -> square)", r["box"] and "logoart-characterart" in r["cls"] and approx(r["rect"][3], line) and approx(r["rect"][1], 0, 1) and approx((r["rect"][2] - r["rect"][0]), line, 1.5), str(r))
+        check("Characterart: floor box, bottom on the ribbon line, defaults 20 vh x max 12 vw (the Characterart tab's)", r["box"] and "logoart-characterart" in r["cls"] and approx(r["rect"][3], line) and approx(r["rect"][3] - r["rect"][1], 0.2 * r["vh"]) and approx(r["rect"][2] - r["rect"][0], 0.12 * r["vw"]), str(r))
         vis1 = [i for i in r.get("imgs", []) if i["op"] > 0.9]
         check("Characterart: first image visible via /LogoArt/{id}/characterart/", len(vis1) == 1 and "/LogoArt/a1/characterart/a.png" in vis1[0]["src"], str(r.get("imgs")))
         page.wait_for_timeout(2500)

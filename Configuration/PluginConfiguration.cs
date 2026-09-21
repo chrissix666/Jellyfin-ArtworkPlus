@@ -800,14 +800,14 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public double LogoArtMovieClearartVerticalOffsetVh { get; set; }
 
-    /// <summary>Characterart stage: the Characterart tab's sizing block for the box standing on the ribbon line. Height 0 = from the ribbon line up to the page top.</summary>
+    /// <summary>Characterart stage: the Characterart tab's sizing block (same defaults as its Top left set: 20 vh / max 12 vw) for the box standing on the ribbon line.</summary>
     public string LogoArtMovieCharacterartScaleMode { get; set; } = "Height";
 
-    public double LogoArtMovieCharacterartHeightVh { get; set; }
+    public double LogoArtMovieCharacterartHeightVh { get; set; } = 20;
 
-    public double LogoArtMovieCharacterartMaxWidthVw { get; set; }
+    public double LogoArtMovieCharacterartMaxWidthVw { get; set; } = 12;
 
-    public double LogoArtMovieCharacterartWidthVw { get; set; } = 20;
+    public double LogoArtMovieCharacterartWidthVw { get; set; } = 11.5;
 
     public double LogoArtMovieCharacterartMaxHeightVh { get; set; }
 
@@ -853,14 +853,14 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public double LogoArtSeriesClearartVerticalOffsetVh { get; set; }
 
-    /// <summary>Characterart stage: the Characterart tab's sizing block for the box standing on the ribbon line. Height 0 = from the ribbon line up to the page top.</summary>
+    /// <summary>Characterart stage: the Characterart tab's sizing block (same defaults as its Top left set: 20 vh / max 12 vw) for the box standing on the ribbon line.</summary>
     public string LogoArtSeriesCharacterartScaleMode { get; set; } = "Height";
 
-    public double LogoArtSeriesCharacterartHeightVh { get; set; }
+    public double LogoArtSeriesCharacterartHeightVh { get; set; } = 20;
 
-    public double LogoArtSeriesCharacterartMaxWidthVw { get; set; }
+    public double LogoArtSeriesCharacterartMaxWidthVw { get; set; } = 12;
 
-    public double LogoArtSeriesCharacterartWidthVw { get; set; } = 20;
+    public double LogoArtSeriesCharacterartWidthVw { get; set; } = 11.5;
 
     public double LogoArtSeriesCharacterartMaxHeightVh { get; set; }
 
@@ -912,14 +912,14 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public double LogoArtSeasonClearartVerticalOffsetVh { get; set; }
 
-    /// <summary>Characterart stage: the Characterart tab's sizing block for the box standing on the ribbon line. Height 0 = from the ribbon line up to the page top.</summary>
+    /// <summary>Characterart stage: the Characterart tab's sizing block (same defaults as its Top left set: 20 vh / max 12 vw) for the box standing on the ribbon line.</summary>
     public string LogoArtSeasonCharacterartScaleMode { get; set; } = "Height";
 
-    public double LogoArtSeasonCharacterartHeightVh { get; set; }
+    public double LogoArtSeasonCharacterartHeightVh { get; set; } = 20;
 
-    public double LogoArtSeasonCharacterartMaxWidthVw { get; set; }
+    public double LogoArtSeasonCharacterartMaxWidthVw { get; set; } = 12;
 
-    public double LogoArtSeasonCharacterartWidthVw { get; set; } = 20;
+    public double LogoArtSeasonCharacterartWidthVw { get; set; } = 11.5;
 
     public double LogoArtSeasonCharacterartMaxHeightVh { get; set; }
 
@@ -971,14 +971,14 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public double LogoArtEpisodeClearartVerticalOffsetVh { get; set; }
 
-    /// <summary>Characterart stage: the Characterart tab's sizing block for the box standing on the ribbon line. Height 0 = from the ribbon line up to the page top.</summary>
+    /// <summary>Characterart stage: the Characterart tab's sizing block (same defaults as its Top left set: 20 vh / max 12 vw) for the box standing on the ribbon line.</summary>
     public string LogoArtEpisodeCharacterartScaleMode { get; set; } = "Height";
 
-    public double LogoArtEpisodeCharacterartHeightVh { get; set; }
+    public double LogoArtEpisodeCharacterartHeightVh { get; set; } = 20;
 
-    public double LogoArtEpisodeCharacterartMaxWidthVw { get; set; }
+    public double LogoArtEpisodeCharacterartMaxWidthVw { get; set; } = 12;
 
-    public double LogoArtEpisodeCharacterartWidthVw { get; set; } = 20;
+    public double LogoArtEpisodeCharacterartWidthVw { get; set; } = 11.5;
 
     public double LogoArtEpisodeCharacterartMaxHeightVh { get; set; }
 
@@ -1027,14 +1027,14 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public double LogoArtSetClearartVerticalOffsetVh { get; set; }
 
-    /// <summary>Characterart stage: the Characterart tab's sizing block for the box standing on the ribbon line. Height 0 = from the ribbon line up to the page top.</summary>
+    /// <summary>Characterart stage: the Characterart tab's sizing block (same defaults as its Top left set: 20 vh / max 12 vw) for the box standing on the ribbon line.</summary>
     public string LogoArtSetCharacterartScaleMode { get; set; } = "Height";
 
-    public double LogoArtSetCharacterartHeightVh { get; set; }
+    public double LogoArtSetCharacterartHeightVh { get; set; } = 20;
 
-    public double LogoArtSetCharacterartMaxWidthVw { get; set; }
+    public double LogoArtSetCharacterartMaxWidthVw { get; set; } = 12;
 
-    public double LogoArtSetCharacterartWidthVw { get; set; } = 20;
+    public double LogoArtSetCharacterartWidthVw { get; set; } = 11.5;
 
     public double LogoArtSetCharacterartMaxHeightVh { get; set; }
 
