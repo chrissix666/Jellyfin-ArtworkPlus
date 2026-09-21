@@ -649,7 +649,8 @@
                     #ArtworkPlusConfigPage .epFontPreviewLine { position: relative; line-height: 3; height: 3em; white-space: nowrap; text-align: center; }
                     #ArtworkPlusConfigPage .epFontPreviewLine > span { position: absolute; left: 0; right: 0; top: 0; paint-order: stroke fill; }
                     /* Create logos progress (Jellyfin's own scan bar look) */
-                    #ArtworkPlusConfigPage .epRowMerged .epCreateProgress { grid-row: 3 !important; grid-column: 1 / -1 !important; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+                    /* one 14 px line like the API-key result (Fibel 15c): bar + text side by side, never wrapping */
+                    #ArtworkPlusConfigPage .epRowMerged .epCreateProgress { grid-row: 3 !important; grid-column: 1 / -1 !important; display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; height: 14px; line-height: 14px; }
                     #ArtworkPlusConfigPage .epProgressBar { flex: 1 1 260px; height: 6px; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; display: none; }
                     #ArtworkPlusConfigPage .epProgressFill { height: 100%; width: 0; background: #00a4dc; transition: width .4s; }
                     #ArtworkPlusConfigPage .epFontPreviewFill { color: #fff; -webkit-text-stroke: calc(var(--la-stroke, 0) * 0.02em) #fff; }
@@ -4856,10 +4857,9 @@
                                 <button type="button" is="emby-button" class="raised epActionBtn emby-button" id="LogoArtPersonsCreateBtn">Create logos</button>
                             </div>
                             <div class="epDesc">Writes "Base name".png for every person. Update: missing only. Replace: all.</div>
-                            <div id="LogoArtPersonsCreateResult" class="epDesc epCreateProgress" style="padding-left:0; height:auto; white-space:normal; display:none;">
+                            <div id="LogoArtPersonsCreateResult" class="epDesc epCreateProgress" style="padding-left:0; white-space:nowrap; display:none;">
                                 <div class="epProgressBar" id="LogoArtPersonsCreateBar"><div class="epProgressFill" id="LogoArtPersonsCreateFill"></div></div>
                                 <span id="LogoArtPersonsCreateText"></span>
-                                <button type="button" is="emby-button" class="raised epActionBtn emby-button" id="LogoArtPersonsCreateCancelBtn" style="display:none;">Cancel</button>
                             </div>
                         </div>
                         </div>
@@ -10725,7 +10725,6 @@
                 var fillEl = document.getElementById('LogoArtPersonsCreateFill');
                 var barEl = document.getElementById('LogoArtPersonsCreateBar');
                 var textEl = document.getElementById('LogoArtPersonsCreateText');
-                var cancelBtn = document.getElementById('LogoArtPersonsCreateCancelBtn');
                 var pollTimer = null;
                 function epLogoArtShowJob(job) {
                     if (!job) { return; }
@@ -10733,8 +10732,8 @@
                     var pct = job.Persons > 0 ? Math.round(100 * job.Done / job.Persons) : 0;
                     fillEl.style.width = pct + '%';
                     barEl.style.display = job.Running ? 'block' : 'none';
-                    cancelBtn.style.display = job.Running ? 'inline-block' : 'none';
                     btn.disabled = !!job.Running;
+                    resultEl.style.color = job.Running ? '#999' : (job.Failed ? '#ff8a8a' : '#8f8');
                     var fmt = function (n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); };
                     textEl.textContent = job.Running
                         ? fmt(job.Done) + ' / ' + fmt(job.Persons) + ' · ' + fmt(job.Written) + ' written · ' + fmt(job.Skipped) + ' skipped' + (job.Failed ? ' · ' + fmt(job.Failed) + ' failed' : '') + (job.Current ? ' · ' + job.Current : '')
@@ -10742,6 +10741,7 @@
                     if (job.Running && !pollTimer) { pollTimer = setInterval(epLogoArtPollJob, 1000); }
                     if (!job.Running && pollTimer) { clearInterval(pollTimer); pollTimer = null; }
                 }
+                window.epLogoArtShowJob = epLogoArtShowJob; // reachable for the page test (the block is an IIFE)
                 function epLogoArtPollJob() {
                     if (!window.ApiClient || typeof ApiClient.ajax !== 'function') { return; }
                     ApiClient.ajax({ type: 'GET', url: ApiClient.getUrl('LogoArt/create-logos/status'), dataType: 'json' }).then(epLogoArtShowJob).catch(function () { /* not admin or server away - stop polling */ if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } });
@@ -10754,7 +10754,7 @@
                     return Object.keys(ticked).length === 0;
                 }
                 function epLogoArtClearNoFontHint() {
-                    if (textEl.dataset.epNoFont) { delete textEl.dataset.epNoFont; textEl.style.color = ''; textEl.textContent = ''; resultEl.style.display = 'none'; }
+                    if (textEl.dataset.epNoFont) { delete textEl.dataset.epNoFont; resultEl.style.color = ''; textEl.textContent = ''; resultEl.style.display = 'none'; }
                 }
                 document.getElementById('LogoArtPersonsFontsList').addEventListener('change', epLogoArtClearNoFontHint);
                 document.getElementById('LogoArtPersonsFontsCheckAllBtn').addEventListener('click', epLogoArtClearNoFontHint);
@@ -10764,9 +10764,8 @@
                     if (epLogoArtNoFontSelected()) {
                         resultEl.style.display = 'block';
                         barEl.style.display = 'none';
-                        cancelBtn.style.display = 'none';
                         textEl.dataset.epNoFont = '1';
-                        textEl.style.color = '#ff8a8a';
+                        resultEl.style.color = '#ff8a8a';
                         textEl.textContent = 'No font(s) selected - select at least one.';
                         return;
                     }
@@ -10774,6 +10773,7 @@
                     if (!confirm('This will create thousands of .png files in ProgramData\\Jellyfin\\Server\\metadata\\People. No undo. Continue?')) { return; }
                     btn.disabled = true;
                     resultEl.style.display = 'block';
+                    resultEl.style.color = '#999';
                     textEl.textContent = 'Starting...';
                     ApiClient.ajax({
                         type: 'POST',
@@ -10783,12 +10783,10 @@
                         dataType: 'json'
                     }).then(epLogoArtShowJob).catch(function (e) {
                         console.error('[LogoArt] Create logos failed - a 401/403 means you are not logged in as an administrator', e);
+                        resultEl.style.color = '#ff8a8a';
                         textEl.textContent = 'Failed - see the browser console and the server log for "LogoArt: CreateLogos".';
                         btn.disabled = false;
                     });
-                });
-                cancelBtn.addEventListener('click', function () {
-                    ApiClient.ajax({ type: 'POST', url: ApiClient.getUrl('LogoArt/create-logos/cancel'), dataType: 'json' }).then(epLogoArtShowJob).catch(function () { /* shown by the next poll */ });
                 });
                 // A job started earlier (or from another tab) is shown again when the page opens.
                 if (window.ApiClient && typeof ApiClient.ajax === 'function' && typeof ApiClient.getUrl === 'function') {
