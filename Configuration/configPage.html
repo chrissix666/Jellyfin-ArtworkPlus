@@ -581,7 +581,8 @@
                        epInsertTabSeparators (a ::after on the button would inherit the button's greying),
                        2 px, 60 % of the height, centred, never touching the active underline. */
                     #ArtworkPlusConfigPage #epTabBar .epTabSep {
-                        flex: 0 0 2px; width: 2px; height: 60%; align-self: center; background: rgba(255,255,255,0.15);
+                        /* a fixed height, not a percentage: the bar has no explicit height, so 60% resolved to 0 (found live) */
+                        flex: 0 0 2px; width: 2px; height: 21px; align-self: center; background: rgba(255,255,255,0.15);
                     }
                     #ArtworkPlusConfigPage #epTabBar .epTabBtn.epTabActive {
                         opacity: 1; border-bottom: 2px solid #00a4dc; font-weight: 500;
