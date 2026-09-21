@@ -104,10 +104,10 @@
          DIRECT package dependencies additionally require a build-time
          license key even under the free terms (confirmed via direct
          search - real build errors reported by other users hitting this
-         on 4.0.0). Deliberately pinned to 3.1.7 (the last major line
+         on 4.0.0). Kept on the 3.1 line (the last major line
          before that requirement was introduced) to avoid this extra
          setup friction entirely for anyone building this plugin. -->
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <!-- Session 134: LogoArt's bulk clearlogo creator renders text with
          SkiaSharp. Jellyfin 10.10.7 ships SkiaSharp 2.88.9 (+ libSkiaSharp)
          for its own image pipeline (jellyfin.deps.json), so the plugin
