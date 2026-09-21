@@ -172,6 +172,20 @@ def main():
             print(("ok  " if ok else "FAIL"), f"{label:24s}", "" if ok else f"vanilla paints nothing here but we did: {r}, settings calls {len(calls)}")
             REQUEST_LOG.clear()
             page.close()
+        # Session 138 (audit S2-04): the first load dispatches ONE boot navigation to every listener
+        page = browser.new_page(viewport={"width": 1280, "height": 800})
+        page.route(f"{ORIGIN}/**", lambda route, request, stubs=dv_stubs: _serve(route, stubs))
+        page.goto(f"{ORIGIN}/web/index.html#/details?id=i1&serverId=s1")
+        page.add_script_tag(content=APICLIENT_STUB)
+        page.add_script_tag(content=core)
+        page.add_script_tag(content="window.__bootNav = 0; ArtworkPlusCore.onNavigation(function (h, src) { if (src === 'viewshow') { window.__bootNav++; } });")
+        page.add_script_tag(content=bd)
+        page.wait_for_timeout(2500)
+        n = page.evaluate("window.__bootNav")
+        ok = n == 1
+        fails += 0 if ok else 1
+        print(("ok  " if ok else "FAIL"), "boot dispatch: one per listener on the first load", "" if ok else f"listener ran {n} times")
+        page.close()
         browser.close()
     print("RESULT", "FAILED" if fails else "OK", f"({fails} failure(s))")
     sys.exit(1 if fails else 0)

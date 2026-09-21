@@ -1616,6 +1616,11 @@
         window.addEventListener('hashchange', function () { dispatchNavigation('hashchange'); });
         document.addEventListener('viewshow', function () { dispatchNavigation('viewshow'); });
         setInterval(function () { dispatchNavigation('poll'); }, 1000);
+        // Audit S2-04 (Session 138): the first load - the hash is already there,
+        // nothing will "change". ONE boot dispatch for every listener, armed by
+        // the first registration (every owner registers in the same script
+        // parse), instead of one timer per owner (7 x 7 listener runs before).
+        setTimeout(dispatchNavigationNow, 1200);
     }
 
     /**

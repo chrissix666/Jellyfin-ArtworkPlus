@@ -231,8 +231,7 @@ var ArtworkPlusBackdropTransition = {
         loadForCurrentItem();
     });
 
-    // First load: the hash is already there, nothing will "change".
-    setTimeout(Core.dispatchNavigationNow, 1200);
+    // First load: Core.onNavigation arms the one boot dispatch for all owners (audit S2-04).
 })();
 
 
@@ -562,7 +561,7 @@ var ArtworkPlusBackdropTransition = {
         owner.beginVisit();
         fetchAndApplyForVisit(detected, visitId, true);
     });
-    setTimeout(Core.dispatchNavigationNow, 1200);
+    // First load: Core.onNavigation arms the one boot dispatch (audit S2-04).
 })();
 
 // =======================================================================
@@ -674,7 +673,7 @@ var ArtworkPlusBackdropTransition = {
         owner.beginVisit();
         load(detected, ++loadToken);
     });
-    setTimeout(Core.dispatchNavigationNow, 1200);
+    // First load: Core.onNavigation arms the one boot dispatch (audit S2-04).
 })();
 
 // =======================================================================
@@ -792,7 +791,7 @@ var ArtworkPlusBackdropTransition = {
         owner.beginVisit();
         load(detected, ++loadToken);
     });
-    setTimeout(Core.dispatchNavigationNow, 1200);
+    // First load: Core.onNavigation arms the one boot dispatch (audit S2-04).
 })();
 
 // =======================================================================
@@ -886,7 +885,7 @@ var ArtworkPlusBackdropTransition = {
         owner.beginVisit();
         load(detected, ++loadToken);
     });
-    setTimeout(Core.dispatchNavigationNow, 1200);
+    // First load: Core.onNavigation arms the one boot dispatch (audit S2-04).
 })();
 
 // =======================================================================
@@ -996,7 +995,7 @@ var ArtworkPlusBackdropTransition = {
         owner.beginVisit();
         load(detected, ++loadToken);
     });
-    setTimeout(Core.dispatchNavigationNow, 1200);
+    // First load: Core.onNavigation arms the one boot dispatch (audit S2-04).
 })();
 
 // =======================================================================
@@ -1126,5 +1125,5 @@ var ArtworkPlusBackdropTransition = {
         owner.beginVisit();
         load(detected, ++loadToken);
     });
-    setTimeout(Core.dispatchNavigationNow, 1200);
+    // First load: Core.onNavigation arms the one boot dispatch (audit S2-04).
 })();
