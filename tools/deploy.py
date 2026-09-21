@@ -40,6 +40,7 @@ PLUGIN_FILES = [
     OUT / "Jellyfin.Plugin.ArtworkPlus.dll",
     OUT / "Jellyfin.Plugin.ArtworkPlus.pdb",
     OUT / "Jellyfin.Plugin.ArtworkPlus.deps.json",
+    OUT / "SixLabors.ImageSharp.dll",  # Session 138 (audit S4-01): the plugin's own dependency was never in the copy set - the server kept 3.1.7
     OUT / "logo.png",
     ROOT / "meta.json",
 ]
