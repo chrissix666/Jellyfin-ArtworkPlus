@@ -715,19 +715,27 @@
         if (!itemId) { return; }
         contentReady = true;
 
-        var result;
+        var result = null;
         try {
             result = await fetch('/LogoArt/' + encodeURIComponent(itemId), { cache: 'no-store' }).then(function (r) { return r.json(); });
         } catch (e) {
             log('Error fetching', e);
-            return;
         }
         if (myToken !== runToken) { return; }
-        if (!result.IsApplicable) { log('Not applicable for', itemId); return; }
 
         var logo = await waitFor(findLogo);
         if (myToken !== runToken) { return; }
         if (!logo) { log('No .detailLogo element on this page'); return; }
+
+        // Audit S2-01 (Session 138): while the prehiding style is injected, EVERY
+        // path that does not draw its own logo must release the vanilla slot -
+        // a failed fetch (server restarting, 500) or a type without a LogoArt
+        // block (Trailer, Playlist, Photo, LiveTV) used to leave it hidden.
+        if (!result || !result.IsApplicable) {
+            logo.classList.add(RELEASE_CLASS);
+            log(result ? 'Not applicable for ' + itemId : 'No answer for ' + itemId, '- vanilla logo released');
+            return;
+        }
 
         if (result.ZeroIntervention) {
             logo.classList.add(RELEASE_CLASS);

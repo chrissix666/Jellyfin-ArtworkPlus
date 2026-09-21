@@ -137,6 +137,18 @@ def main():
         check("zero intervention: no container, .detailLogo released", not r["box"] and r["released"], str(r))
         page.close()
 
+        # 1b. Session 138 (audit S2-01): not applicable / no answer must release the vanilla slot too
+        page = open_page("n1", result([], IsApplicable=False))
+        page.wait_for_timeout(1500)
+        r = page.evaluate(PROBE)
+        check("not applicable (type without a LogoArt block): no container, .detailLogo released", not r["box"] and r["released"], str(r))
+        page.close()
+        page = open_page("bad1", result([]))  # the stub answers 404 with an empty body -> fetch/json error
+        page.wait_for_timeout(1500)
+        r = page.evaluate(PROBE)
+        check("fetch error (server away / 500): no container, .detailLogo released", not r["box"] and r["released"], str(r))
+        page.close()
+
         # 2. VanillaLogo stage: the vanilla slot, then Size/Offset/Vertical offset
         page = open_page("v1", result([{"Kind": "VanillaLogo", "Url": "/Items/x/Images/Logo?tag=1", "Level": "Item"}]))
         page.wait_for_timeout(1500)
