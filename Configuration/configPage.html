@@ -6246,7 +6246,7 @@
                         <div class="epRow epRowMerged">
                             <label for="PeopleBackdropsCycleTimeMs" class="epRowLabelSpan">Cycle time</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" class="epNumberCompact" id="PeopleBackdropsCycleTimeMs" name="PeopleBackdropsCycleTimeMs" />
+                                <input type="number" min="0" step="1000" class="epNumberCompact" id="PeopleBackdropsCycleTimeMs" name="PeopleBackdropsCycleTimeMs" />
                                 <span class="epUnitLabel">ms</span>
                             </div>
                             <div class="epDesc">No artificial upper limit - set freely.</div>
@@ -6266,7 +6266,7 @@
                         <div class="epRow epRowMerged" id="PeopleBackdropsKenBurnsZoomRow">
                             <label for="PeopleBackdropsKenBurnsZoomMs" class="epRowLabelSpan">Zoom speed</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" class="epNumberCompact" id="PeopleBackdropsKenBurnsZoomMs" name="PeopleBackdropsKenBurnsZoomMs" />
+                                <input type="number" min="500" step="500" class="epNumberCompact" id="PeopleBackdropsKenBurnsZoomMs" name="PeopleBackdropsKenBurnsZoomMs" />
                                 <span class="epUnitLabel">ms</span>
                             </div>
                             <div class="epDesc">One zoom direction's duration (full cycle = twice this). Range/easing stay fixed.</div>
@@ -6275,7 +6275,7 @@
                         <div class="epRow epRowMerged" id="PeopleBackdropsKenBurnsPanRow">
                             <label for="PeopleBackdropsKenBurnsPanMs" class="epRowLabelSpan">Pan speed</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" class="epNumberCompact" id="PeopleBackdropsKenBurnsPanMs" name="PeopleBackdropsKenBurnsPanMs" />
+                                <input type="number" min="500" step="500" class="epNumberCompact" id="PeopleBackdropsKenBurnsPanMs" name="PeopleBackdropsKenBurnsPanMs" />
                                 <span class="epUnitLabel">ms</span>
                             </div>
                             <div class="epDesc">Duration of one pan direction, independent of zoom speed. Distance and easing stay fixed.</div>
@@ -8313,7 +8313,19 @@
                 // genuinely reaches .value this time, where the
                 // replace() below can actually do its job.
                 if (el.type === 'number' || el.dataset.numeric === 'true') {
-                    return parseFloat(el.value.replace(',', '.')) || 0;
+                    var n = parseFloat(el.value.replace(',', '.')) || 0;
+                    // Session 138 (audit S3-02): the min / max / step attributes used to guard
+                    // only the spinner - a typed value went to the server unchecked (a decimal
+                    // in an int field = a 400 without a message). The getter now clamps to
+                    // min / max and rounds where the step is a whole number; fields without
+                    // the attribute (the signed offsets) stay as typed.
+                    if (el.type === 'number') {
+                        var minAttr = parseFloat(el.getAttribute('min')), maxAttr = parseFloat(el.getAttribute('max')), stepAttr = el.getAttribute('step');
+                        if (!isNaN(minAttr) && n < minAttr) { n = minAttr; }
+                        if (!isNaN(maxAttr) && n > maxAttr) { n = maxAttr; }
+                        if (!stepAttr || /^-?\d+$/.test(stepAttr)) { n = Math.round(n); }
+                    }
+                    return n;
                 }
                 return el.value;
             }

@@ -1577,6 +1577,21 @@ with sync_playwright() as p:
     }""")
     check('S138b: the code carries all 28 case-tune values (active type from the fields) and not the API key', ie['tuneCount'] == 28 and ie['viva'] == -7.25 and ie['vortex'] == 10 and not ie['hasKeyField'] and not ie['keyInCode'] and 'API key not included' in ie['status'], str(ie))
     check('S138b: import restores the active tune field, buffers the other types for the save, leaves the key alone', ie['restored'] == -7.25 and ie['keyAfterImport'] == 'OTHER' and ie['savedViva'] == -7.25 and ie['savedOthers'] == 28, str(ie))
+    # Session 138 (audit S3-02): typed numeric values are clamped to min / max and rounded on whole-number steps
+    nv = apage.evaluate("""() => {
+        function probe(id, v) { var el = document.getElementById(id); el.value = v; return epGetFieldValue(id); }
+        return {
+            belowMin: probe('BackdropsCycleTimeMs', '-500'),            // min 0, step 1000 -> 0
+            aboveMax: probe('ExtraposterMoviesDetailSetKeyartLogoSizePercent', '999'),  // max 100 -> 100
+            decimalInt: probe('BackdropsCycleTimeMs', '2500.7'),      // whole-number step -> rounded
+            signedOffset: probe('CharacterartMoviesTopLeftOffsetVw', '-3.5'),  // no min: stays
+            halfStep: probe('ActiveCaseTuneTop', '-4.25'),             // data-numeric text: untouched
+            maxAttr: document.getElementById('ExtraposterMoviesDetailSetKeyartLogoSizePercent').getAttribute('max')
+        };
+    }""")
+    check('S138c: numeric getter clamps to min/max, rounds whole-number steps, leaves signed offsets and tune fields alone',
+          nv['belowMin'] == 0 and nv['aboveMax'] == float(nv['maxAttr']) and nv['decimalInt'] == 2501 and nv['signedOffset'] == -3.5 and nv['halfStep'] == -4.25, str(nv))
+    apage.evaluate("() => { document.getElementById('epRestoreAllBtn').click(); }")
     check('S136: no JS errors on the Extra tabs', not aerrors, str(aerrors[:3]))
     apage.close()
 
