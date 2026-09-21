@@ -270,8 +270,8 @@ piece. Chain for Persons: **Folder logo → Text → None**.
 - **Signature: 60** families from the user's collection (151 files → −30 "Personal use only"
   licences, −20 missing punctuation, −8 duplicates, −33 by eye). Licence: the user's legal
   advice, "no licence stated" may ship under the project's MIT (recorded as a user decision;
-  30 explicit personal-use fonts excluded). Files stay in
-  `Project Files\LogoArt Fonts\_excluded\<reason>` for reference.
+  30 explicit personal-use fonts excluded). The raw source folder (originals, unused candidates, `_excluded`) was deleted by the user on 2026-09-22 - the 120 shipped `.otf` in `Fonts/` are the only copy; formerly
+  `Project Files\LogoArt Fonts\_excluded\<reason>` held the rejects for reference.
 - **Title: 60** families from Google Fonts (`github.com/google/fonts`, SIL OFL / Apache),
   chosen from the Display category by popularity plus classic title sans/serifs, −6 without
   Latin accents, −57 by my pre-sort (rounded/childlike, hairline/text faces, scripts,
