@@ -196,12 +196,12 @@ public class RedCarpetController : ControllerBase
             var ifNoneMatchImage = Request.Headers.IfNoneMatch.ToString();
             if (!string.IsNullOrEmpty(ifNoneMatchImage) && ifNoneMatchImage == imageEtag)
             {
-                _logger.LogInformation("RedCarpet: GetRedCarpetImage - ETag unchanged, 304 for \"{Path}\"", fullPath);
+                _logger.LogDebug("RedCarpet: GetRedCarpetImage - ETag unchanged, 304 for \"{Path}\"", fullPath);
                 return StatusCode(StatusCodes.Status304NotModified);
             }
 
             var stream = System.IO.File.OpenRead(fullPath);
-            _logger.LogInformation("RedCarpet: GetRedCarpetImage 200 - serving \"{Path}\"", fullPath);
+            _logger.LogDebug("RedCarpet: GetRedCarpetImage 200 - serving \"{Path}\"", fullPath);
             return File(stream, "image/png");
         }
         catch (Exception ex)

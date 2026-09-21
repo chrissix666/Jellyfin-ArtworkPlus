@@ -537,7 +537,7 @@ public class CustomPosterController : ControllerBase
             var subFolder = Path.Combine(folderPath, folderName);
             if (!Directory.Exists(subFolder))
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "CustomPoster: FindCustomPosterFile({Type}) - Folder mode, subfolder not found: \"{SubFolder}\"",
                     posterType, subFolder);
                 found = null;
@@ -550,7 +550,7 @@ public class CustomPosterController : ControllerBase
                     .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
                     .FirstOrDefault();
                 found = firstMatch is null ? null : Path.Combine(folderName, firstMatch);
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "CustomPoster: FindCustomPosterFile({Type}) - Folder mode, subfolder=\"{SubFolder}\" (allowed: [{Ext}]) -> {Result}",
                     posterType, subFolder, string.Join(", ", extensions), found ?? "no match");
             }
@@ -572,7 +572,7 @@ public class CustomPosterController : ControllerBase
                 }
             }
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "CustomPoster: FindCustomPosterFile({Type}) - searched pattern=\"{Prefix}.<ext>\" (allowed: [{Ext}]) in \"{Folder}\" -> {Result}",
                 posterType, prefix, string.Join(", ", extensions), folderPath, found ?? "no match");
         }

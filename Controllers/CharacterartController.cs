@@ -270,12 +270,12 @@ public class CharacterartController : ControllerBase
             var ifNoneMatchImage = Request.Headers.IfNoneMatch.ToString();
             if (!string.IsNullOrEmpty(ifNoneMatchImage) && ifNoneMatchImage == imageEtag)
             {
-                _logger.LogInformation("Characterart: GetCharacterartImage - ETag unchanged, 304 for \"{Path}\"", fullPath);
+                _logger.LogDebug("Characterart: GetCharacterartImage - ETag unchanged, 304 for \"{Path}\"", fullPath);
                 return StatusCode(StatusCodes.Status304NotModified);
             }
 
             var stream = System.IO.File.OpenRead(fullPath);
-            _logger.LogInformation("Characterart: GetCharacterartImage 200 - serving \"{Path}\", Content-Type={ContentType}", fullPath, contentType);
+            _logger.LogDebug("Characterart: GetCharacterartImage 200 - serving \"{Path}\", Content-Type={ContentType}", fullPath, contentType);
             return File(stream, contentType);
         }
         catch (Exception ex)
@@ -316,7 +316,7 @@ public class CharacterartController : ControllerBase
         ResolveItem(Guid itemId, PluginConfiguration config)
     {
         var item = _libraryManager.GetItemById(itemId);
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Characterart: ResolveItem - {ItemId} resolved as type \"{Type}\"",
             itemId, item?.GetType().FullName ?? "null (not found)");
 
@@ -326,7 +326,7 @@ public class CharacterartController : ControllerBase
         {
             if (!config.CharacterartShowOnMovies)
             {
-                _logger.LogInformation("Characterart: ResolveItem - {ItemId} is a Movie, but CharacterartShowOnMovies is off", itemId);
+                _logger.LogDebug("Characterart: ResolveItem - {ItemId} is a Movie, but CharacterartShowOnMovies is off", itemId);
                 return null;
             }
 
@@ -348,7 +348,7 @@ public class CharacterartController : ControllerBase
         {
             if (!config.CharacterartShowOnSets)
             {
-                _logger.LogInformation("Characterart: ResolveItem - {ItemId} is a BoxSet, but CharacterartShowOnSets is off", itemId);
+                _logger.LogDebug("Characterart: ResolveItem - {ItemId} is a BoxSet, but CharacterartShowOnSets is off", itemId);
                 return null;
             }
 
@@ -377,7 +377,7 @@ public class CharacterartController : ControllerBase
         {
             if (!config.CharacterartShowOnTvShows)
             {
-                _logger.LogInformation("Characterart: ResolveItem - {ItemId} is a Series, but CharacterartShowOnTvShows is off", itemId);
+                _logger.LogDebug("Characterart: ResolveItem - {ItemId} is a Series, but CharacterartShowOnTvShows is off", itemId);
                 return null;
             }
 
@@ -387,27 +387,27 @@ public class CharacterartController : ControllerBase
         {
             if (!config.CharacterartShowOnSeasons)
             {
-                _logger.LogInformation("Characterart: ResolveItem - {ItemId} is a Season, but CharacterartShowOnSeasons is off", itemId);
+                _logger.LogDebug("Characterart: ResolveItem - {ItemId} is a Season, but CharacterartShowOnSeasons is off", itemId);
                 return null;
             }
 
             folderPath = season.Series?.ContainingFolderPath;
-            _logger.LogInformation("Characterart: ResolveItem - Season {ItemId} -> navigated to the series' main folder via Season.Series", itemId);
+            _logger.LogDebug("Characterart: ResolveItem - Season {ItemId} -> navigated to the series' main folder via Season.Series", itemId);
         }
         else if (item is Episode episode)
         {
             if (!config.CharacterartShowOnEpisodes)
             {
-                _logger.LogInformation("Characterart: ResolveItem - {ItemId} is an Episode, but CharacterartShowOnEpisodes is off", itemId);
+                _logger.LogDebug("Characterart: ResolveItem - {ItemId} is an Episode, but CharacterartShowOnEpisodes is off", itemId);
                 return null;
             }
 
             folderPath = episode.Series?.ContainingFolderPath;
-            _logger.LogInformation("Characterart: ResolveItem - Episode {ItemId} -> navigated to the series' main folder via Episode.Series", itemId);
+            _logger.LogDebug("Characterart: ResolveItem - Episode {ItemId} -> navigated to the series' main folder via Episode.Series", itemId);
         }
         else
         {
-            _logger.LogInformation("Characterart: ResolveItem - {ItemId} is none of the supported types (Movie/Series/Season/Episode)", itemId);
+            _logger.LogDebug("Characterart: ResolveItem - {ItemId} is none of the supported types (Movie/Series/Season/Episode)", itemId);
             return null;
         }
 
@@ -471,7 +471,7 @@ public class CharacterartController : ControllerBase
 
         if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
         {
-            _logger.LogInformation("Characterart: ResolveSlotImages - folder not found for {ItemId}: \"{Path}\"", item.Id, folderPath ?? "(empty)");
+            _logger.LogDebug("Characterart: ResolveSlotImages - folder not found for {ItemId}: \"{Path}\"", item.Id, folderPath ?? "(empty)");
             return null;
         }
 
@@ -587,7 +587,7 @@ public class CharacterartController : ControllerBase
         List<string> naturallyOrdered;
         if (_cache.TryGetValue(cacheKey, out List<string>? cached) && cached is not null)
         {
-            _logger.LogInformation("Characterart: ResolveCandidates - cache hit for \"{Key}\"", cacheKey);
+            _logger.LogDebug("Characterart: ResolveCandidates - cache hit for \"{Key}\"", cacheKey);
             naturallyOrdered = cached;
         }
         else
@@ -633,7 +633,7 @@ public class CharacterartController : ControllerBase
             var subFolder = Path.Combine(folderPath, folderName);
             if (!Directory.Exists(subFolder))
             {
-                _logger.LogInformation("Characterart: ResolveCandidatesUncached - Folder mode, subfolder not found: \"{SubFolder}\"", subFolder);
+                _logger.LogDebug("Characterart: ResolveCandidatesUncached - Folder mode, subfolder not found: \"{SubFolder}\"", subFolder);
                 return new List<string>();
             }
 
@@ -646,7 +646,7 @@ public class CharacterartController : ControllerBase
 
             if (!multiImage && fileNames.Count > 1)
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Characterart: ResolveCandidatesUncached - Folder mode + single image: {Count} files found, only the first is used: \"{First}\"",
                     fileNames.Count, fileNames[0]);
                 fileNames = new List<string> { fileNames[0] };
@@ -674,7 +674,7 @@ public class CharacterartController : ControllerBase
                 }
             }
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Characterart: ResolveCandidatesUncached - single-image mode, searched pattern=\"{Prefix}.<ext>\", match: [{Files}]",
                 prefix, string.Join(", ", fileNames));
             return fileNames;
@@ -729,7 +729,7 @@ public class CharacterartController : ControllerBase
             }
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Characterart: ResolveCandidatesUncached - multi-image mode, searched prefix=\"{Prefix}\", unnumbered found={UnnumberedFound}, {NumberedCount} numbered match(es), {TotalCount} total: [{Files}]",
             prefix, unnumberedFound, numberedFilesFound, fileNames.Count, string.Join(", ", fileNames));
 

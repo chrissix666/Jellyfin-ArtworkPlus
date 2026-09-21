@@ -548,7 +548,7 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
             if (!result.Contains(PrehidingStyleTag, StringComparison.Ordinal))
             {
                 result = result.Replace("</head>", PrehidingStyleTag + SafetyNetScriptTag + PosterPendingStyleTag + PosterPendingSafetyNetScriptTag + "</head>", StringComparison.Ordinal);
-                logger?.LogInformation("ArtworkPlus: TransformIndexHtml - FOOC prehiding style + safety-net script + poster pending-by-default style + its safety net inserted");
+                logger?.LogDebug("ArtworkPlus: TransformIndexHtml - FOOC prehiding style + safety-net script + poster pending-by-default style + its safety net inserted");
             }
         }
         else if (foocPrehidingNeeded)
@@ -557,7 +557,7 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
         }
         else
         {
-            logger?.LogInformation("ArtworkPlus: TransformIndexHtml - FOOC prehiding skipped, both AnimatedPoster and ExtraPoster are disabled");
+            logger?.LogDebug("ArtworkPlus: TransformIndexHtml - FOOC prehiding skipped, both AnimatedPoster and ExtraPoster are disabled");
         }
 
         // Library tiles (Session 122): style + feature flags, always
@@ -587,7 +587,7 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
             if (!result.Contains(BackdropsPrehidingStyleTag, StringComparison.Ordinal))
             {
                 result = result.Replace("</head>", BackdropsPrehidingStyleTag + "</head>", StringComparison.Ordinal);
-                logger?.LogInformation("ArtworkPlus: TransformIndexHtml - Backdrops prehiding style inserted");
+                logger?.LogDebug("ArtworkPlus: TransformIndexHtml - Backdrops prehiding style inserted");
             }
         }
         else if (backdropsPrehidingNeeded)
@@ -596,7 +596,7 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
         }
         else
         {
-            logger?.LogInformation("ArtworkPlus: TransformIndexHtml - Backdrops prehiding skipped, Backdrops is disabled");
+            logger?.LogDebug("ArtworkPlus: TransformIndexHtml - Backdrops prehiding skipped, Backdrops is disabled");
         }
 
         // LogoArt prehiding (Session 134) - see LogoArtPrehidingStyleTag.
@@ -606,12 +606,12 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
             if (!result.Contains(LogoArtPrehidingStyleTag, StringComparison.Ordinal))
             {
                 result = result.Replace("</head>", LogoArtPrehidingStyleTag + "</head>", StringComparison.Ordinal);
-                logger?.LogInformation("ArtworkPlus: TransformIndexHtml - LogoArt prehiding style inserted");
+                logger?.LogDebug("ArtworkPlus: TransformIndexHtml - LogoArt prehiding style inserted");
             }
         }
         else
         {
-            logger?.LogInformation("ArtworkPlus: TransformIndexHtml - LogoArt prehiding skipped (every type at its vanilla default or LogoArt off)");
+            logger?.LogDebug("ArtworkPlus: TransformIndexHtml - LogoArt prehiding skipped (every type at its vanilla default or LogoArt off)");
         }
 
         // Check/insert all three script tags independently of each other -
@@ -628,22 +628,22 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
         if (!result.Contains(CoreScriptTag, StringComparison.Ordinal))
         {
             result = result.Replace("</body>", CoreScriptTag + "</body>", StringComparison.Ordinal);
-            logger?.LogInformation("ArtworkPlus: TransformIndexHtml - ArtworkPlus Core script tag inserted");
+            logger?.LogDebug("ArtworkPlus: TransformIndexHtml - ArtworkPlus Core script tag inserted");
         }
         if (!result.Contains(PostersPlusScriptTag, StringComparison.Ordinal))
         {
             result = result.Replace("</body>", PostersPlusScriptTag + "</body>", StringComparison.Ordinal);
-            logger?.LogInformation("ArtworkPlus: TransformIndexHtml - PostersPlus script tag inserted");
+            logger?.LogDebug("ArtworkPlus: TransformIndexHtml - PostersPlus script tag inserted");
         }
         if (!result.Contains(RenderArtScriptTag, StringComparison.Ordinal))
         {
             result = result.Replace("</body>", RenderArtScriptTag + "</body>", StringComparison.Ordinal);
-            logger?.LogInformation("ArtworkPlus: TransformIndexHtml - RenderArt script tag inserted");
+            logger?.LogDebug("ArtworkPlus: TransformIndexHtml - RenderArt script tag inserted");
         }
         if (!result.Contains(BackdropsScriptTag, StringComparison.Ordinal))
         {
             result = result.Replace("</body>", BackdropsScriptTag + "</body>", StringComparison.Ordinal);
-            logger?.LogInformation("ArtworkPlus: TransformIndexHtml - BackdropsPlus script tag inserted");
+            logger?.LogDebug("ArtworkPlus: TransformIndexHtml - BackdropsPlus script tag inserted");
         }
 
         return result;

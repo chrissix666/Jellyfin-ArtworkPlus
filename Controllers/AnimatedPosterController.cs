@@ -262,12 +262,12 @@ public class AnimatedPosterController : ControllerBase
             var ifNoneMatchImage = Request.Headers.IfNoneMatch.ToString();
             if (!string.IsNullOrEmpty(ifNoneMatchImage) && ifNoneMatchImage == imageEtag)
             {
-                _logger.LogInformation("AnimatedPoster: GetAnimatedPosterImage - ETag unchanged, 304 for \"{Path}\"", fullPath);
+                _logger.LogDebug("AnimatedPoster: GetAnimatedPosterImage - ETag unchanged, 304 for \"{Path}\"", fullPath);
                 return StatusCode(StatusCodes.Status304NotModified);
             }
 
             var stream = System.IO.File.OpenRead(fullPath);
-            _logger.LogInformation("AnimatedPoster: GetAnimatedPosterImage 200 - serving \"{Path}\", Content-Type={ContentType}", fullPath, contentType);
+            _logger.LogDebug("AnimatedPoster: GetAnimatedPosterImage 200 - serving \"{Path}\", Content-Type={ContentType}", fullPath, contentType);
             return File(stream, contentType);
         }
         catch (Exception ex)
@@ -532,7 +532,7 @@ public class AnimatedPosterController : ControllerBase
             }
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "AnimatedPoster: FindAnimatedFile - searched pattern=\"{Prefix}.<ext>\" (allowed: [{Ext}]) in \"{Folder}\" -> {Result}",
             prefix, string.Join(", ", extensions), folderPath, found ?? "no match");
 
