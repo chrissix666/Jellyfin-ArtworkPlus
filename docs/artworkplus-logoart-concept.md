@@ -108,8 +108,8 @@ dropdowns. There is NO separate "Hide" block and no "Hide all" switch: Hide is a
 ### B2 Rows per item type (order as listed)
 | Label | Values (dropdown order) | Description (≤ 105, house style) |
 |---|---|---|
-| `Source` | Vanilla logo · Clearart · Characterart¹ · Hide | Vanilla logo: Jellyfin's own. Clearart: the clearart image. Characterart: our art. Hide: empty slot. |
-| `Fallback` | None (Skip) · Vanilla logo · Clearart · Characterart¹ | Used when the source has no image. None: the slot stays empty. |
+| `Source` | Clearlogo · Clearart · Characterart¹ · Hide | Clearlogo: vanilla setting. Clearart: Jellyfin DB supported. Characterart: custom. Hide: empty. (user's wording 2026-09-21; the option's value stays `VanillaLogo`) |
+| `Fallback` | None (Skip) · Clearlogo · Clearart · Characterart¹ | Used when the source has no image. None: the slot stays empty. |
 | `Second fallback` | None (Skip) · … | Used when source and fallback both have no image. |
 | `Source mode`² | Movie / Video / Music video: Default · Item only · Parent folder · Grandparent folder — Season: Default · Season only · Series — Episode: Default · Season · Series — Album: Default · Album only · Artist | Default: item first, then its parents like Jellyfin. Any other value: that level only. |
 | `Size` | number, 100 | Percent of the vanilla slot. 100 = as Jellyfin draws it. |

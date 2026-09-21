@@ -1349,7 +1349,7 @@ with sync_playwright() as p:
     defaults = apage.evaluate("() => ['LogoArtMovieSource', 'LogoArtMovieFallback', 'LogoArtMovieSecondFallback', 'LogoArtMovieSourceMode', 'LogoArtMovieLogoSizePercent', 'LogoArtMovieLogoOffsetVw', 'LogoArtMovieLogoVerticalOffsetVh', 'LogoArtMovieClearartSizePercent', 'LogoArtMovieCharacterartScaleMode', 'LogoArtMovieCharacterartHeightVh', 'LogoArtMovieCharacterartMaxWidthVw', 'LogoArtSetSettings', 'LogoArtSeasonSettings', 'LogoArtEpisodeSettings'].map(function (id) { return document.getElementById(id).value; })")
     check('S134b: defaults (zero intervention, Characterart height 0 = full, Take over on)', defaults == ['VanillaLogo', 'None', 'None', 'Default', '100', '0', '0', '100', 'Height', '0', '0', 'TakeOverMovies', 'TakeOverSeries', 'TakeOverSeries'], str(defaults))
     # geometry containers follow the chain kinds
-    check('S134b: Vanilla logo source: Logo rows active, Clearart + Characterart rows grey', agreyed('LogoArtMovieLogoFields') is False and agreyed('LogoArtMovieClearartFields') is True and agreyed('LogoArtMovieCharacterartFields') is True and agreyed('LogoArtMovieRotationFields') is True)
+    check('S134b: Clearlogo source: Logo rows active, Clearart + Characterart rows grey', agreyed('LogoArtMovieLogoFields') is False and agreyed('LogoArtMovieClearartFields') is True and agreyed('LogoArtMovieCharacterartFields') is True and agreyed('LogoArtMovieRotationFields') is True)
     sel('LogoArtMovieSource', 'Clearart')
     check('S134b: Clearart source: Clearart rows active, Logo rows grey', agreyed('LogoArtMovieClearartFields') is False and agreyed('LogoArtMovieLogoFields') is True)
     sel('LogoArtMovieFallback', 'Characterart')
