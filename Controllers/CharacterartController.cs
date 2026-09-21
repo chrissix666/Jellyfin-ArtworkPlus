@@ -166,6 +166,7 @@ public class CharacterartController : ControllerBase
             // Session 127: Random start position - Sequential + Loop only (the page greys the box otherwise).
             if (randomStart && orderMode == "Sequential" && !singlePass && multiImage) { images = Helpers.RandomStart.Rotate(images); }
 
+            cycleMs = Helpers.Timing.FloorCycle(cycleMs); // audit S3-01
             var effectiveFadeMs = Math.Min(fadeMs, cycleMs);
 
             // If MultiImage is configured on but only one (or zero) image

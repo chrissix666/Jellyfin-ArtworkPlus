@@ -283,8 +283,8 @@ public class LogoArtController : ControllerBase
                 OrderMode = settings.OrderMode,
                 SinglePass = settings.SinglePass,
                 StaySingleImageStatic = settings.StaySingleImageStatic,
-                CycleTimeMs = settings.CycleTimeMs,
-                FadeTimeMs = Math.Min(settings.FadeTimeMs, settings.CycleTimeMs)
+                CycleTimeMs = Helpers.Timing.FloorCycle(settings.CycleTimeMs), // audit S3-01
+                FadeTimeMs = Math.Min(settings.FadeTimeMs, Helpers.Timing.FloorCycle(settings.CycleTimeMs))
             };
             if (settings.IsZeroIntervention)
             {

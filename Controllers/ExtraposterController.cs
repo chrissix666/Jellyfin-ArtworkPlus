@@ -728,7 +728,7 @@ public class ExtraposterController : ControllerBase
             var view = GetViewSettings(config, itemId, resolvedType, isLibraryScope: false);
             var orderMode = view.OrderMode;
             var allowedFormats = config.AllowedFormats; // CHANGED: shared, tab-level now (explicit user request), no longer per-sub
-            var cycleTimeMs = view.CycleTimeMs;
+            var cycleTimeMs = Helpers.Timing.FloorCycle(view.CycleTimeMs); // audit S3-01
             var fadeTimeMs = view.FadeTimeMs;
             var delayEnabled = view.DelayEnabled;
             var delayMs = view.DelayMs;
@@ -975,7 +975,8 @@ public class ExtraposterController : ControllerBase
         var allowedFormats = config.AllowedFormats;
         var view = GetViewSettings(config, itemId, resolvedType, isLibraryScope: true);
         var entries = ResolveEntries(itemId, config, resolvedType, isLibraryScope: true, folderPath, namingMode, folderName, view);
-        var effectiveFade = Math.Min(view.FadeTimeMs, view.CycleTimeMs);
+        var cycleFloored = Helpers.Timing.FloorCycle(view.CycleTimeMs); // audit S3-01
+        var effectiveFade = Math.Min(view.FadeTimeMs, cycleFloored);
         var logoEnabled = isExtrakeyart && view.LogoEnabled;
 
         return new PosterListResult
@@ -983,7 +984,7 @@ public class ExtraposterController : ControllerBase
             IsMovie = true, // the field name is historically "IsMovie", here it means "is a valid, enabled item"
             OrderMode = view.OrderMode,
             Posters = entries,
-            CycleTimeMs = view.CycleTimeMs,
+            CycleTimeMs = cycleFloored,
             FadeTimeMs = effectiveFade,
             DelayEnabled = view.DelayEnabled,
             DelayMs = view.DelayMs,
