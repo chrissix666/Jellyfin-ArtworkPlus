@@ -897,7 +897,7 @@
                         <button type="button" class="epTabBtn" data-tab="customposter">Custom Poster</button>
                         <button type="button" class="epTabBtn" data-tab="extraposter">Extraposter</button>
                         <button type="button" class="epTabBtn" data-tab="logoart">LogoArt</button>
-                        <button type="button" class="epTabBtn" data-tab="characterart">Characterart</button>
+                        <button type="button" class="epTabBtn" data-tab="characterart">CharacterArt</button>
                         <button type="button" class="epTabBtn" data-tab="redcarpet">Red Carpet</button>
                         <button type="button" class="epTabBtn" data-tab="backdrops">Backdrops</button>
                     </div>
@@ -961,7 +961,7 @@
                             </div>
                             </div>
                         <div class="epRow epRowCheckbox" id="CharacterartEnabledRow">
-                            <label for="CharacterartEnabled">Characterart</label>
+                            <label for="CharacterartEnabled">CharacterArt</label>
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="CharacterartEnabled" name="CharacterartEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
@@ -3194,7 +3194,7 @@
                         <div class="epCollapseBody" data-collapsebody="logoartMovies">
                         <div class="epTabHeaderRow">
                             <div class="epTabIntroCol">
-                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on movie pages: keep, hide, or replace with Clearart or Characterart.</div>
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on movie pages: keep, hide, or replace with Clearart or CharacterArt.</div>
                                 <div class="epDesc epVanillaNotice"></div>
                             </div>
                         </div>
@@ -3205,10 +3205,10 @@
                             <select is="emby-select" id="LogoArtMovieSource" name="LogoArtMovieSource" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                                 <option value="Hide">Hide</option>
                             </select>
-                            <div class="epDesc">Clearlogo: vanilla setting. Clearart: Jellyfin DB supported. Characterart: custom. Hide: empty.</div>
+                            <div class="epDesc">Clearlogo: vanilla setting. Clearart: Jellyfin DB supported. CharacterArt: custom. Hide: empty.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtMovieFallbackRow">
                             <label for="LogoArtMovieFallback" class="epRowLabelSpan">Fallback</label>
@@ -3216,7 +3216,7 @@
                                 <option value="None">None (Skip)</option>
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                             </select>
                             <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
                         </div>
@@ -3226,7 +3226,7 @@
                                 <option value="None">None (Skip)</option>
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                             </select>
                             <div class="epDesc">Used when source and fallback both have no image.</div>
                         </div>
@@ -3294,7 +3294,7 @@
                         </div>
                         <div id="LogoArtMovieCharacterartFields">
                         <div class="epRow epRowMerged" id="LogoArtMovieCharacterartScaleModeRow">
-                            <label for="LogoArtMovieCharacterartScaleMode" class="epRowLabelSpan">Characterart: scale by</label>
+                            <label for="LogoArtMovieCharacterartScaleMode" class="epRowLabelSpan">CharacterArt: scale by</label>
                             <select is="emby-select" id="LogoArtMovieCharacterartScaleMode" name="LogoArtMovieCharacterartScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Height">Height</option>
                                 <option value="Width">Width</option>
@@ -3302,7 +3302,7 @@
                             <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtMovieCharacterartHeightRow">
-                            <label for="LogoArtMovieCharacterartHeightVh" class="epRowLabelSpan">Characterart: height / max width</label>
+                            <label for="LogoArtMovieCharacterartHeightVh" class="epRowLabelSpan">CharacterArt: height / max width</label>
                             <div class="epPairedFieldRow" style="position:relative;">
                                 <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtMovieCharacterartHeightVh" name="LogoArtMovieCharacterartHeightVh" />
                                 <span class="epUnitLabel">vh</span>
@@ -3312,7 +3312,7 @@
                             <div class="epDesc">Height, then optional max width (0 = auto width, follows the image).</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtMovieCharacterartWidthRow">
-                            <label for="LogoArtMovieCharacterartWidthVw" class="epRowLabelSpan">Characterart: width / max height</label>
+                            <label for="LogoArtMovieCharacterartWidthVw" class="epRowLabelSpan">CharacterArt: width / max height</label>
                             <div class="epPairedFieldRow" style="position:relative;">
                                 <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtMovieCharacterartWidthVw" name="LogoArtMovieCharacterartWidthVw" />
                                 <span class="epUnitLabel">vw</span>
@@ -3322,7 +3322,7 @@
                             <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtMovieCharacterartAlignRow">
-                            <label for="LogoArtMovieCharacterartHorizontalAlign" class="epRowLabelSpan">Characterart: align</label>
+                            <label for="LogoArtMovieCharacterartHorizontalAlign" class="epRowLabelSpan">CharacterArt: align</label>
                             <select is="emby-select" id="LogoArtMovieCharacterartHorizontalAlign" name="LogoArtMovieCharacterartHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Center">Centered</option>
                                 <option value="Left">Left</option>
@@ -3331,7 +3331,7 @@
                             <div class="epDesc">Where the image sits inside a box with a fixed max width / height.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtMovieCharacterartOffsetRow">
-                            <label for="LogoArtMovieCharacterartOffsetVw" class="epRowLabelSpan">Characterart: offset</label>
+                            <label for="LogoArtMovieCharacterartOffsetVw" class="epRowLabelSpan">CharacterArt: offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtMovieCharacterartOffsetVw" name="LogoArtMovieCharacterartOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
@@ -3347,7 +3347,7 @@
                                 <option value="true">Multi image</option>
                             </select>
                             <input type="checkbox" id="LogoArtMovieMultiImage" name="LogoArtMovieMultiImage" style="display:none;" />
-                            <div class="epDesc">Characterart in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
+                            <div class="epDesc">CharacterArt in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtMovieOrderRow">
                             <label for="LogoArtMovieOrderMode" class="epRowLabelSpan">Order</label>
@@ -3425,10 +3425,10 @@
                             <select is="emby-select" id="LogoArtSeriesSource" name="LogoArtSeriesSource" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                                 <option value="Hide">Hide</option>
                             </select>
-                            <div class="epDesc">Clearlogo: vanilla setting. Clearart: Jellyfin DB supported. Characterart: custom. Hide: empty.</div>
+                            <div class="epDesc">Clearlogo: vanilla setting. Clearart: Jellyfin DB supported. CharacterArt: custom. Hide: empty.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeriesFallbackRow">
                             <label for="LogoArtSeriesFallback" class="epRowLabelSpan">Fallback</label>
@@ -3436,7 +3436,7 @@
                                 <option value="None">None (Skip)</option>
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                             </select>
                             <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
                         </div>
@@ -3446,7 +3446,7 @@
                                 <option value="None">None (Skip)</option>
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                             </select>
                             <div class="epDesc">Used when source and fallback both have no image.</div>
                         </div>
@@ -3504,7 +3504,7 @@
                         </div>
                         <div id="LogoArtSeriesCharacterartFields">
                         <div class="epRow epRowMerged" id="LogoArtSeriesCharacterartScaleModeRow">
-                            <label for="LogoArtSeriesCharacterartScaleMode" class="epRowLabelSpan">Characterart: scale by</label>
+                            <label for="LogoArtSeriesCharacterartScaleMode" class="epRowLabelSpan">CharacterArt: scale by</label>
                             <select is="emby-select" id="LogoArtSeriesCharacterartScaleMode" name="LogoArtSeriesCharacterartScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Height">Height</option>
                                 <option value="Width">Width</option>
@@ -3512,7 +3512,7 @@
                             <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeriesCharacterartHeightRow">
-                            <label for="LogoArtSeriesCharacterartHeightVh" class="epRowLabelSpan">Characterart: height / max width</label>
+                            <label for="LogoArtSeriesCharacterartHeightVh" class="epRowLabelSpan">CharacterArt: height / max width</label>
                             <div class="epPairedFieldRow" style="position:relative;">
                                 <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeriesCharacterartHeightVh" name="LogoArtSeriesCharacterartHeightVh" />
                                 <span class="epUnitLabel">vh</span>
@@ -3522,7 +3522,7 @@
                             <div class="epDesc">Height, then optional max width (0 = auto width, follows the image).</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeriesCharacterartWidthRow">
-                            <label for="LogoArtSeriesCharacterartWidthVw" class="epRowLabelSpan">Characterart: width / max height</label>
+                            <label for="LogoArtSeriesCharacterartWidthVw" class="epRowLabelSpan">CharacterArt: width / max height</label>
                             <div class="epPairedFieldRow" style="position:relative;">
                                 <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeriesCharacterartWidthVw" name="LogoArtSeriesCharacterartWidthVw" />
                                 <span class="epUnitLabel">vw</span>
@@ -3532,7 +3532,7 @@
                             <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeriesCharacterartAlignRow">
-                            <label for="LogoArtSeriesCharacterartHorizontalAlign" class="epRowLabelSpan">Characterart: align</label>
+                            <label for="LogoArtSeriesCharacterartHorizontalAlign" class="epRowLabelSpan">CharacterArt: align</label>
                             <select is="emby-select" id="LogoArtSeriesCharacterartHorizontalAlign" name="LogoArtSeriesCharacterartHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Center">Centered</option>
                                 <option value="Left">Left</option>
@@ -3541,7 +3541,7 @@
                             <div class="epDesc">Where the image sits inside a box with a fixed max width / height.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeriesCharacterartOffsetRow">
-                            <label for="LogoArtSeriesCharacterartOffsetVw" class="epRowLabelSpan">Characterart: offset</label>
+                            <label for="LogoArtSeriesCharacterartOffsetVw" class="epRowLabelSpan">CharacterArt: offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeriesCharacterartOffsetVw" name="LogoArtSeriesCharacterartOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
@@ -3557,7 +3557,7 @@
                                 <option value="true">Multi image</option>
                             </select>
                             <input type="checkbox" id="LogoArtSeriesMultiImage" name="LogoArtSeriesMultiImage" style="display:none;" />
-                            <div class="epDesc">Characterart in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
+                            <div class="epDesc">CharacterArt in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeriesOrderRow">
                             <label for="LogoArtSeriesOrderMode" class="epRowLabelSpan">Order</label>
@@ -3643,10 +3643,10 @@
                             <select is="emby-select" id="LogoArtSeasonSource" name="LogoArtSeasonSource" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                                 <option value="Hide">Hide</option>
                             </select>
-                            <div class="epDesc">Clearlogo: vanilla setting. Clearart: Jellyfin DB supported. Characterart: custom. Hide: empty.</div>
+                            <div class="epDesc">Clearlogo: vanilla setting. Clearart: Jellyfin DB supported. CharacterArt: custom. Hide: empty.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeasonFallbackRow">
                             <label for="LogoArtSeasonFallback" class="epRowLabelSpan">Fallback</label>
@@ -3654,7 +3654,7 @@
                                 <option value="None">None (Skip)</option>
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                             </select>
                             <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
                         </div>
@@ -3664,7 +3664,7 @@
                                 <option value="None">None (Skip)</option>
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                             </select>
                             <div class="epDesc">Used when source and fallback both have no image.</div>
                         </div>
@@ -3722,7 +3722,7 @@
                         </div>
                         <div id="LogoArtSeasonCharacterartFields">
                         <div class="epRow epRowMerged" id="LogoArtSeasonCharacterartScaleModeRow">
-                            <label for="LogoArtSeasonCharacterartScaleMode" class="epRowLabelSpan">Characterart: scale by</label>
+                            <label for="LogoArtSeasonCharacterartScaleMode" class="epRowLabelSpan">CharacterArt: scale by</label>
                             <select is="emby-select" id="LogoArtSeasonCharacterartScaleMode" name="LogoArtSeasonCharacterartScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Height">Height</option>
                                 <option value="Width">Width</option>
@@ -3730,7 +3730,7 @@
                             <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeasonCharacterartHeightRow">
-                            <label for="LogoArtSeasonCharacterartHeightVh" class="epRowLabelSpan">Characterart: height / max width</label>
+                            <label for="LogoArtSeasonCharacterartHeightVh" class="epRowLabelSpan">CharacterArt: height / max width</label>
                             <div class="epPairedFieldRow" style="position:relative;">
                                 <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeasonCharacterartHeightVh" name="LogoArtSeasonCharacterartHeightVh" />
                                 <span class="epUnitLabel">vh</span>
@@ -3740,7 +3740,7 @@
                             <div class="epDesc">Height, then optional max width (0 = auto width, follows the image).</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeasonCharacterartWidthRow">
-                            <label for="LogoArtSeasonCharacterartWidthVw" class="epRowLabelSpan">Characterart: width / max height</label>
+                            <label for="LogoArtSeasonCharacterartWidthVw" class="epRowLabelSpan">CharacterArt: width / max height</label>
                             <div class="epPairedFieldRow" style="position:relative;">
                                 <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeasonCharacterartWidthVw" name="LogoArtSeasonCharacterartWidthVw" />
                                 <span class="epUnitLabel">vw</span>
@@ -3750,7 +3750,7 @@
                             <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeasonCharacterartAlignRow">
-                            <label for="LogoArtSeasonCharacterartHorizontalAlign" class="epRowLabelSpan">Characterart: align</label>
+                            <label for="LogoArtSeasonCharacterartHorizontalAlign" class="epRowLabelSpan">CharacterArt: align</label>
                             <select is="emby-select" id="LogoArtSeasonCharacterartHorizontalAlign" name="LogoArtSeasonCharacterartHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Center">Centered</option>
                                 <option value="Left">Left</option>
@@ -3759,7 +3759,7 @@
                             <div class="epDesc">Where the image sits inside a box with a fixed max width / height.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeasonCharacterartOffsetRow">
-                            <label for="LogoArtSeasonCharacterartOffsetVw" class="epRowLabelSpan">Characterart: offset</label>
+                            <label for="LogoArtSeasonCharacterartOffsetVw" class="epRowLabelSpan">CharacterArt: offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeasonCharacterartOffsetVw" name="LogoArtSeasonCharacterartOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
@@ -3775,7 +3775,7 @@
                                 <option value="true">Multi image</option>
                             </select>
                             <input type="checkbox" id="LogoArtSeasonMultiImage" name="LogoArtSeasonMultiImage" style="display:none;" />
-                            <div class="epDesc">Characterart in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
+                            <div class="epDesc">CharacterArt in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSeasonOrderRow">
                             <label for="LogoArtSeasonOrderMode" class="epRowLabelSpan">Order</label>
@@ -3861,10 +3861,10 @@
                             <select is="emby-select" id="LogoArtEpisodeSource" name="LogoArtEpisodeSource" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                                 <option value="Hide">Hide</option>
                             </select>
-                            <div class="epDesc">Clearlogo: vanilla setting. Clearart: Jellyfin DB supported. Characterart: custom. Hide: empty.</div>
+                            <div class="epDesc">Clearlogo: vanilla setting. Clearart: Jellyfin DB supported. CharacterArt: custom. Hide: empty.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtEpisodeFallbackRow">
                             <label for="LogoArtEpisodeFallback" class="epRowLabelSpan">Fallback</label>
@@ -3872,7 +3872,7 @@
                                 <option value="None">None (Skip)</option>
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                             </select>
                             <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
                         </div>
@@ -3882,7 +3882,7 @@
                                 <option value="None">None (Skip)</option>
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                             </select>
                             <div class="epDesc">Used when source and fallback both have no image.</div>
                         </div>
@@ -3940,7 +3940,7 @@
                         </div>
                         <div id="LogoArtEpisodeCharacterartFields">
                         <div class="epRow epRowMerged" id="LogoArtEpisodeCharacterartScaleModeRow">
-                            <label for="LogoArtEpisodeCharacterartScaleMode" class="epRowLabelSpan">Characterart: scale by</label>
+                            <label for="LogoArtEpisodeCharacterartScaleMode" class="epRowLabelSpan">CharacterArt: scale by</label>
                             <select is="emby-select" id="LogoArtEpisodeCharacterartScaleMode" name="LogoArtEpisodeCharacterartScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Height">Height</option>
                                 <option value="Width">Width</option>
@@ -3948,7 +3948,7 @@
                             <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtEpisodeCharacterartHeightRow">
-                            <label for="LogoArtEpisodeCharacterartHeightVh" class="epRowLabelSpan">Characterart: height / max width</label>
+                            <label for="LogoArtEpisodeCharacterartHeightVh" class="epRowLabelSpan">CharacterArt: height / max width</label>
                             <div class="epPairedFieldRow" style="position:relative;">
                                 <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtEpisodeCharacterartHeightVh" name="LogoArtEpisodeCharacterartHeightVh" />
                                 <span class="epUnitLabel">vh</span>
@@ -3958,7 +3958,7 @@
                             <div class="epDesc">Height, then optional max width (0 = auto width, follows the image).</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtEpisodeCharacterartWidthRow">
-                            <label for="LogoArtEpisodeCharacterartWidthVw" class="epRowLabelSpan">Characterart: width / max height</label>
+                            <label for="LogoArtEpisodeCharacterartWidthVw" class="epRowLabelSpan">CharacterArt: width / max height</label>
                             <div class="epPairedFieldRow" style="position:relative;">
                                 <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtEpisodeCharacterartWidthVw" name="LogoArtEpisodeCharacterartWidthVw" />
                                 <span class="epUnitLabel">vw</span>
@@ -3968,7 +3968,7 @@
                             <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtEpisodeCharacterartAlignRow">
-                            <label for="LogoArtEpisodeCharacterartHorizontalAlign" class="epRowLabelSpan">Characterart: align</label>
+                            <label for="LogoArtEpisodeCharacterartHorizontalAlign" class="epRowLabelSpan">CharacterArt: align</label>
                             <select is="emby-select" id="LogoArtEpisodeCharacterartHorizontalAlign" name="LogoArtEpisodeCharacterartHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Center">Centered</option>
                                 <option value="Left">Left</option>
@@ -3977,7 +3977,7 @@
                             <div class="epDesc">Where the image sits inside a box with a fixed max width / height.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtEpisodeCharacterartOffsetRow">
-                            <label for="LogoArtEpisodeCharacterartOffsetVw" class="epRowLabelSpan">Characterart: offset</label>
+                            <label for="LogoArtEpisodeCharacterartOffsetVw" class="epRowLabelSpan">CharacterArt: offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtEpisodeCharacterartOffsetVw" name="LogoArtEpisodeCharacterartOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
@@ -3993,7 +3993,7 @@
                                 <option value="true">Multi image</option>
                             </select>
                             <input type="checkbox" id="LogoArtEpisodeMultiImage" name="LogoArtEpisodeMultiImage" style="display:none;" />
-                            <div class="epDesc">Characterart in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
+                            <div class="epDesc">CharacterArt in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtEpisodeOrderRow">
                             <label for="LogoArtEpisodeOrderMode" class="epRowLabelSpan">Order</label>
@@ -4059,7 +4059,7 @@
                         <div class="epCollapseBody" data-collapsebody="logoartSets">
                         <div class="epTabHeaderRow">
                             <div class="epTabIntroCol">
-                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on collection pages: keep, hide, or replace with Clearart or Characterart.</div>
+                                <div class="epDesc" style="padding-left:0; height:auto; white-space:normal;">Logo slot on collection pages: keep, hide, or replace with Clearart or CharacterArt.</div>
                                 <div class="epDesc epVanillaNotice"></div>
                             </div>
                         </div>
@@ -4078,10 +4078,10 @@
                             <select is="emby-select" id="LogoArtSetSource" name="LogoArtSetSource" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                                 <option value="Hide">Hide</option>
                             </select>
-                            <div class="epDesc">Clearlogo: vanilla setting. Clearart: Jellyfin DB supported. Characterart: custom. Hide: empty.</div>
+                            <div class="epDesc">Clearlogo: vanilla setting. Clearart: Jellyfin DB supported. CharacterArt: custom. Hide: empty.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSetFallbackRow">
                             <label for="LogoArtSetFallback" class="epRowLabelSpan">Fallback</label>
@@ -4089,7 +4089,7 @@
                                 <option value="None">None (Skip)</option>
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                             </select>
                             <div class="epDesc">Used when the source has no image. None: the slot stays empty.</div>
                         </div>
@@ -4099,7 +4099,7 @@
                                 <option value="None">None (Skip)</option>
                                 <option value="VanillaLogo">Clearlogo</option>
                                 <option value="Clearart">Clearart</option>
-                                <option value="Characterart">Characterart</option>
+                                <option value="Characterart">CharacterArt</option>
                             </select>
                             <div class="epDesc">Used when source and fallback both have no image.</div>
                         </div>
@@ -4157,7 +4157,7 @@
                         </div>
                         <div id="LogoArtSetCharacterartFields">
                         <div class="epRow epRowMerged" id="LogoArtSetCharacterartScaleModeRow">
-                            <label for="LogoArtSetCharacterartScaleMode" class="epRowLabelSpan">Characterart: scale by</label>
+                            <label for="LogoArtSetCharacterartScaleMode" class="epRowLabelSpan">CharacterArt: scale by</label>
                             <select is="emby-select" id="LogoArtSetCharacterartScaleMode" name="LogoArtSetCharacterartScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Height">Height</option>
                                 <option value="Width">Width</option>
@@ -4165,7 +4165,7 @@
                             <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSetCharacterartHeightRow">
-                            <label for="LogoArtSetCharacterartHeightVh" class="epRowLabelSpan">Characterart: height / max width</label>
+                            <label for="LogoArtSetCharacterartHeightVh" class="epRowLabelSpan">CharacterArt: height / max width</label>
                             <div class="epPairedFieldRow" style="position:relative;">
                                 <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSetCharacterartHeightVh" name="LogoArtSetCharacterartHeightVh" />
                                 <span class="epUnitLabel">vh</span>
@@ -4175,7 +4175,7 @@
                             <div class="epDesc">Height, then optional max width (0 = auto width, follows the image).</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSetCharacterartWidthRow">
-                            <label for="LogoArtSetCharacterartWidthVw" class="epRowLabelSpan">Characterart: width / max height</label>
+                            <label for="LogoArtSetCharacterartWidthVw" class="epRowLabelSpan">CharacterArt: width / max height</label>
                             <div class="epPairedFieldRow" style="position:relative;">
                                 <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSetCharacterartWidthVw" name="LogoArtSetCharacterartWidthVw" />
                                 <span class="epUnitLabel">vw</span>
@@ -4185,7 +4185,7 @@
                             <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSetCharacterartAlignRow">
-                            <label for="LogoArtSetCharacterartHorizontalAlign" class="epRowLabelSpan">Characterart: align</label>
+                            <label for="LogoArtSetCharacterartHorizontalAlign" class="epRowLabelSpan">CharacterArt: align</label>
                             <select is="emby-select" id="LogoArtSetCharacterartHorizontalAlign" name="LogoArtSetCharacterartHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Center">Centered</option>
                                 <option value="Left">Left</option>
@@ -4194,7 +4194,7 @@
                             <div class="epDesc">Where the image sits inside a box with a fixed max width / height.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSetCharacterartOffsetRow">
-                            <label for="LogoArtSetCharacterartOffsetVw" class="epRowLabelSpan">Characterart: offset</label>
+                            <label for="LogoArtSetCharacterartOffsetVw" class="epRowLabelSpan">CharacterArt: offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSetCharacterartOffsetVw" name="LogoArtSetCharacterartOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
@@ -4210,7 +4210,7 @@
                                 <option value="true">Multi image</option>
                             </select>
                             <input type="checkbox" id="LogoArtSetMultiImage" name="LogoArtSetMultiImage" style="display:none;" />
-                            <div class="epDesc">Characterart in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
+                            <div class="epDesc">CharacterArt in the slot. Single: "typename.ext", no number. Multi: file first, then numbered ones.</div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtSetOrderRow">
                             <label for="LogoArtSetOrderMode" class="epRowLabelSpan">Order</label>
@@ -4895,7 +4895,7 @@
                     <!-- ═══════════════════════ Characterart ═══════════════════════ -->
                     <div class="epTabPage" data-tabpage="characterart">
                         <div class="epTabHeaderRow">
-                            <h3>Characterart</h3>
+                            <h3>CharacterArt</h3>
                             <button type="button" is="emby-button" class="raised epActionBtn emby-button" data-restore-tab="characterart">Restore defaults</button>
                         </div>
                         <div class="epTabDescArea">
@@ -4916,7 +4916,7 @@
                                 <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CaFormat_tbn_chk" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">.tbn</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
                                 <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CaFormat_svg_chk" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">.svg</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
                             </div>
-                            <div class="epDesc">Shared between Movies and TV shows below. Empty disables Characterart above.</div>
+                            <div class="epDesc">Shared between Movies and TV shows below. Empty disables CharacterArt above.</div>
                         </div>
                         <div class="epRow epRowMerged" id="CharacterartShowOnRow">
                             <span class="epRowLabelSpan">Show on</span>
