@@ -638,10 +638,13 @@
                     #ArtworkPlusConfigPage .epFontPanelHead { display: flex; gap: 8px; padding: 2px 4px 6px; border-bottom: 1px solid rgba(255,255,255,.1); margin-bottom: 4px; }
                     #ArtworkPlusConfigPage .epFontList .epFormatItem { display: flex; width: 100%; padding: 2px 4px; border-radius: 3px; }
                     #ArtworkPlusConfigPage .epFontList .epFormatItem:hover { background: rgba(255,255,255,.08); }
-                    #ArtworkPlusConfigPage .epFontPreview { position: fixed; z-index: 41; pointer-events: none; padding: 8px 14px; background: rgba(10,10,10,.92); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; box-shadow: 0 6px 18px rgba(0,0,0,.6); }
-                    #ArtworkPlusConfigPage .epFontPreviewHead { font-size: 11px; color: #999; margin-bottom: 4px; white-space: nowrap; }
-                    #ArtworkPlusConfigPage .epFontPreviewLine { position: relative; font-size: 44px; line-height: 1.15; height: 1.15em; white-space: nowrap; }
-                    #ArtworkPlusConfigPage .epFontPreviewLine > span { position: absolute; left: 0; top: 0; paint-order: stroke fill; }
+                    #ArtworkPlusConfigPage .epFontPreview { position: fixed; z-index: 41; pointer-events: none; box-sizing: border-box; padding: 12px; background: rgba(10,10,10,.92); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; box-shadow: 0 6px 18px rgba(0,0,0,.6); flex-direction: column; justify-content: center; align-items: stretch; }
+                    #ArtworkPlusConfigPage .epFontPreviewLine { position: relative; line-height: 1.25; height: 1.25em; white-space: nowrap; overflow: hidden; text-align: center; }
+                    #ArtworkPlusConfigPage .epFontPreviewLine > span { position: absolute; left: 0; right: 0; top: 0; paint-order: stroke fill; }
+                    /* Create logos progress (Jellyfin's own scan bar look) */
+                    #ArtworkPlusConfigPage .epRowMerged .epCreateProgress { grid-row: 3 !important; grid-column: 1 / -1 !important; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+                    #ArtworkPlusConfigPage .epProgressBar { flex: 1 1 260px; height: 6px; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; display: none; }
+                    #ArtworkPlusConfigPage .epProgressFill { height: 100%; width: 0; background: #00a4dc; transition: width .4s; }
                     #ArtworkPlusConfigPage .epFontPreviewFill { color: #fff; -webkit-text-stroke: calc(var(--la-stroke, 0) * 0.02em) #fff; }
                     #ArtworkPlusConfigPage .epFontPreviewRim { color: #000; -webkit-text-stroke: calc((var(--la-outline, 1) + var(--la-stroke, 0)) * 0.02em) #000; }
                     #ArtworkPlusConfigPage .epFormatItem {
@@ -3188,6 +3191,7 @@
                             </div>
                         </div>
                         <div id="LogoArtMovieDependentFields">
+                        <div id="LogoArtMovieOwnFields">
                         <div class="epRow epRowMerged" id="LogoArtMovieSourceRow">
                             <label for="LogoArtMovieSource" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="LogoArtMovieSource" name="LogoArtMovieSource" class="emby-select-withcolor emby-select epSelectCompact">
@@ -3228,29 +3232,104 @@
                             </select>
                             <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtMovieSizeRow">
-                            <label for="LogoArtMovieSizePercent" class="epRowLabelSpan">Size</label>
+                        <div id="LogoArtMovieLogoFields">
+                        <div class="epRow epRowMerged" id="LogoArtMovieLogoSizeRow">
+                            <label for="LogoArtMovieLogoSizePercent" class="epRowLabelSpan">Logo size</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtMovieSizePercent" name="LogoArtMovieSizePercent" />
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtMovieLogoSizePercent" name="LogoArtMovieLogoSizePercent" />
                                 <span class="epUnitLabel">%</span>
                             </div>
                             <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtMovieOffsetRow">
-                            <label for="LogoArtMovieOffsetVw" class="epRowLabelSpan">Offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtMovieLogoOffsetRow">
+                            <label for="LogoArtMovieLogoOffsetVw" class="epRowLabelSpan">Logo offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtMovieOffsetVw" name="LogoArtMovieOffsetVw" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtMovieLogoOffsetVw" name="LogoArtMovieLogoOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtMovieVerticalOffsetRow">
-                            <label for="LogoArtMovieVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtMovieLogoVerticalOffsetRow">
+                            <label for="LogoArtMovieLogoVerticalOffsetVh" class="epRowLabelSpan">Logo vertical offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtMovieVerticalOffsetVh" name="LogoArtMovieVerticalOffsetVh" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtMovieLogoVerticalOffsetVh" name="LogoArtMovieLogoVerticalOffsetVh" />
                                 <span class="epUnitLabel">vh</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtMovieClearartFields">
+                        <div class="epRow epRowMerged" id="LogoArtMovieClearartSizeRow">
+                            <label for="LogoArtMovieClearartSizePercent" class="epRowLabelSpan">Clearart size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtMovieClearartSizePercent" name="LogoArtMovieClearartSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the 16:9 box on the ribbon line. 100 = 25vw wide.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieClearartOffsetRow">
+                            <label for="LogoArtMovieClearartOffsetVw" class="epRowLabelSpan">Clearart offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtMovieClearartOffsetVw" name="LogoArtMovieClearartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieClearartVerticalOffsetRow">
+                            <label for="LogoArtMovieClearartVerticalOffsetVh" class="epRowLabelSpan">Clearart vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtMovieClearartVerticalOffsetVh" name="LogoArtMovieClearartVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtMovieCharacterartFields">
+                        <div class="epRow epRowMerged" id="LogoArtMovieCharacterartScaleModeRow">
+                            <label for="LogoArtMovieCharacterartScaleMode" class="epRowLabelSpan">Characterart: scale by</label>
+                            <select is="emby-select" id="LogoArtMovieCharacterartScaleMode" name="LogoArtMovieCharacterartScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Height">Height</option>
+                                <option value="Width">Width</option>
+                            </select>
+                            <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieCharacterartHeightRow">
+                            <label for="LogoArtMovieCharacterartHeightVh" class="epRowLabelSpan">Characterart: height / max width</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtMovieCharacterartHeightVh" name="LogoArtMovieCharacterartHeightVh" />
+                                <span class="epUnitLabel">vh</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtMovieCharacterartMaxWidthVw" name="LogoArtMovieCharacterartMaxWidthVw" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Height, then optional max width. 0 height = ribbon line up to the page top. 0 width = follows the image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieCharacterartWidthRow">
+                            <label for="LogoArtMovieCharacterartWidthVw" class="epRowLabelSpan">Characterart: width / max height</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtMovieCharacterartWidthVw" name="LogoArtMovieCharacterartWidthVw" />
+                                <span class="epUnitLabel">vw</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtMovieCharacterartMaxHeightVh" name="LogoArtMovieCharacterartMaxHeightVh" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieCharacterartAlignRow">
+                            <label for="LogoArtMovieCharacterartHorizontalAlign" class="epRowLabelSpan">Characterart: align</label>
+                            <select is="emby-select" id="LogoArtMovieCharacterartHorizontalAlign" name="LogoArtMovieCharacterartHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Center">Centered</option>
+                                <option value="Left">Left</option>
+                                <option value="Right">Right</option>
+                            </select>
+                            <div class="epDesc">Where the image sits inside a box with a fixed max width / height.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMovieCharacterartOffsetRow">
+                            <label for="LogoArtMovieCharacterartOffsetVw" class="epRowLabelSpan">Characterart: offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtMovieCharacterartOffsetVw" name="LogoArtMovieCharacterartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
                         </div>
                         <div id="LogoArtMovieRotationFields">
                         <div class="epRow epRowMerged" id="LogoArtMovieMultiImageRow">
@@ -3314,8 +3393,9 @@
                                 <input type="number" min="0" max="60000" step="50" class="epNumberCompact" id="LogoArtMovieFadeTimeMs" name="LogoArtMovieFadeTimeMs" />
                                 <span class="epUnitLabel">ms</span>
                             </div>
-                        </div>
                             <div class="epDesc">0 = instant switch. Can never exceed the display duration above.</div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
@@ -3330,6 +3410,7 @@
                         <div class="epCollapseHeader epCollapseNested" data-collapse="logoartTvShowsSeries"><span class="epChevron">▶</span><span>Series</span></div>
                         <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartTvShowsSeries">
                         <div id="LogoArtSeriesDependentFields">
+                        <div id="LogoArtSeriesOwnFields">
                         <div class="epRow epRowMerged" id="LogoArtSeriesSourceRow">
                             <label for="LogoArtSeriesSource" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="LogoArtSeriesSource" name="LogoArtSeriesSource" class="emby-select-withcolor emby-select epSelectCompact">
@@ -3360,29 +3441,104 @@
                             </select>
                             <div class="epDesc">Used when source and fallback both have no image.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtSeriesSizeRow">
-                            <label for="LogoArtSeriesSizePercent" class="epRowLabelSpan">Size</label>
+                        <div id="LogoArtSeriesLogoFields">
+                        <div class="epRow epRowMerged" id="LogoArtSeriesLogoSizeRow">
+                            <label for="LogoArtSeriesLogoSizePercent" class="epRowLabelSpan">Logo size</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtSeriesSizePercent" name="LogoArtSeriesSizePercent" />
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtSeriesLogoSizePercent" name="LogoArtSeriesLogoSizePercent" />
                                 <span class="epUnitLabel">%</span>
                             </div>
                             <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtSeriesOffsetRow">
-                            <label for="LogoArtSeriesOffsetVw" class="epRowLabelSpan">Offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesLogoOffsetRow">
+                            <label for="LogoArtSeriesLogoOffsetVw" class="epRowLabelSpan">Logo offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSeriesOffsetVw" name="LogoArtSeriesOffsetVw" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeriesLogoOffsetVw" name="LogoArtSeriesLogoOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtSeriesVerticalOffsetRow">
-                            <label for="LogoArtSeriesVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesLogoVerticalOffsetRow">
+                            <label for="LogoArtSeriesLogoVerticalOffsetVh" class="epRowLabelSpan">Logo vertical offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSeriesVerticalOffsetVh" name="LogoArtSeriesVerticalOffsetVh" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeriesLogoVerticalOffsetVh" name="LogoArtSeriesLogoVerticalOffsetVh" />
                                 <span class="epUnitLabel">vh</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtSeriesClearartFields">
+                        <div class="epRow epRowMerged" id="LogoArtSeriesClearartSizeRow">
+                            <label for="LogoArtSeriesClearartSizePercent" class="epRowLabelSpan">Clearart size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtSeriesClearartSizePercent" name="LogoArtSeriesClearartSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the 16:9 box on the ribbon line. 100 = 25vw wide.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesClearartOffsetRow">
+                            <label for="LogoArtSeriesClearartOffsetVw" class="epRowLabelSpan">Clearart offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeriesClearartOffsetVw" name="LogoArtSeriesClearartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesClearartVerticalOffsetRow">
+                            <label for="LogoArtSeriesClearartVerticalOffsetVh" class="epRowLabelSpan">Clearart vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeriesClearartVerticalOffsetVh" name="LogoArtSeriesClearartVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtSeriesCharacterartFields">
+                        <div class="epRow epRowMerged" id="LogoArtSeriesCharacterartScaleModeRow">
+                            <label for="LogoArtSeriesCharacterartScaleMode" class="epRowLabelSpan">Characterart: scale by</label>
+                            <select is="emby-select" id="LogoArtSeriesCharacterartScaleMode" name="LogoArtSeriesCharacterartScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Height">Height</option>
+                                <option value="Width">Width</option>
+                            </select>
+                            <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesCharacterartHeightRow">
+                            <label for="LogoArtSeriesCharacterartHeightVh" class="epRowLabelSpan">Characterart: height / max width</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeriesCharacterartHeightVh" name="LogoArtSeriesCharacterartHeightVh" />
+                                <span class="epUnitLabel">vh</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeriesCharacterartMaxWidthVw" name="LogoArtSeriesCharacterartMaxWidthVw" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Height, then optional max width. 0 height = ribbon line up to the page top. 0 width = follows the image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesCharacterartWidthRow">
+                            <label for="LogoArtSeriesCharacterartWidthVw" class="epRowLabelSpan">Characterart: width / max height</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeriesCharacterartWidthVw" name="LogoArtSeriesCharacterartWidthVw" />
+                                <span class="epUnitLabel">vw</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeriesCharacterartMaxHeightVh" name="LogoArtSeriesCharacterartMaxHeightVh" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesCharacterartAlignRow">
+                            <label for="LogoArtSeriesCharacterartHorizontalAlign" class="epRowLabelSpan">Characterart: align</label>
+                            <select is="emby-select" id="LogoArtSeriesCharacterartHorizontalAlign" name="LogoArtSeriesCharacterartHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Center">Centered</option>
+                                <option value="Left">Left</option>
+                                <option value="Right">Right</option>
+                            </select>
+                            <div class="epDesc">Where the image sits inside a box with a fixed max width / height.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeriesCharacterartOffsetRow">
+                            <label for="LogoArtSeriesCharacterartOffsetVw" class="epRowLabelSpan">Characterart: offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeriesCharacterartOffsetVw" name="LogoArtSeriesCharacterartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
                         </div>
                         <div id="LogoArtSeriesRotationFields">
                         <div class="epRow epRowMerged" id="LogoArtSeriesMultiImageRow">
@@ -3446,14 +3602,33 @@
                                 <input type="number" min="0" max="60000" step="50" class="epNumberCompact" id="LogoArtSeriesFadeTimeMs" name="LogoArtSeriesFadeTimeMs" />
                                 <span class="epUnitLabel">ms</span>
                             </div>
-                        </div>
                             <div class="epDesc">0 = instant switch. Can never exceed the display duration above.</div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
                         <div class="epCollapseHeader epCollapseNested" data-collapse="logoartTvShowsSeason"><span class="epChevron">▶</span><span>Season</span></div>
                         <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartTvShowsSeason">
                         <div id="LogoArtSeasonDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtSeasonSettingsRow">
+                            <label for="LogoArtSeasonSettings" class="epRowLabelSpan">Settings</label>
+                            <select is="emby-select" id="LogoArtSeasonSettings" name="LogoArtSeasonSettings" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="TakeOverSeries">Take over Series</option>
+                                <option value="Individual">Individual</option>
+                            </select>
+                            <div class="epDesc">Take over Series: the Series block applies here, Source mode stays own. Individual: the rows below.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonSourceModeRow">
+                            <label for="LogoArtSeasonSourceMode" class="epRowLabelSpan">Source mode</label>
+                            <select is="emby-select" id="LogoArtSeasonSourceMode" name="LogoArtSeasonSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Default">Default</option>
+                                <option value="SeasonOnly">Season only</option>
+                                <option value="Series">Series</option>
+                            </select>
+                            <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
+                        </div>
+                        <div id="LogoArtSeasonOwnFields">
                         <div class="epRow epRowMerged" id="LogoArtSeasonSourceRow">
                             <label for="LogoArtSeasonSource" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="LogoArtSeasonSource" name="LogoArtSeasonSource" class="emby-select-withcolor emby-select epSelectCompact">
@@ -3484,38 +3659,104 @@
                             </select>
                             <div class="epDesc">Used when source and fallback both have no image.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtSeasonSourceModeRow">
-                            <label for="LogoArtSeasonSourceMode" class="epRowLabelSpan">Source mode</label>
-                            <select is="emby-select" id="LogoArtSeasonSourceMode" name="LogoArtSeasonSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="Default">Default</option>
-                                <option value="SeasonOnly">Season only</option>
-                                <option value="Series">Series</option>
-                            </select>
-                            <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
-                        </div>
-                        <div class="epRow epRowMerged" id="LogoArtSeasonSizeRow">
-                            <label for="LogoArtSeasonSizePercent" class="epRowLabelSpan">Size</label>
+                        <div id="LogoArtSeasonLogoFields">
+                        <div class="epRow epRowMerged" id="LogoArtSeasonLogoSizeRow">
+                            <label for="LogoArtSeasonLogoSizePercent" class="epRowLabelSpan">Logo size</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtSeasonSizePercent" name="LogoArtSeasonSizePercent" />
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtSeasonLogoSizePercent" name="LogoArtSeasonLogoSizePercent" />
                                 <span class="epUnitLabel">%</span>
                             </div>
                             <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtSeasonOffsetRow">
-                            <label for="LogoArtSeasonOffsetVw" class="epRowLabelSpan">Offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonLogoOffsetRow">
+                            <label for="LogoArtSeasonLogoOffsetVw" class="epRowLabelSpan">Logo offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSeasonOffsetVw" name="LogoArtSeasonOffsetVw" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeasonLogoOffsetVw" name="LogoArtSeasonLogoOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtSeasonVerticalOffsetRow">
-                            <label for="LogoArtSeasonVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonLogoVerticalOffsetRow">
+                            <label for="LogoArtSeasonLogoVerticalOffsetVh" class="epRowLabelSpan">Logo vertical offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSeasonVerticalOffsetVh" name="LogoArtSeasonVerticalOffsetVh" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeasonLogoVerticalOffsetVh" name="LogoArtSeasonLogoVerticalOffsetVh" />
                                 <span class="epUnitLabel">vh</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtSeasonClearartFields">
+                        <div class="epRow epRowMerged" id="LogoArtSeasonClearartSizeRow">
+                            <label for="LogoArtSeasonClearartSizePercent" class="epRowLabelSpan">Clearart size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtSeasonClearartSizePercent" name="LogoArtSeasonClearartSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the 16:9 box on the ribbon line. 100 = 25vw wide.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonClearartOffsetRow">
+                            <label for="LogoArtSeasonClearartOffsetVw" class="epRowLabelSpan">Clearart offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeasonClearartOffsetVw" name="LogoArtSeasonClearartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonClearartVerticalOffsetRow">
+                            <label for="LogoArtSeasonClearartVerticalOffsetVh" class="epRowLabelSpan">Clearart vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeasonClearartVerticalOffsetVh" name="LogoArtSeasonClearartVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtSeasonCharacterartFields">
+                        <div class="epRow epRowMerged" id="LogoArtSeasonCharacterartScaleModeRow">
+                            <label for="LogoArtSeasonCharacterartScaleMode" class="epRowLabelSpan">Characterart: scale by</label>
+                            <select is="emby-select" id="LogoArtSeasonCharacterartScaleMode" name="LogoArtSeasonCharacterartScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Height">Height</option>
+                                <option value="Width">Width</option>
+                            </select>
+                            <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonCharacterartHeightRow">
+                            <label for="LogoArtSeasonCharacterartHeightVh" class="epRowLabelSpan">Characterart: height / max width</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeasonCharacterartHeightVh" name="LogoArtSeasonCharacterartHeightVh" />
+                                <span class="epUnitLabel">vh</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeasonCharacterartMaxWidthVw" name="LogoArtSeasonCharacterartMaxWidthVw" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Height, then optional max width. 0 height = ribbon line up to the page top. 0 width = follows the image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonCharacterartWidthRow">
+                            <label for="LogoArtSeasonCharacterartWidthVw" class="epRowLabelSpan">Characterart: width / max height</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeasonCharacterartWidthVw" name="LogoArtSeasonCharacterartWidthVw" />
+                                <span class="epUnitLabel">vw</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSeasonCharacterartMaxHeightVh" name="LogoArtSeasonCharacterartMaxHeightVh" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonCharacterartAlignRow">
+                            <label for="LogoArtSeasonCharacterartHorizontalAlign" class="epRowLabelSpan">Characterart: align</label>
+                            <select is="emby-select" id="LogoArtSeasonCharacterartHorizontalAlign" name="LogoArtSeasonCharacterartHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Center">Centered</option>
+                                <option value="Left">Left</option>
+                                <option value="Right">Right</option>
+                            </select>
+                            <div class="epDesc">Where the image sits inside a box with a fixed max width / height.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSeasonCharacterartOffsetRow">
+                            <label for="LogoArtSeasonCharacterartOffsetVw" class="epRowLabelSpan">Characterart: offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSeasonCharacterartOffsetVw" name="LogoArtSeasonCharacterartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
                         </div>
                         <div id="LogoArtSeasonRotationFields">
                         <div class="epRow epRowMerged" id="LogoArtSeasonMultiImageRow">
@@ -3579,14 +3820,33 @@
                                 <input type="number" min="0" max="60000" step="50" class="epNumberCompact" id="LogoArtSeasonFadeTimeMs" name="LogoArtSeasonFadeTimeMs" />
                                 <span class="epUnitLabel">ms</span>
                             </div>
-                        </div>
                             <div class="epDesc">0 = instant switch. Can never exceed the display duration above.</div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
                         <div class="epCollapseHeader epCollapseNested" data-collapse="logoartTvShowsEpisode"><span class="epChevron">▶</span><span>Episode</span></div>
                         <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartTvShowsEpisode">
                         <div id="LogoArtEpisodeDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeSettingsRow">
+                            <label for="LogoArtEpisodeSettings" class="epRowLabelSpan">Settings</label>
+                            <select is="emby-select" id="LogoArtEpisodeSettings" name="LogoArtEpisodeSettings" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="TakeOverSeries">Take over Series</option>
+                                <option value="Individual">Individual</option>
+                            </select>
+                            <div class="epDesc">Take over Series: the Series block applies here, Source mode stays own. Individual: the rows below.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeSourceModeRow">
+                            <label for="LogoArtEpisodeSourceMode" class="epRowLabelSpan">Source mode</label>
+                            <select is="emby-select" id="LogoArtEpisodeSourceMode" name="LogoArtEpisodeSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Default">Default</option>
+                                <option value="Season">Season</option>
+                                <option value="Series">Series</option>
+                            </select>
+                            <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
+                        </div>
+                        <div id="LogoArtEpisodeOwnFields">
                         <div class="epRow epRowMerged" id="LogoArtEpisodeSourceRow">
                             <label for="LogoArtEpisodeSource" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="LogoArtEpisodeSource" name="LogoArtEpisodeSource" class="emby-select-withcolor emby-select epSelectCompact">
@@ -3617,38 +3877,104 @@
                             </select>
                             <div class="epDesc">Used when source and fallback both have no image.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtEpisodeSourceModeRow">
-                            <label for="LogoArtEpisodeSourceMode" class="epRowLabelSpan">Source mode</label>
-                            <select is="emby-select" id="LogoArtEpisodeSourceMode" name="LogoArtEpisodeSourceMode" class="emby-select-withcolor emby-select epSelectCompact">
-                                <option value="Default">Default</option>
-                                <option value="Season">Season</option>
-                                <option value="Series">Series</option>
-                            </select>
-                            <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
-                        </div>
-                        <div class="epRow epRowMerged" id="LogoArtEpisodeSizeRow">
-                            <label for="LogoArtEpisodeSizePercent" class="epRowLabelSpan">Size</label>
+                        <div id="LogoArtEpisodeLogoFields">
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeLogoSizeRow">
+                            <label for="LogoArtEpisodeLogoSizePercent" class="epRowLabelSpan">Logo size</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtEpisodeSizePercent" name="LogoArtEpisodeSizePercent" />
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtEpisodeLogoSizePercent" name="LogoArtEpisodeLogoSizePercent" />
                                 <span class="epUnitLabel">%</span>
                             </div>
                             <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtEpisodeOffsetRow">
-                            <label for="LogoArtEpisodeOffsetVw" class="epRowLabelSpan">Offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeLogoOffsetRow">
+                            <label for="LogoArtEpisodeLogoOffsetVw" class="epRowLabelSpan">Logo offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtEpisodeOffsetVw" name="LogoArtEpisodeOffsetVw" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtEpisodeLogoOffsetVw" name="LogoArtEpisodeLogoOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtEpisodeVerticalOffsetRow">
-                            <label for="LogoArtEpisodeVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeLogoVerticalOffsetRow">
+                            <label for="LogoArtEpisodeLogoVerticalOffsetVh" class="epRowLabelSpan">Logo vertical offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtEpisodeVerticalOffsetVh" name="LogoArtEpisodeVerticalOffsetVh" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtEpisodeLogoVerticalOffsetVh" name="LogoArtEpisodeLogoVerticalOffsetVh" />
                                 <span class="epUnitLabel">vh</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtEpisodeClearartFields">
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeClearartSizeRow">
+                            <label for="LogoArtEpisodeClearartSizePercent" class="epRowLabelSpan">Clearart size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtEpisodeClearartSizePercent" name="LogoArtEpisodeClearartSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the 16:9 box on the ribbon line. 100 = 25vw wide.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeClearartOffsetRow">
+                            <label for="LogoArtEpisodeClearartOffsetVw" class="epRowLabelSpan">Clearart offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtEpisodeClearartOffsetVw" name="LogoArtEpisodeClearartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeClearartVerticalOffsetRow">
+                            <label for="LogoArtEpisodeClearartVerticalOffsetVh" class="epRowLabelSpan">Clearart vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtEpisodeClearartVerticalOffsetVh" name="LogoArtEpisodeClearartVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtEpisodeCharacterartFields">
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeCharacterartScaleModeRow">
+                            <label for="LogoArtEpisodeCharacterartScaleMode" class="epRowLabelSpan">Characterart: scale by</label>
+                            <select is="emby-select" id="LogoArtEpisodeCharacterartScaleMode" name="LogoArtEpisodeCharacterartScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Height">Height</option>
+                                <option value="Width">Width</option>
+                            </select>
+                            <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeCharacterartHeightRow">
+                            <label for="LogoArtEpisodeCharacterartHeightVh" class="epRowLabelSpan">Characterart: height / max width</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtEpisodeCharacterartHeightVh" name="LogoArtEpisodeCharacterartHeightVh" />
+                                <span class="epUnitLabel">vh</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtEpisodeCharacterartMaxWidthVw" name="LogoArtEpisodeCharacterartMaxWidthVw" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Height, then optional max width. 0 height = ribbon line up to the page top. 0 width = follows the image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeCharacterartWidthRow">
+                            <label for="LogoArtEpisodeCharacterartWidthVw" class="epRowLabelSpan">Characterart: width / max height</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtEpisodeCharacterartWidthVw" name="LogoArtEpisodeCharacterartWidthVw" />
+                                <span class="epUnitLabel">vw</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtEpisodeCharacterartMaxHeightVh" name="LogoArtEpisodeCharacterartMaxHeightVh" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeCharacterartAlignRow">
+                            <label for="LogoArtEpisodeCharacterartHorizontalAlign" class="epRowLabelSpan">Characterart: align</label>
+                            <select is="emby-select" id="LogoArtEpisodeCharacterartHorizontalAlign" name="LogoArtEpisodeCharacterartHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Center">Centered</option>
+                                <option value="Left">Left</option>
+                                <option value="Right">Right</option>
+                            </select>
+                            <div class="epDesc">Where the image sits inside a box with a fixed max width / height.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtEpisodeCharacterartOffsetRow">
+                            <label for="LogoArtEpisodeCharacterartOffsetVw" class="epRowLabelSpan">Characterart: offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtEpisodeCharacterartOffsetVw" name="LogoArtEpisodeCharacterartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
                         </div>
                         <div id="LogoArtEpisodeRotationFields">
                         <div class="epRow epRowMerged" id="LogoArtEpisodeMultiImageRow">
@@ -3712,8 +4038,9 @@
                                 <input type="number" min="0" max="60000" step="50" class="epNumberCompact" id="LogoArtEpisodeFadeTimeMs" name="LogoArtEpisodeFadeTimeMs" />
                                 <span class="epUnitLabel">ms</span>
                             </div>
-                        </div>
                             <div class="epDesc">0 = instant switch. Can never exceed the display duration above.</div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
@@ -3727,6 +4054,15 @@
                             </div>
                         </div>
                         <div id="LogoArtSetDependentFields">
+                        <div class="epRow epRowMerged" id="LogoArtSetSettingsRow">
+                            <label for="LogoArtSetSettings" class="epRowLabelSpan">Settings</label>
+                            <select is="emby-select" id="LogoArtSetSettings" name="LogoArtSetSettings" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="TakeOverMovies">Take over Movies</option>
+                                <option value="Individual">Individual</option>
+                            </select>
+                            <div class="epDesc">Take over Movies: the Movies block applies here, Source mode stays own. Individual: the rows below.</div>
+                        </div>
+                        <div id="LogoArtSetOwnFields">
                         <div class="epRow epRowMerged" id="LogoArtSetSourceRow">
                             <label for="LogoArtSetSource" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="LogoArtSetSource" name="LogoArtSetSource" class="emby-select-withcolor emby-select epSelectCompact">
@@ -3757,29 +4093,104 @@
                             </select>
                             <div class="epDesc">Used when source and fallback both have no image.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtSetSizeRow">
-                            <label for="LogoArtSetSizePercent" class="epRowLabelSpan">Size</label>
+                        <div id="LogoArtSetLogoFields">
+                        <div class="epRow epRowMerged" id="LogoArtSetLogoSizeRow">
+                            <label for="LogoArtSetLogoSizePercent" class="epRowLabelSpan">Logo size</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtSetSizePercent" name="LogoArtSetSizePercent" />
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtSetLogoSizePercent" name="LogoArtSetLogoSizePercent" />
                                 <span class="epUnitLabel">%</span>
                             </div>
                             <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtSetOffsetRow">
-                            <label for="LogoArtSetOffsetVw" class="epRowLabelSpan">Offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtSetLogoOffsetRow">
+                            <label for="LogoArtSetLogoOffsetVw" class="epRowLabelSpan">Logo offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSetOffsetVw" name="LogoArtSetOffsetVw" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSetLogoOffsetVw" name="LogoArtSetLogoOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtSetVerticalOffsetRow">
-                            <label for="LogoArtSetVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtSetLogoVerticalOffsetRow">
+                            <label for="LogoArtSetLogoVerticalOffsetVh" class="epRowLabelSpan">Logo vertical offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtSetVerticalOffsetVh" name="LogoArtSetVerticalOffsetVh" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSetLogoVerticalOffsetVh" name="LogoArtSetLogoVerticalOffsetVh" />
                                 <span class="epUnitLabel">vh</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtSetClearartFields">
+                        <div class="epRow epRowMerged" id="LogoArtSetClearartSizeRow">
+                            <label for="LogoArtSetClearartSizePercent" class="epRowLabelSpan">Clearart size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtSetClearartSizePercent" name="LogoArtSetClearartSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the 16:9 box on the ribbon line. 100 = 25vw wide.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetClearartOffsetRow">
+                            <label for="LogoArtSetClearartOffsetVw" class="epRowLabelSpan">Clearart offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSetClearartOffsetVw" name="LogoArtSetClearartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetClearartVerticalOffsetRow">
+                            <label for="LogoArtSetClearartVerticalOffsetVh" class="epRowLabelSpan">Clearart vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSetClearartVerticalOffsetVh" name="LogoArtSetClearartVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtSetCharacterartFields">
+                        <div class="epRow epRowMerged" id="LogoArtSetCharacterartScaleModeRow">
+                            <label for="LogoArtSetCharacterartScaleMode" class="epRowLabelSpan">Characterart: scale by</label>
+                            <select is="emby-select" id="LogoArtSetCharacterartScaleMode" name="LogoArtSetCharacterartScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Height">Height</option>
+                                <option value="Width">Width</option>
+                            </select>
+                            <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetCharacterartHeightRow">
+                            <label for="LogoArtSetCharacterartHeightVh" class="epRowLabelSpan">Characterart: height / max width</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSetCharacterartHeightVh" name="LogoArtSetCharacterartHeightVh" />
+                                <span class="epUnitLabel">vh</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSetCharacterartMaxWidthVw" name="LogoArtSetCharacterartMaxWidthVw" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Height, then optional max width. 0 height = ribbon line up to the page top. 0 width = follows the image.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetCharacterartWidthRow">
+                            <label for="LogoArtSetCharacterartWidthVw" class="epRowLabelSpan">Characterart: width / max height</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSetCharacterartWidthVw" name="LogoArtSetCharacterartWidthVw" />
+                                <span class="epUnitLabel">vw</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="LogoArtSetCharacterartMaxHeightVh" name="LogoArtSetCharacterartMaxHeightVh" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetCharacterartAlignRow">
+                            <label for="LogoArtSetCharacterartHorizontalAlign" class="epRowLabelSpan">Characterart: align</label>
+                            <select is="emby-select" id="LogoArtSetCharacterartHorizontalAlign" name="LogoArtSetCharacterartHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Center">Centered</option>
+                                <option value="Left">Left</option>
+                                <option value="Right">Right</option>
+                            </select>
+                            <div class="epDesc">Where the image sits inside a box with a fixed max width / height.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtSetCharacterartOffsetRow">
+                            <label for="LogoArtSetCharacterartOffsetVw" class="epRowLabelSpan">Characterart: offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtSetCharacterartOffsetVw" name="LogoArtSetCharacterartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
                         </div>
                         <div id="LogoArtSetRotationFields">
                         <div class="epRow epRowMerged" id="LogoArtSetMultiImageRow">
@@ -3843,8 +4254,9 @@
                                 <input type="number" min="0" max="60000" step="50" class="epNumberCompact" id="LogoArtSetFadeTimeMs" name="LogoArtSetFadeTimeMs" />
                                 <span class="epUnitLabel">ms</span>
                             </div>
-                        </div>
                             <div class="epDesc">0 = instant switch. Can never exceed the display duration above.</div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
@@ -3859,6 +4271,7 @@
                         <div class="epCollapseHeader epCollapseNested" data-collapse="logoartVideosVideo"><span class="epChevron">▶</span><span>Video</span></div>
                         <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartVideosVideo">
                         <div id="LogoArtVideoDependentFields">
+                        <div id="LogoArtVideoOwnFields">
                         <div class="epRow epRowMerged" id="LogoArtVideoSourceRow">
                             <label for="LogoArtVideoSource" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="LogoArtVideoSource" name="LogoArtVideoSource" class="emby-select-withcolor emby-select epSelectCompact">
@@ -3896,35 +4309,65 @@
                             </select>
                             <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtVideoSizeRow">
-                            <label for="LogoArtVideoSizePercent" class="epRowLabelSpan">Size</label>
+                        <div id="LogoArtVideoLogoFields">
+                        <div class="epRow epRowMerged" id="LogoArtVideoLogoSizeRow">
+                            <label for="LogoArtVideoLogoSizePercent" class="epRowLabelSpan">Logo size</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtVideoSizePercent" name="LogoArtVideoSizePercent" />
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtVideoLogoSizePercent" name="LogoArtVideoLogoSizePercent" />
                                 <span class="epUnitLabel">%</span>
                             </div>
                             <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtVideoOffsetRow">
-                            <label for="LogoArtVideoOffsetVw" class="epRowLabelSpan">Offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtVideoLogoOffsetRow">
+                            <label for="LogoArtVideoLogoOffsetVw" class="epRowLabelSpan">Logo offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtVideoOffsetVw" name="LogoArtVideoOffsetVw" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtVideoLogoOffsetVw" name="LogoArtVideoLogoOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtVideoVerticalOffsetRow">
-                            <label for="LogoArtVideoVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtVideoLogoVerticalOffsetRow">
+                            <label for="LogoArtVideoLogoVerticalOffsetVh" class="epRowLabelSpan">Logo vertical offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtVideoVerticalOffsetVh" name="LogoArtVideoVerticalOffsetVh" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtVideoLogoVerticalOffsetVh" name="LogoArtVideoLogoVerticalOffsetVh" />
                                 <span class="epUnitLabel">vh</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtVideoClearartFields">
+                        <div class="epRow epRowMerged" id="LogoArtVideoClearartSizeRow">
+                            <label for="LogoArtVideoClearartSizePercent" class="epRowLabelSpan">Clearart size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtVideoClearartSizePercent" name="LogoArtVideoClearartSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the 16:9 box on the ribbon line. 100 = 25vw wide.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtVideoClearartOffsetRow">
+                            <label for="LogoArtVideoClearartOffsetVw" class="epRowLabelSpan">Clearart offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtVideoClearartOffsetVw" name="LogoArtVideoClearartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtVideoClearartVerticalOffsetRow">
+                            <label for="LogoArtVideoClearartVerticalOffsetVh" class="epRowLabelSpan">Clearart vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtVideoClearartVerticalOffsetVh" name="LogoArtVideoClearartVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
                         <div class="epCollapseHeader epCollapseNested" data-collapse="logoartVideosMusicVideo"><span class="epChevron">▶</span><span>Music video</span></div>
                         <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartVideosMusicVideo">
                         <div id="LogoArtMusicVideoDependentFields">
+                        <div id="LogoArtMusicVideoOwnFields">
                         <div class="epRow epRowMerged" id="LogoArtMusicVideoSourceRow">
                             <label for="LogoArtMusicVideoSource" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="LogoArtMusicVideoSource" name="LogoArtMusicVideoSource" class="emby-select-withcolor emby-select epSelectCompact">
@@ -3962,29 +4405,58 @@
                             </select>
                             <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtMusicVideoSizeRow">
-                            <label for="LogoArtMusicVideoSizePercent" class="epRowLabelSpan">Size</label>
+                        <div id="LogoArtMusicVideoLogoFields">
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoLogoSizeRow">
+                            <label for="LogoArtMusicVideoLogoSizePercent" class="epRowLabelSpan">Logo size</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtMusicVideoSizePercent" name="LogoArtMusicVideoSizePercent" />
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtMusicVideoLogoSizePercent" name="LogoArtMusicVideoLogoSizePercent" />
                                 <span class="epUnitLabel">%</span>
                             </div>
                             <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtMusicVideoOffsetRow">
-                            <label for="LogoArtMusicVideoOffsetVw" class="epRowLabelSpan">Offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoLogoOffsetRow">
+                            <label for="LogoArtMusicVideoLogoOffsetVw" class="epRowLabelSpan">Logo offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtMusicVideoOffsetVw" name="LogoArtMusicVideoOffsetVw" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtMusicVideoLogoOffsetVw" name="LogoArtMusicVideoLogoOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtMusicVideoVerticalOffsetRow">
-                            <label for="LogoArtMusicVideoVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoLogoVerticalOffsetRow">
+                            <label for="LogoArtMusicVideoLogoVerticalOffsetVh" class="epRowLabelSpan">Logo vertical offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtMusicVideoVerticalOffsetVh" name="LogoArtMusicVideoVerticalOffsetVh" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtMusicVideoLogoVerticalOffsetVh" name="LogoArtMusicVideoLogoVerticalOffsetVh" />
                                 <span class="epUnitLabel">vh</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtMusicVideoClearartFields">
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoClearartSizeRow">
+                            <label for="LogoArtMusicVideoClearartSizePercent" class="epRowLabelSpan">Clearart size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtMusicVideoClearartSizePercent" name="LogoArtMusicVideoClearartSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the 16:9 box on the ribbon line. 100 = 25vw wide.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoClearartOffsetRow">
+                            <label for="LogoArtMusicVideoClearartOffsetVw" class="epRowLabelSpan">Clearart offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtMusicVideoClearartOffsetVw" name="LogoArtMusicVideoClearartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtMusicVideoClearartVerticalOffsetRow">
+                            <label for="LogoArtMusicVideoClearartVerticalOffsetVh" class="epRowLabelSpan">Clearart vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtMusicVideoClearartVerticalOffsetVh" name="LogoArtMusicVideoClearartVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
@@ -4000,6 +4472,7 @@
                         <div class="epCollapseHeader epCollapseNested" data-collapse="logoartMusicAlbum"><span class="epChevron">▶</span><span>Album</span></div>
                         <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartMusicAlbum">
                         <div id="LogoArtAlbumDependentFields">
+                        <div id="LogoArtAlbumOwnFields">
                         <div class="epRow epRowMerged" id="LogoArtAlbumSourceRow">
                             <label for="LogoArtAlbumSource" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="LogoArtAlbumSource" name="LogoArtAlbumSource" class="emby-select-withcolor emby-select epSelectCompact">
@@ -4036,35 +4509,65 @@
                             </select>
                             <div class="epDesc">Default: item first, then its parents like Jellyfin. Any other value: that level only.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtAlbumSizeRow">
-                            <label for="LogoArtAlbumSizePercent" class="epRowLabelSpan">Size</label>
+                        <div id="LogoArtAlbumLogoFields">
+                        <div class="epRow epRowMerged" id="LogoArtAlbumLogoSizeRow">
+                            <label for="LogoArtAlbumLogoSizePercent" class="epRowLabelSpan">Logo size</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtAlbumSizePercent" name="LogoArtAlbumSizePercent" />
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtAlbumLogoSizePercent" name="LogoArtAlbumLogoSizePercent" />
                                 <span class="epUnitLabel">%</span>
                             </div>
                             <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtAlbumOffsetRow">
-                            <label for="LogoArtAlbumOffsetVw" class="epRowLabelSpan">Offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtAlbumLogoOffsetRow">
+                            <label for="LogoArtAlbumLogoOffsetVw" class="epRowLabelSpan">Logo offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtAlbumOffsetVw" name="LogoArtAlbumOffsetVw" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtAlbumLogoOffsetVw" name="LogoArtAlbumLogoOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtAlbumVerticalOffsetRow">
-                            <label for="LogoArtAlbumVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtAlbumLogoVerticalOffsetRow">
+                            <label for="LogoArtAlbumLogoVerticalOffsetVh" class="epRowLabelSpan">Logo vertical offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtAlbumVerticalOffsetVh" name="LogoArtAlbumVerticalOffsetVh" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtAlbumLogoVerticalOffsetVh" name="LogoArtAlbumLogoVerticalOffsetVh" />
                                 <span class="epUnitLabel">vh</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtAlbumClearartFields">
+                        <div class="epRow epRowMerged" id="LogoArtAlbumClearartSizeRow">
+                            <label for="LogoArtAlbumClearartSizePercent" class="epRowLabelSpan">Clearart size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtAlbumClearartSizePercent" name="LogoArtAlbumClearartSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the 16:9 box on the ribbon line. 100 = 25vw wide.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtAlbumClearartOffsetRow">
+                            <label for="LogoArtAlbumClearartOffsetVw" class="epRowLabelSpan">Clearart offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtAlbumClearartOffsetVw" name="LogoArtAlbumClearartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtAlbumClearartVerticalOffsetRow">
+                            <label for="LogoArtAlbumClearartVerticalOffsetVh" class="epRowLabelSpan">Clearart vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtAlbumClearartVerticalOffsetVh" name="LogoArtAlbumClearartVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
                         <div class="epCollapseHeader epCollapseNested" data-collapse="logoartMusicArtist"><span class="epChevron">▶</span><span>Artist</span></div>
                         <div class="epCollapseBody epCollapseNested" data-collapsebody="logoartMusicArtist">
                         <div id="LogoArtArtistDependentFields">
+                        <div id="LogoArtArtistOwnFields">
                         <div class="epRow epRowMerged" id="LogoArtArtistSourceRow">
                             <label for="LogoArtArtistSource" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="LogoArtArtistSource" name="LogoArtArtistSource" class="emby-select-withcolor emby-select epSelectCompact">
@@ -4092,29 +4595,58 @@
                             </select>
                             <div class="epDesc">Used when source and fallback both have no image.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtArtistSizeRow">
-                            <label for="LogoArtArtistSizePercent" class="epRowLabelSpan">Size</label>
+                        <div id="LogoArtArtistLogoFields">
+                        <div class="epRow epRowMerged" id="LogoArtArtistLogoSizeRow">
+                            <label for="LogoArtArtistLogoSizePercent" class="epRowLabelSpan">Logo size</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtArtistSizePercent" name="LogoArtArtistSizePercent" />
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtArtistLogoSizePercent" name="LogoArtArtistLogoSizePercent" />
                                 <span class="epUnitLabel">%</span>
                             </div>
                             <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtArtistOffsetRow">
-                            <label for="LogoArtArtistOffsetVw" class="epRowLabelSpan">Offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtArtistLogoOffsetRow">
+                            <label for="LogoArtArtistLogoOffsetVw" class="epRowLabelSpan">Logo offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtArtistOffsetVw" name="LogoArtArtistOffsetVw" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtArtistLogoOffsetVw" name="LogoArtArtistLogoOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtArtistVerticalOffsetRow">
-                            <label for="LogoArtArtistVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtArtistLogoVerticalOffsetRow">
+                            <label for="LogoArtArtistLogoVerticalOffsetVh" class="epRowLabelSpan">Logo vertical offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtArtistVerticalOffsetVh" name="LogoArtArtistVerticalOffsetVh" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtArtistLogoVerticalOffsetVh" name="LogoArtArtistLogoVerticalOffsetVh" />
                                 <span class="epUnitLabel">vh</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtArtistClearartFields">
+                        <div class="epRow epRowMerged" id="LogoArtArtistClearartSizeRow">
+                            <label for="LogoArtArtistClearartSizePercent" class="epRowLabelSpan">Clearart size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtArtistClearartSizePercent" name="LogoArtArtistClearartSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the 16:9 box on the ribbon line. 100 = 25vw wide.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtArtistClearartOffsetRow">
+                            <label for="LogoArtArtistClearartOffsetVw" class="epRowLabelSpan">Clearart offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtArtistClearartOffsetVw" name="LogoArtArtistClearartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtArtistClearartVerticalOffsetRow">
+                            <label for="LogoArtArtistClearartVerticalOffsetVh" class="epRowLabelSpan">Clearart vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtArtistClearartVerticalOffsetVh" name="LogoArtArtistClearartVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
@@ -4128,6 +4660,7 @@
                             </div>
                         </div>
                         <div id="LogoArtBookDependentFields">
+                        <div id="LogoArtBookOwnFields">
                         <div class="epRow epRowMerged" id="LogoArtBookSourceRow">
                             <label for="LogoArtBookSource" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="LogoArtBookSource" name="LogoArtBookSource" class="emby-select-withcolor emby-select epSelectCompact">
@@ -4155,29 +4688,58 @@
                             </select>
                             <div class="epDesc">Used when source and fallback both have no image.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtBookSizeRow">
-                            <label for="LogoArtBookSizePercent" class="epRowLabelSpan">Size</label>
+                        <div id="LogoArtBookLogoFields">
+                        <div class="epRow epRowMerged" id="LogoArtBookLogoSizeRow">
+                            <label for="LogoArtBookLogoSizePercent" class="epRowLabelSpan">Logo size</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="25" max="300" step="5" class="epNumberCompact" id="LogoArtBookSizePercent" name="LogoArtBookSizePercent" />
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtBookLogoSizePercent" name="LogoArtBookLogoSizePercent" />
                                 <span class="epUnitLabel">%</span>
                             </div>
                             <div class="epDesc">Percent of the vanilla slot. 100 = as Jellyfin draws it.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtBookOffsetRow">
-                            <label for="LogoArtBookOffsetVw" class="epRowLabelSpan">Offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtBookLogoOffsetRow">
+                            <label for="LogoArtBookLogoOffsetVw" class="epRowLabelSpan">Logo offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtBookOffsetVw" name="LogoArtBookOffsetVw" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtBookLogoOffsetVw" name="LogoArtBookLogoOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vw (negative = left, positive = right). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
                         </div>
-                        <div class="epRow epRowMerged" id="LogoArtBookVerticalOffsetRow">
-                            <label for="LogoArtBookVerticalOffsetVh" class="epRowLabelSpan">Vertical offset</label>
+                        <div class="epRow epRowMerged" id="LogoArtBookLogoVerticalOffsetRow">
+                            <label for="LogoArtBookLogoVerticalOffsetVh" class="epRowLabelSpan">Logo vertical offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="number" min="-30" max="30" step="0.5" class="epNumberCompact" id="LogoArtBookVerticalOffsetVh" name="LogoArtBookVerticalOffsetVh" />
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtBookLogoVerticalOffsetVh" name="LogoArtBookLogoVerticalOffsetVh" />
                                 <span class="epUnitLabel">vh</span>
                             </div>
-                            <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
+                        <div id="LogoArtBookClearartFields">
+                        <div class="epRow epRowMerged" id="LogoArtBookClearartSizeRow">
+                            <label for="LogoArtBookClearartSizePercent" class="epRowLabelSpan">Clearart size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="10" max="400" step="5" class="epNumberCompact" id="LogoArtBookClearartSizePercent" name="LogoArtBookClearartSizePercent" />
+                                <span class="epUnitLabel">%</span>
+                            </div>
+                            <div class="epDesc">Percent of the 16:9 box on the ribbon line. 100 = 25vw wide.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtBookClearartOffsetRow">
+                            <label for="LogoArtBookClearartOffsetVw" class="epRowLabelSpan">Clearart offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtBookClearartOffsetVw" name="LogoArtBookClearartOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vw (negative = left, positive = right). 0 = centred like the logo.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="LogoArtBookClearartVerticalOffsetRow">
+                            <label for="LogoArtBookClearartVerticalOffsetVh" class="epRowLabelSpan">Clearart vertical offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="-40" max="40" step="0.5" class="epNumberCompact" id="LogoArtBookClearartVerticalOffsetVh" name="LogoArtBookClearartVerticalOffsetVh" />
+                                <span class="epUnitLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Shifts the box in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
+                        </div>
                         </div>
                         </div>
                         </div>
@@ -4193,12 +4755,13 @@
                         <div class="epRow epRowMerged" id="LogoArtPersonsSourceRow">
                             <label for="LogoArtPersonsSource" class="epRowLabelSpan">Source</label>
                             <select is="emby-select" id="LogoArtPersonsSource" name="LogoArtPersonsSource" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Off">Off (default)</option>
                                 <option value="FolderLogo">Folder logo</option>
                                 <option value="Text">Text</option>
-                                <option value="Hide">Hide</option>
                             </select>
-                            <div class="epDesc">Folder logo: file in the person folder. Text: the name in a bundled font. Hide: empty slot.</div>
+                            <div class="epDesc">Off: no logo, like Jellyfin. Folder logo: file in the person folder. Text: the name in a bundled font.</div>
                         </div>
+                        <div id="LogoArtPersonsActiveFields">
                         <div class="epRow epRowMerged" id="LogoArtPersonsFallbackRow">
                             <label for="LogoArtPersonsFallback" class="epRowLabelSpan">Fallback</label>
                             <select is="emby-select" id="LogoArtPersonsFallback" name="LogoArtPersonsFallback" class="emby-select-withcolor emby-select epSelectCompact">
@@ -4280,7 +4843,11 @@
                                 <button type="button" is="emby-button" class="raised epActionBtn emby-button" id="LogoArtPersonsCreateBtn">Create logos</button>
                             </div>
                             <div class="epDesc">Writes "Base name".png (800 x 310) with the ticked fonts. Update: missing only. Replace: all.</div>
-                            <div id="LogoArtPersonsCreateResult" class="epDesc" style="padding-left:0; height:auto; white-space:normal; display:none;"></div>
+                            <div id="LogoArtPersonsCreateResult" class="epDesc epCreateProgress" style="padding-left:0; height:auto; white-space:normal; display:none;">
+                                <div class="epProgressBar" id="LogoArtPersonsCreateBar"><div class="epProgressFill" id="LogoArtPersonsCreateFill"></div></div>
+                                <span id="LogoArtPersonsCreateText"></span>
+                                <button type="button" is="emby-button" class="raised epActionBtn emby-button" id="LogoArtPersonsCreateCancelBtn" style="display:none;">Cancel</button>
+                            </div>
                         </div>
                         </div>
                         <div class="epRow epRowMerged" id="LogoArtPersonsSizeRow">
@@ -4306,6 +4873,7 @@
                                 <span class="epUnitLabel">vh</span>
                             </div>
                             <div class="epDesc">Shifts the whole slot in vh (negative = up, positive = down). 0 = vanilla position.</div>
+                        </div>
                         </div>
                         </div>
                         </div>
@@ -6840,9 +7408,19 @@
                 LogoArtMovieFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtMovieSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtMovieSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
-                LogoArtMovieSizePercent: { type: 'number', def: 100, tab: 'logoart' },
-                LogoArtMovieOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
-                LogoArtMovieVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMovieLogoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtMovieLogoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMovieLogoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMovieClearartSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtMovieClearartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMovieClearartVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMovieCharacterartScaleMode: { type: 'select', def: 'Height', tab: 'logoart' },
+                LogoArtMovieCharacterartHeightVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMovieCharacterartMaxWidthVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMovieCharacterartWidthVw: { type: 'number', def: 20, tab: 'logoart' },
+                LogoArtMovieCharacterartMaxHeightVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMovieCharacterartHorizontalAlign: { type: 'select', def: 'Center', tab: 'logoart' },
+                LogoArtMovieCharacterartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
                 LogoArtMovieMultiImage: { type: 'checkbox', def: true, tab: 'logoart' },
                 LogoArtMovieOrderMode: { type: 'select', def: 'Shuffle', tab: 'logoart' },
                 LogoArtMovieSinglePass: { type: 'checkbox', def: false, tab: 'logoart' },
@@ -6853,9 +7431,19 @@
                 LogoArtSeriesSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
                 LogoArtSeriesFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtSeriesSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
-                LogoArtSeriesSizePercent: { type: 'number', def: 100, tab: 'logoart' },
-                LogoArtSeriesOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
-                LogoArtSeriesVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeriesLogoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtSeriesLogoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeriesLogoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeriesClearartSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtSeriesClearartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeriesClearartVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeriesCharacterartScaleMode: { type: 'select', def: 'Height', tab: 'logoart' },
+                LogoArtSeriesCharacterartHeightVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeriesCharacterartMaxWidthVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeriesCharacterartWidthVw: { type: 'number', def: 20, tab: 'logoart' },
+                LogoArtSeriesCharacterartMaxHeightVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeriesCharacterartHorizontalAlign: { type: 'select', def: 'Center', tab: 'logoart' },
+                LogoArtSeriesCharacterartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
                 LogoArtSeriesMultiImage: { type: 'checkbox', def: true, tab: 'logoart' },
                 LogoArtSeriesOrderMode: { type: 'select', def: 'Shuffle', tab: 'logoart' },
                 LogoArtSeriesSinglePass: { type: 'checkbox', def: false, tab: 'logoart' },
@@ -6863,13 +7451,24 @@
                 LogoArtSeriesStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'logoart' },
                 LogoArtSeriesCycleTimeMs: { type: 'number', def: 5000, tab: 'logoart' },
                 LogoArtSeriesFadeTimeMs: { type: 'number', def: 1000, tab: 'logoart' },
+                LogoArtSeasonSettings: { type: 'select', def: 'TakeOverSeries', tab: 'logoart' },
                 LogoArtSeasonSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
                 LogoArtSeasonFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtSeasonSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtSeasonSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
-                LogoArtSeasonSizePercent: { type: 'number', def: 100, tab: 'logoart' },
-                LogoArtSeasonOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
-                LogoArtSeasonVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeasonLogoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtSeasonLogoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeasonLogoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeasonClearartSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtSeasonClearartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeasonClearartVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeasonCharacterartScaleMode: { type: 'select', def: 'Height', tab: 'logoart' },
+                LogoArtSeasonCharacterartHeightVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeasonCharacterartMaxWidthVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeasonCharacterartWidthVw: { type: 'number', def: 20, tab: 'logoart' },
+                LogoArtSeasonCharacterartMaxHeightVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSeasonCharacterartHorizontalAlign: { type: 'select', def: 'Center', tab: 'logoart' },
+                LogoArtSeasonCharacterartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
                 LogoArtSeasonMultiImage: { type: 'checkbox', def: true, tab: 'logoart' },
                 LogoArtSeasonOrderMode: { type: 'select', def: 'Shuffle', tab: 'logoart' },
                 LogoArtSeasonSinglePass: { type: 'checkbox', def: false, tab: 'logoart' },
@@ -6877,13 +7476,24 @@
                 LogoArtSeasonStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'logoart' },
                 LogoArtSeasonCycleTimeMs: { type: 'number', def: 5000, tab: 'logoart' },
                 LogoArtSeasonFadeTimeMs: { type: 'number', def: 1000, tab: 'logoart' },
+                LogoArtEpisodeSettings: { type: 'select', def: 'TakeOverSeries', tab: 'logoart' },
                 LogoArtEpisodeSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
                 LogoArtEpisodeFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtEpisodeSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtEpisodeSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
-                LogoArtEpisodeSizePercent: { type: 'number', def: 100, tab: 'logoart' },
-                LogoArtEpisodeOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
-                LogoArtEpisodeVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtEpisodeLogoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtEpisodeLogoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtEpisodeLogoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtEpisodeClearartSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtEpisodeClearartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtEpisodeClearartVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtEpisodeCharacterartScaleMode: { type: 'select', def: 'Height', tab: 'logoart' },
+                LogoArtEpisodeCharacterartHeightVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtEpisodeCharacterartMaxWidthVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtEpisodeCharacterartWidthVw: { type: 'number', def: 20, tab: 'logoart' },
+                LogoArtEpisodeCharacterartMaxHeightVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtEpisodeCharacterartHorizontalAlign: { type: 'select', def: 'Center', tab: 'logoart' },
+                LogoArtEpisodeCharacterartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
                 LogoArtEpisodeMultiImage: { type: 'checkbox', def: true, tab: 'logoart' },
                 LogoArtEpisodeOrderMode: { type: 'select', def: 'Shuffle', tab: 'logoart' },
                 LogoArtEpisodeSinglePass: { type: 'checkbox', def: false, tab: 'logoart' },
@@ -6891,12 +7501,23 @@
                 LogoArtEpisodeStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'logoart' },
                 LogoArtEpisodeCycleTimeMs: { type: 'number', def: 5000, tab: 'logoart' },
                 LogoArtEpisodeFadeTimeMs: { type: 'number', def: 1000, tab: 'logoart' },
+                LogoArtSetSettings: { type: 'select', def: 'TakeOverMovies', tab: 'logoart' },
                 LogoArtSetSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
                 LogoArtSetFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtSetSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
-                LogoArtSetSizePercent: { type: 'number', def: 100, tab: 'logoart' },
-                LogoArtSetOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
-                LogoArtSetVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSetLogoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtSetLogoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSetLogoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSetClearartSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtSetClearartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSetClearartVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSetCharacterartScaleMode: { type: 'select', def: 'Height', tab: 'logoart' },
+                LogoArtSetCharacterartHeightVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSetCharacterartMaxWidthVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSetCharacterartWidthVw: { type: 'number', def: 20, tab: 'logoart' },
+                LogoArtSetCharacterartMaxHeightVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtSetCharacterartHorizontalAlign: { type: 'select', def: 'Center', tab: 'logoart' },
+                LogoArtSetCharacterartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
                 LogoArtSetMultiImage: { type: 'checkbox', def: true, tab: 'logoart' },
                 LogoArtSetOrderMode: { type: 'select', def: 'Shuffle', tab: 'logoart' },
                 LogoArtSetSinglePass: { type: 'checkbox', def: false, tab: 'logoart' },
@@ -6908,36 +7529,51 @@
                 LogoArtVideoFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtVideoSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtVideoSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
-                LogoArtVideoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
-                LogoArtVideoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
-                LogoArtVideoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtVideoLogoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtVideoLogoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtVideoLogoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtVideoClearartSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtVideoClearartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtVideoClearartVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
                 LogoArtMusicVideoSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
                 LogoArtMusicVideoFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtMusicVideoSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtMusicVideoSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
-                LogoArtMusicVideoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
-                LogoArtMusicVideoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
-                LogoArtMusicVideoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMusicVideoLogoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtMusicVideoLogoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMusicVideoLogoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMusicVideoClearartSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtMusicVideoClearartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtMusicVideoClearartVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
                 LogoArtAlbumSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
                 LogoArtAlbumFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtAlbumSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtAlbumSourceMode: { type: 'select', def: 'Default', tab: 'logoart' },
-                LogoArtAlbumSizePercent: { type: 'number', def: 100, tab: 'logoart' },
-                LogoArtAlbumOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
-                LogoArtAlbumVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtAlbumLogoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtAlbumLogoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtAlbumLogoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtAlbumClearartSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtAlbumClearartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtAlbumClearartVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
                 LogoArtArtistSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
                 LogoArtArtistFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtArtistSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
-                LogoArtArtistSizePercent: { type: 'number', def: 100, tab: 'logoart' },
-                LogoArtArtistOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
-                LogoArtArtistVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtArtistLogoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtArtistLogoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtArtistLogoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtArtistClearartSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtArtistClearartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtArtistClearartVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
                 LogoArtBookSource: { type: 'select', def: 'VanillaLogo', tab: 'logoart' },
                 LogoArtBookFallback: { type: 'select', def: 'None', tab: 'logoart' },
                 LogoArtBookSecondFallback: { type: 'select', def: 'None', tab: 'logoart' },
-                LogoArtBookSizePercent: { type: 'number', def: 100, tab: 'logoart' },
-                LogoArtBookOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
-                LogoArtBookVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
-                LogoArtPersonsSource: { type: 'select', def: 'FolderLogo', tab: 'logoart' },
+                LogoArtBookLogoSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtBookLogoOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtBookLogoVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtBookClearartSizePercent: { type: 'number', def: 100, tab: 'logoart' },
+                LogoArtBookClearartOffsetVw: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtBookClearartVerticalOffsetVh: { type: 'number', def: 0, tab: 'logoart' },
+                LogoArtPersonsSource: { type: 'select', def: 'Off', tab: 'logoart' },
                 LogoArtPersonsFallback: { type: 'select', def: 'Text', tab: 'logoart' },
                 LogoArtPersonsBaseName: { type: 'text', def: 'clearlogo', tab: 'logoart' },
                 LogoArtPersonsFontPool: { type: 'select', def: 'Signature', tab: 'logoart' },
@@ -8364,12 +9000,15 @@
                 // Group nodes manage the six group collapses (headings, always
                 // active), one terminal node per item type below them (always
                 // active too - a type at its vanilla default is zero-
-                // intervention, not "dead"). The rotation rows live in their
-                // own RotationFields container so every child target sits
-                // inside its parent's target (rule 14 containment); they appear
-                // while any chain stage is Characterart and the source is not
-                // Hide (Hide ends the chain, the greyed fallbacks do not count).
-                // Persons' Base name / Text rows follow their own chain.
+                // intervention, not "dead"). Set / Season / Episode: the Settings
+                // switch gates the whole OwnFields container (Take over = the
+                // Movies / Series block applies, Source mode stays own). Per
+                // stage kind its own geometry container (Logo / Clearart /
+                // Characterart + Rotation), each active while the source is not
+                // Hide and any chain stage is that kind; the Characterart block
+                // mirrors the Characterart tab (scale-by rows structural, Align
+                // narrowed by the Max* rule through EP_SCALE_MODE_PREFIXES).
+                // Persons: Off (default) greys everything below Source.
                 {
                     id: 'logoart', isTabRoot: true, when: [AllChecked(['LogoArtEnabled'])],
                     children: [
@@ -8378,14 +9017,21 @@
                             children: [
                             {
                                 id: 'la_movie', terminal: true, target: ['LogoArtMovieDependentFields'], when: [],
-                                children: [{
-                                    id: 'la_movie_rotation', target: ['LogoArtMovieRotationFields'],
-                                    when: [ValueIn('LogoArtMovieSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtMovieSource', 'LogoArtMovieFallback', 'LogoArtMovieSecondFallback'], ['Characterart'])],
-                                    children: [
-                                        { id: 'la_movie_multi', target: ['LogoArtMovieOrderRow', 'LogoArtMovieSinglePassRow', 'LogoArtMovieCycleRow', 'LogoArtMovieFadeRow'], when: [AllChecked(['LogoArtMovieMultiImage'])], children: [{ id: 'la_movie_randomstart', target: ['LogoArtMovieRandomStartRow'], when: [ValueIn('LogoArtMovieOrderMode', ['Sequential']), NoneChecked(['LogoArtMovieSinglePass'])], children: [] }] },
-                                        { id: 'la_movie_staysingle', target: ['LogoArtMovieStaySingleImageStaticRow'], when: [AllChecked(['LogoArtMovieMultiImage', 'LogoArtMovieSinglePass'])], children: [] }
-                                    ]
-                                }]
+                                children: [
+                                    { id: 'la_movie_logo', target: ['LogoArtMovieLogoFields'], when: [ValueIn('LogoArtMovieSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtMovieSource', 'LogoArtMovieFallback', 'LogoArtMovieSecondFallback'], ['VanillaLogo'])], children: [] },
+                                    { id: 'la_movie_clearart', target: ['LogoArtMovieClearartFields'], when: [ValueIn('LogoArtMovieSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtMovieSource', 'LogoArtMovieFallback', 'LogoArtMovieSecondFallback'], ['Clearart'])], children: [] },
+                                    {
+                                        id: 'la_movie_characterart', target: ['LogoArtMovieCharacterartFields', 'LogoArtMovieRotationFields'],
+                                        when: [ValueIn('LogoArtMovieSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtMovieSource', 'LogoArtMovieFallback', 'LogoArtMovieSecondFallback'], ['Characterart'])],
+                                        children: [
+                                            { id: 'la_movie_ca_height', structural: true, target: ['LogoArtMovieCharacterartHeightRow'], when: [ValueIn('LogoArtMovieCharacterartScaleMode', ['Height'])], children: [] },
+                                            { id: 'la_movie_ca_width', structural: true, target: ['LogoArtMovieCharacterartWidthRow'], when: [ValueIn('LogoArtMovieCharacterartScaleMode', ['Width'])], children: [] },
+                                            { id: 'la_movie_ca_align', structural: true, target: ['LogoArtMovieCharacterartAlignRow'], when: [], children: [] },
+                                            { id: 'la_movie_multi', target: ['LogoArtMovieOrderRow', 'LogoArtMovieSinglePassRow', 'LogoArtMovieCycleRow', 'LogoArtMovieFadeRow'], when: [AllChecked(['LogoArtMovieMultiImage'])], children: [{ id: 'la_movie_randomstart', target: ['LogoArtMovieRandomStartRow'], when: [ValueIn('LogoArtMovieOrderMode', ['Sequential']), NoneChecked(['LogoArtMovieSinglePass'])], children: [] }] },
+                                            { id: 'la_movie_staysingle', target: ['LogoArtMovieStaySingleImageStaticRow'], when: [AllChecked(['LogoArtMovieMultiImage', 'LogoArtMovieSinglePass'])], children: [] }
+                                        ]
+                                    }
+                                ]
                             }
                             ]
                         },
@@ -8394,34 +9040,61 @@
                             children: [
                             {
                                 id: 'la_series', terminal: true, target: ['logoartTvShowsSeries'], when: [],
-                                children: [{
-                                    id: 'la_series_rotation', target: ['LogoArtSeriesRotationFields'],
-                                    when: [ValueIn('LogoArtSeriesSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSeriesSource', 'LogoArtSeriesFallback', 'LogoArtSeriesSecondFallback'], ['Characterart'])],
-                                    children: [
-                                        { id: 'la_series_multi', target: ['LogoArtSeriesOrderRow', 'LogoArtSeriesSinglePassRow', 'LogoArtSeriesCycleRow', 'LogoArtSeriesFadeRow'], when: [AllChecked(['LogoArtSeriesMultiImage'])], children: [{ id: 'la_series_randomstart', target: ['LogoArtSeriesRandomStartRow'], when: [ValueIn('LogoArtSeriesOrderMode', ['Sequential']), NoneChecked(['LogoArtSeriesSinglePass'])], children: [] }] },
-                                        { id: 'la_series_staysingle', target: ['LogoArtSeriesStaySingleImageStaticRow'], when: [AllChecked(['LogoArtSeriesMultiImage', 'LogoArtSeriesSinglePass'])], children: [] }
-                                    ]
-                                }]
+                                children: [
+                                    { id: 'la_series_logo', target: ['LogoArtSeriesLogoFields'], when: [ValueIn('LogoArtSeriesSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSeriesSource', 'LogoArtSeriesFallback', 'LogoArtSeriesSecondFallback'], ['VanillaLogo'])], children: [] },
+                                    { id: 'la_series_clearart', target: ['LogoArtSeriesClearartFields'], when: [ValueIn('LogoArtSeriesSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSeriesSource', 'LogoArtSeriesFallback', 'LogoArtSeriesSecondFallback'], ['Clearart'])], children: [] },
+                                    {
+                                        id: 'la_series_characterart', target: ['LogoArtSeriesCharacterartFields', 'LogoArtSeriesRotationFields'],
+                                        when: [ValueIn('LogoArtSeriesSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSeriesSource', 'LogoArtSeriesFallback', 'LogoArtSeriesSecondFallback'], ['Characterart'])],
+                                        children: [
+                                            { id: 'la_series_ca_height', structural: true, target: ['LogoArtSeriesCharacterartHeightRow'], when: [ValueIn('LogoArtSeriesCharacterartScaleMode', ['Height'])], children: [] },
+                                            { id: 'la_series_ca_width', structural: true, target: ['LogoArtSeriesCharacterartWidthRow'], when: [ValueIn('LogoArtSeriesCharacterartScaleMode', ['Width'])], children: [] },
+                                            { id: 'la_series_ca_align', structural: true, target: ['LogoArtSeriesCharacterartAlignRow'], when: [], children: [] },
+                                            { id: 'la_series_multi', target: ['LogoArtSeriesOrderRow', 'LogoArtSeriesSinglePassRow', 'LogoArtSeriesCycleRow', 'LogoArtSeriesFadeRow'], when: [AllChecked(['LogoArtSeriesMultiImage'])], children: [{ id: 'la_series_randomstart', target: ['LogoArtSeriesRandomStartRow'], when: [ValueIn('LogoArtSeriesOrderMode', ['Sequential']), NoneChecked(['LogoArtSeriesSinglePass'])], children: [] }] },
+                                            { id: 'la_series_staysingle', target: ['LogoArtSeriesStaySingleImageStaticRow'], when: [AllChecked(['LogoArtSeriesMultiImage', 'LogoArtSeriesSinglePass'])], children: [] }
+                                        ]
+                                    }
+                                ]
                             },
                             {
                                 id: 'la_season', terminal: true, target: ['logoartTvShowsSeason'], when: [],
                                 children: [{
-                                    id: 'la_season_rotation', target: ['LogoArtSeasonRotationFields'],
-                                    when: [ValueIn('LogoArtSeasonSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSeasonSource', 'LogoArtSeasonFallback', 'LogoArtSeasonSecondFallback'], ['Characterart'])],
+                                    id: 'la_season_own', target: ['LogoArtSeasonOwnFields'], when: [ValueIn('LogoArtSeasonSettings', ['Individual'])],
                                     children: [
-                                        { id: 'la_season_multi', target: ['LogoArtSeasonOrderRow', 'LogoArtSeasonSinglePassRow', 'LogoArtSeasonCycleRow', 'LogoArtSeasonFadeRow'], when: [AllChecked(['LogoArtSeasonMultiImage'])], children: [{ id: 'la_season_randomstart', target: ['LogoArtSeasonRandomStartRow'], when: [ValueIn('LogoArtSeasonOrderMode', ['Sequential']), NoneChecked(['LogoArtSeasonSinglePass'])], children: [] }] },
-                                        { id: 'la_season_staysingle', target: ['LogoArtSeasonStaySingleImageStaticRow'], when: [AllChecked(['LogoArtSeasonMultiImage', 'LogoArtSeasonSinglePass'])], children: [] }
+                                    { id: 'la_season_logo', target: ['LogoArtSeasonLogoFields'], when: [ValueIn('LogoArtSeasonSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSeasonSource', 'LogoArtSeasonFallback', 'LogoArtSeasonSecondFallback'], ['VanillaLogo'])], children: [] },
+                                    { id: 'la_season_clearart', target: ['LogoArtSeasonClearartFields'], when: [ValueIn('LogoArtSeasonSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSeasonSource', 'LogoArtSeasonFallback', 'LogoArtSeasonSecondFallback'], ['Clearart'])], children: [] },
+                                    {
+                                        id: 'la_season_characterart', target: ['LogoArtSeasonCharacterartFields', 'LogoArtSeasonRotationFields'],
+                                        when: [ValueIn('LogoArtSeasonSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSeasonSource', 'LogoArtSeasonFallback', 'LogoArtSeasonSecondFallback'], ['Characterart'])],
+                                        children: [
+                                            { id: 'la_season_ca_height', structural: true, target: ['LogoArtSeasonCharacterartHeightRow'], when: [ValueIn('LogoArtSeasonCharacterartScaleMode', ['Height'])], children: [] },
+                                            { id: 'la_season_ca_width', structural: true, target: ['LogoArtSeasonCharacterartWidthRow'], when: [ValueIn('LogoArtSeasonCharacterartScaleMode', ['Width'])], children: [] },
+                                            { id: 'la_season_ca_align', structural: true, target: ['LogoArtSeasonCharacterartAlignRow'], when: [], children: [] },
+                                            { id: 'la_season_multi', target: ['LogoArtSeasonOrderRow', 'LogoArtSeasonSinglePassRow', 'LogoArtSeasonCycleRow', 'LogoArtSeasonFadeRow'], when: [AllChecked(['LogoArtSeasonMultiImage'])], children: [{ id: 'la_season_randomstart', target: ['LogoArtSeasonRandomStartRow'], when: [ValueIn('LogoArtSeasonOrderMode', ['Sequential']), NoneChecked(['LogoArtSeasonSinglePass'])], children: [] }] },
+                                            { id: 'la_season_staysingle', target: ['LogoArtSeasonStaySingleImageStaticRow'], when: [AllChecked(['LogoArtSeasonMultiImage', 'LogoArtSeasonSinglePass'])], children: [] }
+                                        ]
+                                    }
                                     ]
                                 }]
                             },
                             {
                                 id: 'la_episode', terminal: true, target: ['logoartTvShowsEpisode'], when: [],
                                 children: [{
-                                    id: 'la_episode_rotation', target: ['LogoArtEpisodeRotationFields'],
-                                    when: [ValueIn('LogoArtEpisodeSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtEpisodeSource', 'LogoArtEpisodeFallback', 'LogoArtEpisodeSecondFallback'], ['Characterart'])],
+                                    id: 'la_episode_own', target: ['LogoArtEpisodeOwnFields'], when: [ValueIn('LogoArtEpisodeSettings', ['Individual'])],
                                     children: [
-                                        { id: 'la_episode_multi', target: ['LogoArtEpisodeOrderRow', 'LogoArtEpisodeSinglePassRow', 'LogoArtEpisodeCycleRow', 'LogoArtEpisodeFadeRow'], when: [AllChecked(['LogoArtEpisodeMultiImage'])], children: [{ id: 'la_episode_randomstart', target: ['LogoArtEpisodeRandomStartRow'], when: [ValueIn('LogoArtEpisodeOrderMode', ['Sequential']), NoneChecked(['LogoArtEpisodeSinglePass'])], children: [] }] },
-                                        { id: 'la_episode_staysingle', target: ['LogoArtEpisodeStaySingleImageStaticRow'], when: [AllChecked(['LogoArtEpisodeMultiImage', 'LogoArtEpisodeSinglePass'])], children: [] }
+                                    { id: 'la_episode_logo', target: ['LogoArtEpisodeLogoFields'], when: [ValueIn('LogoArtEpisodeSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtEpisodeSource', 'LogoArtEpisodeFallback', 'LogoArtEpisodeSecondFallback'], ['VanillaLogo'])], children: [] },
+                                    { id: 'la_episode_clearart', target: ['LogoArtEpisodeClearartFields'], when: [ValueIn('LogoArtEpisodeSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtEpisodeSource', 'LogoArtEpisodeFallback', 'LogoArtEpisodeSecondFallback'], ['Clearart'])], children: [] },
+                                    {
+                                        id: 'la_episode_characterart', target: ['LogoArtEpisodeCharacterartFields', 'LogoArtEpisodeRotationFields'],
+                                        when: [ValueIn('LogoArtEpisodeSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtEpisodeSource', 'LogoArtEpisodeFallback', 'LogoArtEpisodeSecondFallback'], ['Characterart'])],
+                                        children: [
+                                            { id: 'la_episode_ca_height', structural: true, target: ['LogoArtEpisodeCharacterartHeightRow'], when: [ValueIn('LogoArtEpisodeCharacterartScaleMode', ['Height'])], children: [] },
+                                            { id: 'la_episode_ca_width', structural: true, target: ['LogoArtEpisodeCharacterartWidthRow'], when: [ValueIn('LogoArtEpisodeCharacterartScaleMode', ['Width'])], children: [] },
+                                            { id: 'la_episode_ca_align', structural: true, target: ['LogoArtEpisodeCharacterartAlignRow'], when: [], children: [] },
+                                            { id: 'la_episode_multi', target: ['LogoArtEpisodeOrderRow', 'LogoArtEpisodeSinglePassRow', 'LogoArtEpisodeCycleRow', 'LogoArtEpisodeFadeRow'], when: [AllChecked(['LogoArtEpisodeMultiImage'])], children: [{ id: 'la_episode_randomstart', target: ['LogoArtEpisodeRandomStartRow'], when: [ValueIn('LogoArtEpisodeOrderMode', ['Sequential']), NoneChecked(['LogoArtEpisodeSinglePass'])], children: [] }] },
+                                            { id: 'la_episode_staysingle', target: ['LogoArtEpisodeStaySingleImageStaticRow'], when: [AllChecked(['LogoArtEpisodeMultiImage', 'LogoArtEpisodeSinglePass'])], children: [] }
+                                        ]
+                                    }
                                     ]
                                 }]
                             }
@@ -8433,11 +9106,21 @@
                             {
                                 id: 'la_set', terminal: true, target: ['LogoArtSetDependentFields'], when: [],
                                 children: [{
-                                    id: 'la_set_rotation', target: ['LogoArtSetRotationFields'],
-                                    when: [ValueIn('LogoArtSetSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSetSource', 'LogoArtSetFallback', 'LogoArtSetSecondFallback'], ['Characterart'])],
+                                    id: 'la_set_own', target: ['LogoArtSetOwnFields'], when: [ValueIn('LogoArtSetSettings', ['Individual'])],
                                     children: [
-                                        { id: 'la_set_multi', target: ['LogoArtSetOrderRow', 'LogoArtSetSinglePassRow', 'LogoArtSetCycleRow', 'LogoArtSetFadeRow'], when: [AllChecked(['LogoArtSetMultiImage'])], children: [{ id: 'la_set_randomstart', target: ['LogoArtSetRandomStartRow'], when: [ValueIn('LogoArtSetOrderMode', ['Sequential']), NoneChecked(['LogoArtSetSinglePass'])], children: [] }] },
-                                        { id: 'la_set_staysingle', target: ['LogoArtSetStaySingleImageStaticRow'], when: [AllChecked(['LogoArtSetMultiImage', 'LogoArtSetSinglePass'])], children: [] }
+                                    { id: 'la_set_logo', target: ['LogoArtSetLogoFields'], when: [ValueIn('LogoArtSetSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSetSource', 'LogoArtSetFallback', 'LogoArtSetSecondFallback'], ['VanillaLogo'])], children: [] },
+                                    { id: 'la_set_clearart', target: ['LogoArtSetClearartFields'], when: [ValueIn('LogoArtSetSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSetSource', 'LogoArtSetFallback', 'LogoArtSetSecondFallback'], ['Clearart'])], children: [] },
+                                    {
+                                        id: 'la_set_characterart', target: ['LogoArtSetCharacterartFields', 'LogoArtSetRotationFields'],
+                                        when: [ValueIn('LogoArtSetSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtSetSource', 'LogoArtSetFallback', 'LogoArtSetSecondFallback'], ['Characterart'])],
+                                        children: [
+                                            { id: 'la_set_ca_height', structural: true, target: ['LogoArtSetCharacterartHeightRow'], when: [ValueIn('LogoArtSetCharacterartScaleMode', ['Height'])], children: [] },
+                                            { id: 'la_set_ca_width', structural: true, target: ['LogoArtSetCharacterartWidthRow'], when: [ValueIn('LogoArtSetCharacterartScaleMode', ['Width'])], children: [] },
+                                            { id: 'la_set_ca_align', structural: true, target: ['LogoArtSetCharacterartAlignRow'], when: [], children: [] },
+                                            { id: 'la_set_multi', target: ['LogoArtSetOrderRow', 'LogoArtSetSinglePassRow', 'LogoArtSetCycleRow', 'LogoArtSetFadeRow'], when: [AllChecked(['LogoArtSetMultiImage'])], children: [{ id: 'la_set_randomstart', target: ['LogoArtSetRandomStartRow'], when: [ValueIn('LogoArtSetOrderMode', ['Sequential']), NoneChecked(['LogoArtSetSinglePass'])], children: [] }] },
+                                            { id: 'la_set_staysingle', target: ['LogoArtSetStaySingleImageStaticRow'], when: [AllChecked(['LogoArtSetMultiImage', 'LogoArtSetSinglePass'])], children: [] }
+                                        ]
+                                    }
                                     ]
                                 }]
                             }
@@ -8448,11 +9131,17 @@
                             children: [
                             {
                                 id: 'la_video', terminal: true, target: ['logoartVideosVideo'], when: [],
-                                children: []
+                                children: [
+                                    { id: 'la_video_logo', target: ['LogoArtVideoLogoFields'], when: [ValueIn('LogoArtVideoSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtVideoSource', 'LogoArtVideoFallback', 'LogoArtVideoSecondFallback'], ['VanillaLogo'])], children: [] },
+                                    { id: 'la_video_clearart', target: ['LogoArtVideoClearartFields'], when: [ValueIn('LogoArtVideoSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtVideoSource', 'LogoArtVideoFallback', 'LogoArtVideoSecondFallback'], ['Clearart'])], children: [] }
+                                ]
                             },
                             {
                                 id: 'la_musicvideo', terminal: true, target: ['logoartVideosMusicVideo'], when: [],
-                                children: []
+                                children: [
+                                    { id: 'la_musicvideo_logo', target: ['LogoArtMusicVideoLogoFields'], when: [ValueIn('LogoArtMusicVideoSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtMusicVideoSource', 'LogoArtMusicVideoFallback', 'LogoArtMusicVideoSecondFallback'], ['VanillaLogo'])], children: [] },
+                                    { id: 'la_musicvideo_clearart', target: ['LogoArtMusicVideoClearartFields'], when: [ValueIn('LogoArtMusicVideoSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtMusicVideoSource', 'LogoArtMusicVideoFallback', 'LogoArtMusicVideoSecondFallback'], ['Clearart'])], children: [] }
+                                ]
                             }
                             ]
                         },
@@ -8461,11 +9150,17 @@
                             children: [
                             {
                                 id: 'la_album', terminal: true, target: ['logoartMusicAlbum'], when: [],
-                                children: []
+                                children: [
+                                    { id: 'la_album_logo', target: ['LogoArtAlbumLogoFields'], when: [ValueIn('LogoArtAlbumSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtAlbumSource', 'LogoArtAlbumFallback', 'LogoArtAlbumSecondFallback'], ['VanillaLogo'])], children: [] },
+                                    { id: 'la_album_clearart', target: ['LogoArtAlbumClearartFields'], when: [ValueIn('LogoArtAlbumSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtAlbumSource', 'LogoArtAlbumFallback', 'LogoArtAlbumSecondFallback'], ['Clearart'])], children: [] }
+                                ]
                             },
                             {
                                 id: 'la_artist', terminal: true, target: ['logoartMusicArtist'], when: [],
-                                children: []
+                                children: [
+                                    { id: 'la_artist_logo', target: ['LogoArtArtistLogoFields'], when: [ValueIn('LogoArtArtistSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtArtistSource', 'LogoArtArtistFallback', 'LogoArtArtistSecondFallback'], ['VanillaLogo'])], children: [] },
+                                    { id: 'la_artist_clearart', target: ['LogoArtArtistClearartFields'], when: [ValueIn('LogoArtArtistSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtArtistSource', 'LogoArtArtistFallback', 'LogoArtArtistSecondFallback'], ['Clearart'])], children: [] }
+                                ]
                             }
                             ]
                         },
@@ -8474,16 +9169,22 @@
                             children: [
                             {
                                 id: 'la_book', terminal: true, target: ['LogoArtBookDependentFields'], when: [],
-                                children: []
+                                children: [
+                                    { id: 'la_book_logo', target: ['LogoArtBookLogoFields'], when: [ValueIn('LogoArtBookSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtBookSource', 'LogoArtBookFallback', 'LogoArtBookSecondFallback'], ['VanillaLogo'])], children: [] },
+                                    { id: 'la_book_clearart', target: ['LogoArtBookClearartFields'], when: [ValueIn('LogoArtBookSource', ['VanillaLogo', 'Clearart', 'Characterart']), AnyValueIn(['LogoArtBookSource', 'LogoArtBookFallback', 'LogoArtBookSecondFallback'], ['Clearart'])], children: [] }
+                                ]
                             }
                             ]
                         },
                         {
                             id: 'la_persons', terminal: true, target: ['logoartPersons'], when: [],
-                            children: [
-                                { id: 'la_persons_folder', target: ['LogoArtPersonsBaseNameRow'], when: [ValueIn('LogoArtPersonsSource', ['FolderLogo', 'Text']), AnyValueIn(['LogoArtPersonsSource', 'LogoArtPersonsFallback'], ['FolderLogo'])], children: [] },
-                                { id: 'la_persons_text', target: ['LogoArtPersonsTextFields'], when: [ValueIn('LogoArtPersonsSource', ['FolderLogo', 'Text']), AnyValueIn(['LogoArtPersonsSource', 'LogoArtPersonsFallback'], ['Text'])], children: [] }
-                            ]
+                            children: [{
+                                id: 'la_persons_active', target: ['LogoArtPersonsActiveFields'], when: [ValueIn('LogoArtPersonsSource', ['FolderLogo', 'Text'])],
+                                children: [
+                                    { id: 'la_persons_folder', target: ['LogoArtPersonsBaseNameRow'], when: [AnyValueIn(['LogoArtPersonsSource', 'LogoArtPersonsFallback'], ['FolderLogo'])], children: [] },
+                                    { id: 'la_persons_text', target: ['LogoArtPersonsTextFields'], when: [AnyValueIn(['LogoArtPersonsSource', 'LogoArtPersonsFallback'], ['Text'])], children: [] }
+                                ]
+                            }]
                         }
                     ]
                 },
@@ -9865,24 +10566,51 @@
                 });
                 epLogoArtUpdateCount();
             }
+            // Preview (Session 134b, user decision): a FIXED panel - nothing is loaded or measured at
+            // runtime. fonts.json carries, measured once with fontTools, how wide the default preview
+            // names are in every font at 1 em (previewEm / previewUpperEm); the font size of the
+            // pool = panel width / widest font of the pool, so the widest just fits and every other
+            // font sits in the same size, each name centred in its own line, both lines centred.
+            // Other preview names are scaled by their character count against the default ones.
+            var EP_LOGOART_PREVIEW_W = 640, EP_LOGOART_PREVIEW_LINE = 1.25;
+            var EP_LOGOART_DEFAULT_NAMES = 'Scarlett Johansson, Keanu Reeves';
+            function epLogoArtPreviewNames() {
+                return ((document.getElementById('LogoArtPersonsPreviewNames') || {}).value || EP_LOGOART_DEFAULT_NAMES).split(',').map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 4);
+            }
+            function epLogoArtPreviewFontPx() {
+                var upper = document.getElementById('LogoArtPersonsUppercase').checked;
+                var names = epLogoArtPreviewNames();
+                var longest = names.reduce(function (m, n) { return Math.max(m, n.length); }, 1);
+                var scale = longest / 18; // "Scarlett Johansson" = 18 characters, the measured reference
+                var widest = 0;
+                epLogoArtPoolFonts().forEach(function (f) {
+                    var em = upper && (f.group || '').toLowerCase() === 'title' ? (f.previewUpperEm || f.previewEm || 10) : (f.previewEm || 10);
+                    if (em > widest) { widest = em; }
+                });
+                if (!widest) { widest = 10; }
+                return Math.max(10, Math.floor((EP_LOGOART_PREVIEW_W - 24) / (widest * scale)));
+            }
+            var epLogoArtPreviewFont = null;
             function epLogoArtShowPreview(font, anchorEl) {
                 var panel = document.getElementById('LogoArtPersonsFontsPreview');
                 epLogoArtEnsureFontFace(font);
-                var names = ((document.getElementById('LogoArtPersonsPreviewNames') || {}).value || 'Scarlett Johansson, Keanu Reeves').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+                epLogoArtPreviewFont = font;
+                var names = epLogoArtPreviewNames();
                 var upper = document.getElementById('LogoArtPersonsUppercase').checked && (font.group || '').toLowerCase() === 'title';
                 var stroke = parseFloat(document.getElementById('LogoArtPersonsTextStroke').value) || 0;
                 var outline = document.getElementById('LogoArtPersonsOutline').value === '' ? 1 : (parseFloat(document.getElementById('LogoArtPersonsOutline').value) || 0);
+                var px = epLogoArtPreviewFontPx();
                 panel.innerHTML = '';
                 panel.style.setProperty('--la-stroke', String(stroke));
                 panel.style.setProperty('--la-outline', String(outline));
-                var head = document.createElement('div');
-                head.className = 'epFontPreviewHead';
-                head.textContent = font.family + ' (' + (font.group || '') + ', ' + (font.licence || '') + ')';
-                panel.appendChild(head);
+                panel.style.width = EP_LOGOART_PREVIEW_W + 'px';
+                panel.style.height = Math.round(names.length * px * EP_LOGOART_PREVIEW_LINE + 24) + 'px';
                 names.forEach(function (name) {
-                    // Two stacked layers exactly like the live Text stage (rim under fill).
+                    // Two stacked layers exactly like the live Text stage (rim under fill), the
+                    // line is a "window" of the panel width with the name centred in it.
                     var line = document.createElement('div');
                     line.className = 'epFontPreviewLine';
+                    line.style.fontSize = px + 'px';
                     ['epFontPreviewRim', 'epFontPreviewFill'].forEach(function (cls) {
                         var span = document.createElement('span');
                         span.className = cls;
@@ -9892,24 +10620,37 @@
                     });
                     panel.appendChild(line);
                 });
-                panel.style.display = 'block';
-                // Overlay to the right of the hovered entry (position:fixed, so the panel's own
-                // scrolling does not clip it); flips to the left when the window is too narrow.
-                if (anchorEl && anchorEl.getBoundingClientRect) {
-                    var r = anchorEl.getBoundingClientRect();
-                    var list = document.getElementById('LogoArtPersonsFontsPanel').getBoundingClientRect();
-                    var w = panel.offsetWidth, h = panel.offsetHeight;
-                    var x = list.right + 10;
-                    if (x + w > window.innerWidth - 8) { x = Math.max(8, list.left - w - 10); }
-                    var y = Math.min(Math.max(8, r.top - h / 2 + r.height / 2), window.innerHeight - h - 8);
-                    panel.style.left = x + 'px';
-                    panel.style.top = y + 'px';
-                }
+                panel.style.display = 'flex';
+                // Overlay to the right of the panel (position:fixed, so the panel's own scrolling does
+                // not clip it), vertically next to the hovered entry; flips left when too narrow.
+                var list = document.getElementById('LogoArtPersonsFontsPanel').getBoundingClientRect();
+                var w = panel.offsetWidth, h = panel.offsetHeight;
+                var x = list.right + 10;
+                if (x + w > window.innerWidth - 8) { x = Math.max(8, list.left - w - 10); }
+                var r = anchorEl && anchorEl.getBoundingClientRect ? anchorEl.getBoundingClientRect() : list;
+                var y = Math.min(Math.max(8, r.top - h / 2 + r.height / 2), window.innerHeight - h - 8);
+                panel.style.left = x + 'px';
+                panel.style.top = y + 'px';
             }
             function epLogoArtHidePreview() {
                 var panel = document.getElementById('LogoArtPersonsFontsPreview');
                 if (panel) { panel.style.display = 'none'; }
+                epLogoArtPreviewFont = null;
             }
+            // An open preview follows Text stroke / Outline / Uppercase / Preview names at once.
+            ['LogoArtPersonsTextStroke', 'LogoArtPersonsOutline', 'LogoArtPersonsUppercase', 'LogoArtPersonsPreviewNames'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (!el) { return; }
+                ['input', 'change'].forEach(function (ev) {
+                    el.addEventListener(ev, function () {
+                        var panel = document.getElementById('LogoArtPersonsFontsPreview');
+                        if (epLogoArtPreviewFont && panel && panel.style.display !== 'none') {
+                            var hovered = document.querySelector('#LogoArtPersonsFontsList label:hover');
+                            epLogoArtShowPreview(epLogoArtPreviewFont, hovered);
+                        }
+                    });
+                });
+            });
             function epLogoArtLoadFonts() {
                 var done = function (fonts) { epLogoArtFonts = Array.isArray(fonts) ? fonts : []; epLogoArtFontsRendered = ''; epLogoArtRenderFonts(); };
                 try {
@@ -9946,31 +10687,61 @@
                 });
                 epLogoArtLoadFonts();
 
-                // Create logos - POST like PeopleBackdrops/wipe (ApiClient.ajax carries the token; the
-                // endpoint is admin-only). Result line under the row, like Test API Key.
+                // Create logos (Session 134b): a warning first (user text), then the server job is
+                // STARTED and the page polls create-logos/status every second - progress bar, counts,
+                // the current name, a Cancel button; the last result stays in the line. On opening the
+                // page a running job is picked up again. ApiClient.ajax carries the token (admin-only).
                 var btn = document.getElementById('LogoArtPersonsCreateBtn');
                 var resultEl = document.getElementById('LogoArtPersonsCreateResult');
+                var fillEl = document.getElementById('LogoArtPersonsCreateFill');
+                var barEl = document.getElementById('LogoArtPersonsCreateBar');
+                var textEl = document.getElementById('LogoArtPersonsCreateText');
+                var cancelBtn = document.getElementById('LogoArtPersonsCreateCancelBtn');
+                var pollTimer = null;
+                function epLogoArtShowJob(job) {
+                    if (!job) { return; }
+                    resultEl.style.display = 'block';
+                    var pct = job.Persons > 0 ? Math.round(100 * job.Done / job.Persons) : 0;
+                    fillEl.style.width = pct + '%';
+                    barEl.style.display = job.Running ? 'block' : 'none';
+                    cancelBtn.style.display = job.Running ? 'inline-block' : 'none';
+                    btn.disabled = !!job.Running;
+                    var fmt = function (n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); };
+                    textEl.textContent = job.Running
+                        ? fmt(job.Done) + ' / ' + fmt(job.Persons) + ' · ' + fmt(job.Written) + ' written · ' + fmt(job.Skipped) + ' skipped' + (job.Failed ? ' · ' + fmt(job.Failed) + ' failed' : '') + (job.Current ? ' · ' + job.Current : '')
+                        : (job.Message || '');
+                    if (job.Running && !pollTimer) { pollTimer = setInterval(epLogoArtPollJob, 1000); }
+                    if (!job.Running && pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+                }
+                function epLogoArtPollJob() {
+                    if (!window.ApiClient || typeof ApiClient.ajax !== 'function') { return; }
+                    ApiClient.ajax({ type: 'GET', url: ApiClient.getUrl('LogoArt/create-logos/status'), dataType: 'json' }).then(epLogoArtShowJob).catch(function () { /* not admin or server away - stop polling */ if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } });
+                }
                 btn.addEventListener('click', function () {
                     var mode = document.getElementById('LogoArtPersonsCreateMode').value;
-                    if (!confirm((mode === 'Replace' ? 'Write a new logo file for EVERY person, replacing existing ones?' : 'Write a logo file for every person that has none yet?') + ' Uses the SAVED settings - save the page first.')) { return; }
+                    if (!confirm('This will create thousands of .png files in ProgramData\\Jellyfin\\Server\\metadata\\People. No undo. Continue?')) { return; }
                     btn.disabled = true;
                     resultEl.style.display = 'block';
-                    resultEl.textContent = 'Creating logos...';
+                    textEl.textContent = 'Starting...';
                     ApiClient.ajax({
                         type: 'POST',
                         url: ApiClient.getUrl('LogoArt/create-logos'),
                         data: JSON.stringify({ Mode: mode }),
                         contentType: 'application/json',
                         dataType: 'json'
-                    }).then(function (data) {
-                        resultEl.textContent = (data && data.Message) ? data.Message : 'Done.';
-                    }).catch(function (e) {
+                    }).then(epLogoArtShowJob).catch(function (e) {
                         console.error('[LogoArt] Create logos failed - a 401/403 means you are not logged in as an administrator', e);
-                        resultEl.textContent = 'Failed - see the browser console and the server log for "LogoArt: CreateLogos".';
-                    }).finally(function () {
+                        textEl.textContent = 'Failed - see the browser console and the server log for "LogoArt: CreateLogos".';
                         btn.disabled = false;
                     });
                 });
+                cancelBtn.addEventListener('click', function () {
+                    ApiClient.ajax({ type: 'POST', url: ApiClient.getUrl('LogoArt/create-logos/cancel'), dataType: 'json' }).then(epLogoArtShowJob).catch(function () { /* shown by the next poll */ });
+                });
+                // A job started earlier (or from another tab) is shown again when the page opens.
+                if (window.ApiClient && typeof ApiClient.ajax === 'function' && typeof ApiClient.getUrl === 'function') {
+                    ApiClient.ajax({ type: 'GET', url: ApiClient.getUrl('LogoArt/create-logos/status'), dataType: 'json' }).then(function (job) { if (job && (job.Running || job.Message)) { epLogoArtShowJob(job); } }).catch(function () { /* stub page / not admin */ });
+                }
             })();
 
             // Session 36 (user-reported, systematic sweep after two
@@ -10107,7 +10878,9 @@
                 'CharacterartMoviesBottomLeft', 'CharacterartMoviesBottomRight',
                 'CharacterartTvShowsTopLeft', 'CharacterartTvShowsTopRight',
                 'CharacterartTvShowsBottomLeft', 'CharacterartTvShowsBottomRight',
-                'RedCarpetBottomLeft', 'RedCarpetBottomRight'
+                'RedCarpetBottomLeft', 'RedCarpetBottomRight',
+                // Session 134: LogoArt's Characterart stage boxes (same Align rule)
+                'LogoArtMovieCharacterart', 'LogoArtSeriesCharacterart', 'LogoArtSeasonCharacterart', 'LogoArtEpisodeCharacterart', 'LogoArtSetCharacterart'
             ];
             function epSetRowDisabled(row, disabled) {
                 if (!row) { return; }
@@ -10173,11 +10946,22 @@
                 // turned off for an unrelated reason. Without this
                 // check, a non-selected position with Max*>0 would have
                 // its Align row wrongly re-enabled right here.
-                if (alignRow.classList.contains('epFieldDisabled')) { return; }
+                // Session 134: LogoArt's Characterart stage rows are greyed through their CONTAINER
+                // (CharacterartFields / OwnFields), not the row itself - an ancestor's grey counts too
+                // (rule 14: never a second grey level inside an already greyed block).
+                if (alignRow.parentElement && alignRow.parentElement.closest('.epFieldDisabled')) {
+                    alignRow.classList.remove('epFieldDisabled');
+                    alignRow.querySelectorAll('input, select').forEach(function (el) { el.disabled = true; });
+                    return;
+                }
+                // Session 134: a grey set by THIS rule carries a marker (rule 26) so a later Max* edit can
+                // take it back; a grey without the marker came from the tree and is left alone.
+                if (alignRow.classList.contains('epFieldDisabled') && !alignRow.dataset.epAlignGrey) { return; }
                 var relevantMaxField = document.getElementById(prefix + (modeEl.value === 'Height' ? 'MaxWidthVw' : 'MaxHeightVh'));
                 var maxValue = relevantMaxField ? parseFloat(relevantMaxField.value) : 0;
                 var hasFixedBox = !isNaN(maxValue) && maxValue > 0;
                 epSetRowDisabled(alignRow, !hasFixedBox);
+                if (hasFixedBox) { delete alignRow.dataset.epAlignGrey; } else { alignRow.dataset.epAlignGrey = '1'; }
             }
             EP_SCALE_MODE_PREFIXES.forEach(function (prefix) {
                 var modeEl = document.getElementById(prefix + 'ScaleMode');

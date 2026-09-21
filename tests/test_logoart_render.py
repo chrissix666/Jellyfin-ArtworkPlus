@@ -6,8 +6,9 @@ with the vanilla CSS) and asserts the DOM artefact per case (lesson G-render):
   - zero intervention: no container, .detailLogo gets the release class only
   - VanillaLogo / FolderLogo / Text stage: the vanilla slot (25vw x 16vh, top
     10vh, centre 62.5vw), Size / Offset / Vertical offset applied as CSS
-  - Clearart (16:9) / Characterart (1:1): bottom edge on the ribbon line
-    (40vh - 7.2em), centre 62.5vw, shrinks below 10vh
+  - Clearart (16:9, own Size/Offsets, no cap) / Characterart (the Characterart
+    sizing block, Height 0 = ribbon line up to the page top): bottom edge on the
+    ribbon line (40vh - 7.2em), centre 62.5vw
   - chain: a stage whose image fails to load is skipped, the next one shows
   - Hide: nothing, .detailLogo stays hidden
   - Characterart stage rotates (second image after CycleTimeMs)
@@ -52,6 +53,8 @@ FONT_FILE = "Signature/Activity.otf"
 
 def result(stages, **kw):
     r = dict(IsApplicable=True, ItemType="Movie", ZeroIntervention=False, Stages=stages, SizePercent=100, OffsetVw=0, VerticalOffsetVh=0,
+             ClearartSizePercent=100, ClearartOffsetVw=0, ClearartVerticalOffsetVh=0,
+             ScaleMode="Height", HeightVh=0, MaxWidthVw=0, WidthVw=20, MaxHeightVh=0, HorizontalAlign="Center", HorizontalOffsetVw=0,
              MultiImage=True, OrderMode="Sequential", SinglePass=False, StaySingleImageStatic=False, CycleTimeMs=1200, FadeTimeMs=300,
              TextStroke=0, Outline=1)
     r.update(kw)
@@ -171,14 +174,27 @@ def main():
             line = 0.4 * vh - 7.2 * 16
             w, h = r["rect"][2] - r["rect"][0], r["rect"][3] - r["rect"][1]
             check("Clearart: bottom on the ribbon line", approx(r["rect"][3], line), f"bottom={r['rect'][3]} line={line}")
-            check("Clearart: 16:9, height = min(25vw*9/16, 30vh-7.2em)", approx(h, min(0.25 * vw * 9 / 16, 0.3 * vh - 115.2)) and approx(w / h, 16 / 9, 0.02), f"w={w} h={h}")
+            check("Clearart: 16:9 at 25vw x Size, no cap", approx(h, 0.25 * vw * 9 / 16) and approx(w / h, 16 / 9, 0.02), f"w={w} h={h}")
             check("Clearart: centre 62.5vw", approx((r["rect"][0] + r["rect"][2]) / 2, 0.625 * vw), str(r["rect"]))
-            # 520 px, not 500: at exactly 31.25em Jellyfin's own max-height exception moves the ribbon line (52vh)
+            # a short window: the box keeps its size (no cap) and rises above 10vh
             page.set_viewport_size({"width": 1600, "height": 520})
             page.wait_for_timeout(100)
             r2 = page.evaluate(PROBE)
             h2 = r2["rect"][3] - r2["rect"][1]
-            check("Clearart: shrinks until it fits below 10vh (short window)", approx(h2, 0.3 * 520 - 115.2) and approx(r2["rect"][1], 52, 2), f"h={h2} top={r2['rect'][1]}")
+            check("Clearart: keeps its size in a short window (user: no cap)", approx(h2, 0.25 * 1600 * 9 / 16) and r2["rect"][1] < 52, f"h={h2} top={r2['rect'][1]}")
+        page.close()
+        # 3b. Clearart with its own Size / Offset / Vertical offset (independent of the logo values)
+        page = open_page("c2", result([{"Kind": "Clearart", "Url": "/Items/x/Images/Art?tag=2", "Level": "Item"}], SizePercent=50, OffsetVw=-9, VerticalOffsetVh=9, ClearartSizePercent=200, ClearartOffsetVw=5, ClearartVerticalOffsetVh=-3))
+        page.wait_for_timeout(1500)
+        r = page.evaluate(PROBE)
+        if r["box"]:
+            vw, vh = r["vw"], r["vh"]
+            w = r["rect"][2] - r["rect"][0]
+            check("Clearart: own Size 200 = 50vw wide, own Offset 5 -> centre 67.5vw, own Vertical offset -3 -> bottom 3vh above the line", approx(w, 0.5 * vw) and approx((r["rect"][0] + r["rect"][2]) / 2, 0.675 * vw) and approx(r["rect"][3], 0.4 * vh - 115.2 - 0.03 * vh), str(r["rect"]))
+        else:
+            check("Clearart own-geometry case rendered", False, str(r))
+        page.close()
+
         page.close()
 
         # 4. Hide
@@ -188,17 +204,29 @@ def main():
         check("Hide: no container, logo stays hidden", not r["box"] and not r["released"], str(r))
         page.close()
 
-        # 5. Characterart stage: 1:1 on the ribbon line, rotates
+        # 5. Characterart stage: the Characterart sizing block on the ribbon line; Height 0 = full height (ribbon line to page top), rotates
         page = open_page("a1", result([{"Kind": "Characterart", "Images": [{"FileName": "a.png", "Version": "1"}, {"FileName": "b.png", "Version": "1"}]}], CycleTimeMs=2500))
         page.wait_for_timeout(1500)
         r = page.evaluate(PROBE)
-        check("Characterart: floor class 1:1 on the ribbon line", r["box"] and "logoart-characterart" in r["cls"] and approx(r["rect"][3], 0.4 * r["vh"] - 115.2) and approx((r["rect"][2] - r["rect"][0]) / (r["rect"][3] - r["rect"][1]), 1, 0.02), str(r))
+        line = 0.4 * r["vh"] - 115.2
+        check("Characterart: floor box, bottom on the ribbon line, Height 0 = up to the page top (1:1 image -> square)", r["box"] and "logoart-characterart" in r["cls"] and approx(r["rect"][3], line) and approx(r["rect"][1], 0, 1) and approx((r["rect"][2] - r["rect"][0]), line, 1.5), str(r))
         vis1 = [i for i in r.get("imgs", []) if i["op"] > 0.9]
         check("Characterart: first image visible via /LogoArt/{id}/characterart/", len(vis1) == 1 and "/LogoArt/a1/characterart/a.png" in vis1[0]["src"], str(r.get("imgs")))
         page.wait_for_timeout(2500)
         r2 = page.evaluate(PROBE)
         vis2 = [i for i in r2.get("imgs", []) if i["op"] > 0.9]
         check("Characterart: second image after CycleTimeMs", len(vis2) == 1 and "b.png" in vis2[0]["src"], str(r2.get("imgs")))
+        page.close()
+        # 5b. Characterart with a fixed Height / max width / Align Left / Offset
+        page = open_page("a2", result([{"Kind": "Characterart", "Images": [{"FileName": "a.png", "Version": "1"}]}], ScaleMode="Height", HeightVh=20, MaxWidthVw=30, HorizontalAlign="Left", HorizontalOffsetVw=4))
+        page.wait_for_timeout(1500)
+        r = page.evaluate(PROBE)
+        if r["box"]:
+            vw, vh = r["vw"], r["vh"]
+            obj = page.evaluate("() => getComputedStyle(document.querySelector('.logoart-container img')).objectPosition")
+            check("Characterart: Height 20vh x max width 30vw, centre 62.5vw + 4vw, image aligned left bottom", approx(r["rect"][3] - r["rect"][1], 0.2 * vh) and approx(r["rect"][2] - r["rect"][0], 0.3 * vw) and approx((r["rect"][0] + r["rect"][2]) / 2, 0.665 * vw) and obj.startswith("0%") and obj.endswith("100%"), f"{r['rect']} {obj}")
+        else:
+            check("Characterart fixed-size case rendered", False, str(r))
         page.close()
 
         # 6. Text stage (Persons): real bundled font, two layers, fitted, re-fitted on resize

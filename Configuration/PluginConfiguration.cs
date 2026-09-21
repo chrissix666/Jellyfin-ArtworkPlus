@@ -753,17 +753,23 @@ public class PluginConfiguration : BasePluginConfiguration
     public string RedCarpetAllowedFormats { get; set; } = "png";
 
     // ───────────────────────── LogoArt tab ─────────────────────────
-    // Session 134 (concept: docs/artworkplus-logoart-concept.md). One block
-    // per item type: a source chain (Source -> Fallback -> Second fallback)
-    // for the logo slot of detail pages, the inheritance level (Source
-    // mode, inheriting types only), the shared geometry override
-    // (Size/Offset/Vertical offset, valid for every stage so a fallback
-    // never jumps) and, where Characterart is a possible stage
-    // (Movie/Series/Season/Episode/Set), the slot's OWN rotation fields -
-    // independent of the Characterart tab (user decision 2026-09-21; only
-    // the file lookup is shared). Defaults are "zero intervention":
-    // VanillaLogo / None / None / Default / 100 / 0 / 0 - the client never
-    // touches such a type (concept B3).
+    // Session 134 (concept: docs/artworkplus-logoart-concept.md, Parts B/H).
+    // One block per item type: a source chain (Source -> Fallback -> Second
+    // fallback) for the logo slot of detail pages, the inheritance level
+    // (Source mode, inheriting types only), geometry PER STAGE KIND (logo:
+    // Size/Offset/Vertical offset of the vanilla slot; Clearart: the same
+    // three for its 16:9 box on the ribbon line; Characterart: the real
+    // Characterart sizing block - Scale by / Height + max width / Width +
+    // max height / Align / Offset - for its box on the ribbon line, height 0
+    // = from the ribbon line up to the page top) and, where Characterart is
+    // a possible stage (Movie/Series/Season/Episode/Set), the slot's OWN
+    // rotation fields - independent of the Characterart tab (user decision
+    // 2026-09-21; only the file lookup is shared). Set / Season / Episode
+    // carry a "Settings" switch: TakeOver = use the Movies / Series block
+    // (only their own Source mode stays), Individual = their own rows.
+    // Defaults are "zero intervention": VanillaLogo / None / None / Default /
+    // 100 / 0 / 0 - the client never touches such a type (concept B3).
+    // Effective values: Helpers/LogoArtSettings.cs.
 
     /// <summary>Master switch for LogoArt (General tab). Server-side kill switch, see LogoArtController.</summary>
     public bool LogoArtEnabled { get; set; } = true;
@@ -780,14 +786,34 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Default / ItemOnly / Parent / Grandparent - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
     public string LogoArtMovieSourceMode { get; set; } = "Default";
 
-    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
-    public double LogoArtMovieSizePercent { get; set; } = 100;
+    /// <summary>Vanilla logo stage: percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtMovieLogoSizePercent { get; set; } = 100;
 
-    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
-    public double LogoArtMovieOffsetVw { get; set; }
+    public double LogoArtMovieLogoOffsetVw { get; set; }
 
-    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
-    public double LogoArtMovieVerticalOffsetVh { get; set; }
+    public double LogoArtMovieLogoVerticalOffsetVh { get; set; }
+
+    /// <summary>Clearart stage: percent of the 25vw-wide 16:9 box standing on the ribbon line; no cap.</summary>
+    public double LogoArtMovieClearartSizePercent { get; set; } = 100;
+
+    public double LogoArtMovieClearartOffsetVw { get; set; }
+
+    public double LogoArtMovieClearartVerticalOffsetVh { get; set; }
+
+    /// <summary>Characterart stage: the Characterart tab's sizing block for the box standing on the ribbon line. Height 0 = from the ribbon line up to the page top.</summary>
+    public string LogoArtMovieCharacterartScaleMode { get; set; } = "Height";
+
+    public double LogoArtMovieCharacterartHeightVh { get; set; }
+
+    public double LogoArtMovieCharacterartMaxWidthVw { get; set; }
+
+    public double LogoArtMovieCharacterartWidthVw { get; set; } = 20;
+
+    public double LogoArtMovieCharacterartMaxHeightVh { get; set; }
+
+    public string LogoArtMovieCharacterartHorizontalAlign { get; set; } = "Center";
+
+    public double LogoArtMovieCharacterartOffsetVw { get; set; }
 
     /// <summary>Rotation of the Characterart stage in the slot - same meaning as the Characterart tab's fields, but its own values.</summary>
     public bool LogoArtMovieMultiImage { get; set; } = true;
@@ -813,14 +839,34 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string LogoArtSeriesSecondFallback { get; set; } = "None";
 
-    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
-    public double LogoArtSeriesSizePercent { get; set; } = 100;
+    /// <summary>Vanilla logo stage: percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtSeriesLogoSizePercent { get; set; } = 100;
 
-    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
-    public double LogoArtSeriesOffsetVw { get; set; }
+    public double LogoArtSeriesLogoOffsetVw { get; set; }
 
-    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
-    public double LogoArtSeriesVerticalOffsetVh { get; set; }
+    public double LogoArtSeriesLogoVerticalOffsetVh { get; set; }
+
+    /// <summary>Clearart stage: percent of the 25vw-wide 16:9 box standing on the ribbon line; no cap.</summary>
+    public double LogoArtSeriesClearartSizePercent { get; set; } = 100;
+
+    public double LogoArtSeriesClearartOffsetVw { get; set; }
+
+    public double LogoArtSeriesClearartVerticalOffsetVh { get; set; }
+
+    /// <summary>Characterart stage: the Characterart tab's sizing block for the box standing on the ribbon line. Height 0 = from the ribbon line up to the page top.</summary>
+    public string LogoArtSeriesCharacterartScaleMode { get; set; } = "Height";
+
+    public double LogoArtSeriesCharacterartHeightVh { get; set; }
+
+    public double LogoArtSeriesCharacterartMaxWidthVw { get; set; }
+
+    public double LogoArtSeriesCharacterartWidthVw { get; set; } = 20;
+
+    public double LogoArtSeriesCharacterartMaxHeightVh { get; set; }
+
+    public string LogoArtSeriesCharacterartHorizontalAlign { get; set; } = "Center";
+
+    public double LogoArtSeriesCharacterartOffsetVw { get; set; }
 
     /// <summary>Rotation of the Characterart stage in the slot - same meaning as the Characterart tab's fields, but its own values.</summary>
     public bool LogoArtSeriesMultiImage { get; set; } = true;
@@ -838,6 +884,9 @@ public class PluginConfiguration : BasePluginConfiguration
     public int LogoArtSeriesFadeTimeMs { get; set; } = 1000;
 
     // --- LogoArt: Season ---
+    /// <summary>TakeOverSeries / Individual - use the Series block (own Source mode kept) or this type's own rows.</summary>
+    public string LogoArtSeasonSettings { get; set; } = "TakeOverSeries";
+
     /// <summary>VanillaLogo / Clearart / Characterart / Hide - the first stage of the Season chain.</summary>
     public string LogoArtSeasonSource { get; set; } = "VanillaLogo";
 
@@ -849,14 +898,34 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Default / SeasonOnly / Series - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
     public string LogoArtSeasonSourceMode { get; set; } = "Default";
 
-    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
-    public double LogoArtSeasonSizePercent { get; set; } = 100;
+    /// <summary>Vanilla logo stage: percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtSeasonLogoSizePercent { get; set; } = 100;
 
-    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
-    public double LogoArtSeasonOffsetVw { get; set; }
+    public double LogoArtSeasonLogoOffsetVw { get; set; }
 
-    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
-    public double LogoArtSeasonVerticalOffsetVh { get; set; }
+    public double LogoArtSeasonLogoVerticalOffsetVh { get; set; }
+
+    /// <summary>Clearart stage: percent of the 25vw-wide 16:9 box standing on the ribbon line; no cap.</summary>
+    public double LogoArtSeasonClearartSizePercent { get; set; } = 100;
+
+    public double LogoArtSeasonClearartOffsetVw { get; set; }
+
+    public double LogoArtSeasonClearartVerticalOffsetVh { get; set; }
+
+    /// <summary>Characterart stage: the Characterart tab's sizing block for the box standing on the ribbon line. Height 0 = from the ribbon line up to the page top.</summary>
+    public string LogoArtSeasonCharacterartScaleMode { get; set; } = "Height";
+
+    public double LogoArtSeasonCharacterartHeightVh { get; set; }
+
+    public double LogoArtSeasonCharacterartMaxWidthVw { get; set; }
+
+    public double LogoArtSeasonCharacterartWidthVw { get; set; } = 20;
+
+    public double LogoArtSeasonCharacterartMaxHeightVh { get; set; }
+
+    public string LogoArtSeasonCharacterartHorizontalAlign { get; set; } = "Center";
+
+    public double LogoArtSeasonCharacterartOffsetVw { get; set; }
 
     /// <summary>Rotation of the Characterart stage in the slot - same meaning as the Characterart tab's fields, but its own values.</summary>
     public bool LogoArtSeasonMultiImage { get; set; } = true;
@@ -874,6 +943,9 @@ public class PluginConfiguration : BasePluginConfiguration
     public int LogoArtSeasonFadeTimeMs { get; set; } = 1000;
 
     // --- LogoArt: Episode ---
+    /// <summary>TakeOverSeries / Individual - use the Series block (own Source mode kept) or this type's own rows.</summary>
+    public string LogoArtEpisodeSettings { get; set; } = "TakeOverSeries";
+
     /// <summary>VanillaLogo / Clearart / Characterart / Hide - the first stage of the Episode chain.</summary>
     public string LogoArtEpisodeSource { get; set; } = "VanillaLogo";
 
@@ -885,14 +957,34 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Default / Season / Series - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
     public string LogoArtEpisodeSourceMode { get; set; } = "Default";
 
-    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
-    public double LogoArtEpisodeSizePercent { get; set; } = 100;
+    /// <summary>Vanilla logo stage: percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtEpisodeLogoSizePercent { get; set; } = 100;
 
-    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
-    public double LogoArtEpisodeOffsetVw { get; set; }
+    public double LogoArtEpisodeLogoOffsetVw { get; set; }
 
-    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
-    public double LogoArtEpisodeVerticalOffsetVh { get; set; }
+    public double LogoArtEpisodeLogoVerticalOffsetVh { get; set; }
+
+    /// <summary>Clearart stage: percent of the 25vw-wide 16:9 box standing on the ribbon line; no cap.</summary>
+    public double LogoArtEpisodeClearartSizePercent { get; set; } = 100;
+
+    public double LogoArtEpisodeClearartOffsetVw { get; set; }
+
+    public double LogoArtEpisodeClearartVerticalOffsetVh { get; set; }
+
+    /// <summary>Characterart stage: the Characterart tab's sizing block for the box standing on the ribbon line. Height 0 = from the ribbon line up to the page top.</summary>
+    public string LogoArtEpisodeCharacterartScaleMode { get; set; } = "Height";
+
+    public double LogoArtEpisodeCharacterartHeightVh { get; set; }
+
+    public double LogoArtEpisodeCharacterartMaxWidthVw { get; set; }
+
+    public double LogoArtEpisodeCharacterartWidthVw { get; set; } = 20;
+
+    public double LogoArtEpisodeCharacterartMaxHeightVh { get; set; }
+
+    public string LogoArtEpisodeCharacterartHorizontalAlign { get; set; } = "Center";
+
+    public double LogoArtEpisodeCharacterartOffsetVw { get; set; }
 
     /// <summary>Rotation of the Characterart stage in the slot - same meaning as the Characterart tab's fields, but its own values.</summary>
     public bool LogoArtEpisodeMultiImage { get; set; } = true;
@@ -910,6 +1002,9 @@ public class PluginConfiguration : BasePluginConfiguration
     public int LogoArtEpisodeFadeTimeMs { get; set; } = 1000;
 
     // --- LogoArt: Set ---
+    /// <summary>TakeOverMovies / Individual - use the Movies block (own Source mode kept) or this type's own rows.</summary>
+    public string LogoArtSetSettings { get; set; } = "TakeOverMovies";
+
     /// <summary>VanillaLogo / Clearart / Characterart / Hide - the first stage of the Set chain.</summary>
     public string LogoArtSetSource { get; set; } = "VanillaLogo";
 
@@ -918,14 +1013,34 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string LogoArtSetSecondFallback { get; set; } = "None";
 
-    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
-    public double LogoArtSetSizePercent { get; set; } = 100;
+    /// <summary>Vanilla logo stage: percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtSetLogoSizePercent { get; set; } = 100;
 
-    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
-    public double LogoArtSetOffsetVw { get; set; }
+    public double LogoArtSetLogoOffsetVw { get; set; }
 
-    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
-    public double LogoArtSetVerticalOffsetVh { get; set; }
+    public double LogoArtSetLogoVerticalOffsetVh { get; set; }
+
+    /// <summary>Clearart stage: percent of the 25vw-wide 16:9 box standing on the ribbon line; no cap.</summary>
+    public double LogoArtSetClearartSizePercent { get; set; } = 100;
+
+    public double LogoArtSetClearartOffsetVw { get; set; }
+
+    public double LogoArtSetClearartVerticalOffsetVh { get; set; }
+
+    /// <summary>Characterart stage: the Characterart tab's sizing block for the box standing on the ribbon line. Height 0 = from the ribbon line up to the page top.</summary>
+    public string LogoArtSetCharacterartScaleMode { get; set; } = "Height";
+
+    public double LogoArtSetCharacterartHeightVh { get; set; }
+
+    public double LogoArtSetCharacterartMaxWidthVw { get; set; }
+
+    public double LogoArtSetCharacterartWidthVw { get; set; } = 20;
+
+    public double LogoArtSetCharacterartMaxHeightVh { get; set; }
+
+    public string LogoArtSetCharacterartHorizontalAlign { get; set; } = "Center";
+
+    public double LogoArtSetCharacterartOffsetVw { get; set; }
 
     /// <summary>Rotation of the Characterart stage in the slot - same meaning as the Characterart tab's fields, but its own values.</summary>
     public bool LogoArtSetMultiImage { get; set; } = true;
@@ -954,14 +1069,19 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Default / ItemOnly / Parent / Grandparent - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
     public string LogoArtVideoSourceMode { get; set; } = "Default";
 
-    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
-    public double LogoArtVideoSizePercent { get; set; } = 100;
+    /// <summary>Vanilla logo stage: percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtVideoLogoSizePercent { get; set; } = 100;
 
-    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
-    public double LogoArtVideoOffsetVw { get; set; }
+    public double LogoArtVideoLogoOffsetVw { get; set; }
 
-    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
-    public double LogoArtVideoVerticalOffsetVh { get; set; }
+    public double LogoArtVideoLogoVerticalOffsetVh { get; set; }
+
+    /// <summary>Clearart stage: percent of the 25vw-wide 16:9 box standing on the ribbon line; no cap.</summary>
+    public double LogoArtVideoClearartSizePercent { get; set; } = 100;
+
+    public double LogoArtVideoClearartOffsetVw { get; set; }
+
+    public double LogoArtVideoClearartVerticalOffsetVh { get; set; }
 
     // --- LogoArt: Music video ---
     /// <summary>VanillaLogo / Clearart / Hide - the first stage of the Music video chain.</summary>
@@ -975,14 +1095,19 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Default / ItemOnly / Parent / Grandparent - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
     public string LogoArtMusicVideoSourceMode { get; set; } = "Default";
 
-    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
-    public double LogoArtMusicVideoSizePercent { get; set; } = 100;
+    /// <summary>Vanilla logo stage: percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtMusicVideoLogoSizePercent { get; set; } = 100;
 
-    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
-    public double LogoArtMusicVideoOffsetVw { get; set; }
+    public double LogoArtMusicVideoLogoOffsetVw { get; set; }
 
-    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
-    public double LogoArtMusicVideoVerticalOffsetVh { get; set; }
+    public double LogoArtMusicVideoLogoVerticalOffsetVh { get; set; }
+
+    /// <summary>Clearart stage: percent of the 25vw-wide 16:9 box standing on the ribbon line; no cap.</summary>
+    public double LogoArtMusicVideoClearartSizePercent { get; set; } = 100;
+
+    public double LogoArtMusicVideoClearartOffsetVw { get; set; }
+
+    public double LogoArtMusicVideoClearartVerticalOffsetVh { get; set; }
 
     // --- LogoArt: Album ---
     /// <summary>VanillaLogo / Clearart / Hide - the first stage of the Album chain.</summary>
@@ -996,14 +1121,19 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Default / AlbumOnly / Artist - which inheritance level the VanillaLogo/Clearart stages read (Default = item first, then its parents like Jellyfin).</summary>
     public string LogoArtAlbumSourceMode { get; set; } = "Default";
 
-    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
-    public double LogoArtAlbumSizePercent { get; set; } = 100;
+    /// <summary>Vanilla logo stage: percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtAlbumLogoSizePercent { get; set; } = 100;
 
-    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
-    public double LogoArtAlbumOffsetVw { get; set; }
+    public double LogoArtAlbumLogoOffsetVw { get; set; }
 
-    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
-    public double LogoArtAlbumVerticalOffsetVh { get; set; }
+    public double LogoArtAlbumLogoVerticalOffsetVh { get; set; }
+
+    /// <summary>Clearart stage: percent of the 25vw-wide 16:9 box standing on the ribbon line; no cap.</summary>
+    public double LogoArtAlbumClearartSizePercent { get; set; } = 100;
+
+    public double LogoArtAlbumClearartOffsetVw { get; set; }
+
+    public double LogoArtAlbumClearartVerticalOffsetVh { get; set; }
 
     // --- LogoArt: Artist ---
     /// <summary>VanillaLogo / Clearart / Hide - the first stage of the Artist chain.</summary>
@@ -1014,14 +1144,19 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string LogoArtArtistSecondFallback { get; set; } = "None";
 
-    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
-    public double LogoArtArtistSizePercent { get; set; } = 100;
+    /// <summary>Vanilla logo stage: percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtArtistLogoSizePercent { get; set; } = 100;
 
-    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
-    public double LogoArtArtistOffsetVw { get; set; }
+    public double LogoArtArtistLogoOffsetVw { get; set; }
 
-    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
-    public double LogoArtArtistVerticalOffsetVh { get; set; }
+    public double LogoArtArtistLogoVerticalOffsetVh { get; set; }
+
+    /// <summary>Clearart stage: percent of the 25vw-wide 16:9 box standing on the ribbon line; no cap.</summary>
+    public double LogoArtArtistClearartSizePercent { get; set; } = 100;
+
+    public double LogoArtArtistClearartOffsetVw { get; set; }
+
+    public double LogoArtArtistClearartVerticalOffsetVh { get; set; }
 
     // --- LogoArt: Book ---
     /// <summary>VanillaLogo / Clearart / Hide - the first stage of the Book chain.</summary>
@@ -1032,19 +1167,24 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string LogoArtBookSecondFallback { get; set; } = "None";
 
-    /// <summary>Percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
-    public double LogoArtBookSizePercent { get; set; } = 100;
+    /// <summary>Vanilla logo stage: percent of the vanilla slot (25vw x 16vh); 100 = as Jellyfin draws it.</summary>
+    public double LogoArtBookLogoSizePercent { get; set; } = 100;
 
-    /// <summary>Horizontal shift of the slot in vw (negative = left).</summary>
-    public double LogoArtBookOffsetVw { get; set; }
+    public double LogoArtBookLogoOffsetVw { get; set; }
 
-    /// <summary>Vertical shift of the slot in vh (negative = up).</summary>
-    public double LogoArtBookVerticalOffsetVh { get; set; }
+    public double LogoArtBookLogoVerticalOffsetVh { get; set; }
+
+    /// <summary>Clearart stage: percent of the 25vw-wide 16:9 box standing on the ribbon line; no cap.</summary>
+    public double LogoArtBookClearartSizePercent { get; set; } = 100;
+
+    public double LogoArtBookClearartOffsetVw { get; set; }
+
+    public double LogoArtBookClearartVerticalOffsetVh { get; set; }
 
     // --- LogoArt: Persons (concept Part D - the deliberate "add" exception,
     // vanilla never shows a logo on a person page) ---
-    /// <summary>FolderLogo / Text / Hide - FolderLogo = "Base name".png|webp|jpg in the person's metadata folder, Text = the name rendered in a bundled font.</summary>
-    public string LogoArtPersonsSource { get; set; } = "FolderLogo";
+    /// <summary>Off / FolderLogo / Text - Off (default) = no logo like Jellyfin; FolderLogo = "Base name".png|webp|jpg in the person's metadata folder; Text = the name rendered in a bundled font.</summary>
+    public string LogoArtPersonsSource { get; set; } = "Off";
 
     /// <summary>None / FolderLogo / Text.</summary>
     public string LogoArtPersonsFallback { get; set; } = "Text";
@@ -1052,19 +1192,19 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>File name without extension in the person's folder (png, webp or jpg, first found wins) - also what the bulk creator writes.</summary>
     public string LogoArtPersonsBaseName { get; set; } = "clearlogo";
 
-    /// <summary>Signature / Title / Both - which bundled pool the checklist shows (Fonts/fonts.json).</summary>
+    /// <summary>Signature / Title / Both - which bundled pool the dropdown shows (Fonts/fonts.json).</summary>
     public string LogoArtPersonsFontPool { get; set; } = "Signature";
 
     /// <summary>
     /// Comma-separated font files (manifest "file" values) that are ticked
-    /// in the checklist; "*" = every font of the pool. One font = the same
+    /// in the dropdown; "*" = every font of the pool. One font = the same
     /// font for everyone; several = one per person, chosen by a stable hash
     /// of the name (LogoArtController.PickFont) - the bulk creator uses the
     /// same pick, so live text and written files always agree.
     /// </summary>
     public string LogoArtPersonsFonts { get; set; } = "*";
 
-    /// <summary>Comma-separated sample names for the checklist's hover preview.</summary>
+    /// <summary>Comma-separated sample names for the dropdown's hover preview.</summary>
     public string LogoArtPersonsPreviewNames { get; set; } = "Scarlett Johansson, Keanu Reeves";
 
     /// <summary>White stroke that thickens the glyphs, in percent of the font size (0 = font as drawn).</summary>

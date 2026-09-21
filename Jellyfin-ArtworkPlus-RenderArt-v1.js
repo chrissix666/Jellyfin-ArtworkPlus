@@ -529,20 +529,46 @@
     }
 
     /// One box per page, right after .detailLogo (same containing block as
-    /// the clearlogo). Geometry class per stage kind: the vanilla slot for
-    /// VanillaLogo / FolderLogo / Text, the floor (ribbon line) for
-    /// Clearart / Characterart. Size/Offset/Vertical offset are custom
-    /// properties for the stylesheet - shared by every stage, so a
-    /// fallback never moves anything.
+    /// the clearlogo). Geometry per stage kind (Session 134b, user decision:
+    /// "sizes per art, not global, no cap"):
+    ///   - VanillaLogo / FolderLogo / Text: the vanilla slot, Size / Offset /
+    ///     Vertical offset as custom properties;
+    ///   - Clearart: the 16:9 box standing on the ribbon line, its own
+    ///     Size / Offset / Vertical offset, no upper cap;
+    ///   - Characterart: the Characterart tab's sizing block through
+    ///     Core.applyArtBoxSizing (Scale by, Height/max width, Width/max
+    ///     height, Align, Offset) on the ribbon line; Height 0 = the full
+    ///     height from the ribbon line up to the page top (a class, so the
+    ///     31.25em exception of the ribbon line is honoured too).
     function createContainer(logo, result, kind) {
         removeContainers();
         var box = document.createElement('div');
         box.className = CONTAINER_CLASS + ' ' + (FLOOR_KINDS[kind] ? 'logoart-floor ' + FLOOR_KINDS[kind] : 'logoart-slot') + ' logoart-kind-' + kind.toLowerCase();
-        box.style.setProperty('--la-size', String((result.SizePercent > 0 ? result.SizePercent : 100) / 100));
-        box.style.setProperty('--la-offset', (result.OffsetVw || 0) + 'vw');
-        box.style.setProperty('--la-voffset', (result.VerticalOffsetVh || 0) + 'vh');
+        if (kind === 'Clearart') {
+            box.style.setProperty('--la-size', String((result.ClearartSizePercent > 0 ? result.ClearartSizePercent : 100) / 100));
+            box.style.setProperty('--la-offset', (result.ClearartOffsetVw || 0) + 'vw');
+            box.style.setProperty('--la-voffset', (result.ClearartVerticalOffsetVh || 0) + 'vh');
+        } else if (kind === 'Characterart') {
+            box.style.setProperty('--la-offset', (result.HorizontalOffsetVw || 0) + 'vw');
+            box.style.setProperty('--la-voffset', '0vh');
+        } else {
+            box.style.setProperty('--la-size', String((result.SizePercent > 0 ? result.SizePercent : 100) / 100));
+            box.style.setProperty('--la-offset', (result.OffsetVw || 0) + 'vw');
+            box.style.setProperty('--la-voffset', (result.VerticalOffsetVh || 0) + 'vh');
+        }
         logo.parentNode.insertBefore(box, logo.nextSibling);
         return box;
+    }
+
+    /// Characterart stage sizing = the real Characterart's (Core.applyArtBoxSizing),
+    /// applied once with the first image's aspect ratio (only matters when a Max is 0).
+    function applyCharacterartSizing(box, result, naturalRatio) {
+        var full = result.ScaleMode !== 'Width' && !(result.HeightVh > 0);
+        var sizing = { ScaleMode: result.ScaleMode, HeightVh: full ? 1 : result.HeightVh, MaxWidthVw: result.MaxWidthVw, WidthVw: result.WidthVw, MaxHeightVh: result.MaxHeightVh, HorizontalOffsetVw: 0, FullscreenHorizontalOffsetVw: 0 };
+        Core.applyArtBoxSizing(box, sizing, naturalRatio);
+        box.classList.toggle('logoart-full-height', full);
+        if (full) { box.style.height = ''; }
+        box.querySelectorAll('img').forEach(function (img) { img.style.objectPosition = Core.horizontalAlignToObjectPosition(result.HorizontalAlign); });
     }
 
     function createImageLayer(container, fadeMs) {
@@ -564,6 +590,7 @@
         var slideIndex = 0;
         var consecutiveFailures = 0;
         var fadeInGeneration = 0;
+        var sizingApplied = false;
 
         async function showNext() {
             if (myToken !== runToken || !document.body.contains(container)) { return; }
@@ -574,8 +601,9 @@
                 return;
             }
             var url = imageUrls[slideIndex % imageUrls.length];
+            var loadedImg;
             try {
-                await preloadImage(url);
+                loadedImg = await preloadImage(url);
             } catch (e) {
                 log('Characterart stage: image skipped (load error)', e);
                 slideIndex++;
@@ -586,6 +614,11 @@
             }
             if (myToken !== runToken) { return; }
             consecutiveFailures = 0;
+            if (!sizingApplied) {
+                applyCharacterartSizing(container, result, loadedImg.naturalWidth / loadedImg.naturalHeight);
+                sizingApplied = true;
+                log('Characterart box | scale:', result.ScaleMode, '| height:', container.style.height || 'full', '| width:', container.style.width, '| align:', result.HorizontalAlign);
+            }
             var nextLayerIndex = visibleIndex === 0 ? 1 : 0;
             var nextLayer = layers[nextLayerIndex];
             var prevLayer = visibleIndex === -1 ? null : layers[visibleIndex];
@@ -747,7 +780,7 @@
             img.src = stage.Url;
             box.appendChild(img);
             shouldHaveContainer = true;
-            log('Showing', stage.Kind, 'from level', stage.Level, '| size:', result.SizePercent + '%', '| offset:', result.OffsetVw, '/', result.VerticalOffsetVh);
+            log('Showing', stage.Kind, 'from level', stage.Level, '| size:', (stage.Kind === 'Clearart' ? result.ClearartSizePercent : result.SizePercent) + '%');
             return;
         }
         log('No stage delivered an image - the slot stays empty');

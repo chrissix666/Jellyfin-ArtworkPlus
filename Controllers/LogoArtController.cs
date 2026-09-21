@@ -70,11 +70,35 @@ public class LogoArtResult
 
     public IReadOnlyList<LogoArtStage> Stages { get; set; } = Array.Empty<LogoArtStage>();
 
+    // Geometry per stage kind (Session 134b): the vanilla slot for the
+    // logo stages (VanillaLogo / FolderLogo / Text), the 16:9 box for
+    // Clearart, the Characterart tab's sizing block for Characterart.
     public double SizePercent { get; set; } = 100;
 
     public double OffsetVw { get; set; }
 
     public double VerticalOffsetVh { get; set; }
+
+    public double ClearartSizePercent { get; set; } = 100;
+
+    public double ClearartOffsetVw { get; set; }
+
+    public double ClearartVerticalOffsetVh { get; set; }
+
+    public string ScaleMode { get; set; } = "Height";
+
+    /// <summary>0 = from the ribbon line up to the page top (the client's full-height class).</summary>
+    public double HeightVh { get; set; }
+
+    public double MaxWidthVw { get; set; }
+
+    public double WidthVw { get; set; } = 20;
+
+    public double MaxHeightVh { get; set; }
+
+    public string HorizontalAlign { get; set; } = "Center";
+
+    public double HorizontalOffsetVw { get; set; }
 
     // Rotation of the Characterart stage (the type's own fields).
     public bool MultiImage { get; set; }
@@ -112,6 +136,13 @@ public class LogoArtFont
 
     [JsonPropertyName("coreAccents")]
     public bool CoreAccents { get; set; }
+
+    /// <summary>Width of the widest default preview name at 1 em (measured once with fontTools) - the admin preview's fixed size comes from it.</summary>
+    [JsonPropertyName("previewEm")]
+    public double PreviewEm { get; set; }
+
+    [JsonPropertyName("previewUpperEm")]
+    public double PreviewUpperEm { get; set; }
 }
 
 public class LogoArtCreateLogosRequest
@@ -123,15 +154,26 @@ public class LogoArtCreateLogosRequest
     public string? Names { get; set; }
 }
 
+/// <summary>Progress / result of the bulk creator (Session 134b: a background job with status polling and cancel).</summary>
 public class LogoArtCreateLogosResult
 {
+    public bool Running { get; set; }
+
+    public bool Cancelled { get; set; }
+
+    public string Mode { get; set; } = "Update";
+
     public int Persons { get; set; }
+
+    public int Done { get; set; }
 
     public int Written { get; set; }
 
     public int Skipped { get; set; }
 
     public int Failed { get; set; }
+
+    public string Current { get; set; } = string.Empty;
 
     public string Message { get; set; } = string.Empty;
 }
@@ -218,15 +260,25 @@ public class LogoArtController : ControllerBase
                 return Ok(new LogoArtResult { IsApplicable = false });
             }
 
-            var settings = TypeSettings.For(config, type);
+            var settings = Helpers.LogoArtSettings.Effective(config, type);
             var result = new LogoArtResult
             {
                 IsApplicable = true,
                 ItemType = type,
                 ZeroIntervention = settings.IsZeroIntervention,
-                SizePercent = settings.SizePercent,
-                OffsetVw = settings.OffsetVw,
-                VerticalOffsetVh = settings.VerticalOffsetVh,
+                SizePercent = settings.LogoSizePercent,
+                OffsetVw = settings.LogoOffsetVw,
+                VerticalOffsetVh = settings.LogoVerticalOffsetVh,
+                ClearartSizePercent = settings.ClearartSizePercent,
+                ClearartOffsetVw = settings.ClearartOffsetVw,
+                ClearartVerticalOffsetVh = settings.ClearartVerticalOffsetVh,
+                ScaleMode = settings.CharacterartScaleMode,
+                HeightVh = settings.CharacterartHeightVh,
+                MaxWidthVw = settings.CharacterartMaxWidthVw,
+                WidthVw = settings.CharacterartWidthVw,
+                MaxHeightVh = settings.CharacterartMaxHeightVh,
+                HorizontalAlign = settings.CharacterartHorizontalAlign,
+                HorizontalOffsetVw = settings.CharacterartOffsetVw,
                 MultiImage = settings.MultiImage,
                 OrderMode = settings.OrderMode,
                 SinglePass = settings.SinglePass,
@@ -262,7 +314,7 @@ public class LogoArtController : ControllerBase
         }
     }
 
-    private LogoArtStage ResolveStage(string kind, BaseItem item, IReadOnlyList<Level> levels, HashSet<string>? wanted, TypeSettings settings, PluginConfiguration config)
+    private LogoArtStage ResolveStage(string kind, BaseItem item, IReadOnlyList<Level> levels, HashSet<string>? wanted, Helpers.LogoArtSettings settings, PluginConfiguration config)
     {
         var stage = new LogoArtStage { Kind = kind };
         switch (kind)
@@ -402,61 +454,6 @@ public class LogoArtController : ControllerBase
         _ => null
     };
 
-    // ───────────────────────── per-type settings ─────────────────────────
-
-    private sealed class TypeSettings
-    {
-        public string Source = "VanillaLogo";
-        public string Fallback = "None";
-        public string SecondFallback = "None";
-        public string SourceMode = "Default";
-        public double SizePercent = 100;
-        public double OffsetVw;
-        public double VerticalOffsetVh;
-        public bool MultiImage = true;
-        public string OrderMode = "Shuffle";
-        public bool SinglePass;
-        public bool RandomStart;
-        public bool StaySingleImageStatic;
-        public int CycleTimeMs = 5000;
-        public int FadeTimeMs = 1000;
-
-        public bool IsZeroIntervention => Source == "VanillaLogo" && SizePercent == 100 && OffsetVw == 0 && VerticalOffsetVh == 0;
-
-        /// <summary>Source, then the fallbacks up to the first None - Hide is a terminal stage too.</summary>
-        public List<string> Chain
-        {
-            get
-            {
-                var chain = new List<string>();
-                foreach (var k in new[] { Source, Fallback, SecondFallback })
-                {
-                    if (k == "None") { break; }
-                    if (chain.Contains(k)) { continue; }
-                    chain.Add(k);
-                    if (k == "Hide") { break; }
-                }
-
-                return chain;
-            }
-        }
-
-        public static TypeSettings For(PluginConfiguration c, string type) => type switch
-        {
-            "Movie" => new TypeSettings { Source = c.LogoArtMovieSource, Fallback = c.LogoArtMovieFallback, SecondFallback = c.LogoArtMovieSecondFallback, SourceMode = c.LogoArtMovieSourceMode, SizePercent = c.LogoArtMovieSizePercent, OffsetVw = c.LogoArtMovieOffsetVw, VerticalOffsetVh = c.LogoArtMovieVerticalOffsetVh, MultiImage = c.LogoArtMovieMultiImage, OrderMode = c.LogoArtMovieOrderMode, SinglePass = c.LogoArtMovieSinglePass, RandomStart = c.LogoArtMovieRandomStart, StaySingleImageStatic = c.LogoArtMovieStaySingleImageStatic, CycleTimeMs = c.LogoArtMovieCycleTimeMs, FadeTimeMs = c.LogoArtMovieFadeTimeMs },
-            "Series" => new TypeSettings { Source = c.LogoArtSeriesSource, Fallback = c.LogoArtSeriesFallback, SecondFallback = c.LogoArtSeriesSecondFallback, SizePercent = c.LogoArtSeriesSizePercent, OffsetVw = c.LogoArtSeriesOffsetVw, VerticalOffsetVh = c.LogoArtSeriesVerticalOffsetVh, MultiImage = c.LogoArtSeriesMultiImage, OrderMode = c.LogoArtSeriesOrderMode, SinglePass = c.LogoArtSeriesSinglePass, RandomStart = c.LogoArtSeriesRandomStart, StaySingleImageStatic = c.LogoArtSeriesStaySingleImageStatic, CycleTimeMs = c.LogoArtSeriesCycleTimeMs, FadeTimeMs = c.LogoArtSeriesFadeTimeMs },
-            "Season" => new TypeSettings { Source = c.LogoArtSeasonSource, Fallback = c.LogoArtSeasonFallback, SecondFallback = c.LogoArtSeasonSecondFallback, SourceMode = c.LogoArtSeasonSourceMode, SizePercent = c.LogoArtSeasonSizePercent, OffsetVw = c.LogoArtSeasonOffsetVw, VerticalOffsetVh = c.LogoArtSeasonVerticalOffsetVh, MultiImage = c.LogoArtSeasonMultiImage, OrderMode = c.LogoArtSeasonOrderMode, SinglePass = c.LogoArtSeasonSinglePass, RandomStart = c.LogoArtSeasonRandomStart, StaySingleImageStatic = c.LogoArtSeasonStaySingleImageStatic, CycleTimeMs = c.LogoArtSeasonCycleTimeMs, FadeTimeMs = c.LogoArtSeasonFadeTimeMs },
-            "Episode" => new TypeSettings { Source = c.LogoArtEpisodeSource, Fallback = c.LogoArtEpisodeFallback, SecondFallback = c.LogoArtEpisodeSecondFallback, SourceMode = c.LogoArtEpisodeSourceMode, SizePercent = c.LogoArtEpisodeSizePercent, OffsetVw = c.LogoArtEpisodeOffsetVw, VerticalOffsetVh = c.LogoArtEpisodeVerticalOffsetVh, MultiImage = c.LogoArtEpisodeMultiImage, OrderMode = c.LogoArtEpisodeOrderMode, SinglePass = c.LogoArtEpisodeSinglePass, RandomStart = c.LogoArtEpisodeRandomStart, StaySingleImageStatic = c.LogoArtEpisodeStaySingleImageStatic, CycleTimeMs = c.LogoArtEpisodeCycleTimeMs, FadeTimeMs = c.LogoArtEpisodeFadeTimeMs },
-            "Set" => new TypeSettings { Source = c.LogoArtSetSource, Fallback = c.LogoArtSetFallback, SecondFallback = c.LogoArtSetSecondFallback, SizePercent = c.LogoArtSetSizePercent, OffsetVw = c.LogoArtSetOffsetVw, VerticalOffsetVh = c.LogoArtSetVerticalOffsetVh, MultiImage = c.LogoArtSetMultiImage, OrderMode = c.LogoArtSetOrderMode, SinglePass = c.LogoArtSetSinglePass, RandomStart = c.LogoArtSetRandomStart, StaySingleImageStatic = c.LogoArtSetStaySingleImageStatic, CycleTimeMs = c.LogoArtSetCycleTimeMs, FadeTimeMs = c.LogoArtSetFadeTimeMs },
-            "Video" => new TypeSettings { Source = c.LogoArtVideoSource, Fallback = c.LogoArtVideoFallback, SecondFallback = c.LogoArtVideoSecondFallback, SourceMode = c.LogoArtVideoSourceMode, SizePercent = c.LogoArtVideoSizePercent, OffsetVw = c.LogoArtVideoOffsetVw, VerticalOffsetVh = c.LogoArtVideoVerticalOffsetVh },
-            "MusicVideo" => new TypeSettings { Source = c.LogoArtMusicVideoSource, Fallback = c.LogoArtMusicVideoFallback, SecondFallback = c.LogoArtMusicVideoSecondFallback, SourceMode = c.LogoArtMusicVideoSourceMode, SizePercent = c.LogoArtMusicVideoSizePercent, OffsetVw = c.LogoArtMusicVideoOffsetVw, VerticalOffsetVh = c.LogoArtMusicVideoVerticalOffsetVh },
-            "Album" => new TypeSettings { Source = c.LogoArtAlbumSource, Fallback = c.LogoArtAlbumFallback, SecondFallback = c.LogoArtAlbumSecondFallback, SourceMode = c.LogoArtAlbumSourceMode, SizePercent = c.LogoArtAlbumSizePercent, OffsetVw = c.LogoArtAlbumOffsetVw, VerticalOffsetVh = c.LogoArtAlbumVerticalOffsetVh },
-            "Artist" => new TypeSettings { Source = c.LogoArtArtistSource, Fallback = c.LogoArtArtistFallback, SecondFallback = c.LogoArtArtistSecondFallback, SizePercent = c.LogoArtArtistSizePercent, OffsetVw = c.LogoArtArtistOffsetVw, VerticalOffsetVh = c.LogoArtArtistVerticalOffsetVh },
-            "Book" => new TypeSettings { Source = c.LogoArtBookSource, Fallback = c.LogoArtBookFallback, SecondFallback = c.LogoArtBookSecondFallback, SizePercent = c.LogoArtBookSizePercent, OffsetVw = c.LogoArtBookOffsetVw, VerticalOffsetVh = c.LogoArtBookVerticalOffsetVh },
-            _ => new TypeSettings()
-        };
-    }
-
     // ───────────────────────── Characterart stage image ─────────────────────────
 
     /// <summary>GET /LogoArt/{itemId}/characterart/{fileName} - one file of the Characterart stage, independent of the Characterart tab's gates.</summary>
@@ -494,7 +491,7 @@ public class LogoArtController : ControllerBase
         {
             IsApplicable = true,
             ItemType = "Persons",
-            ZeroIntervention = config.LogoArtPersonsSource == "Hide" || (config.LogoArtPersonsSource == "None"),
+            ZeroIntervention = config.LogoArtPersonsSource == "Off",
             SizePercent = config.LogoArtPersonsSizePercent,
             OffsetVw = config.LogoArtPersonsOffsetVw,
             VerticalOffsetVh = config.LogoArtPersonsVerticalOffsetVh,
@@ -504,7 +501,8 @@ public class LogoArtController : ControllerBase
         var stages = new List<LogoArtStage>();
         foreach (var kind in new[] { config.LogoArtPersonsSource, config.LogoArtPersonsFallback })
         {
-            if (kind == "None" || stages.Any(s => s.Kind == kind)) { break; }
+            // "Off" (the default) = no logo, like Jellyfin - nothing to hide, nothing to add.
+            if (kind == "None" || kind == "Off" || stages.Any(s => s.Kind == kind)) { break; }
             var stage = new LogoArtStage { Kind = kind };
             if (kind == "FolderLogo")
             {
@@ -528,7 +526,6 @@ public class LogoArtController : ControllerBase
             }
 
             stages.Add(stage);
-            if (kind == "Hide") { break; }
         }
 
         result.Stages = stages;
@@ -708,14 +705,22 @@ public class LogoArtController : ControllerBase
         }
     }
 
-    // ───────────────────────── bulk creator ─────────────────────────
+    // ───────────────────────── bulk creator (background job) ─────────────────────────
+
+    private static readonly object JobLock = new();
+    private static LogoArtCreateLogosResult _job = new();
+    private static System.Threading.CancellationTokenSource? _jobCancel;
 
     /// <summary>
-    /// POST /LogoArt/create-logos {Mode: Update|Replace} - writes
+    /// POST /LogoArt/create-logos {Mode: Update|Replace, Names?} - STARTS the
+    /// bulk run and returns at once; GET create-logos/status reports the
+    /// progress (the admin page polls it every second and draws a bar),
+    /// POST create-logos/cancel stops it. One run at a time: a second start
+    /// while one is running just returns the running status. Per person:
     /// "Base name".png (800 x 310, transparent, white text with a black
-    /// outline, fitted and centred - the user's create_clearlogos script
-    /// 1:1) into every person folder with the same font pick as the live
-    /// Text stage. Admin only, like PeopleBackdrops/wipe.
+    /// outline, fitted, centred - the user's create_clearlogos script 1:1)
+    /// with the same font pick as the live Text stage. Admin only, like
+    /// PeopleBackdrops/wipe.
     /// </summary>
     [HttpPost("create-logos")]
     [Authorize(Policy = Policies.RequiresElevation)]
@@ -723,46 +728,90 @@ public class LogoArtController : ControllerBase
     {
         var config = Plugin.Instance!.Configuration;
         var replace = string.Equals(request?.Mode, "Replace", StringComparison.OrdinalIgnoreCase);
-        var fonts = CheckedFonts(config);
-        if (fonts.Count == 0)
+        lock (JobLock)
         {
-            return Ok(new LogoArtCreateLogosResult { Message = "No font is ticked - nothing written." });
-        }
-
-        var baseName = string.IsNullOrWhiteSpace(config.LogoArtPersonsBaseName) ? "clearlogo" : config.LogoArtPersonsBaseName.Trim();
-        var persons = _libraryManager.GetItemList(new InternalItemsQuery { IncludeItemTypes = new[] { BaseItemKind.Person } }).OfType<Person>().ToList();
-        if (!string.IsNullOrWhiteSpace(request?.Names))
-        {
-            var only = new HashSet<string>(request.Names.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), StringComparer.OrdinalIgnoreCase);
-            persons = persons.Where(p => only.Contains(p.Name)).ToList();
-        }
-
-        var result = new LogoArtCreateLogosResult { Persons = persons.Count };
-        var renderer = new Helpers.LogoTextRenderer(FontsFolder);
-        foreach (var person in persons)
-        {
-            try
+            if (_job.Running) { return Ok(_job); }
+            var fonts = CheckedFonts(config);
+            if (fonts.Count == 0)
             {
-                var folder = Person.GetPath(person.Name);
-                if (string.IsNullOrEmpty(folder)) { result.Skipped++; continue; }
-                var target = Path.Combine(folder, baseName + ".png");
-                if (!replace && PersonLogoExtensions.Any(ext => System.IO.File.Exists(Path.Combine(folder, baseName + ext)))) { result.Skipped++; continue; }
-                var font = PickFont(person.Name, config)!;
-                var text = config.LogoArtPersonsUppercase && font.Group == "title" ? person.Name.ToUpperInvariant() : person.Name;
-                Directory.CreateDirectory(folder);
-                renderer.WritePng(text, font.File, target, config.LogoArtPersonsTextStroke, config.LogoArtPersonsOutline);
-                result.Written++;
+                _job = new LogoArtCreateLogosResult { Message = "No font is ticked - nothing written." };
+                return Ok(_job);
             }
-            catch (Exception ex)
-            {
-                result.Failed++;
-                _logger.LogWarning(ex, "LogoArt: CreateLogos failed for {Name}", person.Name);
-            }
-        }
 
-        result.Message = (replace ? "Replace" : "Update") + ": " + result.Written + " written, " + result.Skipped + " skipped, " + result.Failed + " failed of " + result.Persons + " persons.";
-        _logger.LogInformation("LogoArt: CreateLogos - {Message}", result.Message);
-        return Ok(result);
+            var persons = _libraryManager.GetItemList(new InternalItemsQuery { IncludeItemTypes = new[] { BaseItemKind.Person } }).OfType<Person>().ToList();
+            if (!string.IsNullOrWhiteSpace(request?.Names))
+            {
+                var only = new HashSet<string>(request.Names.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), StringComparer.OrdinalIgnoreCase);
+                persons = persons.Where(p => only.Contains(p.Name)).ToList();
+            }
+
+            _job = new LogoArtCreateLogosResult { Running = true, Mode = replace ? "Replace" : "Update", Persons = persons.Count, Message = "Running" };
+            _jobCancel = new System.Threading.CancellationTokenSource();
+            var token = _jobCancel.Token;
+            var job = _job;
+            var baseName = string.IsNullOrWhiteSpace(config.LogoArtPersonsBaseName) ? "clearlogo" : config.LogoArtPersonsBaseName.Trim();
+            var uppercase = config.LogoArtPersonsUppercase;
+            var stroke = config.LogoArtPersonsTextStroke;
+            var outline = config.LogoArtPersonsOutline;
+            var fontsFolder = FontsFolder;
+            _logger.LogInformation("LogoArt: CreateLogos START - {Mode}, {Count} persons", job.Mode, persons.Count);
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                var renderer = new Helpers.LogoTextRenderer(fontsFolder);
+                foreach (var person in persons)
+                {
+                    if (token.IsCancellationRequested) { job.Cancelled = true; break; }
+                    job.Current = person.Name;
+                    try
+                    {
+                        var folder = Person.GetPath(person.Name);
+                        if (string.IsNullOrEmpty(folder)) { job.Skipped++; continue; }
+                        var target = Path.Combine(folder, baseName + ".png");
+                        if (!replace && PersonLogoExtensions.Any(ext => System.IO.File.Exists(Path.Combine(folder, baseName + ext)))) { job.Skipped++; continue; }
+                        var font = fonts.Count == 1 ? fonts[0] : fonts[(int)(Fnv1a(person.Name) % (uint)fonts.Count)];
+                        var text = uppercase && font.Group == "title" ? person.Name.ToUpperInvariant() : person.Name;
+                        Directory.CreateDirectory(folder);
+                        renderer.WritePng(text, font.File, target, stroke, outline);
+                        job.Written++;
+                    }
+                    catch (Exception ex)
+                    {
+                        job.Failed++;
+                        _logger.LogWarning(ex, "LogoArt: CreateLogos failed for {Name}", person.Name);
+                    }
+                    finally
+                    {
+                        job.Done++;
+                    }
+                }
+
+                job.Running = false;
+                job.Current = string.Empty;
+                job.Message = (job.Cancelled ? "Cancelled: " : "Done: ") + job.Written + " written, " + job.Skipped + " skipped, " + job.Failed + " failed of " + job.Persons + " persons.";
+                _logger.LogInformation("LogoArt: CreateLogos END - {Message}", job.Message);
+            }, System.Threading.CancellationToken.None);
+            return Ok(_job);
+        }
+    }
+
+    /// <summary>GET /LogoArt/create-logos/status - the running or last job.</summary>
+    [HttpGet("create-logos/status")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    public ActionResult<LogoArtCreateLogosResult> CreateLogosStatus()
+    {
+        lock (JobLock) { return Ok(_job); }
+    }
+
+    /// <summary>POST /LogoArt/create-logos/cancel - stops the running job after the current person.</summary>
+    [HttpPost("create-logos/cancel")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    public ActionResult<LogoArtCreateLogosResult> CreateLogosCancel()
+    {
+        lock (JobLock)
+        {
+            if (_job.Running) { _jobCancel?.Cancel(); }
+            return Ok(_job);
+        }
     }
 
     // ───────────────────────── helpers ─────────────────────────

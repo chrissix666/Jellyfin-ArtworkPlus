@@ -373,26 +373,13 @@ public static class FileTransformCallback
     private const string LogoArtPrehidingStyleTag =
         "<style id=\"artworkplus-logoart-prehiding\">.detailLogo:not(.artworkplus-logoart-vanilla){visibility:hidden!important}</style>";
 
-    /// <summary>true when at least one item type of the LogoArt tab is not at its zero-intervention default (Persons never need prehiding - vanilla shows nothing there).</summary>
+    /// <summary>true when at least one item type of the LogoArt tab is not at its zero-intervention default (effective values incl. Take over - Helpers/LogoArtSettings; Persons never need prehiding, vanilla shows nothing there).</summary>
     internal static bool LogoArtIntervenes(PluginConfiguration c)
     {
         if (!c.LogoArtEnabled) { return false; }
-        var chains = new[]
+        foreach (var type in Helpers.LogoArtSettings.Types)
         {
-            (c.LogoArtMovieSource, c.LogoArtMovieSizePercent, c.LogoArtMovieOffsetVw, c.LogoArtMovieVerticalOffsetVh),
-            (c.LogoArtSeriesSource, c.LogoArtSeriesSizePercent, c.LogoArtSeriesOffsetVw, c.LogoArtSeriesVerticalOffsetVh),
-            (c.LogoArtSeasonSource, c.LogoArtSeasonSizePercent, c.LogoArtSeasonOffsetVw, c.LogoArtSeasonVerticalOffsetVh),
-            (c.LogoArtEpisodeSource, c.LogoArtEpisodeSizePercent, c.LogoArtEpisodeOffsetVw, c.LogoArtEpisodeVerticalOffsetVh),
-            (c.LogoArtSetSource, c.LogoArtSetSizePercent, c.LogoArtSetOffsetVw, c.LogoArtSetVerticalOffsetVh),
-            (c.LogoArtVideoSource, c.LogoArtVideoSizePercent, c.LogoArtVideoOffsetVw, c.LogoArtVideoVerticalOffsetVh),
-            (c.LogoArtMusicVideoSource, c.LogoArtMusicVideoSizePercent, c.LogoArtMusicVideoOffsetVw, c.LogoArtMusicVideoVerticalOffsetVh),
-            (c.LogoArtAlbumSource, c.LogoArtAlbumSizePercent, c.LogoArtAlbumOffsetVw, c.LogoArtAlbumVerticalOffsetVh),
-            (c.LogoArtArtistSource, c.LogoArtArtistSizePercent, c.LogoArtArtistOffsetVw, c.LogoArtArtistVerticalOffsetVh),
-            (c.LogoArtBookSource, c.LogoArtBookSizePercent, c.LogoArtBookOffsetVw, c.LogoArtBookVerticalOffsetVh)
-        };
-        foreach (var (source, size, offset, vertical) in chains)
-        {
-            if (source != "VanillaLogo" || size != 100 || offset != 0 || vertical != 0) { return true; }
+            if (!Helpers.LogoArtSettings.Effective(c, type).IsZeroIntervention) { return true; }
         }
 
         return false;

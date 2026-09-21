@@ -1329,16 +1329,21 @@
         // breakpoints. Logo / Folder logo / Text = the vanilla box (16vh
         // high, top 10vh, image centred). Clearart (16:9) and Characterart
         // (1:1) stand with their bottom edge on the ribbon line
-        // (40vh - 7.2em, the Characterart top anchor's line) and shrink
-        // until they fit below 10vh; the image sits at the bottom.
+        // (40vh - 7.2em, the Characterart top anchor's line); the image sits
+        // at the bottom.
         '.logoart-container{position:absolute;pointer-events:none;z-index:1;--la-size:1;--la-offset:0vw;--la-voffset:0vh;left:calc(62.5vw + var(--la-offset));}',
         '.logoart-container>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center center;}',
         '.logoart-container.logoart-slot{top:calc(10vh + var(--la-voffset));width:calc(25vw * var(--la-size));height:calc(16vh * var(--la-size));transform:translateX(-50%);}',
         '.logoart-container.logoart-floor{top:calc(40vh - 7.2em + var(--la-voffset));width:auto;transform:translate(-50%,-100%);}',
         '.logoart-container.logoart-floor>img{object-position:center bottom;}',
-        '.logoart-container.logoart-clearart{aspect-ratio:16/9;height:min(calc(25vw * var(--la-size) * 9 / 16), calc(30vh - 7.2em));}',
-        '.logoart-container.logoart-characterart{aspect-ratio:1/1;height:min(calc(25vw * var(--la-size)), calc(30vh - 7.2em));}',
-        '@media all and (max-height:31.25em){.logoart-container.logoart-floor{top:calc(52vh - 7.2em + var(--la-voffset));}}',
+        // Session 134b (user decision): no upper cap - Clearart is the 16:9 box
+        // at its own Size; Characterart gets its inline size from
+        // Core.applyArtBoxSizing (the Characterart tab's block), Height 0 =
+        // the full height from the ribbon line up to the page top.
+        '.logoart-container.logoart-clearart{aspect-ratio:16/9;height:calc(25vw * var(--la-size) * 9 / 16);}',
+        '.logoart-container.logoart-characterart{--la-voffset:0vh;}',
+        '.logoart-container.logoart-characterart.logoart-full-height{height:calc(40vh - 7.2em)!important;}',
+        '@media all and (max-height:31.25em){.logoart-container.logoart-floor{top:calc(52vh - 7.2em + var(--la-voffset));}.logoart-container.logoart-characterart.logoart-full-height{height:calc(52vh - 7.2em)!important;}}',
         '@media all and (max-width:68.75em){.logoart-container{display:none;}}',
         '.layout-mobile .logoart-container,.layout-tv .logoart-container{display:none;}',
         // Text stage (Persons): two stacked layers like the bulk creator's

@@ -376,3 +376,34 @@ episode inheriting the series logo with Source mode Series, Season Hide, Keanu R
 live Biancha text and, after `Create logos` with `Names`, as the written 800 x 310 PNG in
 the same font; admin dropdown + overlay on the real endpoint. The user's config was
 restored byte-identical afterwards.
+
+
+### H2 — Session 134b: the user's changes after the first look (2026-09-21)
+
+1. **Geometry per stage kind, not global, no cap.** Each type block now carries `Logo size /
+   offset / vertical offset` (vanilla slot), `Clearart size / offset / vertical offset` (the
+   16:9 box on the ribbon line, any size) and the Characterart tab's own sizing block
+   (`Characterart: scale by`, `height / max width`, `width / max height`, `align`, `offset`)
+   for the Characterart box on the ribbon line; **Height 0 (default) = from the ribbon line
+   up to the page top** ("von der Bodentextur bis zur oberen Textur"). Each container is
+   active while the source is not Hide and any chain stage is that kind. B4's "shrink until
+   it fits below 10vh" is gone.
+2. **Take over.** `Settings` in Set (`Take over Movies` / `Individual`), Season and Episode
+   (`Take over Series` / `Individual`), default Take over: the Movies / Series block applies
+   (chain, geometry, rotation), only the type's own `Source mode` stays. Effective values:
+   `Helpers/LogoArtSettings.Effective`, used by the controller and the prehiding decision.
+3. **Persons `Source` = `Off (default)` · Folder logo · Text**, default Off (nothing to hide
+   - vanilla shows nothing on person pages); Off greys everything below.
+4. **Font preview**: no head line; a FIXED panel (640 px) whose font size per pool comes from
+   `fonts.json` (`previewEm` / `previewUpperEm`, the two default names measured once with
+   fontTools at 1 em - nothing is loaded or measured at runtime): panel width / widest font
+   of the pool, so the widest just fits and every font uses the same size; each name centred
+   in its own line, the lines centred in the panel; other preview names scaled by character
+   count. An open preview follows Text stroke / Outline / Uppercase / Preview names at once.
+5. **Create logos** = a server background job: the warning ("This will create thousands of
+   .png files in ProgramData\Jellyfin\Server\metadata\People. No undo. Continue?", the
+   user's text C) with OK/Cancel, then `POST create-logos` starts, the page polls
+   `GET create-logos/status` every second and draws a progress bar with
+   "done / total · written · skipped · current name" and a `Cancel` button
+   (`POST create-logos/cancel`); the summary stays in the line, a running job is picked up
+   again when the page opens. One job at a time.
