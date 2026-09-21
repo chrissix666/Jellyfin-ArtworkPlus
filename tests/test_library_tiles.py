@@ -66,8 +66,12 @@ window.ApiClient = { getCurrentUserId: function(){return 'u';}, serverAddress: f
 
 class Scenario:
     def __init__(self, name, items, custom=None, animated=None, extra=None, flags=None,
-                 batch_delay=None, img_delay=None, img_fail=None, extra_opts=None, viewport_rows=2, custom_logo=None, extra_per=None, animated_logo=None):
+                 batch_delay=None, img_delay=None, img_fail=None, extra_opts=None, viewport_rows=2, custom_logo=None, extra_per=None, animated_logo=None,
+                 hash=None, arrange=None, pages_allowed=None):
         self.name = name
+        self.hash = hash or '#/movies.html?topParentId=lib'   # Session 136: the route the page opens with
+        self.arrange = arrange                                # Session 136: JS run right after buildPage (same task) - moves cards into page areas
+        self.pages_allowed = pages_allowed                    # Session 136: page classes the Extra batch answers; None = all
         self.items = items                     # [(id, type)]
         self.custom = custom or {}             # id -> True
         self.animated = animated or {}
@@ -109,6 +113,8 @@ class Stub(BaseHTTPRequestHandler):
                 self.send_response(404); self.end_headers(); return
         self.send_response(200); self.send_header('Content-Type', 'image/png'); self.send_header('Content-Length', str(len(PNG))); self.end_headers(); self.wfile.write(PNG)
 
+    batch_pages = []  # Session 136: the page parameter of every Extra batch
+
     def do_GET(self):
         sc = Stub.scenario
         u = urlparse(self.path)
@@ -128,8 +134,10 @@ class Stub(BaseHTTPRequestHandler):
             return self._json({"Items": items}, sc.batch_delay.get('animated', 0))
         if p == '/Extraposter/batch':
             items = {}
+            Stub.batch_pages.append(q.get('page'))
+            refused = sc.pages_allowed is not None and q.get('page') not in sc.pages_allowed
             for i in ids:
-                n = sc.extra.get(i, 0)
+                n = 0 if refused else sc.extra.get(i, 0)
                 if n:
                     per = (sc.extra_per or {}).get(i, {})
                     posters = [{"FileName": "e%d.jpg" % k, "Version": "1"} for k in range(n)]
@@ -143,6 +151,19 @@ class Stub(BaseHTTPRequestHandler):
                     items[i] = {"IsMovie": False, "Posters": []}
             return self._json({"Items": items}, sc.batch_delay.get('extra', 0))
         self.send_response(404); self.end_headers()
+
+
+S28_ARRANGE = (
+    "var c = document.getElementById('items');"
+    "var home = document.createElement('div'); home.className = 'sections';"
+    "var fav = document.createElement('div'); fav.className = 'favoriteSections';"
+    "c.parentNode.appendChild(home); c.parentNode.appendChild(fav);"
+    "home.appendChild(document.querySelector('[data-id=t01]'));"
+    "var t1 = document.querySelector('[data-id=t01]'); t1.setAttribute('data-positionticks', '1200');"  # a half-watched movie in the Latest row stays 'home-recent'
+    "var resume = document.createElement('div'); resume.className = 'itemsContainer scrollSlider'; resume.setAttribute('data-monitor', 'videoplayback,markplayed'); home.appendChild(resume);"
+    "resume.appendChild(document.querySelector('[data-id=t02]'));"
+    "fav.appendChild(document.querySelector('[data-id=t03]'));"
+)
 
 
 def vanilla(bg):
@@ -203,6 +224,8 @@ def run():
         Scenario('S24 child posters: the overlay uses the Url entries', ROWS5, extra={'t01': 2}, extra_per={'t01': {'children': True}}),
         Scenario('S25 set keyart slides: the movie logo follows the slide, none on a slide without one', ROWS5, extra={'t01': 2}, extra_per={'t01': {'children': True, 'slideLogos': True, "SetLogoVerticalPositionPercent": 70, "SetLogoSizePercent": 50, "CycleTimeMs": 700, "FadeTimeMs": 100}}),
         Scenario('S26 animated keyart logo on the tile (animated winner), none on a custom tile', ROWS5, animated={'t01': True}, custom={'t02': True}, animated_logo={"ResolvedType": "animatedkeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 75, "LogoSizePercent": 45, "HasLogo": True}),
+        Scenario('S28 Also on: Home page cards are batched per page class (recent / resume / favorites), only the allowed class gets the overlay', [('t01', 'Movie'), ('t02', 'Movie'), ('t03', 'Movie')], extra={'t01': 2, 't02': 2, 't03': 2}, hash='#/home.html', arrange=S28_ARRANGE, pages_allowed={'home-recent'}),
+        Scenario('S29 Also on: the admin dashboard asks with page=dashboard and stays vanilla', [('t01', 'Movie')], extra={'t01': 2}, hash='#/dashboard', pages_allowed={'library'}),
         Scenario('S27 chapter card / non-Primary image card of the same movie stay untouched', ROWS5 + [('t01', 'Movie', 'chapterCard', '/Items/t01/Images/Chapter/0?tag=c'), ('t02', 'Movie', '', '/Items/t02/Images/Thumb?tag=t')], extra={'t01': 2, 't02': 2}),
         Scenario('S16 extrakeyart logo appears with the first overlay image', ROWS5, extra={'t01': 2}, extra_opts={"ResolvedType": "extrakeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 85, "LogoSizePercent": 40, "HasLogo": True}),
     ]
@@ -212,15 +235,16 @@ def run():
         browser = p.chromium.launch()
         for sc in scenarios:
             Stub.scenario = sc
+            Stub.batch_pages = []
             page = browser.new_page(viewport={"width": 1280, "height": 600})
-            page.goto(f"{origin}/web/index.html#/movies.html?topParentId=lib")
+            page.goto(f"{origin}/web/index.html{sc.hash}")
             if sc.flags is not None:
                 page.evaluate("f => { window.ArtworkPlusLibraryTiles = f; }", sc.flags)
             page.add_script_tag(content=APICLIENT)
             page.add_script_tag(content=core)
             page.add_script_tag(content=posters)
             page.wait_for_timeout(100)
-            page.evaluate("items => buildPage(items.map(([id, type, cls, src]) => ({id, type, cls, src})))", sc.items)
+            page.evaluate("([items, arrange]) => { buildPage(items.map(([id, type, cls, src]) => ({id, type, cls, src}))); if (arrange) { (new Function(arrange))(); } }", [sc.items, sc.arrange])
             page.wait_for_timeout(1500)
             problems = []
             rec = page.evaluate("window.__rec")
@@ -451,6 +475,23 @@ def run():
                     if not x or x['layers'] != 0 or x['pending'] or 'extraposter' in (x['bg'] + x['src']).lower():
                         problems.append(f"{k} was treated as a poster tile: {x}")
                 if not info.get('t01') or info['t01']['layers'] == 0: problems.append(f"real poster tile t01 got no overlay: {info.get('t01')}")
+            if sc.name.split(' ')[0] in ('S28', 'S29'):
+                page.wait_for_timeout(500)
+                info = page.evaluate("(()=>{var out={};document.querySelectorAll('.card').forEach(function(c){var ic=c.querySelector('.cardImageContainer');out[c.dataset.id]={layers:ic.querySelectorAll('.extraposter-lib-layer').length,pending:ic.classList.contains('artworkplus-tile-pending'),bg:ic.style.backgroundImage||ic.getAttribute('data-src')||''};});return out;})()")
+                pages = sorted(x or '' for x in Stub.batch_pages)
+                if sc.name.startswith('S28'):
+                    if pages != ['favorites', 'home-recent', 'home-resume']: problems.append(f"batches per page class: {pages}")
+                    if info['t01']['layers'] == 0: problems.append(f"allowed class got no overlay: {info['t01']}")
+                    for k in ('t02', 't03'):
+                        if info[k]['layers'] or info[k]['pending'] or 'extraposter' in info[k]['bg'].lower(): problems.append(f"{k} refused class was overlaid: {info[k]}")
+                    cls = page.evaluate("(()=>{var f=window.__artworkPlusExtraPageOf;var el=document.querySelector('[data-id=t01]');var out={};[['#/movies.html?topParentId=x','library'],['#/tv.html?topParentId=x','library'],['#/list.html?genreId=1','list-genre'],['#/list.html?studioId=1','list-studio'],['#/list.html?type=tag&tag=x','list-tag'],['#/list.html?parentId=1','list-other'],['#/list.html?type=Movie&IsFavorite=true','list-other'],['#/search.html?query=x','search'],['#/dashboard','dashboard'],['#/details?id=1','other']].forEach(function(p){history.replaceState(null,'',p[0]);out[p[0]]=[f(el),p[1]];});history.replaceState(null,'','#/home.html');return out;})()")
+                    wrong = {k: v for k, v in cls.items() if v[0] != v[1]}
+                    if wrong: problems.append(f"classifier: {wrong}")
+                    det = page.evaluate("(()=>{var f=window.__artworkPlusExtraPageOf;history.replaceState(null,'','#/details?id=1');var mk=function(cls,id){var w=document.createElement('div');if(cls.charAt(0)==='#'){w.id=cls.slice(1);}else{w.className=cls.slice(1);}var c=document.createElement('div');c.className='card';w.appendChild(c);document.body.appendChild(w);return f(c);};var out=[mk('#similarCollapsible'),mk('.collectionItems'),mk('#childrenContent')];history.replaceState(null,'','#/home.html');return out;})()")
+                    if det != ['detail-similar', 'detail-collection', 'detail-person']: problems.append(f"detail classes: {det}")
+                else:
+                    if pages != ['dashboard']: problems.append(f"dashboard batch page: {pages}")
+                    if info['t01']['layers'] or info['t01']['pending'] or not vanilla(info['t01']['bg']): problems.append(f"dashboard tile not vanilla: {info['t01']}")
             if sc.name.split(' ')[0] == 'S16':
                 page.wait_for_timeout(300)
                 info = page.evaluate("(()=>{var c=document.querySelector('[data-id=t01]');var l=c.querySelector('.artworkplus-tile-logo');var layer=c.querySelector('.extraposter-lib-layer');return l?{top:l.style.top,afterLayers:!!(layer.compareDocumentPosition(l)&Node.DOCUMENT_POSITION_FOLLOWING)}:null;})()")

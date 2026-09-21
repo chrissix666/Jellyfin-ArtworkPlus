@@ -1745,16 +1745,60 @@
             return Core.preloadImage(url, { timeoutMs: PRELOAD_TIMEOUT_MS });
         }
 
+        // Session 136 ("Also on"): answers are per page class - the same
+        // item may be allowed on the Home row and refused on a genre list.
+        // Keys are page + '|' + itemId; batches go out per page class.
         var resultCache = {};
-        var pendingIds = [];
+        var pendingByPage = {};
         var pendingCards = {};
         var pendingFetchTimer = null;
         var activeTiles = new Map();
         // Diagnostics only (DevTools / live checks): the active overlay tiles.
         window.__artworkPlusExtraTiles = activeTiles;
 
-        function libAnswerFor(itemId) {
-            var result = resultCache[itemId];
+        // Session 136: the page class of a card, as the server's "Also on"
+        // filter names them. Route first (location.hash), then the card's
+        // container where one route hosts several areas: the Home page
+        // keeps both tabs in the DOM and the hash does not change on a tab
+        // click (tabbedview.js), so Favorites is `.favoriteSections`
+        // (favoriteitems.js); the Continue Watching row is the items
+        // container with data-monitor="videoplayback,..." (resume.ts; the
+        // Latest rows have no data-monitor) - NOT the card's own
+        // data-positionticks, which a half-watched movie carries in the
+        // Latest row too; on detail pages More like
+        // this is `#similarCollapsible`, a collection's members are
+        // `.collectionItems`, a person's rows are `#childrenContent`
+        // (itemsByName.js). Unknown = 'other' (the server refuses it).
+        function libPageOf(card) {
+            var h = location.hash || '';
+            if (/^#\/(movies|tv)\.html/.test(h)) { return 'library'; }
+            if (/^#\/dashboard/.test(h)) { return 'dashboard'; }
+            if (/^#\/search\.html/.test(h)) { return 'search'; }
+            if (/^#\/list\.html/.test(h)) {
+                if (/[?&]genreId=/.test(h)) { return 'list-genre'; }
+                if (/[?&]studioId=/.test(h)) { return 'list-studio'; }
+                if (/[?&]type=tag(&|$)/.test(h) || /[?&]tag=/.test(h)) { return 'list-tag'; }
+                return 'list-other';
+            }
+            if (/^#\/details/.test(h)) {
+                if (card.closest('#similarCollapsible')) { return 'detail-similar'; }
+                if (card.closest('.collectionItems')) { return 'detail-collection'; }
+                if (card.closest('#childrenContent')) { return 'detail-person'; }
+                return 'other';
+            }
+            if (/^#\/home\.html/.test(h) || h === '' || h === '#' || h === '#/') {
+                if (card.closest('.favoriteSections')) { return 'favorites'; }
+                if (card.closest('.itemsContainer[data-monitor*="videoplayback"]')) { return 'home-resume'; }
+                return 'home-recent';
+            }
+            return 'other';
+        }
+        // Diagnostics / tests: the classifier itself.
+        window.__artworkPlusExtraPageOf = libPageOf;
+
+        function libAnswerFor(key) {
+            var result = resultCache[key];
+            var itemId = key.slice(key.indexOf('|') + 1);
             if (!result || !result.IsMovie || !Array.isArray(result.Posters) || result.Posters.length < 1) { return null; }
             var resolvedType = result.ResolvedType || 'extraposter';
             return {
@@ -1779,43 +1823,54 @@
         }
 
         function libCollect(card, itemId) {
-            if (itemId in resultCache) { LibraryTiles.report(card, LIB_PRIORITY, libAnswerFor(itemId)); return; }
-            (pendingCards[itemId] = pendingCards[itemId] || []).push(card);
+            var page = libPageOf(card);
+            var key = page + '|' + itemId;
+            if (key in resultCache) { LibraryTiles.report(card, LIB_PRIORITY, libAnswerFor(key)); return; }
+            (pendingCards[key] = pendingCards[key] || []).push(card);
             LibraryTiles.markInFlight(card, +1);
-            if (pendingIds.indexOf(itemId) === -1) { pendingIds.push(itemId); }
+            var ids = pendingByPage[page] = pendingByPage[page] || [];
+            if (ids.indexOf(itemId) === -1) { ids.push(itemId); }
             if (!pendingFetchTimer) { pendingFetchTimer = setTimeout(function () { pendingFetchTimer = null; libFlush(); }, LIB_FETCH_DEBOUNCE_MS); }
         }
 
-        function libReportAll(ids) {
+        function libReportAll(page, ids) {
             ids.forEach(function (id) {
-                var cards = pendingCards[id] || [];
-                delete pendingCards[id];
-                var answer = libAnswerFor(id);
+                var key = page + '|' + id;
+                var cards = pendingCards[key] || [];
+                delete pendingCards[key];
+                var answer = libAnswerFor(key);
                 cards.forEach(function (card) { LibraryTiles.markInFlight(card, -1); LibraryTiles.report(card, LIB_PRIORITY, answer); });
-                if (answer) { libLog('applicable for tile', id, '| images:', answer.urls.length, '| delay:', answer.delayMs); }
+                if (answer) { libLog('applicable for tile', id, '| page:', page, '| images:', answer.urls.length, '| delay:', answer.delayMs); }
             });
         }
 
         function libFlush() {
-            var ids = pendingIds;
-            pendingIds = [];
+            var byPage = pendingByPage;
+            pendingByPage = {};
+            Object.keys(byPage).forEach(function (page) { libFlushPage(page, byPage[page]); });
+        }
+
+        // One batch per page class (Session 136) - the server's "Also on"
+        // filter needs the class, and a Home page can hold Latest,
+        // Continue Watching and Favorites cards at once.
+        function libFlushPage(page, ids) {
             if (!ids.length) { return; }
             var chunks = [];
             for (var i = 0; i < ids.length; i += LIB_BATCH_CHUNK) { chunks.push(ids.slice(i, i + LIB_BATCH_CHUNK)); }
             Promise.all(chunks.map(function (chunk) {
-                return fetch('/Extraposter/batch?ids=' + chunk.map(encodeURIComponent).join(',') + '&scope=library')
+                return fetch('/Extraposter/batch?ids=' + chunk.map(encodeURIComponent).join(',') + '&scope=library&page=' + encodeURIComponent(page))
                     .then(function (r) { return r.json(); })
                     .then(function (batchResponse) {
                         var items = batchResponse.Items || {};
                         // Same key normalisation as the Animated library path (Session 122).
-                        Object.keys(items).forEach(function (id) { resultCache[id.replace(/-/g, '')] = items[id]; });
-                        chunk.forEach(function (id) { if (!(id in resultCache)) { resultCache[id] = null; } });
+                        Object.keys(items).forEach(function (id) { resultCache[page + '|' + id.replace(/-/g, '')] = items[id]; });
+                        chunk.forEach(function (id) { if (!((page + '|' + id) in resultCache)) { resultCache[page + '|' + id] = null; } });
                     })
                     .catch(function (e) {
                         libLog('Error during the batch request', e);
-                        chunk.forEach(function (id) { if (!(id in resultCache)) { resultCache[id] = null; } });
+                        chunk.forEach(function (id) { if (!((page + '|' + id) in resultCache)) { resultCache[page + '|' + id] = null; } });
                     });
-            })).then(function () { libReportAll(ids); });
+            })).then(function () { libReportAll(page, ids); });
         }
 
         function libCreateOverlayLayers(imageContainer, fadeMs) {

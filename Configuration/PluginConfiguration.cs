@@ -1407,6 +1407,46 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtraposterMoviesLibrarySyncEnabled { get; set; } = true;
 
+    // Session 136: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnHomeContinueWatching { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnFavoritesMovies { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnFavoritesCollections { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnListsGenre { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnListsStudio { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnListsTag { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnListsFolderMore { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnSearchMovies { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnSearchCollections { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnDetailMoreLikeThis { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnDetailCollectionMembers { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnDetailPersonPages { get; set; }
+
     /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
     public bool ExtraposterMoviesLibrarySeamlessEnabled { get; set; } = true;
 
@@ -1488,6 +1528,40 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtraposterTvShowsLibrarySyncEnabled { get; set; } = true;
+
+    // Session 136: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnHomeRecentlyAdded { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnHomeContinueWatching { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnFavoritesShows { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnListsGenre { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnListsStudio { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnListsTag { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnListsFolderMore { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnSearchShows { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnDetailMoreLikeThis { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnDetailCollectionMembers { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnDetailPersonPages { get; set; }
 
     /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
     public bool ExtraposterTvShowsLibrarySeamlessEnabled { get; set; } = true;
@@ -1617,6 +1691,46 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtrakeyartMoviesLibrarySyncEnabled { get; set; } = true;
 
+    // Session 136: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnHomeRecentlyAdded { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnHomeContinueWatching { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnFavoritesMovies { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnFavoritesCollections { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnListsGenre { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnListsStudio { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnListsTag { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnListsFolderMore { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnSearchMovies { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnSearchCollections { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnDetailMoreLikeThis { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnDetailCollectionMembers { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnDetailPersonPages { get; set; }
+
     /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
     public bool ExtrakeyartMoviesLibrarySeamlessEnabled { get; set; } = true;
 
@@ -1696,6 +1810,40 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtrakeyartTvShowsLibrarySyncEnabled { get; set; } = true;
+
+    // Session 136: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnHomeRecentlyAdded { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnHomeContinueWatching { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnFavoritesShows { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnListsGenre { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnListsStudio { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnListsTag { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnListsFolderMore { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnSearchShows { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnDetailMoreLikeThis { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnDetailCollectionMembers { get; set; }
+
+    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnDetailPersonPages { get; set; }
 
     /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
     public bool ExtrakeyartTvShowsLibrarySeamlessEnabled { get; set; } = true;

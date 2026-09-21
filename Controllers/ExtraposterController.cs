@@ -127,6 +127,9 @@ public class PosterListResult
     public int LogoVerticalPositionPercent { get; set; }
 
     public int LogoSizePercent { get; set; }
+
+    /// <summary>Session 136: "Movie" | "Series" | "BoxSet" - the kind the "Also on" filter of the batch endpoint needs (BoxSet follows the Movies settings).</summary>
+    public string ItemKind { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -835,11 +838,19 @@ public class ExtraposterController : ControllerBase
     // cheap, minimal safeguard.
     private const int MaxBatchIds = 200;
 
+    /// <summary>Session 136: the shared "not applicable" answer (never mutated, so it can be shared).</summary>
+    private static readonly PosterListResult NotApplicableResult = new() { IsMovie = false };
+
     [HttpGet("batch")]
-    public ActionResult<BatchPosterListResult> GetPosterListBatch([FromQuery] string? ids)
+    public ActionResult<BatchPosterListResult> GetPosterListBatch([FromQuery] string? ids, [FromQuery] string? page)
     {
         var result = new BatchPosterListResult();
         var config = Plugin.Instance!.Configuration;
+        // Session 136: the page class of this batch (see AlsoOnAllowed);
+        // the per-item cache stays keyed by item only - the filter is
+        // applied on the way out, on the cached answer.
+        var pageClass = string.IsNullOrEmpty(page) ? "library" : page;
+        var filteredOut = 0;
 
         var allParsedIds = (ids ?? string.Empty)
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -893,13 +904,18 @@ public class ExtraposterController : ControllerBase
             // data-id, which Jellyfin serialises via JsonGuidConverter as the
             // 32-hex form. Dictionary keys are strings and bypass that
             // converter - Guid.ToString() (dashed) never matched (Session 122).
+            if (cachedResult.IsMovie && !AlsoOnAllowed(config, pageClass, cachedResult))
+            {
+                System.Threading.Interlocked.Increment(ref filteredOut);
+                cachedResult = NotApplicableResult;
+            }
             resolved[itemId.ToString("N")] = cachedResult;
         });
         foreach (var kv in resolved) { result.Items[kv.Key] = kv.Value; }
 
         _logger.LogInformation(
-            "Extraposter: === GetPosterListBatch END, {Count} entries answered, {WithPosters} of them with IsMovie=true, {Ms} ms, {Hits} from cache, slowest item {SlowestMs} ms ({SlowestId})",
-            result.Items.Count, result.Items.Values.Count(r => r.IsMovie), batchWatch.ElapsedMilliseconds, cacheHits,
+            "Extraposter: === GetPosterListBatch END, page {Page}, {Count} entries answered, {WithPosters} of them with IsMovie=true, {Filtered} filtered by Also on, {Ms} ms, {Hits} from cache, slowest item {SlowestMs} ms ({SlowestId})",
+            pageClass, result.Items.Count, result.Items.Values.Count(r => r.IsMovie), filteredOut, batchWatch.ElapsedMilliseconds, cacheHits,
             slowestTicks * 1000 / System.Diagnostics.Stopwatch.Frequency, slowestId);
 
         return Ok(result);
@@ -980,8 +996,49 @@ public class ExtraposterController : ControllerBase
             SeamlessEnabled = view.SeamlessEnabled,
             SetLogoVerticalPositionPercent = view.SetKeyartLogoVerticalPositionPercent,
             SetLogoSizePercent = view.SetKeyartLogoSizePercent,
-            HasLogo = logoEnabled && (item?.HasImage(MediaBrowser.Model.Entities.ImageType.Logo, 0) ?? false)
+            HasLogo = logoEnabled && (item?.HasImage(MediaBrowser.Model.Entities.ImageType.Logo, 0) ?? false),
+            ItemKind = item is Series ? "Series" : item is BoxSet ? "BoxSet" : "Movie"
         };
+    }
+
+    /// <summary>
+    /// Session 136: the "Also on" rows. The library-scope tiles used to
+    /// appear on every page that builds Movie/Series/BoxSet cards (the
+    /// client scanner is document-wide); now the client names the page
+    /// class of each batch and the matching checkbox of the resolved
+    /// feature (Extraposter / Extrakeyart) and kind (Movies; Sets follow
+    /// Movies / TV Shows) decides. No parameter (older script in an open
+    /// tab) = "library" = allowed; "dashboard" is never allowed; an
+    /// unknown class is not allowed (the defaults are all off, so a page
+    /// the plugin does not know stays vanilla).
+    /// </summary>
+    internal static bool AlsoOnAllowed(PluginConfiguration config, string? page, PosterListResult result)
+    {
+        if (string.IsNullOrEmpty(page) || page == "library") { return true; }
+        if (page == "dashboard") { return false; }
+        if (!result.IsMovie) { return true; } // nothing to filter - the answer is "not applicable" anyway
+        var feature = result.ResolvedType == "extrakeyart" ? "Extrakeyart" : "Extraposter";
+        var tv = result.ItemKind == "Series";
+        var kind = tv ? "TvShows" : "Movies";
+        var boxSet = result.ItemKind == "BoxSet";
+        string? sub = page switch
+        {
+            "home-recent" => "HomeRecentlyAdded",
+            "home-resume" => "HomeContinueWatching",
+            "favorites" => tv ? "FavoritesShows" : (boxSet ? "FavoritesCollections" : "FavoritesMovies"),
+            "list-genre" => "ListsGenre",
+            "list-studio" => "ListsStudio",
+            "list-tag" => "ListsTag",
+            "list-other" => "ListsFolderMore",
+            "search" => tv ? "SearchShows" : (boxSet ? "SearchCollections" : "SearchMovies"),
+            "detail-similar" => "DetailMoreLikeThis",
+            "detail-collection" => "DetailCollectionMembers",
+            "detail-person" => "DetailPersonPages",
+            _ => null
+        };
+        if (sub is null) { return false; }
+        var property = typeof(PluginConfiguration).GetProperty(feature + kind + "LibraryAlsoOn" + sub);
+        return property is not null && property.GetValue(config) is true;
     }
 
     /// <summary>

@@ -50,6 +50,7 @@ GATING = [
     'test_backdrops_transitions.py',  # Session 120: the handover matrix of all six backdrop owners + Jellyfin (concept Part R)
     'test_logoart_render.py',       # Session 134: the logo slot container (zero intervention, slot/floor geometry, chain, Hide, rotation, text fit)
     'test_logoart_fonts.py',        # Session 134: the bundled LogoArt font pools (manifest = files, 60 + 60, punctuation, csproj, licences)
+    'test_alsoon_mapping.py',       # Session 136: "Also on" contract client page classes <-> server mapping <-> C# fields <-> page checkboxes
 ]
 INFORMATIONAL = [
     'diagnostic_cross_node_check.py',

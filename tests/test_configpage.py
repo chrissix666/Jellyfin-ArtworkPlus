@@ -1496,6 +1496,54 @@ with sync_playwright() as p:
     tabcss = apage.evaluate("() => { var b = document.querySelector('.epTabBtn'); var seps = document.querySelectorAll('#epTabBar .epTabSep'); var s = getComputedStyle(seps[0]); var bar = document.getElementById('epTabBar'); return { size: getComputedStyle(b).fontSize, n: seps.length, tabs: bar.querySelectorAll('.epTabBtn').length, w: s.width, h: seps[0].getBoundingClientRect().height, op: s.opacity, lastIsBtn: bar.lastElementChild.classList.contains('epTabBtn'), greyedOp: getComputedStyle(document.querySelector('.epTabBtn.epTabGreyed') || b).opacity }; }")
     check('S134d: tab buttons 10.5 px, 2 px separators as own elements (one fewer than tabs, never greyed, none after the last)', tabcss['size'] == '10.5px' and tabcss['n'] == tabcss['tabs'] - 1 and tabcss['w'] == '2px' and 16 <= tabcss['h'] <= 28 and tabcss['op'] == '1' and tabcss['lastIsBtn'], str(tabcss))
     check('S134: no JS errors on the LogoArt tab', not aerrors, str(aerrors[:3]))
+    # ─── Session 136: "Also on" rows - library-scope tiles outside the library view, per area ───
+    apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
+    apage.wait_for_timeout(150)
+    S136_VIEWS = [('extraposter', 'Extraposter', 'Movies'), ('extraposter', 'Extraposter', 'TvShows'), ('extrakeyart', 'Extrakeyart', 'Movies'), ('extrakeyart', 'Extrakeyart', 'TvShows')]
+    S136_GROUPS = ['Home', 'Favorites', 'Lists', 'Search', 'Detail']
+    s136 = apage.evaluate("""([views, groups]) => {
+        var out = { rows: 0, boxes: 0, checked: 0, order: [], labels: [], subs: {}, missing: [] };
+        views.forEach(function (v) {
+            var feat = v[1], kind = v[2], prefix = feat + kind + 'LibraryAlsoOn';
+            var showOn = document.getElementById(feat + kind + 'LibraryShowOnRow');
+            var el = showOn ? showOn.nextElementSibling : null;
+            groups.forEach(function (g) {
+                var row = document.getElementById(prefix + g + 'Row');
+                if (!row) { out.missing.push(prefix + g); return; }
+                out.rows++;
+                out.order.push(el === row); el = row.nextElementSibling;
+                out.labels.push(row.querySelector('.epRowLabelSpan').textContent);
+                var boxes = row.querySelectorAll('input[type=checkbox]');
+                out.boxes += boxes.length;
+                boxes.forEach(function (b) { if (b.checked) { out.checked++; } });
+                out.subs[feat + kind + g] = Array.prototype.map.call(row.querySelectorAll('.checkboxLabel'), function (l) { return l.textContent; });
+                var d = row.querySelector('.epDesc'); if (!d || d.textContent.length > 105) { out.missing.push('desc ' + prefix + g); }
+            });
+            var fields = document.getElementById(feat + kind + 'LibraryFields');
+            out.order.push(el === fields);
+        });
+        return out;
+    }""", [S136_VIEWS, S136_GROUPS])
+    check('S136: 20 Also-on rows (5 per Extra library view), 48 checkboxes, all off after Restore, one description each',
+          s136['rows'] == 20 and s136['boxes'] == 48 and s136['checked'] == 0 and not s136['missing'], str(s136['missing'] or s136))
+    check('S136: the five rows follow "Show on" directly and precede the Fields block, in the order Home, Favorites, Lists, Search, Detail pages',
+          all(s136['order']) and s136['labels'] == ['Also on Home', 'Also on Favorites', 'Also on Lists', 'Also on Search', 'Also on Detail pages'] * 4, str(s136['order']) + str(s136['labels'][:5]))
+    check('S136: sub options - Movies rows carry Movies/Collections, TV rows Shows; Lists has Genre, Studio, Tag, Folder & More',
+          s136['subs']['ExtraposterMoviesFavorites'] == ['Movies', 'Collections'] and s136['subs']['ExtraposterTvShowsSearch'] == ['Shows']
+          and s136['subs']['ExtrakeyartTvShowsLists'] == ['Genre', 'Studio', 'Tag', 'Folder & More'] and s136['subs']['ExtrakeyartMoviesDetail'] == ['More like this', 'Collection members', 'Person pages']
+          and s136['subs']['ExtraposterTvShowsHome'] == ['Recently added', 'Continue Watching'], str(s136['subs']))
+    apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="extraposter"]').click(); }""")
+    def s136_grey(id_):
+        return apage.evaluate("""(id) => { var c = document.getElementById(id); while (c) { if (c.classList && c.classList.contains('epFieldDisabled')) { return true; } c = c.parentElement; } return false; }""", id_)
+    check('S136: Also-on rows active while the Library view is enabled', s136_grey('ExtraposterMoviesLibraryAlsoOnHomeRow') is False and s136_grey('ExtraposterMoviesLibraryAlsoOnDetailRow') is False)
+    aset('ExtraposterMoviesLibraryEnabled', False)
+    check('S136: Library Enable off greys every Also-on row of that view, not the other view',
+          s136_grey('ExtraposterMoviesLibraryAlsoOnHomeRow') and s136_grey('ExtraposterMoviesLibraryAlsoOnListsRow') and s136_grey('ExtraposterMoviesLibraryShowOnRow') and s136_grey('ExtraposterTvShowsLibraryAlsoOnHomeRow') is False)
+    aset('ExtraposterMoviesLibraryEnabled', True)
+    aset('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded', True); aset('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded', False)
+    check('S136: an empty Also-on row does not untick the Library Enable (library view only is a valid state)',
+          apage.evaluate("() => document.getElementById('ExtraposterMoviesLibraryEnabled').checked && !document.getElementById('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded').checked"))
+    check('S136: no JS errors on the Extra tabs', not aerrors, str(aerrors[:3]))
     apage.close()
 
     browser.close()
