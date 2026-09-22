@@ -70,6 +70,24 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     public override Guid Id => Guid.Parse("a32fa765-c917-4c30-a58c-5998015cd046");
 
+    /// <summary>
+    /// Audit S1-07 (Session 138): every save (admin page and API) reduces the
+    /// base / type / folder names to one path segment - see Helpers.ConfigNames.
+    /// </summary>
+    public override void UpdateConfiguration(MediaBrowser.Model.Plugins.BasePluginConfiguration configuration)
+    {
+        if (configuration is PluginConfiguration ours)
+        {
+            var changed = Helpers.ConfigNames.Sanitize(ours);
+            if (changed > 0)
+            {
+                Logger.LogWarning("ArtworkPlus: {Count} name field(s) contained a directory part and were reduced to the file name on save", changed);
+            }
+        }
+
+        base.UpdateConfiguration(configuration);
+    }
+
     public IEnumerable<PluginPageInfo> GetPages()
     {
         yield return new PluginPageInfo
