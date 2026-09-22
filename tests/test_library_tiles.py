@@ -114,6 +114,8 @@ class Stub(BaseHTTPRequestHandler):
         self.send_response(200); self.send_header('Content-Type', 'image/png'); self.send_header('Content-Length', str(len(PNG))); self.end_headers(); self.wfile.write(PNG)
 
     batch_pages = []  # Session 136: the page parameter of every Extra batch
+    batch_pages_custom = []
+    batch_pages_animated = []
 
     def do_GET(self):
         sc = Stub.scenario
@@ -127,10 +129,14 @@ class Stub(BaseHTTPRequestHandler):
             return self._png()
         ids = [i for i in q.get('ids', '').split(',') if i]
         if p == '/CustomPoster/batch':
-            items = {i: dict({"IsApplicable": True, "ResolvedType": "postercase", "Version": "1", "FileName": "x"}, **(sc.custom_logo or {})) for i in ids if sc.custom.get(i)}
+            Stub.batch_pages_custom.append(q.get('page'))  # Session 139: every participant names the page class
+            refused = sc.pages_allowed is not None and q.get('page') not in sc.pages_allowed
+            items = {i: dict({"IsApplicable": True, "ResolvedType": "postercase", "Version": "1", "FileName": "x"}, **(sc.custom_logo or {})) for i in ids if sc.custom.get(i) and not refused}
             return self._json({"Items": items}, sc.batch_delay.get('custom', 0))
         if p == '/AnimatedPoster/batch':
-            items = {i: dict({"IsApplicable": True, "ResolvedType": "animatedposter", "Version": "1", "FileName": "x"}, **(sc.animated_logo or {})) for i in ids if sc.animated.get(i)}
+            Stub.batch_pages_animated.append(q.get('page'))
+            refused = sc.pages_allowed is not None and q.get('page') not in sc.pages_allowed
+            items = {i: dict({"IsApplicable": True, "ResolvedType": "animatedposter", "Version": "1", "FileName": "x"}, **(sc.animated_logo or {})) for i in ids if sc.animated.get(i) and not refused}
             return self._json({"Items": items}, sc.batch_delay.get('animated', 0))
         if p == '/Extraposter/batch':
             items = {}
@@ -226,6 +232,7 @@ def run():
         Scenario('S26 animated keyart logo on the tile (animated winner), none on a custom tile', ROWS5, animated={'t01': True}, custom={'t02': True}, animated_logo={"ResolvedType": "animatedkeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 75, "LogoSizePercent": 45, "HasLogo": True}),
         Scenario('S28 Also on: Home page cards are batched per page class (recent / resume / favorites), only the allowed class gets the overlay', [('t01', 'Movie'), ('t02', 'Movie'), ('t03', 'Movie')], extra={'t01': 2, 't02': 2, 't03': 2}, hash='#/home.html', arrange=S28_ARRANGE, pages_allowed={'home-recent'}),
         Scenario('S29 Also on: the admin dashboard asks with page=dashboard and stays vanilla', [('t01', 'Movie')], extra={'t01': 2}, hash='#/dashboard', pages_allowed={'library'}),
+        Scenario('S30 Also on (Session 139): Custom and Animated batch per page class too; the refused classes stay vanilla, the allowed one gets its image', [('t01', 'Movie'), ('t02', 'Movie'), ('t03', 'Movie')], custom={'t01': True, 't02': True, 't03': True}, animated={'t02': True, 't03': True}, hash='#/home.html', arrange=S28_ARRANGE, pages_allowed={'home-recent'}),
         Scenario('S27 chapter card / non-Primary image card of the same movie stay untouched', ROWS5 + [('t01', 'Movie', 'chapterCard', '/Items/t01/Images/Chapter/0?tag=c'), ('t02', 'Movie', '', '/Items/t02/Images/Thumb?tag=t')], extra={'t01': 2, 't02': 2}),
         Scenario('S16 extrakeyart logo appears with the first overlay image', ROWS5, extra={'t01': 2}, extra_opts={"ResolvedType": "extrakeyart", "LogoEnabled": True, "LogoVerticalPositionPercent": 85, "LogoSizePercent": 40, "HasLogo": True}),
     ]
@@ -236,6 +243,8 @@ def run():
         for sc in scenarios:
             Stub.scenario = sc
             Stub.batch_pages = []
+            Stub.batch_pages_custom = []
+            Stub.batch_pages_animated = []
             page = browser.new_page(viewport={"width": 1280, "height": 600})
             page.goto(f"{origin}/web/index.html{sc.hash}")
             if sc.flags is not None:
@@ -475,6 +484,14 @@ def run():
                     if not x or x['layers'] != 0 or x['pending'] or 'extraposter' in (x['bg'] + x['src']).lower():
                         problems.append(f"{k} was treated as a poster tile: {x}")
                 if not info.get('t01') or info['t01']['layers'] == 0: problems.append(f"real poster tile t01 got no overlay: {info.get('t01')}")
+            if sc.name.split(' ')[0] == 'S30':
+                page.wait_for_timeout(600)
+                info = page.evaluate("(()=>{var out={};document.querySelectorAll('.card').forEach(function(c){var ic=c.querySelector('.cardImageContainer');out[c.dataset.id]={pending:ic.classList.contains('artworkplus-tile-pending'),bg:ic.style.backgroundImage||ic.getAttribute('data-src')||''};});return out;})()")
+                for name, pages in (('custom', Stub.batch_pages_custom), ('animated', Stub.batch_pages_animated)):
+                    if sorted(x or '' for x in pages) != ['favorites', 'home-recent', 'home-resume']: problems.append(f"{name} batches per page class: {sorted(x or '' for x in pages)}")
+                if 'CustomPoster' not in info['t01']['bg']: problems.append(f"allowed class (home-recent) did not get the custom poster: {info['t01']}")
+                for k in ('t02', 't03'):
+                    if info[k]['pending'] or not vanilla(info[k]['bg']): problems.append(f"{k} refused class was not left vanilla: {info[k]}")
             if sc.name.split(' ')[0] in ('S28', 'S29'):
                 page.wait_for_timeout(500)
                 info = page.evaluate("(()=>{var out={};document.querySelectorAll('.card').forEach(function(c){var ic=c.querySelector('.cardImageContainer');out[c.dataset.id]={layers:ic.querySelectorAll('.extraposter-lib-layer').length,pending:ic.classList.contains('artworkplus-tile-pending'),bg:ic.style.backgroundImage||ic.getAttribute('data-src')||''};});return out;})()")

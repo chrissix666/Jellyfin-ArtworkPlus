@@ -1325,10 +1325,53 @@
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="AnimatedPosterMoviesLibraryEnabled" name="AnimatedPosterMoviesLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Replaces the poster wherever a movie appears as a small tile.</span>
+                                    <span class="epDescInline checkboxLabel">Replaces the poster on library grid tiles; more areas in the rows below.</span>
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedPosterMoviesLibraryAlsoOnHomeRow">
+                            <span class="epRowLabelSpan">Also on Home</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnHomeRecentlyAdded" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Recently added</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnHomeContinueWatching" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Continue Watching</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Latest Movies row; Continue Watching only for a movie without thumb or backdrop.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedPosterMoviesLibraryAlsoOnFavoritesRow">
+                            <span class="epRowLabelSpan">Also on Favorites</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnFavoritesMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnFavoritesCollections" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collections</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">The rows on the Favorites tab of the home page.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedPosterMoviesLibraryAlsoOnListsRow">
+                            <span class="epRowLabelSpan">Also on Lists</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnListsGenre" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Genre</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnListsStudio" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Studio</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnListsTag" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Tag</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnListsFolderMore" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Folder &amp; More</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Genre, studio and tag lists; folder views and every "More" list (Latest, Favorites, person).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedPosterMoviesLibraryAlsoOnSearchRow">
+                            <span class="epRowLabelSpan">Also on Search</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnSearchMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnSearchCollections" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collections</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">The rows of the search results page.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedPosterMoviesLibraryAlsoOnDetailRow">
+                            <span class="epRowLabelSpan">Also on Detail pages</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnDetailMoreLikeThis" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">More like this</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnDetailCollectionMembers" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collection members</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterMoviesLibraryAlsoOnDetailPersonPages" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Person pages</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Similar titles below a movie, the movies of a collection, the Movies row of a person.</div>
                         </div>
                         </div>
 
@@ -1354,10 +1397,51 @@
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="AnimatedPosterTvShowsLibraryEnabled" name="AnimatedPosterTvShowsLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Replaces the poster wherever a TV show appears as a small tile.</span>
+                                    <span class="epDescInline checkboxLabel">Replaces the poster on library grid tiles; more areas in the rows below.</span>
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedPosterTvShowsLibraryAlsoOnHomeRow">
+                            <span class="epRowLabelSpan">Also on Home</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterTvShowsLibraryAlsoOnHomeRecentlyAdded" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Recently added</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterTvShowsLibraryAlsoOnHomeContinueWatching" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Continue Watching</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Latest Shows row; Continue Watching only for a series without thumb or backdrop.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedPosterTvShowsLibraryAlsoOnFavoritesRow">
+                            <span class="epRowLabelSpan">Also on Favorites</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterTvShowsLibraryAlsoOnFavoritesShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">The Shows row on the Favorites tab of the home page.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedPosterTvShowsLibraryAlsoOnListsRow">
+                            <span class="epRowLabelSpan">Also on Lists</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterTvShowsLibraryAlsoOnListsGenre" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Genre</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterTvShowsLibraryAlsoOnListsStudio" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Studio</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterTvShowsLibraryAlsoOnListsTag" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Tag</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterTvShowsLibraryAlsoOnListsFolderMore" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Folder &amp; More</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Genre, studio and tag lists; folder views and every "More" list (Latest, Favorites, person).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedPosterTvShowsLibraryAlsoOnSearchRow">
+                            <span class="epRowLabelSpan">Also on Search</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterTvShowsLibraryAlsoOnSearchShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">The Shows row of the search results page.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedPosterTvShowsLibraryAlsoOnDetailRow">
+                            <span class="epRowLabelSpan">Also on Detail pages</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterTvShowsLibraryAlsoOnDetailMoreLikeThis" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">More like this</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterTvShowsLibraryAlsoOnDetailCollectionMembers" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collection members</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedPosterTvShowsLibraryAlsoOnDetailPersonPages" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Person pages</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Similar titles below a series, the series of a collection, the Shows row of a person.</div>
                         </div>
                         </div>
                         </div>
@@ -1481,10 +1565,53 @@
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="AnimatedKeyartMoviesLibraryEnabled" name="AnimatedKeyartMoviesLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Replaces the keyart wherever a movie appears as a small tile.</span>
+                                    <span class="epDescInline checkboxLabel">Replaces the keyart on library grid tiles; more areas in the rows below.</span>
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartMoviesLibraryAlsoOnHomeRow">
+                            <span class="epRowLabelSpan">Also on Home</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnHomeRecentlyAdded" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Recently added</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnHomeContinueWatching" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Continue Watching</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Latest Movies row; Continue Watching only for a movie without thumb or backdrop.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartMoviesLibraryAlsoOnFavoritesRow">
+                            <span class="epRowLabelSpan">Also on Favorites</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnFavoritesMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnFavoritesCollections" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collections</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">The rows on the Favorites tab of the home page.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartMoviesLibraryAlsoOnListsRow">
+                            <span class="epRowLabelSpan">Also on Lists</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnListsGenre" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Genre</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnListsStudio" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Studio</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnListsTag" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Tag</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnListsFolderMore" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Folder &amp; More</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Genre, studio and tag lists; folder views and every "More" list (Latest, Favorites, person).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartMoviesLibraryAlsoOnSearchRow">
+                            <span class="epRowLabelSpan">Also on Search</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnSearchMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnSearchCollections" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collections</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">The rows of the search results page.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartMoviesLibraryAlsoOnDetailRow">
+                            <span class="epRowLabelSpan">Also on Detail pages</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnDetailMoreLikeThis" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">More like this</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnDetailCollectionMembers" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collection members</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartMoviesLibraryAlsoOnDetailPersonPages" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Person pages</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Similar titles below a movie, the movies of a collection, the Movies row of a person.</div>
                         </div>
                         </div>
 
@@ -1510,10 +1637,51 @@
                             <div class="checkboxContainer" style="margin:0;">
                                 <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                     <input id="AnimatedKeyartTvShowsLibraryEnabled" name="AnimatedKeyartTvShowsLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                    <span class="epDescInline checkboxLabel">Replaces the keyart wherever a TV show appears as a small tile.</span>
+                                    <span class="epDescInline checkboxLabel">Replaces the keyart on library grid tiles; more areas in the rows below.</span>
                                     <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                 </label>
                             </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartTvShowsLibraryAlsoOnHomeRow">
+                            <span class="epRowLabelSpan">Also on Home</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartTvShowsLibraryAlsoOnHomeRecentlyAdded" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Recently added</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartTvShowsLibraryAlsoOnHomeContinueWatching" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Continue Watching</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Latest Shows row; Continue Watching only for a series without thumb or backdrop.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartTvShowsLibraryAlsoOnFavoritesRow">
+                            <span class="epRowLabelSpan">Also on Favorites</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartTvShowsLibraryAlsoOnFavoritesShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">The Shows row on the Favorites tab of the home page.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartTvShowsLibraryAlsoOnListsRow">
+                            <span class="epRowLabelSpan">Also on Lists</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartTvShowsLibraryAlsoOnListsGenre" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Genre</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartTvShowsLibraryAlsoOnListsStudio" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Studio</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartTvShowsLibraryAlsoOnListsTag" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Tag</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartTvShowsLibraryAlsoOnListsFolderMore" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Folder &amp; More</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Genre, studio and tag lists; folder views and every "More" list (Latest, Favorites, person).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartTvShowsLibraryAlsoOnSearchRow">
+                            <span class="epRowLabelSpan">Also on Search</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartTvShowsLibraryAlsoOnSearchShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">The Shows row of the search results page.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="AnimatedKeyartTvShowsLibraryAlsoOnDetailRow">
+                            <span class="epRowLabelSpan">Also on Detail pages</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartTvShowsLibraryAlsoOnDetailMoreLikeThis" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">More like this</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartTvShowsLibraryAlsoOnDetailCollectionMembers" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collection members</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="AnimatedKeyartTvShowsLibraryAlsoOnDetailPersonPages" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Person pages</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Similar titles below a series, the series of a collection, the Shows row of a person.</div>
                         </div>
                         </div>
                         </div>
@@ -1622,15 +1790,58 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="epRow epRowCheckbox">
+                                <div class="epRow epRowCheckbox" id="PostercaseMoviesLibraryEnabledRow">
                                     <label for="PostercaseMoviesLibraryEnabled">Enable for library views</label>
                                     <div class="checkboxContainer" style="margin:0;">
                                         <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                             <input id="PostercaseMoviesLibraryEnabled" name="PostercaseMoviesLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                            <span class="epDescInline checkboxLabel">Not yet implemented client-side (config field only for now).</span>
+                                            <span class="epDescInline checkboxLabel">Replaces the poster on library grid tiles; more areas in the rows below.</span>
                                             <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                         </label>
                                     </div>
+                                </div>
+                                <div class="epRow epRowMerged" id="PostercaseMoviesLibraryAlsoOnHomeRow">
+                                    <span class="epRowLabelSpan">Also on Home</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnHomeRecentlyAdded" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Recently added</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnHomeContinueWatching" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Continue Watching</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Latest Movies row; Continue Watching only for a movie without thumb or backdrop.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="PostercaseMoviesLibraryAlsoOnFavoritesRow">
+                                    <span class="epRowLabelSpan">Also on Favorites</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnFavoritesMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnFavoritesCollections" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collections</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">The rows on the Favorites tab of the home page.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="PostercaseMoviesLibraryAlsoOnListsRow">
+                                    <span class="epRowLabelSpan">Also on Lists</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnListsGenre" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Genre</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnListsStudio" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Studio</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnListsTag" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Tag</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnListsFolderMore" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Folder &amp; More</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Genre, studio and tag lists; folder views and every "More" list (Latest, Favorites, person).</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="PostercaseMoviesLibraryAlsoOnSearchRow">
+                                    <span class="epRowLabelSpan">Also on Search</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnSearchMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnSearchCollections" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collections</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">The rows of the search results page.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="PostercaseMoviesLibraryAlsoOnDetailRow">
+                                    <span class="epRowLabelSpan">Also on Detail pages</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnDetailMoreLikeThis" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">More like this</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnDetailCollectionMembers" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collection members</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseMoviesLibraryAlsoOnDetailPersonPages" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Person pages</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Similar titles below a movie, the movies of a collection, the Movies row of a person.</div>
                                 </div>
                             </div>
 
@@ -1664,15 +1875,56 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="epRow epRowCheckbox">
+                                <div class="epRow epRowCheckbox" id="PostercaseTvShowsLibraryEnabledRow">
                                     <label for="PostercaseTvShowsLibraryEnabled">Enable for library views</label>
                                     <div class="checkboxContainer" style="margin:0;">
                                         <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                             <input id="PostercaseTvShowsLibraryEnabled" name="PostercaseTvShowsLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                            <span class="epDescInline checkboxLabel">Not yet implemented client-side (config field only for now).</span>
+                                            <span class="epDescInline checkboxLabel">Replaces the poster on library grid tiles; more areas in the rows below.</span>
                                             <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                         </label>
                                     </div>
+                                </div>
+                                <div class="epRow epRowMerged" id="PostercaseTvShowsLibraryAlsoOnHomeRow">
+                                    <span class="epRowLabelSpan">Also on Home</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseTvShowsLibraryAlsoOnHomeRecentlyAdded" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Recently added</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseTvShowsLibraryAlsoOnHomeContinueWatching" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Continue Watching</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Latest Shows row; Continue Watching only for a series without thumb or backdrop.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="PostercaseTvShowsLibraryAlsoOnFavoritesRow">
+                                    <span class="epRowLabelSpan">Also on Favorites</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseTvShowsLibraryAlsoOnFavoritesShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">The Shows row on the Favorites tab of the home page.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="PostercaseTvShowsLibraryAlsoOnListsRow">
+                                    <span class="epRowLabelSpan">Also on Lists</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseTvShowsLibraryAlsoOnListsGenre" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Genre</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseTvShowsLibraryAlsoOnListsStudio" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Studio</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseTvShowsLibraryAlsoOnListsTag" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Tag</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseTvShowsLibraryAlsoOnListsFolderMore" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Folder &amp; More</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Genre, studio and tag lists; folder views and every "More" list (Latest, Favorites, person).</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="PostercaseTvShowsLibraryAlsoOnSearchRow">
+                                    <span class="epRowLabelSpan">Also on Search</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseTvShowsLibraryAlsoOnSearchShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">The Shows row of the search results page.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="PostercaseTvShowsLibraryAlsoOnDetailRow">
+                                    <span class="epRowLabelSpan">Also on Detail pages</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseTvShowsLibraryAlsoOnDetailMoreLikeThis" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">More like this</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseTvShowsLibraryAlsoOnDetailCollectionMembers" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collection members</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="PostercaseTvShowsLibraryAlsoOnDetailPersonPages" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Person pages</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Similar titles below a series, the series of a collection, the Shows row of a person.</div>
                                 </div>
                             </div>
                         </div>
@@ -1797,15 +2049,58 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="epRow epRowCheckbox">
+                                <div class="epRow epRowCheckbox" id="KeyartMoviesLibraryEnabledRow">
                                     <label for="KeyartMoviesLibraryEnabled">Enable for library views</label>
                                     <div class="checkboxContainer" style="margin:0;">
                                         <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                             <input id="KeyartMoviesLibraryEnabled" name="KeyartMoviesLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                            <span class="epDescInline checkboxLabel">Not yet implemented client-side (config field only for now).</span>
+                                            <span class="epDescInline checkboxLabel">Replaces the keyart on library grid tiles; more areas in the rows below.</span>
                                             <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                         </label>
                                     </div>
+                                </div>
+                                <div class="epRow epRowMerged" id="KeyartMoviesLibraryAlsoOnHomeRow">
+                                    <span class="epRowLabelSpan">Also on Home</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnHomeRecentlyAdded" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Recently added</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnHomeContinueWatching" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Continue Watching</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Latest Movies row; Continue Watching only for a movie without thumb or backdrop.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="KeyartMoviesLibraryAlsoOnFavoritesRow">
+                                    <span class="epRowLabelSpan">Also on Favorites</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnFavoritesMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnFavoritesCollections" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collections</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">The rows on the Favorites tab of the home page.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="KeyartMoviesLibraryAlsoOnListsRow">
+                                    <span class="epRowLabelSpan">Also on Lists</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnListsGenre" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Genre</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnListsStudio" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Studio</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnListsTag" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Tag</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnListsFolderMore" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Folder &amp; More</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Genre, studio and tag lists; folder views and every "More" list (Latest, Favorites, person).</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="KeyartMoviesLibraryAlsoOnSearchRow">
+                                    <span class="epRowLabelSpan">Also on Search</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnSearchMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnSearchCollections" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collections</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">The rows of the search results page.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="KeyartMoviesLibraryAlsoOnDetailRow">
+                                    <span class="epRowLabelSpan">Also on Detail pages</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnDetailMoreLikeThis" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">More like this</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnDetailCollectionMembers" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collection members</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartMoviesLibraryAlsoOnDetailPersonPages" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Person pages</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Similar titles below a movie, the movies of a collection, the Movies row of a person.</div>
                                 </div>
                             </div>
 
@@ -1839,15 +2134,56 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="epRow epRowCheckbox">
+                                <div class="epRow epRowCheckbox" id="KeyartTvShowsLibraryEnabledRow">
                                     <label for="KeyartTvShowsLibraryEnabled">Enable for library views</label>
                                     <div class="checkboxContainer" style="margin:0;">
                                         <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
                                             <input id="KeyartTvShowsLibraryEnabled" name="KeyartTvShowsLibraryEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
-                                            <span class="epDescInline checkboxLabel">Not yet implemented client-side (config field only for now).</span>
+                                            <span class="epDescInline checkboxLabel">Replaces the keyart on library grid tiles; more areas in the rows below.</span>
                                             <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
                                         </label>
                                     </div>
+                                </div>
+                                <div class="epRow epRowMerged" id="KeyartTvShowsLibraryAlsoOnHomeRow">
+                                    <span class="epRowLabelSpan">Also on Home</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartTvShowsLibraryAlsoOnHomeRecentlyAdded" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Recently added</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartTvShowsLibraryAlsoOnHomeContinueWatching" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Continue Watching</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Latest Shows row; Continue Watching only for a series without thumb or backdrop.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="KeyartTvShowsLibraryAlsoOnFavoritesRow">
+                                    <span class="epRowLabelSpan">Also on Favorites</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartTvShowsLibraryAlsoOnFavoritesShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">The Shows row on the Favorites tab of the home page.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="KeyartTvShowsLibraryAlsoOnListsRow">
+                                    <span class="epRowLabelSpan">Also on Lists</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartTvShowsLibraryAlsoOnListsGenre" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Genre</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartTvShowsLibraryAlsoOnListsStudio" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Studio</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartTvShowsLibraryAlsoOnListsTag" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Tag</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartTvShowsLibraryAlsoOnListsFolderMore" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Folder &amp; More</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Genre, studio and tag lists; folder views and every "More" list (Latest, Favorites, person).</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="KeyartTvShowsLibraryAlsoOnSearchRow">
+                                    <span class="epRowLabelSpan">Also on Search</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartTvShowsLibraryAlsoOnSearchShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">The Shows row of the search results page.</div>
+                                </div>
+                                <div class="epRow epRowMerged" id="KeyartTvShowsLibraryAlsoOnDetailRow">
+                                    <span class="epRowLabelSpan">Also on Detail pages</span>
+                                    <div class="epFormatGrid">
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartTvShowsLibraryAlsoOnDetailMoreLikeThis" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">More like this</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartTvShowsLibraryAlsoOnDetailCollectionMembers" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Collection members</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                        <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="KeyartTvShowsLibraryAlsoOnDetailPersonPages" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Person pages</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                    </div>
+                                    <div class="epDesc">Similar titles below a series, the series of a collection, the Shows row of a person.</div>
                                 </div>
                             </div>
                         </div>
@@ -7895,10 +8231,34 @@
                 AnimatedPosterShowOnSets: { type: 'checkbox', def: true, tab: 'animatedposter' },
                 AnimatedPosterMoviesDetailEnabled: { type: 'checkbox', def: true, tab: 'animatedposter' },
                 AnimatedPosterMoviesLibraryEnabled: { type: 'checkbox', def: true, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnHomeRecentlyAdded: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnHomeContinueWatching: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnFavoritesMovies: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnFavoritesCollections: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnListsGenre: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnListsStudio: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnListsTag: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnListsFolderMore: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnSearchMovies: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnSearchCollections: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnDetailMoreLikeThis: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnDetailCollectionMembers: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterMoviesLibraryAlsoOnDetailPersonPages: { type: 'checkbox', def: false, tab: 'animatedposter' },
                 AnimatedPosterTvShowsTypeName: { type: 'text', def: 'animatedposter', tab: 'animatedposter' },
                 AnimatedPosterShowOnTvShows: { type: 'checkbox', def: true, tab: 'animatedposter' },
                 AnimatedPosterTvShowsDetailEnabled: { type: 'checkbox', def: true, tab: 'animatedposter' },
                 AnimatedPosterTvShowsLibraryEnabled: { type: 'checkbox', def: true, tab: 'animatedposter' },
+                AnimatedPosterTvShowsLibraryAlsoOnHomeRecentlyAdded: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterTvShowsLibraryAlsoOnHomeContinueWatching: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterTvShowsLibraryAlsoOnFavoritesShows: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterTvShowsLibraryAlsoOnListsGenre: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterTvShowsLibraryAlsoOnListsStudio: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterTvShowsLibraryAlsoOnListsTag: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterTvShowsLibraryAlsoOnListsFolderMore: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterTvShowsLibraryAlsoOnSearchShows: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterTvShowsLibraryAlsoOnDetailMoreLikeThis: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterTvShowsLibraryAlsoOnDetailCollectionMembers: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedPosterTvShowsLibraryAlsoOnDetailPersonPages: { type: 'checkbox', def: false, tab: 'animatedposter' },
                 // Animated Keyart (Phase 2, Session 90: neu, strukturell
                 // identisch zu Animated Poster, Sets nutzt Movies' Felder mit)
                 AnimatedKeyartEnabled: { type: 'checkbox', def: true, tab: 'animatedposter' },
@@ -7908,10 +8268,34 @@
                 AnimatedKeyartShowOnSets: { type: 'checkbox', def: true, tab: 'animatedposter' },
                 AnimatedKeyartMoviesDetailEnabled: { type: 'checkbox', def: true, tab: 'animatedposter' },
                 AnimatedKeyartMoviesLibraryEnabled: { type: 'checkbox', def: true, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnHomeRecentlyAdded: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnHomeContinueWatching: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnFavoritesMovies: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnFavoritesCollections: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnListsGenre: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnListsStudio: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnListsTag: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnListsFolderMore: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnSearchMovies: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnSearchCollections: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnDetailMoreLikeThis: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnDetailCollectionMembers: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartMoviesLibraryAlsoOnDetailPersonPages: { type: 'checkbox', def: false, tab: 'animatedposter' },
                 AnimatedKeyartTvShowsTypeName: { type: 'text', def: 'animatedkeyart', tab: 'animatedposter' },
                 AnimatedKeyartShowOnTvShows: { type: 'checkbox', def: true, tab: 'animatedposter' },
                 AnimatedKeyartTvShowsDetailEnabled: { type: 'checkbox', def: true, tab: 'animatedposter' },
                 AnimatedKeyartTvShowsLibraryEnabled: { type: 'checkbox', def: true, tab: 'animatedposter' },
+                AnimatedKeyartTvShowsLibraryAlsoOnHomeRecentlyAdded: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartTvShowsLibraryAlsoOnHomeContinueWatching: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartTvShowsLibraryAlsoOnFavoritesShows: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartTvShowsLibraryAlsoOnListsGenre: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartTvShowsLibraryAlsoOnListsStudio: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartTvShowsLibraryAlsoOnListsTag: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartTvShowsLibraryAlsoOnListsFolderMore: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartTvShowsLibraryAlsoOnSearchShows: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartTvShowsLibraryAlsoOnDetailMoreLikeThis: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartTvShowsLibraryAlsoOnDetailCollectionMembers: { type: 'checkbox', def: false, tab: 'animatedposter' },
+                AnimatedKeyartTvShowsLibraryAlsoOnDetailPersonPages: { type: 'checkbox', def: false, tab: 'animatedposter' },
                 AnimatedKeyartLibraryLogoEnabled: { type: 'checkbox', def: false, tab: 'animatedposter' },
                 AnimatedKeyartLibraryLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'animatedposter' },
                 AnimatedKeyartLibraryLogoSizePercent: { type: 'number', def: 80, tab: 'animatedposter' },
@@ -7928,11 +8312,35 @@
                 PostercaseMoviesFolderName: { type: 'text', def: 'postercase', tab: 'postercase' },
                 PostercaseMoviesDetailEnabled: { type: 'checkbox', def: true, tab: 'postercase' },
                 PostercaseMoviesLibraryEnabled: { type: 'checkbox', def: true, tab: 'postercase' },
+                PostercaseMoviesLibraryAlsoOnHomeRecentlyAdded: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnHomeContinueWatching: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnFavoritesMovies: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnFavoritesCollections: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnListsGenre: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnListsStudio: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnListsTag: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnListsFolderMore: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnSearchMovies: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnSearchCollections: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnDetailMoreLikeThis: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnDetailCollectionMembers: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseMoviesLibraryAlsoOnDetailPersonPages: { type: 'checkbox', def: false, tab: 'customposter' },
                 PostercaseTvShowsNamingMode: { type: 'select', def: 'Standalone', tab: 'postercase' },
                 PostercaseTvShowsTypeName: { type: 'text', def: 'postercase', tab: 'postercase' },
                 PostercaseTvShowsFolderName: { type: 'text', def: 'postercase', tab: 'postercase' },
                 PostercaseTvShowsDetailEnabled: { type: 'checkbox', def: true, tab: 'postercase' },
                 PostercaseTvShowsLibraryEnabled: { type: 'checkbox', def: true, tab: 'postercase' },
+                PostercaseTvShowsLibraryAlsoOnHomeRecentlyAdded: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseTvShowsLibraryAlsoOnHomeContinueWatching: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseTvShowsLibraryAlsoOnFavoritesShows: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseTvShowsLibraryAlsoOnListsGenre: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseTvShowsLibraryAlsoOnListsStudio: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseTvShowsLibraryAlsoOnListsTag: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseTvShowsLibraryAlsoOnListsFolderMore: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseTvShowsLibraryAlsoOnSearchShows: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseTvShowsLibraryAlsoOnDetailMoreLikeThis: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseTvShowsLibraryAlsoOnDetailCollectionMembers: { type: 'checkbox', def: false, tab: 'customposter' },
+                PostercaseTvShowsLibraryAlsoOnDetailPersonPages: { type: 'checkbox', def: false, tab: 'customposter' },
                 CustomPosterPriority: { type: 'select', def: 'Postercase', tab: 'customposter' },
                 KeyartEnabled: { type: 'checkbox', def: true, tab: 'keyart' },
                 KeyartShowOnMovies: { type: 'checkbox', def: true, tab: 'keyart' },
@@ -7943,11 +8351,35 @@
                 KeyartMoviesFolderName: { type: 'text', def: 'keyart', tab: 'keyart' },
                 KeyartMoviesDetailEnabled: { type: 'checkbox', def: true, tab: 'keyart' },
                 KeyartMoviesLibraryEnabled: { type: 'checkbox', def: true, tab: 'keyart' },
+                KeyartMoviesLibraryAlsoOnHomeRecentlyAdded: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnHomeContinueWatching: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnFavoritesMovies: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnFavoritesCollections: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnListsGenre: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnListsStudio: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnListsTag: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnListsFolderMore: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnSearchMovies: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnSearchCollections: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnDetailMoreLikeThis: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnDetailCollectionMembers: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartMoviesLibraryAlsoOnDetailPersonPages: { type: 'checkbox', def: false, tab: 'customposter' },
                 KeyartTvShowsNamingMode: { type: 'select', def: 'Standalone', tab: 'keyart' },
                 KeyartTvShowsTypeName: { type: 'text', def: 'keyart', tab: 'keyart' },
                 KeyartTvShowsFolderName: { type: 'text', def: 'keyart', tab: 'keyart' },
                 KeyartTvShowsDetailEnabled: { type: 'checkbox', def: true, tab: 'keyart' },
                 KeyartTvShowsLibraryEnabled: { type: 'checkbox', def: true, tab: 'keyart' },
+                KeyartTvShowsLibraryAlsoOnHomeRecentlyAdded: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartTvShowsLibraryAlsoOnHomeContinueWatching: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartTvShowsLibraryAlsoOnFavoritesShows: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartTvShowsLibraryAlsoOnListsGenre: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartTvShowsLibraryAlsoOnListsStudio: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartTvShowsLibraryAlsoOnListsTag: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartTvShowsLibraryAlsoOnListsFolderMore: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartTvShowsLibraryAlsoOnSearchShows: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartTvShowsLibraryAlsoOnDetailMoreLikeThis: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartTvShowsLibraryAlsoOnDetailCollectionMembers: { type: 'checkbox', def: false, tab: 'customposter' },
+                KeyartTvShowsLibraryAlsoOnDetailPersonPages: { type: 'checkbox', def: false, tab: 'customposter' },
                 KeyartDetailLogoEnabled: { type: 'checkbox', def: false, tab: 'keyart' },
                 KeyartDetailLogoVerticalPositionPercent: { type: 'number', def: 87, tab: 'keyart' },
                 KeyartDetailLogoSizePercent: { type: 'number', def: 60, tab: 'keyart' },
@@ -9027,8 +9459,8 @@
                             ],
                             children: [
                                 { id: 'ap_showon', structural: true, target: ['AnimatedPosterShowOnRow'], when: [], children: [] },
-                                { id: 'ap_movies', target: ['AnimatedPosterMoviesDetailEnabledRow', 'AnimatedPosterMoviesLibraryEnabledRow'], headerTarget: ['animatedposterMovies'], when: [AnyChecked(['AnimatedPosterShowOnMovies', 'AnimatedPosterShowOnSets'])], children: [] },
-                                { id: 'ap_tvshows', target: ['AnimatedPosterTvShowsDetailEnabledRow', 'AnimatedPosterTvShowsLibraryEnabledRow'], headerTarget: ['animatedposterTvShows'], when: [AllChecked(['AnimatedPosterShowOnTvShows'])], children: [] }
+                                { id: 'ap_movies', target: ['AnimatedPosterMoviesDetailEnabledRow', 'AnimatedPosterMoviesLibraryEnabledRow'], headerTarget: ['animatedposterMovies'], when: [AnyChecked(['AnimatedPosterShowOnMovies', 'AnimatedPosterShowOnSets'])], children: [{ id: 'ap_movies_alsoon', structural: true, target: ['AnimatedPosterMoviesLibraryAlsoOnHomeRow', 'AnimatedPosterMoviesLibraryAlsoOnFavoritesRow', 'AnimatedPosterMoviesLibraryAlsoOnListsRow', 'AnimatedPosterMoviesLibraryAlsoOnSearchRow', 'AnimatedPosterMoviesLibraryAlsoOnDetailRow'], when: [AllChecked(['AnimatedPosterMoviesLibraryEnabled'])], children: [] }] },
+                                { id: 'ap_tvshows', target: ['AnimatedPosterTvShowsDetailEnabledRow', 'AnimatedPosterTvShowsLibraryEnabledRow'], headerTarget: ['animatedposterTvShows'], when: [AllChecked(['AnimatedPosterShowOnTvShows'])], children: [{ id: 'ap_tvshows_alsoon', structural: true, target: ['AnimatedPosterTvShowsLibraryAlsoOnHomeRow', 'AnimatedPosterTvShowsLibraryAlsoOnFavoritesRow', 'AnimatedPosterTvShowsLibraryAlsoOnListsRow', 'AnimatedPosterTvShowsLibraryAlsoOnSearchRow', 'AnimatedPosterTvShowsLibraryAlsoOnDetailRow'], when: [AllChecked(['AnimatedPosterTvShowsLibraryEnabled'])], children: [] }] }
                             ]
                         },
                         {
@@ -9041,8 +9473,8 @@
                                 { id: 'ak_showon', structural: true, target: ['AnimatedKeyartShowOnRow'], when: [], children: [] },
                                 { id: 'ak_logo_detail', target: ['AnimatedKeyartDetailLogoVerticalPositionRow', 'AnimatedKeyartDetailLogoSizeRow'], when: [AllChecked(['AnimatedKeyartDetailLogoEnabled'])], children: [] },
                                 { id: 'ak_logo_library', target: ['AnimatedKeyartLibraryLogoVerticalPositionRow', 'AnimatedKeyartLibraryLogoSizeRow'], when: [AllChecked(['AnimatedKeyartLibraryLogoEnabled'])], children: [] },
-                                { id: 'ak_movies', target: ['AnimatedKeyartMoviesDetailEnabledRow', 'AnimatedKeyartMoviesLibraryEnabledRow'], headerTarget: ['animatedkeyartMovies'], when: [AnyChecked(['AnimatedKeyartShowOnMovies', 'AnimatedKeyartShowOnSets'])], children: [] },
-                                { id: 'ak_tvshows', target: ['AnimatedKeyartTvShowsDetailEnabledRow', 'AnimatedKeyartTvShowsLibraryEnabledRow'], headerTarget: ['animatedkeyartTvShows'], when: [AllChecked(['AnimatedKeyartShowOnTvShows'])], children: [] }
+                                { id: 'ak_movies', target: ['AnimatedKeyartMoviesDetailEnabledRow', 'AnimatedKeyartMoviesLibraryEnabledRow'], headerTarget: ['animatedkeyartMovies'], when: [AnyChecked(['AnimatedKeyartShowOnMovies', 'AnimatedKeyartShowOnSets'])], children: [{ id: 'ak_movies_alsoon', structural: true, target: ['AnimatedKeyartMoviesLibraryAlsoOnHomeRow', 'AnimatedKeyartMoviesLibraryAlsoOnFavoritesRow', 'AnimatedKeyartMoviesLibraryAlsoOnListsRow', 'AnimatedKeyartMoviesLibraryAlsoOnSearchRow', 'AnimatedKeyartMoviesLibraryAlsoOnDetailRow'], when: [AllChecked(['AnimatedKeyartMoviesLibraryEnabled'])], children: [] }] },
+                                { id: 'ak_tvshows', target: ['AnimatedKeyartTvShowsDetailEnabledRow', 'AnimatedKeyartTvShowsLibraryEnabledRow'], headerTarget: ['animatedkeyartTvShows'], when: [AllChecked(['AnimatedKeyartShowOnTvShows'])], children: [{ id: 'ak_tvshows_alsoon', structural: true, target: ['AnimatedKeyartTvShowsLibraryAlsoOnHomeRow', 'AnimatedKeyartTvShowsLibraryAlsoOnFavoritesRow', 'AnimatedKeyartTvShowsLibraryAlsoOnListsRow', 'AnimatedKeyartTvShowsLibraryAlsoOnSearchRow', 'AnimatedKeyartTvShowsLibraryAlsoOnDetailRow'], when: [AllChecked(['AnimatedKeyartTvShowsLibraryEnabled'])], children: [] }] }
                             ]
                         }
                     ]
@@ -9083,14 +9515,14 @@
                                     children: [{
                                         id: 'postercase_movies_folder', target: ['PostercaseMoviesFolderNameRow'],
                                         when: [ValueIn('PostercaseMoviesNamingMode', ['Folder'])], children: []
-                                    }]
+                                    }, { id: 'postercase_movies_alsoon', structural: true, target: ['PostercaseMoviesLibraryAlsoOnHomeRow', 'PostercaseMoviesLibraryAlsoOnFavoritesRow', 'PostercaseMoviesLibraryAlsoOnListsRow', 'PostercaseMoviesLibraryAlsoOnSearchRow', 'PostercaseMoviesLibraryAlsoOnDetailRow'], when: [AllChecked(['PostercaseMoviesLibraryEnabled'])], children: [] }]
                                 },
                                 {
                                     id: 'postercase_tvshows', terminal: true, target: ['postercaseTvShows'], when: [AllChecked(['PostercaseShowOnTvShows'])],
                                     children: [{
                                         id: 'postercase_tvshows_folder', target: ['PostercaseTvShowsFolderNameRow'],
                                         when: [ValueIn('PostercaseTvShowsNamingMode', ['Folder'])], children: []
-                                    }]
+                                    }, { id: 'postercase_tvshows_alsoon', structural: true, target: ['PostercaseTvShowsLibraryAlsoOnHomeRow', 'PostercaseTvShowsLibraryAlsoOnFavoritesRow', 'PostercaseTvShowsLibraryAlsoOnListsRow', 'PostercaseTvShowsLibraryAlsoOnSearchRow', 'PostercaseTvShowsLibraryAlsoOnDetailRow'], when: [AllChecked(['PostercaseTvShowsLibraryEnabled'])], children: [] }]
                                 }
                             ]
                         },
@@ -9115,14 +9547,14 @@
                                     children: [{
                                         id: 'keyart_movies_folder', target: ['KeyartMoviesFolderNameRow'],
                                         when: [ValueIn('KeyartMoviesNamingMode', ['Folder'])], children: []
-                                    }]
+                                    }, { id: 'keyart_movies_alsoon', structural: true, target: ['KeyartMoviesLibraryAlsoOnHomeRow', 'KeyartMoviesLibraryAlsoOnFavoritesRow', 'KeyartMoviesLibraryAlsoOnListsRow', 'KeyartMoviesLibraryAlsoOnSearchRow', 'KeyartMoviesLibraryAlsoOnDetailRow'], when: [AllChecked(['KeyartMoviesLibraryEnabled'])], children: [] }]
                                 },
                                 {
                                     id: 'keyart_tvshows', terminal: true, target: ['keyartTvShows'], when: [AllChecked(['KeyartShowOnTvShows'])],
                                     children: [{
                                         id: 'keyart_tvshows_folder', target: ['KeyartTvShowsFolderNameRow'],
                                         when: [ValueIn('KeyartTvShowsNamingMode', ['Folder'])], children: []
-                                    }]
+                                    }, { id: 'keyart_tvshows_alsoon', structural: true, target: ['KeyartTvShowsLibraryAlsoOnHomeRow', 'KeyartTvShowsLibraryAlsoOnFavoritesRow', 'KeyartTvShowsLibraryAlsoOnListsRow', 'KeyartTvShowsLibraryAlsoOnSearchRow', 'KeyartTvShowsLibraryAlsoOnDetailRow'], when: [AllChecked(['KeyartTvShowsLibraryEnabled'])], children: [] }]
                                 }
                             ]
                         }

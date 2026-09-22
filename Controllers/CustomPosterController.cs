@@ -159,11 +159,13 @@ public class CustomPosterController : ControllerBase
     private const int MaxBatchIds = 200;
 
     [HttpGet("batch")]
-    public ActionResult<CustomPosterBatchResult> GetCustomPosterBatch([FromQuery] string? ids, [FromQuery] string? type, [FromQuery] string? scope)
+    public ActionResult<CustomPosterBatchResult> GetCustomPosterBatch([FromQuery] string? ids, [FromQuery] string? type, [FromQuery] string? scope, [FromQuery] string? page)
     {
         var config = Plugin.Instance!.Configuration;
         var posterType = NormalizeType(type);
         var result = new CustomPosterBatchResult();
+        // Session 139: the page class of this batch (Helpers/AlsoOn) - library view when absent, dashboard never.
+        var pageClass = string.IsNullOrEmpty(page) ? "library" : page;
 
         if (!IsTypeEnabled(config, posterType))
         {
@@ -191,6 +193,11 @@ public class CustomPosterController : ControllerBase
             // converter - Guid.ToString() (dashed) never matched (Session 122).
             var itemResult = ResolveItemResult(itemId, config, posterType, isLibraryScope) ?? new CustomPosterResult { IsApplicable = false };
             ApplyKeyartLogo(itemResult, config, isLibraryScope, itemId);
+            if (isLibraryScope && itemResult.IsApplicable && !Helpers.AlsoOn.Allowed(config, pageClass, Helpers.AlsoOn.FeatureOf(itemResult.ResolvedType), Helpers.AlsoOn.KindOf(_libraryManager.GetItemById(itemId))))
+            {
+                itemResult = new CustomPosterResult { IsApplicable = false };
+            }
+
             result.Items[itemId.ToString("N")] = itemResult;
         }
 

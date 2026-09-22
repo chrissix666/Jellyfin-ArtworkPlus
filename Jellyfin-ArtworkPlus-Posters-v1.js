@@ -1228,6 +1228,46 @@
         return { register: register, report: report, withdraw: withdraw, stateFor: stateFor, setPending: setPending, armSafety: armSafety, release: release, isEnabled: isEnabled, syncTileLogo: syncTileLogo, markInFlight: markInFlight };
     })();
 
+    // Session 136 / 139: the page class of a card (all three tile participants), as the server's "Also on"
+    // filter names them. Route first (location.hash), then the card's
+    // container where one route hosts several areas: the Home page
+    // keeps both tabs in the DOM and the hash does not change on a tab
+    // click (tabbedview.js), so Favorites is `.favoriteSections`
+    // (favoriteitems.js); the Continue Watching row is the items
+    // container with data-monitor="videoplayback,..." (resume.ts; the
+    // Latest rows have no data-monitor) - NOT the card's own
+    // data-positionticks, which a half-watched movie carries in the
+    // Latest row too; on detail pages More like
+    // this is `#similarCollapsible`, a collection's members are
+    // `.collectionItems`, a person's rows are `#childrenContent`
+    // (itemsByName.js). Unknown = 'other' (the server refuses it).
+    function pageClassOf(card) {
+        var h = location.hash || '';
+        if (/^#\/(movies|tv)\.html/.test(h)) { return 'library'; }
+        if (/^#\/dashboard/.test(h)) { return 'dashboard'; }
+        if (/^#\/search\.html/.test(h)) { return 'search'; }
+        if (/^#\/list\.html/.test(h)) {
+            if (/[?&]genreId=/.test(h)) { return 'list-genre'; }
+            if (/[?&]studioId=/.test(h)) { return 'list-studio'; }
+            if (/[?&]type=tag(&|$)/.test(h) || /[?&]tag=/.test(h)) { return 'list-tag'; }
+            return 'list-other';
+        }
+        if (/^#\/details/.test(h)) {
+            if (card.closest('#similarCollapsible')) { return 'detail-similar'; }
+            if (card.closest('.collectionItems')) { return 'detail-collection'; }
+            if (card.closest('#childrenContent')) { return 'detail-person'; }
+            return 'other';
+        }
+        if (/^#\/home\.html/.test(h) || h === '' || h === '#' || h === '#/') {
+            if (card.closest('.favoriteSections')) { return 'favorites'; }
+            if (card.closest('.itemsContainer[data-monitor*="videoplayback"]')) { return 'home-resume'; }
+            return 'home-recent';
+        }
+        return 'other';
+    }
+    // Diagnostics / tests: the classifier itself.
+    window.__artworkPlusExtraPageOf = pageClassOf; // test hook name kept (Session 136 tests)
+
     // One-image participants (Custom 1, Animated 2): page-wide batch,
     // one answer per tile into the arbiter - the arbiter does the rest.
     function createLibraryReporter(options) {
@@ -1235,14 +1275,15 @@
         var BATCH_CHUNK = 200;     // the servers cap one batch at 200 ids
         var priority = options.priority;
         var log = options.log;
-        var resultCache = {};
-        var pendingIds = [];
-        var pendingCards = {};
+        var resultCache = {};      // 'page|itemId' -> result (Session 139: the answer depends on the page class)
+        var pendingByPage = {};    // page class -> [itemId]
+        var pendingCards = {};     // 'page|itemId' -> [card]
         var fetchTimer = null;
 
-        function answerFor(itemId) {
-            var result = resultCache[itemId];
+        function answerFor(key) {
+            var result = resultCache[key];
             if (!result || !result.IsApplicable) { return null; }
+            var itemId = key.slice(key.indexOf('|') + 1);
             return {
                 url: options.imageUrl(itemId, result),
                 resolvedType: result.ResolvedType,
@@ -1252,45 +1293,57 @@
         }
 
         function collect(card, itemId) {
-            if (itemId in resultCache) { LibraryTiles.report(card, priority, answerFor(itemId)); return; }
-            (pendingCards[itemId] = pendingCards[itemId] || []).push(card);
+            var page = pageClassOf(card);
+            var key = page + '|' + itemId;
+            if (key in resultCache) { LibraryTiles.report(card, priority, answerFor(key)); return; }
+            (pendingCards[key] = pendingCards[key] || []).push(card);
             LibraryTiles.markInFlight(card, +1);
-            if (pendingIds.indexOf(itemId) === -1) { pendingIds.push(itemId); }
+            var ids = pendingByPage[page] = pendingByPage[page] || [];
+            if (ids.indexOf(itemId) === -1) { ids.push(itemId); }
             if (!fetchTimer) { fetchTimer = setTimeout(function () { fetchTimer = null; flush(); }, FETCH_DEBOUNCE_MS); }
         }
 
-        function reportAll(ids) {
+        function reportAll(page, ids) {
             ids.forEach(function (id) {
-                var cards = pendingCards[id] || [];
-                delete pendingCards[id];
-                var answer = answerFor(id);
+                var key = page + '|' + id;
+                var cards = pendingCards[key] || [];
+                delete pendingCards[key];
+                var answer = answerFor(key);
                 cards.forEach(function (card) { LibraryTiles.markInFlight(card, -1); LibraryTiles.report(card, priority, answer); });
-                if (answer) { log('applicable for tile', id, '(resolved:', answer.resolvedType + ')'); }
+                if (answer) { log('applicable for tile', id, '| page:', page, '(resolved:', answer.resolvedType + ')'); }
             });
         }
 
         function flush() {
-            var ids = pendingIds;
-            pendingIds = [];
+            var byPage = pendingByPage;
+            pendingByPage = {};
+            Object.keys(byPage).forEach(function (page) { flushPage(page, byPage[page]); });
+        }
+
+        // One batch per page class (Session 139, the Extra pattern of
+        // Session 136): the server's "Also on" filter needs the class, and
+        // a Home page can hold Latest, Continue Watching and Favorites
+        // cards at once.
+        function flushPage(page, ids) {
             if (!ids.length) { return; }
             var chunks = [];
             for (var i = 0; i < ids.length; i += BATCH_CHUNK) { chunks.push(ids.slice(i, i + BATCH_CHUNK)); }
             Promise.all(chunks.map(function (chunk) {
-                return fetch(options.batchUrl(chunk))
+                return fetch(options.batchUrl(chunk) + '&page=' + encodeURIComponent(page))
                     .then(function (r) { return r.json(); })
                     .then(function (batchResponse) {
                         var items = batchResponse.Items || {};
                         // Keys normalised to the tile's data-id form (32 hex, no
                         // dashes): older builds of the server keyed the map with
                         // dashed Guids, which never matched a tile (Session 122).
-                        Object.keys(items).forEach(function (id) { resultCache[id.replace(/-/g, '')] = items[id]; });
-                        chunk.forEach(function (id) { if (!(id in resultCache)) { resultCache[id] = null; } });
+                        Object.keys(items).forEach(function (id) { resultCache[page + '|' + id.replace(/-/g, '')] = items[id]; });
+                        chunk.forEach(function (id) { if (!((page + '|' + id) in resultCache)) { resultCache[page + '|' + id] = null; } });
                     })
                     .catch(function (e) {
                         log('Error during the library batch request', e);
-                        chunk.forEach(function (id) { if (!(id in resultCache)) { resultCache[id] = null; } });
+                        chunk.forEach(function (id) { if (!((page + '|' + id) in resultCache)) { resultCache[page + '|' + id] = null; } });
                     });
-            })).then(function () { reportAll(ids); });
+            })).then(function () { reportAll(page, ids); });
         }
 
         LibraryTiles.register(priority, { collect: collect });
@@ -1796,45 +1849,6 @@
         // Diagnostics only (DevTools / live checks): the active overlay tiles.
         window.__artworkPlusExtraTiles = activeTiles;
 
-        // Session 136: the page class of a card, as the server's "Also on"
-        // filter names them. Route first (location.hash), then the card's
-        // container where one route hosts several areas: the Home page
-        // keeps both tabs in the DOM and the hash does not change on a tab
-        // click (tabbedview.js), so Favorites is `.favoriteSections`
-        // (favoriteitems.js); the Continue Watching row is the items
-        // container with data-monitor="videoplayback,..." (resume.ts; the
-        // Latest rows have no data-monitor) - NOT the card's own
-        // data-positionticks, which a half-watched movie carries in the
-        // Latest row too; on detail pages More like
-        // this is `#similarCollapsible`, a collection's members are
-        // `.collectionItems`, a person's rows are `#childrenContent`
-        // (itemsByName.js). Unknown = 'other' (the server refuses it).
-        function libPageOf(card) {
-            var h = location.hash || '';
-            if (/^#\/(movies|tv)\.html/.test(h)) { return 'library'; }
-            if (/^#\/dashboard/.test(h)) { return 'dashboard'; }
-            if (/^#\/search\.html/.test(h)) { return 'search'; }
-            if (/^#\/list\.html/.test(h)) {
-                if (/[?&]genreId=/.test(h)) { return 'list-genre'; }
-                if (/[?&]studioId=/.test(h)) { return 'list-studio'; }
-                if (/[?&]type=tag(&|$)/.test(h) || /[?&]tag=/.test(h)) { return 'list-tag'; }
-                return 'list-other';
-            }
-            if (/^#\/details/.test(h)) {
-                if (card.closest('#similarCollapsible')) { return 'detail-similar'; }
-                if (card.closest('.collectionItems')) { return 'detail-collection'; }
-                if (card.closest('#childrenContent')) { return 'detail-person'; }
-                return 'other';
-            }
-            if (/^#\/home\.html/.test(h) || h === '' || h === '#' || h === '#/') {
-                if (card.closest('.favoriteSections')) { return 'favorites'; }
-                if (card.closest('.itemsContainer[data-monitor*="videoplayback"]')) { return 'home-resume'; }
-                return 'home-recent';
-            }
-            return 'other';
-        }
-        // Diagnostics / tests: the classifier itself.
-        window.__artworkPlusExtraPageOf = libPageOf;
 
         function libAnswerFor(key) {
             var result = resultCache[key];
@@ -1863,7 +1877,7 @@
         }
 
         function libCollect(card, itemId) {
-            var page = libPageOf(card);
+            var page = pageClassOf(card);
             var key = page + '|' + itemId;
             if (key in resultCache) { LibraryTiles.report(card, LIB_PRIORITY, libAnswerFor(key)); return; }
             (pendingCards[key] = pendingCards[key] || []).push(card);

@@ -1015,31 +1015,9 @@ public class ExtraposterController : ControllerBase
     /// </summary>
     internal static bool AlsoOnAllowed(PluginConfiguration config, string? page, PosterListResult result)
     {
-        if (string.IsNullOrEmpty(page) || page == "library") { return true; }
-        if (page == "dashboard") { return false; }
-        if (!result.IsMovie) { return true; } // nothing to filter - the answer is "not applicable" anyway
-        var feature = result.ResolvedType == "extrakeyart" ? "Extrakeyart" : "Extraposter";
-        var tv = result.ItemKind == "Series";
-        var kind = tv ? "TvShows" : "Movies";
-        var boxSet = result.ItemKind == "BoxSet";
-        string? sub = page switch
-        {
-            "home-recent" => "HomeRecentlyAdded",
-            "home-resume" => "HomeContinueWatching",
-            "favorites" => tv ? "FavoritesShows" : (boxSet ? "FavoritesCollections" : "FavoritesMovies"),
-            "list-genre" => "ListsGenre",
-            "list-studio" => "ListsStudio",
-            "list-tag" => "ListsTag",
-            "list-other" => "ListsFolderMore",
-            "search" => tv ? "SearchShows" : (boxSet ? "SearchCollections" : "SearchMovies"),
-            "detail-similar" => "DetailMoreLikeThis",
-            "detail-collection" => "DetailCollectionMembers",
-            "detail-person" => "DetailPersonPages",
-            _ => null
-        };
-        if (sub is null) { return false; }
-        var property = typeof(PluginConfiguration).GetProperty(feature + kind + "LibraryAlsoOn" + sub);
-        return property is not null && property.GetValue(config) is true;
+        // Session 139: the mapping lives in Helpers/AlsoOn (shared with Custom and Animated); "not applicable" needs no filter.
+        if (!result.IsMovie) { return true; }
+        return Helpers.AlsoOn.Allowed(config, page, result.ResolvedType == "extrakeyart" ? "Extrakeyart" : "Extraposter", result.ItemKind);
     }
 
     /// <summary>

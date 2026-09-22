@@ -1508,13 +1508,17 @@ with sync_playwright() as p:
     # ─── Session 136: "Also on" rows - library-scope tiles outside the library view, per area ───
     apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
     apage.wait_for_timeout(150)
-    S136_VIEWS = [('extraposter', 'Extraposter', 'Movies'), ('extraposter', 'Extraposter', 'TvShows'), ('extrakeyart', 'Extrakeyart', 'Movies'), ('extrakeyart', 'Extrakeyart', 'TvShows')]
+    # Session 139: the same rows for Custom (Postercase/Keyart) and Animated (AnimatedPoster/AnimatedKeyart) - 12 library views, 144 boxes
+    S136_VIEWS = [('extraposter', 'Extraposter', 'Movies'), ('extraposter', 'Extraposter', 'TvShows'), ('extrakeyart', 'Extrakeyart', 'Movies'), ('extrakeyart', 'Extrakeyart', 'TvShows'),
+                  ('customposter', 'Postercase', 'Movies'), ('customposter', 'Postercase', 'TvShows'), ('customposter', 'Keyart', 'Movies'), ('customposter', 'Keyart', 'TvShows'),
+                  ('animatedposter', 'AnimatedPoster', 'Movies'), ('animatedposter', 'AnimatedPoster', 'TvShows'), ('animatedposter', 'AnimatedKeyart', 'Movies'), ('animatedposter', 'AnimatedKeyart', 'TvShows')]
     S136_GROUPS = ['Home', 'Favorites', 'Lists', 'Search', 'Detail']
     s136 = apage.evaluate("""([views, groups]) => {
         var out = { rows: 0, boxes: 0, checked: 0, order: [], labels: [], subs: {}, missing: [] };
         views.forEach(function (v) {
             var feat = v[1], kind = v[2], prefix = feat + kind + 'LibraryAlsoOn';
-            var showOn = document.getElementById(feat + kind + 'LibraryShowOnRow');
+            // Extra: the rows follow "Show on"; Custom/Animated (Session 139): they follow the "Enable for library views" row
+            var showOn = document.getElementById(feat + kind + 'LibraryShowOnRow') || document.getElementById(feat + kind + 'LibraryEnabledRow');
             var el = showOn ? showOn.nextElementSibling : null;
             groups.forEach(function (g) {
                 var row = document.getElementById(prefix + g + 'Row');
@@ -1529,18 +1533,20 @@ with sync_playwright() as p:
                 var d = row.querySelector('.epDesc'); if (!d || d.textContent.length > 105) { out.missing.push('desc ' + prefix + g); }
             });
             var fields = document.getElementById(feat + kind + 'LibraryFields');
-            out.order.push(el === fields);
+            if (fields) { out.order.push(el === fields); }
         });
         return out;
     }""", [S136_VIEWS, S136_GROUPS])
-    check('S136: 20 Also-on rows (5 per Extra library view), 48 checkboxes, all off after Restore, one description each',
-          s136['rows'] == 20 and s136['boxes'] == 48 and s136['checked'] == 0 and not s136['missing'], str(s136['missing'] or s136))
+    check('S136/S139: 60 Also-on rows (5 per library view of the six tile features), 144 checkboxes, all off after Restore, one description each',
+          s136['rows'] == 60 and s136['boxes'] == 144 and s136['checked'] == 0 and not s136['missing'], str(s136['missing'] or s136))
     check('S136: the five rows follow "Show on" directly and precede the Fields block, in the order Home, Favorites, Lists, Search, Detail pages',
-          all(s136['order']) and s136['labels'] == ['Also on Home', 'Also on Favorites', 'Also on Lists', 'Also on Search', 'Also on Detail pages'] * 4, str(s136['order']) + str(s136['labels'][:5]))
+          all(s136['order']) and s136['labels'] == ['Also on Home', 'Also on Favorites', 'Also on Lists', 'Also on Search', 'Also on Detail pages'] * 12, str(s136['order']) + str(s136['labels'][:5]))
     check('S136: sub options - Movies rows carry Movies/Collections, TV rows Shows; Lists has Genre, Studio, Tag, Folder & More',
           s136['subs']['ExtraposterMoviesFavorites'] == ['Movies', 'Collections'] and s136['subs']['ExtraposterTvShowsSearch'] == ['Shows']
           and s136['subs']['ExtrakeyartTvShowsLists'] == ['Genre', 'Studio', 'Tag', 'Folder & More'] and s136['subs']['ExtrakeyartMoviesDetail'] == ['More like this', 'Collection members', 'Person pages']
-          and s136['subs']['ExtraposterTvShowsHome'] == ['Recently added', 'Continue Watching'], str(s136['subs']))
+          and s136['subs']['ExtraposterTvShowsHome'] == ['Recently added', 'Continue Watching']
+          and s136['subs']['PostercaseMoviesFavorites'] == ['Movies', 'Collections'] and s136['subs']['KeyartTvShowsSearch'] == ['Shows']
+          and s136['subs']['AnimatedPosterTvShowsFavorites'] == ['Shows'] and s136['subs']['AnimatedKeyartMoviesLists'] == ['Genre', 'Studio', 'Tag', 'Folder & More'], str(s136['subs']))
     apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="extraposter"]').click(); }""")
     def s136_grey(id_):
         return apage.evaluate("""(id) => { var c = document.getElementById(id); while (c) { if (c.classList && c.classList.contains('epFieldDisabled')) { return true; } c = c.parentElement; } return false; }""", id_)
@@ -1552,6 +1558,18 @@ with sync_playwright() as p:
     aset('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded', True); aset('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded', False)
     check('S136: an empty Also-on row does not untick the Library Enable (library view only is a valid state)',
           apage.evaluate("() => document.getElementById('ExtraposterMoviesLibraryEnabled').checked && !document.getElementById('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded').checked"))
+    # Session 139: the Custom / Animated rows grey with their own Library Enable (single grey level, the Show-on parent untouched)
+    for tab, feat, kind, other in (('animatedposter', 'AnimatedPoster', 'Movies', 'AnimatedPosterTvShows'), ('animatedposter', 'AnimatedKeyart', 'TvShows', 'AnimatedKeyartMovies'),
+                                   ('customposter', 'Postercase', 'Movies', 'PostercaseTvShows'), ('customposter', 'Keyart', 'TvShows', 'KeyartMovies')):
+        apage.evaluate("(t) => { document.querySelector('.epTabBtn[data-tab=\"' + t + '\"]').click(); }", tab)
+        pre = feat + kind + 'LibraryAlsoOn'
+        check('S139: ' + feat + ' ' + kind + ' Also-on rows active while its Library Enable is on', s136_grey(pre + 'HomeRow') is False and s136_grey(pre + 'DetailRow') is False)
+        aset(feat + kind + 'LibraryEnabled', False)
+        check('S139: ' + feat + ' ' + kind + ' Library Enable off greys its five Also-on rows, not the other kind, not the Enable row itself',
+              all(s136_grey(pre + g + 'Row') for g in S136_GROUPS) and s136_grey(other + 'LibraryAlsoOnHomeRow') is False and s136_grey(feat + kind + 'LibraryEnabledRow') is False)
+        aset(feat + kind + 'LibraryEnabled', True)
+        aset(pre + 'HomeRecentlyAdded', True); aset(pre + 'HomeRecentlyAdded', False)
+        check('S139: ' + feat + ' ' + kind + ' empty Also-on row leaves the Library Enable ticked', apage.evaluate("(id) => document.getElementById(id).checked", feat + kind + 'LibraryEnabled'))
     # Session 138 (audit S3-03 / S3-04): the backup code carries the 28 case-tune values and never the API key
     ie = apage.evaluate("""() => {
         // the preview stub loads an empty config - give the page a last-loaded state for the three non-active types

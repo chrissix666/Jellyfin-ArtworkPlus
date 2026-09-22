@@ -16,6 +16,9 @@ import sys
 from _common import CONFIG_PAGE, PLUGIN_CONFIG_CS, POSTERS_JS, ROOT
 
 controller = open(ROOT + '/Controllers/ExtraposterController.cs', encoding='utf-8').read()
+helper = open(ROOT + '/Helpers/AlsoOn.cs', encoding='utf-8').read()  # Session 139: the mapping shared by all three tile participants
+custom = open(ROOT + '/Controllers/CustomPosterController.cs', encoding='utf-8').read()
+animated = open(ROOT + '/Controllers/AnimatedPosterController.cs', encoding='utf-8').read()
 config = open(PLUGIN_CONFIG_CS, encoding='utf-8').read()
 page = open(CONFIG_PAGE, encoding='utf-8').read()
 posters = open(POSTERS_JS, encoding='utf-8').read()
@@ -30,9 +33,9 @@ def check(name, cond, detail=''):
 
 
 # 1. client page classes vs server switch
-client_fn = posters[posters.index('function libPageOf'):posters.index('window.__artworkPlusExtraPageOf')]
+client_fn = posters[posters.index('function pageClassOf'):posters.index('window.__artworkPlusExtraPageOf')]
 client_classes = set(re.findall(r"return '([a-z-]+)';", client_fn))
-server_fn = controller[controller.index('internal static bool AlsoOnAllowed'):]
+server_fn = helper[helper.index('public static bool Allowed'):]
 server_fn = server_fn[:server_fn.index('return property is not null')]
 server_classes = set(re.findall(r'"([a-z-]+)" =>', server_fn))
 fixed = {'library', 'dashboard', 'other'}
@@ -47,7 +50,8 @@ for expr in subs:
     for token in re.findall(r'"([A-Za-z]+)"', expr):
         names.add(token)
 expected = set()
-for feature in ('Extraposter', 'Extrakeyart'):
+FEATURES = ('Extraposter', 'Extrakeyart', 'Postercase', 'Keyart', 'AnimatedPoster', 'AnimatedKeyart')
+for feature in FEATURES:
     for kind in ('Movies', 'TvShows'):
         for sub in names:
             # the kind-specific subs only exist on their kind
@@ -57,18 +61,22 @@ for feature in ('Extraposter', 'Extrakeyart'):
                 continue
             expected.add(feature + kind + 'LibraryAlsoOn' + sub)
 present = set(re.findall(r'public bool (\w+LibraryAlsoOn\w+) \{ get; set; \}', config))
-check('48 LibraryAlsoOn properties in C#, all default off', len(present) == 48 and not re.search(r'LibraryAlsoOn\w+ \{ get; set; \} = true', config), str(len(present)))
+check('144 LibraryAlsoOn properties in C# (6 features x 24), all default off', len(present) == 144 and not re.search(r'LibraryAlsoOn\w+ \{ get; set; \} = true', config), str(len(present)))
 check('server mapping builds exactly the C# properties', expected == present, 'missing in C#: %s | unreachable: %s' % (sorted(expected - present)[:5], sorted(present - expected)[:5]))
-check('the mapping reads the property by reflection with the same name pattern', 'feature + kind + "LibraryAlsoOn" + sub' in controller)
-check('the batch endpoint takes the page parameter and filters after the cache', '[FromQuery] string? page' in controller and 'AlsoOnAllowed(config, pageClass, cachedResult)' in controller)
+check('the mapping reads the property by reflection with the same name pattern', 'feature + kind + "LibraryAlsoOn" + sub' in helper)
+check('the Extra batch endpoint takes the page parameter and filters after the cache', '[FromQuery] string? page' in controller and 'AlsoOnAllowed(config, pageClass, cachedResult)' in controller and 'Helpers.AlsoOn.Allowed(' in controller)
+check('the Custom and Animated batch endpoints take the page parameter and filter the resolved answer (library scope only)',
+      all('[FromQuery] string? page' in c and 'Helpers.AlsoOn.Allowed(config, pageClass, Helpers.AlsoOn.FeatureOf(itemResult.ResolvedType), Helpers.AlsoOn.KindOf(' in c and 'isLibraryScope && itemResult.IsApplicable &&' in c for c in (custom, animated)))
+check('the helper maps every resolved type to its feature prefix', all('"%s" => "%s"' % (t, f) in helper for t, f in (('extraposter', 'Extraposter'), ('extrakeyart', 'Extrakeyart'), ('postercase', 'Postercase'), ('keyart', 'Keyart'), ('animatedposter', 'AnimatedPoster'), ('animatedkeyart', 'AnimatedKeyart'))))
 
 # 3. page: checkbox + EP_FIELDS def false
 for name in sorted(present):
     if page.count('id="' + name + '"') != 1 or not re.search(name + r": \{ type: 'checkbox', def: false", page):
         fails.append(name)
         print('FAIL page wiring of ' + name)
-check('every property has one checkbox and an EP_FIELDS entry with def: false', not [f for f in fails if f.startswith(('Extraposter', 'Extrakeyart'))])
+check('every property has one checkbox and an EP_FIELDS entry with def: false', not [f for f in fails if f.startswith(FEATURES)])
 check('the client sends the page class with every Extra batch', "'&scope=library&page=' + encodeURIComponent(page)" in posters)
+check('the client sends the page class with every Custom / Animated batch and caches per class', "options.batchUrl(chunk) + '&page=' + encodeURIComponent(page)" in posters and "resultCache[page + '|' + id.replace(/-/g, '')] = items[id]" in posters)
 
 print('RESULT ' + ('OK' if not fails else 'FAILED') + ' (%d failure(s))' % len(fails))
 sys.exit(0 if not fails else 1)
