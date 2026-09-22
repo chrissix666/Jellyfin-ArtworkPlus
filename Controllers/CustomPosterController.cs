@@ -164,7 +164,7 @@ public class CustomPosterController : ControllerBase
         var config = Plugin.Instance!.Configuration;
         var posterType = NormalizeType(type);
         var result = new CustomPosterBatchResult();
-        // Session 139: the page class of this batch (Helpers/AlsoOn) - library view when absent, dashboard never.
+        // Session 140: the page class of this batch (Helpers/AlsoOn) - the library grid when absent; the resolver reads the grid switch or the "show also on" box of the item kind.
         var pageClass = string.IsNullOrEmpty(page) ? "library" : page;
 
         if (!IsTypeEnabled(config, posterType))
@@ -191,13 +191,8 @@ public class CustomPosterController : ControllerBase
             // data-id, which Jellyfin serialises via JsonGuidConverter as the
             // 32-hex form. Dictionary keys are strings and bypass that
             // converter - Guid.ToString() (dashed) never matched (Session 122).
-            var itemResult = ResolveItemResult(itemId, config, posterType, isLibraryScope) ?? new CustomPosterResult { IsApplicable = false };
+            var itemResult = ResolveItemResult(itemId, config, posterType, isLibraryScope, isLibraryScope ? pageClass : null) ?? new CustomPosterResult { IsApplicable = false };
             ApplyKeyartLogo(itemResult, config, isLibraryScope, itemId);
-            if (isLibraryScope && itemResult.IsApplicable && !Helpers.AlsoOn.Allowed(config, pageClass, Helpers.AlsoOn.FeatureOf(itemResult.ResolvedType), Helpers.AlsoOn.KindOf(_libraryManager.GetItemById(itemId))))
-            {
-                itemResult = new CustomPosterResult { IsApplicable = false };
-            }
-
             result.Items[itemId.ToString("N")] = itemResult;
         }
 
@@ -343,11 +338,11 @@ public class CustomPosterController : ControllerBase
     /// which already know which type won from the initial "auto" call's
     /// own ResolvedType.
     /// </summary>
-    private CustomPosterResult? ResolveItemResult(Guid itemId, PluginConfiguration config, string posterType, bool isLibraryScope)
+    private CustomPosterResult? ResolveItemResult(Guid itemId, PluginConfiguration config, string posterType, bool isLibraryScope, string? page = null)
     {
         if (posterType != "auto")
         {
-            return ResolveSingleType(itemId, config, posterType, isLibraryScope);
+            return ResolveSingleType(itemId, config, posterType, isLibraryScope, page);
         }
 
         var order = string.Equals(config.CustomPosterPriority, "Keyart", StringComparison.OrdinalIgnoreCase)
@@ -358,7 +353,7 @@ public class CustomPosterController : ControllerBase
         {
             if (!IsTypeEnabled(config, candidateType)) { continue; }
 
-            var candidateResult = ResolveSingleType(itemId, config, candidateType, isLibraryScope);
+            var candidateResult = ResolveSingleType(itemId, config, candidateType, isLibraryScope, page);
             if (candidateResult is not null && candidateResult.IsApplicable)
             {
                 candidateResult.ResolvedType = candidateType;
@@ -381,7 +376,7 @@ public class CustomPosterController : ControllerBase
     /// posterType - same "one function, several naming-pattern types"
     /// precedent as CharacterartController's own ResolveCandidatesUncached.
     /// </summary>
-    private CustomPosterResult? ResolveSingleType(Guid itemId, PluginConfiguration config, string posterType, bool isLibraryScope)
+    private CustomPosterResult? ResolveSingleType(Guid itemId, PluginConfiguration config, string posterType, bool isLibraryScope, string? page = null)
     {
         var item = _libraryManager.GetItemById(itemId);
 
@@ -395,8 +390,8 @@ public class CustomPosterController : ControllerBase
         {
             var showOnMovies = posterType == "postercase" ? config.PostercaseShowOnMovies : config.KeyartShowOnMovies;
             var detailOrLibraryEnabled = posterType == "postercase"
-                ? (isLibraryScope ? config.PostercaseMoviesLibraryEnabled : config.PostercaseMoviesDetailEnabled)
-                : (isLibraryScope ? config.KeyartMoviesLibraryEnabled : config.KeyartMoviesDetailEnabled);
+                ? (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "Postercase", "Movie") : config.PostercaseMoviesDetailEnabled)
+                : (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "Keyart", "Movie") : config.KeyartMoviesDetailEnabled);
             if (!showOnMovies || !detailOrLibraryEnabled) { return null; }
 
             folderPath = movie.ContainingFolderPath;
@@ -421,8 +416,8 @@ public class CustomPosterController : ControllerBase
             // correct here too, no config field needed for it").
             var showOnSets = posterType == "postercase" ? config.PostercaseShowOnSets : config.KeyartShowOnSets;
             var detailOrLibraryEnabled = posterType == "postercase"
-                ? (isLibraryScope ? config.PostercaseMoviesLibraryEnabled : config.PostercaseMoviesDetailEnabled)
-                : (isLibraryScope ? config.KeyartMoviesLibraryEnabled : config.KeyartMoviesDetailEnabled);
+                ? (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "Postercase", "BoxSet") : config.PostercaseMoviesDetailEnabled)
+                : (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "Keyart", "BoxSet") : config.KeyartMoviesDetailEnabled);
             if (!showOnSets || !detailOrLibraryEnabled) { return null; }
 
             folderPath = boxSet.ContainingFolderPath;
@@ -435,8 +430,8 @@ public class CustomPosterController : ControllerBase
         {
             var showOnTvShows = posterType == "postercase" ? config.PostercaseShowOnTvShows : config.KeyartShowOnTvShows;
             var detailOrLibraryEnabled = posterType == "postercase"
-                ? (isLibraryScope ? config.PostercaseTvShowsLibraryEnabled : config.PostercaseTvShowsDetailEnabled)
-                : (isLibraryScope ? config.KeyartTvShowsLibraryEnabled : config.KeyartTvShowsDetailEnabled);
+                ? (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "Postercase", "Series") : config.PostercaseTvShowsDetailEnabled)
+                : (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "Keyart", "Series") : config.KeyartTvShowsDetailEnabled);
             if (!showOnTvShows || !detailOrLibraryEnabled) { return null; }
 
             folderPath = series.ContainingFolderPath;

@@ -302,16 +302,17 @@ public static class FileTransformCallback
     private static string BuildLibraryTilesFlagsScriptTag(Configuration.PluginConfiguration config)
     {
         var custom = config.CustomPosterEnabled && (
-            (config.PostercaseEnabled && (config.PostercaseMoviesLibraryEnabled || config.PostercaseTvShowsLibraryEnabled))
-            || (config.KeyartEnabled && (config.KeyartMoviesLibraryEnabled || config.KeyartTvShowsLibraryEnabled)));
+            (config.PostercaseEnabled && (config.PostercaseMoviesLibraryEnabled || config.PostercaseTvShowsLibraryEnabled || Helpers.AlsoOn.AnyBox(config, "Postercase", "Movies") || Helpers.AlsoOn.AnyBox(config, "Postercase", "TvShows")))
+            || (config.KeyartEnabled && (config.KeyartMoviesLibraryEnabled || config.KeyartTvShowsLibraryEnabled || Helpers.AlsoOn.AnyBox(config, "Keyart", "Movies") || Helpers.AlsoOn.AnyBox(config, "Keyart", "TvShows"))));
         var animated = config.AnimatedPosterTabEnabled && (
-            (config.AnimatedPosterEnabled && (config.AnimatedPosterMoviesLibraryEnabled || config.AnimatedPosterTvShowsLibraryEnabled))
-            || (config.AnimatedKeyartEnabled && (config.AnimatedKeyartMoviesLibraryEnabled || config.AnimatedKeyartTvShowsLibraryEnabled)));
+            (config.AnimatedPosterEnabled && (config.AnimatedPosterMoviesLibraryEnabled || config.AnimatedPosterTvShowsLibraryEnabled || Helpers.AlsoOn.AnyBox(config, "AnimatedPoster", "Movies") || Helpers.AlsoOn.AnyBox(config, "AnimatedPoster", "TvShows")))
+            || (config.AnimatedKeyartEnabled && (config.AnimatedKeyartMoviesLibraryEnabled || config.AnimatedKeyartTvShowsLibraryEnabled || Helpers.AlsoOn.AnyBox(config, "AnimatedKeyart", "Movies") || Helpers.AlsoOn.AnyBox(config, "AnimatedKeyart", "TvShows"))));
         // Session 124: a library view counts when it is on AND shows at least one type.
-        var epMoviesLib = config.ExtraposterMoviesLibraryEnabled && (config.ExtraposterMoviesLibraryShowOnMovies || config.ExtraposterMoviesLibraryShowOnSets);
-        var epTvLib = config.ExtraposterTvShowsLibraryEnabled && config.ExtraposterTvShowsLibraryShowOnTvShows;
-        var ekMoviesLib = config.ExtrakeyartMoviesLibraryEnabled && (config.ExtrakeyartMoviesLibraryShowOnMovies || config.ExtrakeyartMoviesLibraryShowOnSets);
-        var ekTvLib = config.ExtrakeyartTvShowsLibraryEnabled && config.ExtrakeyartTvShowsLibraryShowOnTvShows;
+        // Session 140: a "show also on" box counts like the grid switch (the participant is expected; a refused page answers empty).
+        var epMoviesLib = (config.ExtraposterMoviesLibraryEnabled || Helpers.AlsoOn.AnyBox(config, "Extraposter", "Movies")) && (config.ExtraposterMoviesLibraryShowOnMovies || config.ExtraposterMoviesLibraryShowOnSets);
+        var epTvLib = (config.ExtraposterTvShowsLibraryEnabled || Helpers.AlsoOn.AnyBox(config, "Extraposter", "TvShows")) && config.ExtraposterTvShowsLibraryShowOnTvShows;
+        var ekMoviesLib = (config.ExtrakeyartMoviesLibraryEnabled || Helpers.AlsoOn.AnyBox(config, "Extrakeyart", "Movies")) && (config.ExtrakeyartMoviesLibraryShowOnMovies || config.ExtrakeyartMoviesLibraryShowOnSets);
+        var ekTvLib = (config.ExtrakeyartTvShowsLibraryEnabled || Helpers.AlsoOn.AnyBox(config, "Extrakeyart", "TvShows")) && config.ExtrakeyartTvShowsLibraryShowOnTvShows;
         var extra = config.ExtraposterTabEnabled && (
             (config.ExtraposterEnabled && (epMoviesLib || epTvLib))
             || (config.ExtrakeyartEnabled && (ekMoviesLib || ekTvLib)));

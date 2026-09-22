@@ -1508,68 +1508,104 @@ with sync_playwright() as p:
     # ─── Session 136: "Also on" rows - library-scope tiles outside the library view, per area ───
     apage.evaluate("""() => { document.getElementById('epRestoreAllBtn').click(); }""")
     apage.wait_for_timeout(150)
-    # Session 139: the same rows for Custom (Postercase/Keyart) and Animated (AnimatedPoster/AnimatedKeyart) - 12 library views, 144 boxes
-    S136_VIEWS = [('extraposter', 'Extraposter', 'Movies'), ('extraposter', 'Extraposter', 'TvShows'), ('extrakeyart', 'Extrakeyart', 'Movies'), ('extrakeyart', 'Extrakeyart', 'TvShows'),
-                  ('customposter', 'Postercase', 'Movies'), ('customposter', 'Postercase', 'TvShows'), ('customposter', 'Keyart', 'Movies'), ('customposter', 'Keyart', 'TvShows'),
-                  ('animatedposter', 'AnimatedPoster', 'Movies'), ('animatedposter', 'AnimatedPoster', 'TvShows'), ('animatedposter', 'AnimatedKeyart', 'Movies'), ('animatedposter', 'AnimatedKeyart', 'TvShows')]
-    S136_GROUPS = ['Favorites', 'Search', 'Home', 'Lists', 'Detail']  # Session 139b: the user's order
-    s136 = apage.evaluate("""([views, groups]) => {
-        var out = { rows: 0, boxes: 0, checked: 0, order: [], labels: [], subs: {}, missing: [] };
-        views.forEach(function (v) {
-            var feat = v[1], kind = v[2], prefix = feat + kind + 'LibraryAlsoOn';
-            // Extra: the rows follow "Show on"; Custom/Animated (Session 139): they follow the "Enable for library views" row
-            var showOn = document.getElementById(feat + kind + 'LibraryShowOnRow') || document.getElementById(feat + kind + 'LibraryEnabledRow');
-            var el = showOn ? showOn.nextElementSibling : null;
-            groups.forEach(function (g) {
-                var row = document.getElementById(prefix + g + 'Row');
-                if (!row) { out.missing.push(prefix + g); return; }
-                out.rows++;
-                out.order.push(el === row); el = row.nextElementSibling;
-                out.labels.push(row.querySelector('.epRowLabelSpan').textContent);
-                var boxes = row.querySelectorAll('input[type=checkbox]');
-                out.boxes += boxes.length;
-                boxes.forEach(function (b) { if (b.checked) { out.checked++; } });
-                out.subs[feat + kind + g] = Array.prototype.map.call(row.querySelectorAll('.checkboxLabel'), function (l) { return l.textContent; });
-                var d = row.querySelector('.epDesc'); if (!d || d.textContent.length > 105) { out.missing.push('desc ' + prefix + g); }
+    # Session 140 (user finding, live since deploy #83): the Animated tab BUTTON was greyed at defaults because ap_movies/ap_tvshows got
+    # structural-only children (the menus) and lost their 'effective' status - rule 12 terminal flag. Guard for every tab.
+    apage.evaluate("() => { document.querySelector('.epTabBtn[data-tab=\"general\"]').click(); }")
+    apage.click('#epRestoreAllBtn'); apage.wait_for_timeout(300)
+    greyed_tabs = apage.evaluate("() => Array.prototype.filter.call(document.querySelectorAll('.epTabBtn'), function (b) { return b.classList.contains('epTabGreyed'); }).map(function (b) { return b.dataset.tab; })")
+    check('S140: no tab button is greyed at defaults (every tab effective)', greyed_tabs == [], str(greyed_tabs))
+    # Session 140: "Show also on" menus (docs/artworkplus-alsoon-concept.md) - per library block one collapse per item kind
+    # (Movies block: Movies + Sets, TV block: Shows) with the area rows; Sessions 136-139 rows are gone.
+    S140_FEATS = [('extraposter', 'Extraposter', 'extraposter', 'view'), ('extraposter', 'Extrakeyart', 'extrakeyart', 'view'),
+                  ('customposter', 'Postercase', 'postercase', 'feature'), ('customposter', 'Keyart', 'keyart', 'feature'),
+                  ('animatedposter', 'AnimatedPoster', 'animatedposter', 'feature'), ('animatedposter', 'AnimatedKeyart', 'animatedkeyart', 'feature')]
+    S140_MENUS = {'Movies': [('Movies', 'For Movies show also on', ['FavSearch', 'Home', 'Lists', 'Detail']), ('Sets', 'For Sets show also on', ['FavSearch', 'Lists'])],
+                  'TvShows': [('Shows', 'Show also on', ['FavSearch', 'Home', 'Lists', 'Detail'])]}
+    S140_BOXES = {'Movies': {'FavSearch': ['Favorites', 'Search'], 'Home': ['Recently added', 'Continue Watching'], 'Lists': ['Genre', 'Studio', 'Tag', 'Folder & More'], 'Detail': ['More like this', 'Set members', 'People pages']},
+                  'Sets': {'FavSearch': ['Favorites', 'Search'], 'Lists': ['Studio', 'Tag', 'Folder & More']},
+                  'Shows': {'FavSearch': ['Favorites', 'Search'], 'Home': ['Recently added'], 'Lists': ['Genre', 'Studio', 'Tag', 'Folder & More'], 'Detail': ['More like this', 'Set members', 'People pages']}}
+    s140 = apage.evaluate("""([feats, menus, boxesSpec]) => {
+        var out = { menus: 0, rows: 0, boxes: 0, checked: 0, problems: [], leftovers: document.querySelectorAll('[id*="LibraryAlsoOn"][id$="Row"]:not([id*="AlsoOnMovies"]):not([id*="AlsoOnSets"]):not([id*="AlsoOnShows"])').length };
+        feats.forEach(function (ft) {
+            var feat = ft[1], keyp = ft[2], mode = ft[3];
+            ['Movies', 'TvShows'].forEach(function (kind) {
+                // the menus follow the block's anchor row directly: Extra = the library Show on row, Custom / Animated = the library Enable row
+                var anchor = document.getElementById(feat + kind + (mode === 'view' ? 'LibraryShowOnRow' : 'LibraryEnabledRow'));
+                if (!anchor) { out.problems.push('anchor ' + feat + kind); return; }
+                var el = anchor.nextElementSibling;
+                menus[kind].forEach(function (m) {
+                    var item = m[0], title = m[1], rowKeys = m[2], key = keyp + kind + 'AlsoOn' + item;
+                    var header = document.querySelector('[data-collapse="' + key + '"]'), body = document.querySelector('[data-collapsebody="' + key + '"]');
+                    if (!header || !body) { out.problems.push('menu ' + key); return; }
+                    out.menus++;
+                    if (el !== header || header.nextElementSibling !== body) { out.problems.push('order ' + key); }
+                    el = body.nextElementSibling;
+                    if (header.textContent.indexOf(title) === -1) { out.problems.push('title ' + key + ': ' + header.textContent); }
+                    ['epCollapseNested', 'epCollapseNested2'].forEach(function (c) { if (!header.classList.contains(c) || !body.classList.contains(c)) { out.problems.push('class ' + c + ' ' + key); } });
+                    var rows = Array.prototype.slice.call(body.children);
+                    if (rows.length !== rowKeys.length) { out.problems.push('rowcount ' + key + ' ' + rows.length); }
+                    rowKeys.forEach(function (rk, i) {
+                        var row = document.getElementById(feat + kind + 'LibraryAlsoOn' + item + rk + 'Row');
+                        if (!row || rows[i] !== row) { out.problems.push('row ' + key + rk); return; }
+                        out.rows++;
+                        var labels = Array.prototype.map.call(row.querySelectorAll('.checkboxLabel'), function (l) { return l.textContent; });
+                        var want = boxesSpec[item][rk];
+                        if (labels.join('|') !== want.join('|')) { out.problems.push('boxes ' + key + rk + ': ' + labels.join('|')); }
+                        var inputs = row.querySelectorAll('input[type=checkbox]');
+                        out.boxes += inputs.length;
+                        inputs.forEach(function (b) { if (b.checked) { out.checked++; } if (b.id.indexOf(feat + kind + 'LibraryAlsoOn' + item) !== 0) { out.problems.push('id ' + b.id); } });
+                        var d = row.querySelector('.epDesc'); if (!d || d.textContent.length > 105) { out.problems.push('desc ' + key + rk); }
+                    });
+                });
             });
-            var fields = document.getElementById(feat + kind + 'LibraryFields');
-            if (fields) { out.order.push(el === fields); }
         });
         return out;
-    }""", [S136_VIEWS, S136_GROUPS])
-    check('S136/S139: 60 Also-on rows (5 per library view of the six tile features), 144 checkboxes, all off after Restore, one description each',
-          s136['rows'] == 60 and s136['boxes'] == 144 and s136['checked'] == 0 and not s136['missing'], str(s136['missing'] or s136))
-    check('S136: the five rows follow "Show on" directly and precede the Fields block, in the order Favorites, Search, Home, Lists, Detail pages',
-          all(s136['order']) and s136['labels'] == ['Also on Favorites', 'Also on Search', 'Also on Home', 'Also on Lists', 'Also on Detail pages'] * 12, str(s136['order']) + str(s136['labels'][:5]))
-    check('S136: sub options - Movies rows carry Movies/Sets (Session 139b wording), TV rows Shows; Lists has Genre, Studio, Tag, Folder & More',
-          s136['subs']['ExtraposterMoviesFavorites'] == ['Movies', 'Sets'] and s136['subs']['ExtraposterTvShowsSearch'] == ['Shows']
-          and s136['subs']['ExtrakeyartTvShowsLists'] == ['Genre', 'Studio', 'Tag', 'Folder & More'] and s136['subs']['ExtrakeyartMoviesDetail'] == ['More like this', 'Set members', 'Person pages']
-          and s136['subs']['ExtraposterTvShowsHome'] == ['Recently added', 'Continue Watching']
-          and s136['subs']['PostercaseMoviesFavorites'] == ['Movies', 'Sets'] and s136['subs']['KeyartTvShowsSearch'] == ['Shows']
-          and s136['subs']['AnimatedPosterTvShowsFavorites'] == ['Shows'] and s136['subs']['AnimatedKeyartMoviesLists'] == ['Genre', 'Studio', 'Tag', 'Folder & More'], str(s136['subs']))
+    }""", [S140_FEATS, S140_MENUS, S140_BOXES])
+    check('S140: 18 "show also on" menus (12 in Movies blocks, 6 in TV blocks) directly after the block anchor, nested classes, titles, row order',
+          s140['menus'] == 18 and not [p for p in s140['problems'] if not p.startswith(('boxes', 'desc', 'id'))], str(s140['problems'][:6]))
+    check('S140: 60 rows / 156 boxes with the concept\'s labels per item kind (Sets: Favorites, Search, Studio, Tag, Folder & More; TV: no Continue Watching), ids per kind, one-line descriptions, all off after Restore',
+          s140['rows'] == 60 and s140['boxes'] == 156 and s140['checked'] == 0 and not [p for p in s140['problems'] if p.startswith(('boxes', 'desc', 'id'))], str([p for p in s140['problems'] if p.startswith(('boxes', 'desc', 'id'))][:6]))
+    check('S140: no Session 136-139 "Also on" rows left', s140['leftovers'] == 0, str(s140['leftovers']))
+    def s140_grey(id_or_key):
+        return apage.evaluate("""(k) => { var c = document.getElementById(k) || document.querySelector('[data-collapsebody="' + k + '"]'); while (c) { if (c.classList && c.classList.contains('epFieldDisabled')) { return true; } c = c.parentElement; } return false; }""", id_or_key)
+    def s140_header_dim(key):
+        return apage.evaluate("""(k) => { var h = document.querySelector('[data-collapse="' + k + '"]'); var c = h; while (c) { if (c.classList && c.classList.contains('epFieldDisabled')) { return true; } c = c.parentElement; } return false; }""", key)
+    # Extra: the menus grey with the library Show on box of their kind, NOT with the library Enable
     apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="extraposter"]').click(); }""")
-    def s136_grey(id_):
-        return apage.evaluate("""(id) => { var c = document.getElementById(id); while (c) { if (c.classList && c.classList.contains('epFieldDisabled')) { return true; } c = c.parentElement; } return false; }""", id_)
-    check('S136: Also-on rows active while the Library view is enabled', s136_grey('ExtraposterMoviesLibraryAlsoOnHomeRow') is False and s136_grey('ExtraposterMoviesLibraryAlsoOnDetailRow') is False)
+    apage.click('[data-restore-tab="extraposter"]'); apage.wait_for_timeout(200)
+    check('S140 Extra: menus active with Show on Movies / Sets on', s140_grey('extraposterMoviesAlsoOnMovies') is False and s140_grey('extraposterMoviesAlsoOnSets') is False)
     aset('ExtraposterMoviesLibraryEnabled', False)
-    check('S136: Library Enable off greys every Also-on row of that view, not the other view',
-          s136_grey('ExtraposterMoviesLibraryAlsoOnHomeRow') and s136_grey('ExtraposterMoviesLibraryAlsoOnListsRow') and s136_grey('ExtraposterMoviesLibraryShowOnRow') and s136_grey('ExtraposterTvShowsLibraryAlsoOnHomeRow') is False)
+    check('S140 Extra: library Enable off does NOT grey the menus (they are siblings of the grid switch)',
+          s140_grey('extraposterMoviesAlsoOnMovies') is False and s140_grey('extraposterMoviesAlsoOnSets') is False and s140_grey('ExtraposterMoviesLibraryFields'))
     aset('ExtraposterMoviesLibraryEnabled', True)
-    aset('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded', True); aset('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded', False)
-    check('S136: an empty Also-on row does not untick the Library Enable (library view only is a valid state)',
-          apage.evaluate("() => document.getElementById('ExtraposterMoviesLibraryEnabled').checked && !document.getElementById('ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded').checked"))
-    # Session 139: the Custom / Animated rows grey with their own Library Enable (single grey level, the Show-on parent untouched)
-    for tab, feat, kind, other in (('animatedposter', 'AnimatedPoster', 'Movies', 'AnimatedPosterTvShows'), ('animatedposter', 'AnimatedKeyart', 'TvShows', 'AnimatedKeyartMovies'),
-                                   ('customposter', 'Postercase', 'Movies', 'PostercaseTvShows'), ('customposter', 'Keyart', 'TvShows', 'KeyartMovies')):
+    aset('ExtraposterMoviesLibraryShowOnSets', False)
+    check('S140 Extra: Show on Sets off greys the Sets menu (header + body) only', s140_grey('extraposterMoviesAlsoOnSets') and s140_header_dim('extraposterMoviesAlsoOnSets') and s140_grey('extraposterMoviesAlsoOnMovies') is False)
+    aset('ExtraposterMoviesLibraryShowOnSets', True)
+    aset('ExtraposterMoviesLibraryAlsoOnMoviesFavorites', True)
+    aset('ExtraposterMoviesDetailEnabled', False); aset('ExtraposterMoviesLibraryEnabled', False); aset('ExtraposterTvShowsDetailEnabled', False); aset('ExtraposterTvShowsLibraryEnabled', False)
+    check('S140 Extra: all four views off but a box on keeps the feature Enable ticked (a box counts as a view)', apage.evaluate("() => document.getElementById('ExtraposterEnabled').checked"))
+    aset('ExtraposterMoviesLibraryAlsoOnMoviesFavorites', False)
+    check('S140 Extra: the last box off unticks the feature Enable', apage.evaluate("() => !document.getElementById('ExtraposterEnabled').checked"))
+    apage.evaluate("() => { document.querySelector('.epTabBtn[data-tab=\"extraposter\"] ').click(); }")
+    apage.click('[data-restore-tab="extraposter"]'); apage.wait_for_timeout(200)
+    # Custom / Animated: menus grey with the feature Show on box of their kind, never with the library Enable; Show on unticks only when detail, library and every box are off
+    for tab, feat, keyp in (('animatedposter', 'AnimatedPoster', 'animatedposter'), ('customposter', 'Postercase', 'postercase')):
         apage.evaluate("(t) => { document.querySelector('.epTabBtn[data-tab=\"' + t + '\"]').click(); }", tab)
-        pre = feat + kind + 'LibraryAlsoOn'
-        check('S139: ' + feat + ' ' + kind + ' Also-on rows active while its Library Enable is on', s136_grey(pre + 'HomeRow') is False and s136_grey(pre + 'DetailRow') is False)
-        aset(feat + kind + 'LibraryEnabled', False)
-        check('S139: ' + feat + ' ' + kind + ' Library Enable off greys its five Also-on rows, not the other kind, not the Enable row itself',
-              all(s136_grey(pre + g + 'Row') for g in S136_GROUPS) and s136_grey(other + 'LibraryAlsoOnHomeRow') is False and s136_grey(feat + kind + 'LibraryEnabledRow') is False)
-        aset(feat + kind + 'LibraryEnabled', True)
-        aset(pre + 'HomeRecentlyAdded', True); aset(pre + 'HomeRecentlyAdded', False)
-        check('S139: ' + feat + ' ' + kind + ' empty Also-on row leaves the Library Enable ticked', apage.evaluate("(id) => document.getElementById(id).checked", feat + kind + 'LibraryEnabled'))
+        apage.click('[data-restore-tab="' + tab + '"]'); apage.wait_for_timeout(200)  # a known state: every switch at its default
+        check('S140 ' + feat + ': menus active', s140_grey(keyp + 'MoviesAlsoOnMovies') is False and s140_grey(keyp + 'MoviesAlsoOnSets') is False and s140_grey(keyp + 'TvShowsAlsoOnShows') is False)
+        aset(feat + 'MoviesLibraryEnabled', False)
+        check('S140 ' + feat + ': library Enable off leaves the menus active', s140_grey(keyp + 'MoviesAlsoOnMovies') is False and s140_grey(keyp + 'MoviesAlsoOnSets') is False)
+        aset(feat + 'MoviesLibraryEnabled', True)
+        aset(feat + 'ShowOnSets', False)
+        check('S140 ' + feat + ': Show on Sets off greys the Sets menu only', s140_grey(keyp + 'MoviesAlsoOnSets') and s140_grey(keyp + 'MoviesAlsoOnMovies') is False)
+        aset(feat + 'ShowOnSets', True)
+        aset(feat + 'MoviesLibraryAlsoOnMoviesHomeRecentlyAdded', True)
+        aset(feat + 'MoviesDetailEnabled', False); aset(feat + 'MoviesLibraryEnabled', False)
+        check('S140 ' + feat + ': detail + library off but a Movies box on keeps Show on Movies ticked', apage.evaluate("(f) => document.getElementById(f + 'ShowOnMovies').checked", feat))
+        check('S140 ' + feat + ': ... while Show on Sets (no Sets box on) unticks', apage.evaluate("(f) => !document.getElementById(f + 'ShowOnSets').checked", feat))
+        aset(feat + 'MoviesLibraryAlsoOnMoviesHomeRecentlyAdded', False)
+        check('S140 ' + feat + ': the last Movies box off unticks Show on Movies', apage.evaluate("(f) => !document.getElementById(f + 'ShowOnMovies').checked", feat))
+        apage.click('[data-restore-tab="' + tab + '"]'); apage.wait_for_timeout(200)
     # Session 138 (audit S3-03 / S3-04): the backup code carries the 28 case-tune values and never the API key
     ie = apage.evaluate("""() => {
         // the preview stub loads an empty config - give the page a last-loaded state for the three non-active types

@@ -159,7 +159,7 @@ public class AnimatedPosterController : ControllerBase
         var config = Plugin.Instance!.Configuration;
         var posterType = NormalizeType(type);
         var result = new AnimatedPosterBatchResult();
-        // Session 139: the page class of this batch (Helpers/AlsoOn) - library view when absent, dashboard never.
+        // Session 140: the page class of this batch (Helpers/AlsoOn) - the library grid when absent; the resolver reads the grid switch or the "show also on" box of the item kind.
         var pageClass = string.IsNullOrEmpty(page) ? "library" : page;
 
         if (!IsTypeEnabled(config, posterType))
@@ -186,13 +186,8 @@ public class AnimatedPosterController : ControllerBase
             // data-id, which Jellyfin serialises via JsonGuidConverter as the
             // 32-hex form. Dictionary keys are strings and bypass that
             // converter - Guid.ToString() (dashed) never matched (Session 122).
-            var itemResult = ResolveItemResult(itemId, config, posterType, isLibraryScope) ?? new AnimatedPosterResult { IsApplicable = false };
+            var itemResult = ResolveItemResult(itemId, config, posterType, isLibraryScope, isLibraryScope ? pageClass : null) ?? new AnimatedPosterResult { IsApplicable = false };
             ApplyKeyartLogo(itemResult, config, isLibraryScope, itemId);
-            if (isLibraryScope && itemResult.IsApplicable && !Helpers.AlsoOn.Allowed(config, pageClass, Helpers.AlsoOn.FeatureOf(itemResult.ResolvedType), Helpers.AlsoOn.KindOf(_libraryManager.GetItemById(itemId))))
-            {
-                itemResult = new AnimatedPosterResult { IsApplicable = false };
-            }
-
             result.Items[itemId.ToString("N")] = itemResult;
         }
 
@@ -345,11 +340,11 @@ public class AnimatedPosterController : ControllerBase
     /// initial "auto" call's own ResolvedType. Exact mirror of
     /// CustomPosterController.ResolveItemResult.
     /// </summary>
-    private AnimatedPosterResult? ResolveItemResult(Guid itemId, PluginConfiguration config, string posterType, bool isLibraryScope)
+    private AnimatedPosterResult? ResolveItemResult(Guid itemId, PluginConfiguration config, string posterType, bool isLibraryScope, string? page = null)
     {
         if (posterType != "auto")
         {
-            return ResolveSingleType(itemId, config, posterType, isLibraryScope);
+            return ResolveSingleType(itemId, config, posterType, isLibraryScope, page);
         }
 
         var order = string.Equals(config.AnimatedPosterPriority, "AnimatedKeyart", StringComparison.OrdinalIgnoreCase)
@@ -360,7 +355,7 @@ public class AnimatedPosterController : ControllerBase
         {
             if (!IsTypeEnabled(config, candidateType)) { continue; }
 
-            var candidateResult = ResolveSingleType(itemId, config, candidateType, isLibraryScope);
+            var candidateResult = ResolveSingleType(itemId, config, candidateType, isLibraryScope, page);
             if (candidateResult is not null && candidateResult.IsApplicable)
             {
                 candidateResult.ResolvedType = candidateType;
@@ -385,7 +380,7 @@ public class AnimatedPosterController : ControllerBase
     /// before this simplification - only the CONFIG FIELDS changed, not
     /// the behavior itself.
     /// </summary>
-    private AnimatedPosterResult? ResolveSingleType(Guid itemId, PluginConfiguration config, string posterType, bool isLibraryScope)
+    private AnimatedPosterResult? ResolveSingleType(Guid itemId, PluginConfiguration config, string posterType, bool isLibraryScope, string? page = null)
     {
         var item = _libraryManager.GetItemById(itemId);
         var isKeyart = posterType == "animatedkeyart";
@@ -398,8 +393,8 @@ public class AnimatedPosterController : ControllerBase
         {
             var showOnMovies = isKeyart ? config.AnimatedKeyartShowOnMovies : config.AnimatedPosterShowOnMovies;
             var detailOrLibraryEnabled = isKeyart
-                ? (isLibraryScope ? config.AnimatedKeyartMoviesLibraryEnabled : config.AnimatedKeyartMoviesDetailEnabled)
-                : (isLibraryScope ? config.AnimatedPosterMoviesLibraryEnabled : config.AnimatedPosterMoviesDetailEnabled);
+                ? (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "AnimatedKeyart", "Movie") : config.AnimatedKeyartMoviesDetailEnabled)
+                : (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "AnimatedPoster", "Movie") : config.AnimatedPosterMoviesDetailEnabled);
             if (!showOnMovies || !detailOrLibraryEnabled) { return null; }
 
             folderPath = movie.ContainingFolderPath;
@@ -415,8 +410,8 @@ public class AnimatedPosterController : ControllerBase
             // Movie, unchanged from before.
             var showOnSets = isKeyart ? config.AnimatedKeyartShowOnSets : config.AnimatedPosterShowOnSets;
             var detailOrLibraryEnabled = isKeyart
-                ? (isLibraryScope ? config.AnimatedKeyartMoviesLibraryEnabled : config.AnimatedKeyartMoviesDetailEnabled)
-                : (isLibraryScope ? config.AnimatedPosterMoviesLibraryEnabled : config.AnimatedPosterMoviesDetailEnabled);
+                ? (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "AnimatedKeyart", "BoxSet") : config.AnimatedKeyartMoviesDetailEnabled)
+                : (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "AnimatedPoster", "BoxSet") : config.AnimatedPosterMoviesDetailEnabled);
             if (!showOnSets || !detailOrLibraryEnabled) { return null; }
 
             folderPath = boxSet.ContainingFolderPath;
@@ -427,8 +422,8 @@ public class AnimatedPosterController : ControllerBase
         {
             var showOnTvShows = isKeyart ? config.AnimatedKeyartShowOnTvShows : config.AnimatedPosterShowOnTvShows;
             var detailOrLibraryEnabled = isKeyart
-                ? (isLibraryScope ? config.AnimatedKeyartTvShowsLibraryEnabled : config.AnimatedKeyartTvShowsDetailEnabled)
-                : (isLibraryScope ? config.AnimatedPosterTvShowsLibraryEnabled : config.AnimatedPosterTvShowsDetailEnabled);
+                ? (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "AnimatedKeyart", "Series") : config.AnimatedKeyartTvShowsDetailEnabled)
+                : (isLibraryScope ? Helpers.AlsoOn.Allowed(config, page, "AnimatedPoster", "Series") : config.AnimatedPosterTvShowsDetailEnabled);
             if (!showOnTvShows || !detailOrLibraryEnabled) { return null; }
 
             folderPath = series.ContainingFolderPath;

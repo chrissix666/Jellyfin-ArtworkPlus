@@ -276,8 +276,8 @@ public class ExtraposterController : ControllerBase
                 ? (isLibraryScope ? config.ExtrakeyartMoviesLibraryShowOnMovies : config.ExtrakeyartMoviesDetailShowOnMovies)
                 : (isLibraryScope ? config.ExtraposterMoviesLibraryShowOnMovies : config.ExtraposterMoviesDetailShowOnMovies);
             var moviesDetailOrLibraryEnabled = isExtrakeyart
-                ? (isLibraryScope ? config.ExtrakeyartMoviesLibraryEnabled : config.ExtrakeyartMoviesDetailEnabled)
-                : (isLibraryScope ? config.ExtraposterMoviesLibraryEnabled : config.ExtraposterMoviesDetailEnabled);
+                ? (isLibraryScope ? true : config.ExtrakeyartMoviesDetailEnabled)
+                : (isLibraryScope ? true : config.ExtraposterMoviesDetailEnabled);
             if (!showOnMovies || !moviesDetailOrLibraryEnabled)
             {
                 return (false, null, string.Empty, string.Empty);
@@ -302,8 +302,8 @@ public class ExtraposterController : ControllerBase
                 ? (isLibraryScope ? config.ExtrakeyartMoviesLibraryShowOnSets : config.ExtrakeyartMoviesDetailShowOnSets)
                 : (isLibraryScope ? config.ExtraposterMoviesLibraryShowOnSets : config.ExtraposterMoviesDetailShowOnSets);
             var setsDetailOrLibraryEnabled = isExtrakeyart
-                ? (isLibraryScope ? config.ExtrakeyartMoviesLibraryEnabled : config.ExtrakeyartMoviesDetailEnabled)
-                : (isLibraryScope ? config.ExtraposterMoviesLibraryEnabled : config.ExtraposterMoviesDetailEnabled);
+                ? (isLibraryScope ? true : config.ExtrakeyartMoviesDetailEnabled)
+                : (isLibraryScope ? true : config.ExtraposterMoviesDetailEnabled);
             if (!showOnSets || !setsDetailOrLibraryEnabled)
             {
                 return (false, null, string.Empty, string.Empty);
@@ -322,8 +322,8 @@ public class ExtraposterController : ControllerBase
             ? (isLibraryScope ? config.ExtrakeyartTvShowsLibraryShowOnTvShows : config.ExtrakeyartTvShowsDetailShowOnTvShows)
             : (isLibraryScope ? config.ExtraposterTvShowsLibraryShowOnTvShows : config.ExtraposterTvShowsDetailShowOnTvShows);
         var tvShowsDetailOrLibraryEnabled = isExtrakeyart
-            ? (isLibraryScope ? config.ExtrakeyartTvShowsLibraryEnabled : config.ExtrakeyartTvShowsDetailEnabled)
-            : (isLibraryScope ? config.ExtraposterTvShowsLibraryEnabled : config.ExtraposterTvShowsDetailEnabled);
+            ? (isLibraryScope ? true : config.ExtrakeyartTvShowsDetailEnabled)
+            : (isLibraryScope ? true : config.ExtraposterTvShowsDetailEnabled);
         if (!showOnTvShows || !tvShowsDetailOrLibraryEnabled)
         {
             return (false, null, string.Empty, string.Empty);
@@ -1015,7 +1015,8 @@ public class ExtraposterController : ControllerBase
     /// </summary>
     internal static bool AlsoOnAllowed(PluginConfiguration config, string? page, PosterListResult result)
     {
-        // Session 139: the mapping lives in Helpers/AlsoOn (shared with Custom and Animated); "not applicable" needs no filter.
+        // Session 140: the library grid switch (page empty / "library") or the "show also on" box of the item kind
+        // (Helpers/AlsoOn) - the cached answer no longer carries the view Enable, so this is the one gate.
         if (!result.IsMovie) { return true; }
         return Helpers.AlsoOn.Allowed(config, page, result.ResolvedType == "extrakeyart" ? "Extrakeyart" : "Extraposter", result.ItemKind);
     }

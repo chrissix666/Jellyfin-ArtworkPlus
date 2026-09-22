@@ -1286,6 +1286,55 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public bool ExtraposterMoviesLibraryEnabled { get; set; } = true;
 
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnMoviesFavorites { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnMoviesSearch { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnMoviesHomeRecentlyAdded { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnMoviesHomeContinueWatching { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnMoviesListsGenre { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnMoviesListsStudio { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnMoviesListsTag { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnMoviesListsFolderMore { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnMoviesDetailMoreLikeThis { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnMoviesDetailSetMembers { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnMoviesDetailPeoplePages { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnSetsFavorites { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnSetsSearch { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnSetsListsStudio { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnSetsListsTag { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterMoviesLibraryAlsoOnSetsListsFolderMore { get; set; }
+
     /// <summary>
     /// Independent on/off switch for the TV show's own detail page.
     /// Applies exclusively to the series' main level, not season/episode.
@@ -1297,6 +1346,37 @@ public class PluginConfiguration : BasePluginConfiguration
     /// exclusively to the series' main level, not season/episode.
     /// </summary>
     public bool ExtraposterTvShowsLibraryEnabled { get; set; } = true;
+
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnShowsFavorites { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnShowsSearch { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnShowsHomeRecentlyAdded { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnShowsListsGenre { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnShowsListsStudio { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnShowsListsTag { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnShowsListsFolderMore { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnShowsDetailMoreLikeThis { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnShowsDetailSetMembers { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtraposterTvShowsLibraryAlsoOnShowsDetailPeoplePages { get; set; }
 
     // ----- Extraposter / movies (and Sets) / detail pages (Session 123: every view has its own
     // full set; nothing is shared between detail and library any more).
@@ -1407,46 +1487,6 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtraposterMoviesLibrarySyncEnabled { get; set; } = true;
 
-    // Session 136: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnHomeRecentlyAdded { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnHomeContinueWatching { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnFavoritesMovies { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnFavoritesCollections { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnListsGenre { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnListsStudio { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnListsTag { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnListsFolderMore { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnSearchMovies { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnSearchCollections { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnDetailMoreLikeThis { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnDetailCollectionMembers { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterMoviesLibraryAlsoOnDetailPersonPages { get; set; }
-
     /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
     public bool ExtraposterMoviesLibrarySeamlessEnabled { get; set; } = true;
 
@@ -1529,40 +1569,6 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtraposterTvShowsLibrarySyncEnabled { get; set; } = true;
 
-    // Session 136: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterTvShowsLibraryAlsoOnHomeRecentlyAdded { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterTvShowsLibraryAlsoOnHomeContinueWatching { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterTvShowsLibraryAlsoOnFavoritesShows { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterTvShowsLibraryAlsoOnListsGenre { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterTvShowsLibraryAlsoOnListsStudio { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterTvShowsLibraryAlsoOnListsTag { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterTvShowsLibraryAlsoOnListsFolderMore { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterTvShowsLibraryAlsoOnSearchShows { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterTvShowsLibraryAlsoOnDetailMoreLikeThis { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterTvShowsLibraryAlsoOnDetailCollectionMembers { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtraposterTvShowsLibraryAlsoOnDetailPersonPages { get; set; }
-
     /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
     public bool ExtraposterTvShowsLibrarySeamlessEnabled { get; set; } = true;
 
@@ -1600,6 +1606,55 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool ExtrakeyartMoviesLibraryEnabled { get; set; } = true;
 
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnMoviesFavorites { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnMoviesSearch { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnMoviesHomeRecentlyAdded { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnMoviesHomeContinueWatching { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnMoviesListsGenre { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnMoviesListsStudio { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnMoviesListsTag { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnMoviesListsFolderMore { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnMoviesDetailMoreLikeThis { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnMoviesDetailSetMembers { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnMoviesDetailPeoplePages { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnSetsFavorites { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnSetsSearch { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnSetsListsStudio { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnSetsListsTag { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartMoviesLibraryAlsoOnSetsListsFolderMore { get; set; }
+
     public string ExtrakeyartTvShowsNamingMode { get; set; } = "Standalone";
 
     public string ExtrakeyartTvShowsFolderName { get; set; } = "keyart";
@@ -1607,6 +1662,37 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ExtrakeyartTvShowsDetailEnabled { get; set; } = true;
 
     public bool ExtrakeyartTvShowsLibraryEnabled { get; set; } = true;
+
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnShowsFavorites { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnShowsSearch { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnShowsHomeRecentlyAdded { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnShowsListsGenre { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnShowsListsStudio { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnShowsListsTag { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnShowsListsFolderMore { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnShowsDetailMoreLikeThis { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnShowsDetailSetMembers { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool ExtrakeyartTvShowsLibraryAlsoOnShowsDetailPeoplePages { get; set; }
 
     // ----- Extrakeyart / movies (and Sets) / detail pages (Session 123: every view has its own
     // full set; nothing is shared between detail and library any more).
@@ -1691,46 +1777,6 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtrakeyartMoviesLibrarySyncEnabled { get; set; } = true;
 
-    // Session 136: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnHomeRecentlyAdded { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnHomeContinueWatching { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnFavoritesMovies { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnFavoritesCollections { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnListsGenre { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnListsStudio { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnListsTag { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnListsFolderMore { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnSearchMovies { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnSearchCollections { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnDetailMoreLikeThis { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnDetailCollectionMembers { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartMoviesLibraryAlsoOnDetailPersonPages { get; set; }
-
     /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
     public bool ExtrakeyartMoviesLibrarySeamlessEnabled { get; set; } = true;
 
@@ -1810,40 +1856,6 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Library views only (Session 123, Phase 2): all tiles of a page change on one shared clock; a tile whose first image is late waits for the next tick.</summary>
     public bool ExtrakeyartTvShowsLibrarySyncEnabled { get; set; } = true;
-
-    // Session 136: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartTvShowsLibraryAlsoOnHomeRecentlyAdded { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartTvShowsLibraryAlsoOnHomeContinueWatching { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartTvShowsLibraryAlsoOnFavoritesShows { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartTvShowsLibraryAlsoOnListsGenre { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartTvShowsLibraryAlsoOnListsStudio { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartTvShowsLibraryAlsoOnListsTag { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartTvShowsLibraryAlsoOnListsFolderMore { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartTvShowsLibraryAlsoOnSearchShows { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartTvShowsLibraryAlsoOnDetailMoreLikeThis { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartTvShowsLibraryAlsoOnDetailCollectionMembers { get; set; }
-
-    /// <summary>Session 136: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool ExtrakeyartTvShowsLibraryAlsoOnDetailPersonPages { get; set; }
 
     /// <summary>Library views (Session 124): on = the tile stays blank until our image is ready (no poster flash, slightly later); off = Jellyfin's poster shows first, ours replaces it.</summary>
     public bool ExtrakeyartTvShowsLibrarySeamlessEnabled { get; set; } = true;
@@ -2242,45 +2254,54 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool AnimatedPosterMoviesLibraryEnabled { get; set; } = true;
 
-    // Session 139: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnHomeRecentlyAdded { get; set; }
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnMoviesFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnHomeContinueWatching { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnMoviesSearch { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnFavoritesMovies { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnMoviesHomeRecentlyAdded { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnFavoritesCollections { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnMoviesHomeContinueWatching { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnListsGenre { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnMoviesListsGenre { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnListsStudio { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnMoviesListsStudio { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnListsTag { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnMoviesListsTag { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnListsFolderMore { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnMoviesListsFolderMore { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnSearchMovies { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnMoviesDetailMoreLikeThis { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnSearchCollections { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnMoviesDetailSetMembers { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnDetailMoreLikeThis { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnMoviesDetailPeoplePages { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnDetailCollectionMembers { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnSetsFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterMoviesLibraryAlsoOnDetailPersonPages { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnSetsSearch { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnSetsListsStudio { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnSetsListsTag { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterMoviesLibraryAlsoOnSetsListsFolderMore { get; set; }
 
     // --- Sets (BoxSet/Collections) ---
     // Phase 2 (Session 90): Sets no longer has its own TypeName/Detail/
@@ -2309,39 +2330,36 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool AnimatedPosterTvShowsLibraryEnabled { get; set; } = true;
 
-    // Session 139: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterTvShowsLibraryAlsoOnHomeRecentlyAdded { get; set; }
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterTvShowsLibraryAlsoOnShowsFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterTvShowsLibraryAlsoOnHomeContinueWatching { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterTvShowsLibraryAlsoOnShowsSearch { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterTvShowsLibraryAlsoOnFavoritesShows { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterTvShowsLibraryAlsoOnShowsHomeRecentlyAdded { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterTvShowsLibraryAlsoOnListsGenre { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterTvShowsLibraryAlsoOnShowsListsGenre { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterTvShowsLibraryAlsoOnListsStudio { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterTvShowsLibraryAlsoOnShowsListsStudio { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterTvShowsLibraryAlsoOnListsTag { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterTvShowsLibraryAlsoOnShowsListsTag { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterTvShowsLibraryAlsoOnListsFolderMore { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterTvShowsLibraryAlsoOnShowsListsFolderMore { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterTvShowsLibraryAlsoOnSearchShows { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterTvShowsLibraryAlsoOnShowsDetailMoreLikeThis { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterTvShowsLibraryAlsoOnDetailMoreLikeThis { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterTvShowsLibraryAlsoOnShowsDetailSetMembers { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterTvShowsLibraryAlsoOnDetailCollectionMembers { get; set; }
-
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedPosterTvShowsLibraryAlsoOnDetailPersonPages { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedPosterTvShowsLibraryAlsoOnShowsDetailPeoplePages { get; set; }
 
     // ───────────────────────── Animated Poster tab: Animated Keyart ─────────────────────────
     // Phase 2 (Session 90/91): new sibling feature to Animated Poster
@@ -2364,45 +2382,54 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool AnimatedKeyartMoviesLibraryEnabled { get; set; } = true;
 
-    // Session 139: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnHomeRecentlyAdded { get; set; }
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnMoviesFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnHomeContinueWatching { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnMoviesSearch { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnFavoritesMovies { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnMoviesHomeRecentlyAdded { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnFavoritesCollections { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnMoviesHomeContinueWatching { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnListsGenre { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnMoviesListsGenre { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnListsStudio { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnMoviesListsStudio { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnListsTag { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnMoviesListsTag { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnListsFolderMore { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnMoviesListsFolderMore { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnSearchMovies { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnMoviesDetailMoreLikeThis { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnSearchCollections { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnMoviesDetailSetMembers { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnDetailMoreLikeThis { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnMoviesDetailPeoplePages { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnDetailCollectionMembers { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnSetsFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartMoviesLibraryAlsoOnDetailPersonPages { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnSetsSearch { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnSetsListsStudio { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnSetsListsTag { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartMoviesLibraryAlsoOnSetsListsFolderMore { get; set; }
 
     // --- Sets (BoxSet/Collections) --- reuses Movies' own fields above, same as Animated Poster's own Sets simplification.
 
@@ -2419,39 +2446,36 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool AnimatedKeyartTvShowsLibraryEnabled { get; set; } = true;
 
-    // Session 139: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartTvShowsLibraryAlsoOnHomeRecentlyAdded { get; set; }
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartTvShowsLibraryAlsoOnShowsFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartTvShowsLibraryAlsoOnHomeContinueWatching { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartTvShowsLibraryAlsoOnShowsSearch { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartTvShowsLibraryAlsoOnFavoritesShows { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartTvShowsLibraryAlsoOnShowsHomeRecentlyAdded { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartTvShowsLibraryAlsoOnListsGenre { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartTvShowsLibraryAlsoOnShowsListsGenre { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartTvShowsLibraryAlsoOnListsStudio { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartTvShowsLibraryAlsoOnShowsListsStudio { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartTvShowsLibraryAlsoOnListsTag { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartTvShowsLibraryAlsoOnShowsListsTag { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartTvShowsLibraryAlsoOnListsFolderMore { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartTvShowsLibraryAlsoOnShowsListsFolderMore { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartTvShowsLibraryAlsoOnSearchShows { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartTvShowsLibraryAlsoOnShowsDetailMoreLikeThis { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartTvShowsLibraryAlsoOnDetailMoreLikeThis { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartTvShowsLibraryAlsoOnShowsDetailSetMembers { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartTvShowsLibraryAlsoOnDetailCollectionMembers { get; set; }
-
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool AnimatedKeyartTvShowsLibraryAlsoOnDetailPersonPages { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool AnimatedKeyartTvShowsLibraryAlsoOnShowsDetailPeoplePages { get; set; }
 
     // ----- Animated Keyart logo overlay, detail pages (Session 126: closes the gap that every other Keyart variant had a logo).
     /// <summary>Jellyfin's Logo image drawn over the animated keyart on detail pages.</summary>
@@ -2531,45 +2555,54 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool PostercaseMoviesLibraryEnabled { get; set; } = true;
 
-    // Session 139: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnHomeRecentlyAdded { get; set; }
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnMoviesFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnHomeContinueWatching { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnMoviesSearch { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnFavoritesMovies { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnMoviesHomeRecentlyAdded { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnFavoritesCollections { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnMoviesHomeContinueWatching { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnListsGenre { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnMoviesListsGenre { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnListsStudio { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnMoviesListsStudio { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnListsTag { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnMoviesListsTag { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnListsFolderMore { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnMoviesListsFolderMore { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnSearchMovies { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnMoviesDetailMoreLikeThis { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnSearchCollections { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnMoviesDetailSetMembers { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnDetailMoreLikeThis { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnMoviesDetailPeoplePages { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnDetailCollectionMembers { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnSetsFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseMoviesLibraryAlsoOnDetailPersonPages { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnSetsSearch { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnSetsListsStudio { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnSetsListsTag { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseMoviesLibraryAlsoOnSetsListsFolderMore { get; set; }
 
     // --- TV shows (always the series' main level - Movies and Season/Episode explicitly out of scope, concept-session decision) ---
 
@@ -2596,39 +2629,36 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool PostercaseTvShowsLibraryEnabled { get; set; } = true;
 
-    // Session 139: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseTvShowsLibraryAlsoOnHomeRecentlyAdded { get; set; }
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseTvShowsLibraryAlsoOnShowsFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseTvShowsLibraryAlsoOnHomeContinueWatching { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseTvShowsLibraryAlsoOnShowsSearch { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseTvShowsLibraryAlsoOnFavoritesShows { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseTvShowsLibraryAlsoOnShowsHomeRecentlyAdded { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseTvShowsLibraryAlsoOnListsGenre { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseTvShowsLibraryAlsoOnShowsListsGenre { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseTvShowsLibraryAlsoOnListsStudio { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseTvShowsLibraryAlsoOnShowsListsStudio { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseTvShowsLibraryAlsoOnListsTag { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseTvShowsLibraryAlsoOnShowsListsTag { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseTvShowsLibraryAlsoOnListsFolderMore { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseTvShowsLibraryAlsoOnShowsListsFolderMore { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseTvShowsLibraryAlsoOnSearchShows { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseTvShowsLibraryAlsoOnShowsDetailMoreLikeThis { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseTvShowsLibraryAlsoOnDetailMoreLikeThis { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseTvShowsLibraryAlsoOnShowsDetailSetMembers { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseTvShowsLibraryAlsoOnDetailCollectionMembers { get; set; }
-
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool PostercaseTvShowsLibraryAlsoOnDetailPersonPages { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool PostercaseTvShowsLibraryAlsoOnShowsDetailPeoplePages { get; set; }
 
     /// <summary>
     /// Which of Postercase/Keyart wins as the Ebene-0 image when BOTH
@@ -2675,45 +2705,54 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool KeyartMoviesLibraryEnabled { get; set; } = true;
 
-    // Session 139: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnHomeRecentlyAdded { get; set; }
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnMoviesFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnHomeContinueWatching { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnMoviesSearch { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnFavoritesMovies { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnMoviesHomeRecentlyAdded { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnFavoritesCollections { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnMoviesHomeContinueWatching { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnListsGenre { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnMoviesListsGenre { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnListsStudio { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnMoviesListsStudio { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnListsTag { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnMoviesListsTag { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnListsFolderMore { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnMoviesListsFolderMore { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnSearchMovies { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnMoviesDetailMoreLikeThis { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnSearchCollections { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnMoviesDetailSetMembers { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnDetailMoreLikeThis { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnMoviesDetailPeoplePages { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnDetailCollectionMembers { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnSetsFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartMoviesLibraryAlsoOnDetailPersonPages { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnSetsSearch { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnSetsListsStudio { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnSetsListsTag { get; set; }
+
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartMoviesLibraryAlsoOnSetsListsFolderMore { get; set; }
 
     // --- TV shows (always the series' main level) ---
 
@@ -2729,39 +2768,36 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool KeyartTvShowsLibraryEnabled { get; set; } = true;
 
-    // Session 139: "Also on" - the library-scope tiles outside the library view, per area; all off by default (library view only).
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartTvShowsLibraryAlsoOnHomeRecentlyAdded { get; set; }
+    // Session 140: "Show also on" - the areas outside the library grid where the library tile is allowed, per item kind (concept docs/artworkplus-alsoon-concept.md). All off by default.
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartTvShowsLibraryAlsoOnShowsFavorites { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartTvShowsLibraryAlsoOnHomeContinueWatching { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartTvShowsLibraryAlsoOnShowsSearch { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartTvShowsLibraryAlsoOnFavoritesShows { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartTvShowsLibraryAlsoOnShowsHomeRecentlyAdded { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartTvShowsLibraryAlsoOnListsGenre { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartTvShowsLibraryAlsoOnShowsListsGenre { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartTvShowsLibraryAlsoOnListsStudio { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartTvShowsLibraryAlsoOnShowsListsStudio { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartTvShowsLibraryAlsoOnListsTag { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartTvShowsLibraryAlsoOnShowsListsTag { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartTvShowsLibraryAlsoOnListsFolderMore { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartTvShowsLibraryAlsoOnShowsListsFolderMore { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartTvShowsLibraryAlsoOnSearchShows { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartTvShowsLibraryAlsoOnShowsDetailMoreLikeThis { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartTvShowsLibraryAlsoOnDetailMoreLikeThis { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartTvShowsLibraryAlsoOnShowsDetailSetMembers { get; set; }
 
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartTvShowsLibraryAlsoOnDetailCollectionMembers { get; set; }
-
-    /// <summary>Session 139: also show the library tile on this area (see the "Also on" rows of the admin page). Default off.</summary>
-    public bool KeyartTvShowsLibraryAlsoOnDetailPersonPages { get; set; }
+    /// <summary>Session 140: also show the library tile on this area for this item kind. Default off.</summary>
+    public bool KeyartTvShowsLibraryAlsoOnShowsDetailPeoplePages { get; set; }
 
     // ----- Keyart logo overlay, detail pages (Session 123: separate per view).
     /// <summary>Jellyfin's Logo image drawn over the keyart on detail pages.</summary>

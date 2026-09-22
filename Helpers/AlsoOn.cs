@@ -1,48 +1,72 @@
 using System;
+using System.Linq;
 using Jellyfin.Plugin.ArtworkPlus.Configuration;
 
 namespace Jellyfin.Plugin.ArtworkPlus.Helpers;
 
 /// <summary>
-/// "Also on" (Session 136 for Extraposter/Extrakeyart, Session 139 for
-/// Postercase/Keyart and AnimatedPoster/AnimatedKeyart): the library-scope
-/// tile answer is filtered by the page class the client sends with the
-/// batch (<c>page=</c>). No class = the library view itself, the dashboard
-/// never, an unknown class never; every other class maps to exactly one
-/// <c>&lt;Feature&gt;&lt;Kind&gt;LibraryAlsoOn&lt;Area&gt;</c> switch, read by
-/// reflection (the same name pattern the admin page and the tests use).
+/// "Show also on" (Session 140, concept docs/artworkplus-alsoon-concept.md;
+/// Sessions 136-139 before it): a library-scope tile answer is gated by the
+/// page class the client sends with the batch (<c>page=</c>) and the item
+/// kind. The library grid itself (<c>page</c> empty or "library") is the
+/// block's <c>...LibraryEnabled</c> switch; the dashboard is never allowed;
+/// every other class maps to one area box of the item kind's menu,
+/// <c>&lt;Feature&gt;&lt;Movies|TvShows&gt;LibraryAlsoOn&lt;Movies|Sets|Shows&gt;&lt;Area&gt;</c>,
+/// read by reflection (the same name pattern the admin page and the tests
+/// use). The menus are independent of the grid switch: a tile can be on
+/// Home without being on the library page.
 /// </summary>
 public static class AlsoOn
 {
-    /// <summary>The page classes the client produces (Posters-v1.js pageClassOf) and the area switch each one reads.</summary>
+    /// <summary>The page classes the client produces (Posters-v1.js pageClassOf) and the area each one reads.</summary>
+    public static string? AreaOf(string page) => page switch
+    {
+        "favorites" => "Favorites",
+        "search" => "Search",
+        "home-recent" => "HomeRecentlyAdded",
+        "home-resume" => "HomeContinueWatching",
+        "list-genre" => "ListsGenre",
+        "list-studio" => "ListsStudio",
+        "list-tag" => "ListsTag",
+        "list-other" => "ListsFolderMore",
+        "detail-similar" => "DetailMoreLikeThis",
+        "detail-collection" => "DetailSetMembers",
+        "detail-person" => "DetailPeoplePages",
+        _ => null
+    };
+
+    /// <summary>Whether the library tile of <paramref name="feature"/> may show for this item kind on this page class.</summary>
     /// <param name="config">The plugin configuration.</param>
-    /// <param name="page">The page class of the batch (null/empty = library view).</param>
+    /// <param name="page">The page class of the batch (null/empty = library grid).</param>
     /// <param name="feature">Extraposter, Extrakeyart, Postercase, Keyart, AnimatedPoster or AnimatedKeyart.</param>
-    /// <param name="itemKind">Movie, Series or BoxSet (a BoxSet takes the Collections subs of the Movies block).</param>
+    /// <param name="itemKind">Movie, Series or BoxSet.</param>
     public static bool Allowed(PluginConfiguration config, string? page, string feature, string itemKind)
     {
-        if (string.IsNullOrEmpty(page) || page == "library") { return true; }
-        if (page == "dashboard") { return false; }
-        var tv = itemKind == "Series";
-        var kind = tv ? "TvShows" : "Movies";
-        var boxSet = itemKind == "BoxSet";
-        string? sub = page switch
+        var kind = itemKind == "Series" ? "TvShows" : "Movies";
+        var item = itemKind == "Series" ? "Shows" : itemKind == "BoxSet" ? "Sets" : "Movies";
+        if (string.IsNullOrEmpty(page) || page == "library")
         {
-            "home-recent" => "HomeRecentlyAdded",
-            "home-resume" => "HomeContinueWatching",
-            "favorites" => tv ? "FavoritesShows" : (boxSet ? "FavoritesCollections" : "FavoritesMovies"),
-            "list-genre" => "ListsGenre",
-            "list-studio" => "ListsStudio",
-            "list-tag" => "ListsTag",
-            "list-other" => "ListsFolderMore",
-            "search" => tv ? "SearchShows" : (boxSet ? "SearchCollections" : "SearchMovies"),
-            "detail-similar" => "DetailMoreLikeThis",
-            "detail-collection" => "DetailCollectionMembers",
-            "detail-person" => "DetailPersonPages",
-            _ => null
-        };
-        if (sub is null) { return false; }
-        var property = typeof(PluginConfiguration).GetProperty(feature + kind + "LibraryAlsoOn" + sub);
+            return Read(config, feature + kind + "LibraryEnabled");
+        }
+
+        if (page == "dashboard") { return false; }
+        var area = AreaOf(page);
+        if (area is null) { return false; }
+        return Read(config, feature + kind + "LibraryAlsoOn" + item + area);
+    }
+
+    /// <summary>True when any "show also on" box of the feature's block is ticked (the tile arbiter expects the participant then).</summary>
+    public static bool AnyBox(PluginConfiguration config, string feature, string kind)
+    {
+        var prefix = feature + kind + "LibraryAlsoOn";
+        return typeof(PluginConfiguration).GetProperties()
+            .Where(p => p.PropertyType == typeof(bool) && p.Name.StartsWith(prefix, StringComparison.Ordinal))
+            .Any(p => p.GetValue(config) is true);
+    }
+
+    private static bool Read(PluginConfiguration config, string name)
+    {
+        var property = typeof(PluginConfiguration).GetProperty(name);
         return property is not null && property.GetValue(config) is true;
     }
 

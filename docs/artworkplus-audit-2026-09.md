@@ -329,3 +329,11 @@ map): S1-02 -> S1-04 -> S1-08 -> S3-05 -> S2-07 -> S3-03 -> S3-04 -> S2-01
 -> S2-04 -> S2-06 -> S3-02 -> S4-03 -> S2-05 -> S1-07 -> docs S5-01..03,
 S4-04 -> S1-01 last (client + server contract).
 
+## Session 140 (2026-09-22) - audit of the "Show also on" rework and the whole admin menu
+
+| ID | area | file:line | class | severity | evidence | status |
+|---|---|---|---|---|---|---|
+| S6-01 | admin page | `configPage.html` EP_TREE `ap_movies` / `ap_tvshows` / `ak_movies` / `ak_tvshows` | tab ineffectiveness | bug (live since deploy #83, user finding) | preview: `.epTabBtn[data-tab=animatedposter]` carried `epTabGreyed` at defaults; the nodes had structural-only children since Session 139, `epSubtreeEverActive` returns false for structural children (rule 12) | FIXED Session 140: `terminal: true` on the four nodes; guard `S140: no tab button is greyed at defaults` |
+| S6-02 | admin page | `configPage.html` `epApplyFavoritesPeopleFormatException` vs node `backdropsfavorites_general_traversal` | rule 26 residue | bug (cosmetic, pre-existing Session 108/109) | preview: Backdrops format off -> on leaves `BackdropsFavoritesGeneralTraversalModeRow` without its grey class while the select stays disabled (half dimmed, rule 25); heals on the next recompute | open - fix needs a go |
+| S6-03 | admin page | tab roots | design | design | root switch off leaves the format boxes and the sub-Enables clickable (Part C: trigger outside DependentFields = escape route); Extra view Show-on off -> on does not re-enable the view (one-way sync, Session 124); `*Select` twins and `LogoArtPersonsCreateMode` have no EP_FIELDS entry on purpose | design |
+| S6-04 | show also on | all 18 menus | consistency | none | static: identical structure / labels / descriptions / ids across the six features, 156 fields = concept Part A, 18 nodes (own Show-on box, target = header target), 12 sync quadruples complete; dynamic: own Show-on greys one level, library Enable never greys, a box keeps Show on and the feature Enable, no JS errors | ok |
