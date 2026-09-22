@@ -68,6 +68,9 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     public override string Name => "ArtworkPlus";
 
+    /// <summary>Session 138 (S4-04): Jellyfin rewrites meta.json's "description" from this property on load - without an override it is blanked.</summary>
+    public override string Description => "Poster, logo, character art and backdrop customisation for Jellyfin 10.10: 3D cases, animated and custom posters, Extraposter slideshows, LogoArt, CharacterArt, Red Carpet, seven backdrop categories.";
+
     public override Guid Id => Guid.Parse("a32fa765-c917-4c30-a58c-5998015cd046");
 
     /// <summary>
