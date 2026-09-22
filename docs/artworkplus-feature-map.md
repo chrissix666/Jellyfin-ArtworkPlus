@@ -73,6 +73,8 @@ Sets (BoxSets): supported by Animated/Custom/Extra since Sessions 87–92 (Movie
 - **Known gaps**: live look at Session 123 (split/Synchronize/tile logos) is the user's; Import button lacks `.raised`; no dedicated tests for Animated Poster/Keyart and the Sets checkboxes. Batch maps must be keyed like the tile `data-id` (no dashes) — `tests/diagnostic_batch_key_format.py`.
 - **Client logging**: every module logs through `Core.makeLogger`; silent by default, enabled per page with `localStorage.ArtworkPlusDebug` = `all` or a tag list (`ArtworkPlusCore.setDebug('CaseMod,Backdrops')`, reload). Server side: `config\logging.json` keeps `Jellyfin.Plugin.ArtworkPlus` at Information (Session 127e: Debug costs ~1 ms per line); since Session 138 the per-item / per-image lines are Debug - set the override to `Debug` to see them, back to `Information` for release.
 
+- **Cost (baseline 2026-09-22, `docs/artworkplus-performance-baseline-2026-09.md`)**: > 99 % of the plugin's bytes are the three library-scope tile endpoints on list pages (CustomPoster/{id} ~1.2 MB per card, Extraposter/{id} ~1.4 MB, AnimatedPoster/{id} ~3 MB); every other endpoint <= 4 KB per page, Characterart ~1 MB; detail pages 0-56 ms of long tasks. Stress tooling `tools/stress/` (185-step playbook, runner, analyze.py); tab must be visible.
+
 ## Live-test order (Session 114+)
 
 1. Case Mod → 2. Animated Poster/Keyart → 3. Custom Poster/Keyart → 4. Extraposter/Extrakeyart → 5. Characterart → 6. Red Carpet → 7. Detail View Backdrops → 8. People Backdrops (Appearances, Folder) → 9. Genre/Studio/Tag/Favorites Backdrops → 10. Gate system on the real config page.
