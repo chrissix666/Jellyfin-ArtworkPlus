@@ -54,6 +54,7 @@ GATING = [
     'diagnostic_file_endpoints_guarded.py',  # Session 138 (audit S1-04): every file-serving action inside try/catch; PhysicalFile sites listed (S1-04b)
     'diagnostic_script_endpoints_cache.py',  # Session 138 (audit S2-09): every script.js endpoint revalidates (no-cache + ETag)
     'diagnostic_csproj_native_assets.py',   # Session 138 (audit S4-03): SkiaSharp compile-only, no native runtimes in the build output
+    'diagnostic_feature_map_counts.py',    # Session 138 (audit S5-01): the feature map's counts and the logging line match the code
 ]
 INFORMATIONAL = [
     'diagnostic_cross_node_check.py',

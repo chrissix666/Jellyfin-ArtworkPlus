@@ -875,7 +875,9 @@ Properties no server file reads (2): `CaseModDeveloperSettingsEnabled`, `LogoArt
 | `tests/diagnostic_batch_key_format.py` | `Jellyfin-ArtworkPlus-Posters-v1.js` |
 | `tests/diagnostic_casemod_design_frame.py` | - |
 | `tests/diagnostic_cross_node_check.py` | - |
+| `tests/diagnostic_csproj_native_assets.py` | - |
 | `tests/diagnostic_duplicate_id_check.py` | `Configuration/configPage.html` |
+| `tests/diagnostic_feature_map_counts.py` | `Configuration/PluginConfiguration.cs` |
 | `tests/diagnostic_file_endpoints_guarded.py` | `Controllers/BackdropsController.cs`, `Controllers/LogoArtController.cs` |
 | `tests/diagnostic_gegenaudit.py` | - |
 | `tests/diagnostic_header_consistency_check.py` | - |
