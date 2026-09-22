@@ -250,6 +250,9 @@ public class PeopleBackdropsController : ControllerBase
     // reflection/type metadata internally per-options-instance.
     private static readonly JsonSerializerOptions IndentedJsonOptions = new() { WriteIndented = true };
 
+    /// <summary>Audit S1-01 (Session 138): upper bound for one candidate image download (a wallpaper is 0.2-6 MB).</summary>
+    private const long MaxCandidateImageBytes = 25L * 1024 * 1024;
+
     private readonly MediaBrowser.Controller.Library.IUserManager _userManager;
 
     public PeopleBackdropsController(
@@ -1291,6 +1294,10 @@ public class PeopleBackdropsController : ControllerBase
         _logger.LogDebug("PeopleBackdrops: PopulateAsync - {PersonName} -> slug \"{Slug}\", target {Target} image(s), text filter {TextFilter}", person.Name, slug, targetCount, config.PeopleBackdropsTextFilterEnabled ? "ON" : "off");
 
         var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+        // Audit S1-01 (Session 138): the candidate images are downloaded in full for
+        // the aspect / text checks (GetByteArrayAsync) - a cap keeps one oversized
+        // answer from being buffered whole; a real wallpaper is 0.2-6 MB.
+        httpClient.MaxResponseContentBufferSize = MaxCandidateImageBytes;
         if (!string.IsNullOrEmpty(config.PeopleBackdropsApiKey))
         {
             httpClient.DefaultRequestHeaders.Remove("X-API-Key");
