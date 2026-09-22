@@ -45,7 +45,7 @@ check('licences are OFL / Apache / user decision only', lic <= {'SIL OFL 1.1', '
 csproj = open(os.path.join(ROOT, 'ArtworkPlus.csproj'), encoding='utf-8').read()
 check('csproj ships Fonts\\**\\*.otf + fonts.json + licences next to the DLL',
       'Fonts\\**\\*.otf' in csproj and 'Fonts\\fonts.json' in csproj and 'Fonts\\LICENSE-*.txt' in csproj)
-check('csproj references SkiaSharp 2.88.9 without runtime assets', re.search(r'Include="SkiaSharp" Version="2\.88\.9" ExcludeAssets="runtime"', csproj) is not None)
+check('csproj references SkiaSharp 2.88.9 without runtime (and, since S4-03, native) assets', re.search(r'Include="SkiaSharp" Version="2\.88\.9" ExcludeAssets="runtime(;native)?"', csproj) is not None)
 
 cs = open(PLUGIN_CONFIG_CS, encoding='utf-8').read()
 page = open(CONFIG_PAGE, encoding='utf-8').read()
