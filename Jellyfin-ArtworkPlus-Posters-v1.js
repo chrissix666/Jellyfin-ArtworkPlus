@@ -1176,8 +1176,37 @@
         }
 
         // Card intake - the pending mark happens here, before the first paint.
+        var CARD_SELECTOR = '.card[data-type="Movie"], .card[data-type="Series"], .card[data-type="BoxSet"]';
+        // Audit S2-05 (Session 138): a document-wide query ran for EVERY mutation
+        // batch - 513 scans / 230 ms on a 516-card library with lazy loading
+        // (blurhash canvases come and go per card). With the observer's records
+        // only the ADDED subtrees are searched; the synchronous, pre-paint
+        // intake itself is unchanged (MutationObserver callbacks run before the
+        // frame is painted, which is what the pending mark relies on). The
+        // viewshow / boot scans still walk the whole document.
+        function intake(card) {
+            if (seenCards.has(card)) { return; }
+            seenCards.add(card);
+            var st = stateFor(card);
+            if (!st) { return; }
+            if (st.container.hasAttribute('data-src') || st.container.style.backgroundImage) { setPending(st); }
+            Object.keys(participants).forEach(function (p) {
+                if (isEnabled(+p) && participants[p].collect) { participants[p].collect(card, st.itemId); }
+            });
+        }
+        function scanAdded(records) {
+            for (var i = 0; i < records.length; i++) {
+                var added = records[i].addedNodes;
+                for (var j = 0; j < added.length; j++) {
+                    var node = added[j];
+                    if (node.nodeType !== 1) { continue; }
+                    if (node.matches && node.matches(CARD_SELECTOR)) { intake(node); }
+                    if (node.querySelectorAll) { node.querySelectorAll(CARD_SELECTOR).forEach(intake); }
+                }
+            }
+        }
         function scan() {
-            document.querySelectorAll('.card[data-type="Movie"], .card[data-type="Series"], .card[data-type="BoxSet"]').forEach(function (card) {
+            document.querySelectorAll(CARD_SELECTOR).forEach(function (card) {
                 if (seenCards.has(card)) { return; }
                 seenCards.add(card);
                 var st = stateFor(card);
@@ -1189,7 +1218,7 @@
             });
         }
 
-        var mutationObserver = new MutationObserver(function () { scan(); });
+        var mutationObserver = new MutationObserver(function (records) { scanAdded(records); });
         mutationObserver.observe(document.body, { childList: true, subtree: true });
         document.addEventListener('viewshow', function () { setTimeout(scan, 300); });
         setTimeout(scan, 1200);
