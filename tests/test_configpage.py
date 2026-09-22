@@ -1512,7 +1512,7 @@ with sync_playwright() as p:
     S136_VIEWS = [('extraposter', 'Extraposter', 'Movies'), ('extraposter', 'Extraposter', 'TvShows'), ('extrakeyart', 'Extrakeyart', 'Movies'), ('extrakeyart', 'Extrakeyart', 'TvShows'),
                   ('customposter', 'Postercase', 'Movies'), ('customposter', 'Postercase', 'TvShows'), ('customposter', 'Keyart', 'Movies'), ('customposter', 'Keyart', 'TvShows'),
                   ('animatedposter', 'AnimatedPoster', 'Movies'), ('animatedposter', 'AnimatedPoster', 'TvShows'), ('animatedposter', 'AnimatedKeyart', 'Movies'), ('animatedposter', 'AnimatedKeyart', 'TvShows')]
-    S136_GROUPS = ['Home', 'Favorites', 'Lists', 'Search', 'Detail']
+    S136_GROUPS = ['Favorites', 'Search', 'Home', 'Lists', 'Detail']  # Session 139b: the user's order
     s136 = apage.evaluate("""([views, groups]) => {
         var out = { rows: 0, boxes: 0, checked: 0, order: [], labels: [], subs: {}, missing: [] };
         views.forEach(function (v) {
@@ -1539,13 +1539,13 @@ with sync_playwright() as p:
     }""", [S136_VIEWS, S136_GROUPS])
     check('S136/S139: 60 Also-on rows (5 per library view of the six tile features), 144 checkboxes, all off after Restore, one description each',
           s136['rows'] == 60 and s136['boxes'] == 144 and s136['checked'] == 0 and not s136['missing'], str(s136['missing'] or s136))
-    check('S136: the five rows follow "Show on" directly and precede the Fields block, in the order Home, Favorites, Lists, Search, Detail pages',
-          all(s136['order']) and s136['labels'] == ['Also on Home', 'Also on Favorites', 'Also on Lists', 'Also on Search', 'Also on Detail pages'] * 12, str(s136['order']) + str(s136['labels'][:5]))
-    check('S136: sub options - Movies rows carry Movies/Collections, TV rows Shows; Lists has Genre, Studio, Tag, Folder & More',
-          s136['subs']['ExtraposterMoviesFavorites'] == ['Movies', 'Collections'] and s136['subs']['ExtraposterTvShowsSearch'] == ['Shows']
-          and s136['subs']['ExtrakeyartTvShowsLists'] == ['Genre', 'Studio', 'Tag', 'Folder & More'] and s136['subs']['ExtrakeyartMoviesDetail'] == ['More like this', 'Collection members', 'Person pages']
+    check('S136: the five rows follow "Show on" directly and precede the Fields block, in the order Favorites, Search, Home, Lists, Detail pages',
+          all(s136['order']) and s136['labels'] == ['Also on Favorites', 'Also on Search', 'Also on Home', 'Also on Lists', 'Also on Detail pages'] * 12, str(s136['order']) + str(s136['labels'][:5]))
+    check('S136: sub options - Movies rows carry Movies/Sets (Session 139b wording), TV rows Shows; Lists has Genre, Studio, Tag, Folder & More',
+          s136['subs']['ExtraposterMoviesFavorites'] == ['Movies', 'Sets'] and s136['subs']['ExtraposterTvShowsSearch'] == ['Shows']
+          and s136['subs']['ExtrakeyartTvShowsLists'] == ['Genre', 'Studio', 'Tag', 'Folder & More'] and s136['subs']['ExtrakeyartMoviesDetail'] == ['More like this', 'Set members', 'Person pages']
           and s136['subs']['ExtraposterTvShowsHome'] == ['Recently added', 'Continue Watching']
-          and s136['subs']['PostercaseMoviesFavorites'] == ['Movies', 'Collections'] and s136['subs']['KeyartTvShowsSearch'] == ['Shows']
+          and s136['subs']['PostercaseMoviesFavorites'] == ['Movies', 'Sets'] and s136['subs']['KeyartTvShowsSearch'] == ['Shows']
           and s136['subs']['AnimatedPosterTvShowsFavorites'] == ['Shows'] and s136['subs']['AnimatedKeyartMoviesLists'] == ['Genre', 'Studio', 'Tag', 'Folder & More'], str(s136['subs']))
     apage.evaluate("""() => { document.querySelector('.epTabBtn[data-tab="extraposter"]').click(); }""")
     def s136_grey(id_):
