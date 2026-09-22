@@ -53,6 +53,7 @@ GATING = [
     'test_alsoon_mapping.py',       # Session 136: "Also on" contract client page classes <-> server mapping <-> C# fields <-> page checkboxes
     'diagnostic_file_endpoints_guarded.py',  # Session 138 (audit S1-04): every file-serving action inside try/catch; PhysicalFile sites listed (S1-04b)
     'diagnostic_script_endpoints_cache.py',  # Session 138 (audit S2-09): every script.js endpoint revalidates (no-cache + ETag)
+    'diagnostic_csproj_native_assets.py',   # Session 138 (audit S4-03): SkiaSharp compile-only, no native runtimes in the build output
 ]
 INFORMATIONAL = [
     'diagnostic_cross_node_check.py',

@@ -113,7 +113,7 @@
          for its own image pipeline (jellyfin.deps.json), so the plugin
          compiles against exactly that version and ships nothing - the
          same ExcludeAssets reasoning as Jellyfin.Controller above. -->
-    <PackageReference Include="SkiaSharp" Version="2.88.9" ExcludeAssets="runtime" />
+    <PackageReference Include="SkiaSharp" Version="2.88.9" ExcludeAssets="runtime;native" />
   </ItemGroup>
 
   <ItemGroup>
