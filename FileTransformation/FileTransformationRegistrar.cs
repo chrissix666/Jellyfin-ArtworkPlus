@@ -469,7 +469,13 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
 });
 })();</script>";
 
-    public static string TransformIndexHtml(object payload)
+    // Audit S1-13 (Session 138): the File Transformation plugin keeps the ORIGINAL
+    // file only when the callback returns null (TransformationHelper.cs: `if
+    // (transformedString == null) return;` - an empty string is written back and
+    // the file is truncated to it). A failed payload read therefore returns null,
+    // never string.Empty: a blank index.html for everyone is the one outcome this
+    // callback must never produce.
+    public static string? TransformIndexHtml(object payload)
     {
         var logger = Plugin.Instance?.Logger;
 
@@ -491,14 +497,14 @@ if(v.classList.contains('artworkplus-poster-pending')){v.classList.remove('artwo
         }
         catch (Exception ex)
         {
-            logger?.LogError(ex, "ArtworkPlus: TransformIndexHtml - error reading payload.contents");
-            return string.Empty;
+            logger?.LogError(ex, "ArtworkPlus: TransformIndexHtml - error reading payload.contents - returning null so File Transformation keeps the original file");
+            return null;
         }
 
         if (string.IsNullOrEmpty(contents))
         {
-            logger?.LogWarning("ArtworkPlus: TransformIndexHtml - contents was empty, returning unchanged");
-            return contents ?? string.Empty;
+            logger?.LogWarning("ArtworkPlus: TransformIndexHtml - contents was empty, returning null (original kept)");
+            return null;
         }
 
         if (!contents.Contains("</body>", StringComparison.Ordinal))
