@@ -40,9 +40,11 @@ I have developed many Jellyfin Web script mods over the years, but besides this 
 - [Custom Poster](#custom-poster)
   - [Postercase](#postercase)
   - [Keyart](#keyart)
+  - [Keyart + Logo](#keyart--logo)
 - [Extraposter aka Character Poster (Sets)](#extraposter-aka-character-poster-sets)
   - [Extraposter](#extraposter)
   - [Extrakeyart](#extrakeyart)
+  - [Extrakeyart + Logo](#extrakeyart--logo)
 - [LogoArt](#logoart)
   - [Logos / Clearart / Characterart for Movies and Sets](#logos--clearart--characterart-for-movies-and-sets)
   - [Logos / Clearart / Characterart for TV Shows](#logos--clearart--characterart-for-tv-shows)
@@ -468,15 +470,19 @@ A retouched poster with no lettering.
 
 A textless poster.
 
-Everything works like Postercase above, with `keyart` as type and folder name. And because keyart has no title on it, Jellyfin's own logo can be laid over it:
+Everything works like Postercase above, with `keyart` as type and folder name.
 
-**Logo Overlay**
+---
+
+### Keyart + Logo
+
+Keyart has no title on it. So Jellyfin's own logo can be laid over it, turning a textless poster back into a complete one, with the logo exactly where and as big as you want it.
 
 Separately for the **detail page** and for **library views**:
 
 - **Enable logo overlay:** only shown when Jellyfin has a logo for the title
-- **Vertical position:** 0 to 100 percent, always centered horizontally
-- **Logo size:** width in percent of the poster
+- **Vertical position:** from the top of the poster, 0 to 100 percent. Horizontally it is always centered.
+- **Logo size:** width in percent of the poster, the height follows automatically
 
 ---
 
@@ -540,12 +546,23 @@ Separately for the **detail page** and for **library views**:
 
 The multi-image, textless variant of Keyart.
 
-Everything works like Extraposter above, with keyart instead: `Movie (2013)-keyart1.jpg`, `keyart1.jpg`, or everything inside `keyart/`, for movies and TV shows alike. Two extras:
+Everything works like Extraposter above, with keyart instead: `Movie (2013)-keyart1.jpg`, `keyart1.jpg`, or everything inside `keyart/`, for movies and TV shows alike. One extra:
 
 - **Unnumbered file:** Ignored, or Counts as #1. Whether a plain `keyart.jpg` is picked up as the first image.
-- **Logo overlay:** Jellyfin's own logo on top, separately for detail page and library views, with position and size
 
 Sets and TV shows use their own files only, there are no set or season posters for Extrakeyart.
+
+---
+
+### Extrakeyart + Logo
+
+Just like [Keyart + Logo](#keyart--logo), for the whole slideshow: every keyart gets Jellyfin's own logo on top, in the same spot, so the logo stays put while the images change underneath.
+
+Separately for the **detail page** and for **library views**, for movies and TV shows:
+
+- **Enable logo overlay:** only shown when Jellyfin has a logo for the title
+- **Vertical position:** from the top of the poster, 0 to 100 percent. Horizontally it is always centered.
+- **Logo size:** width in percent of the poster, the height follows automatically
 
 ---
 
