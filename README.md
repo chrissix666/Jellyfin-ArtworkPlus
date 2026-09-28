@@ -12,27 +12,58 @@ Before Jellyfin, I spent years in the Kodi community, starting and helping out w
 
 When I moved to Jellyfin, I missed all of it. So I built ArtworkPlus. It brings that world to Jellyfin Web, plus a lot of things Kodi never had.
 
-It is my third true plugin, next to [Cinema Project](https://github.com/chrissix666/Jellyfin-Cinema-Project), a virtual cinema environment based on three.js, and [VideoOSD Tweaks and Candy](https://github.com/chrissix666/Jellyfin-VideoOSD-Tweaks-Candy), which puts you in full control of the video player OSD.
+I have developed many Jellyfin Web script mods over the years, but besides this one, only two other true plugins: [Cinema Project](https://github.com/chrissix666/Jellyfin-Cinema-Project), a virtual cinema environment based on three.js that gives your movies an ambient feel, and [VideoOSD Tweaks and Candy](https://github.com/chrissix666/Jellyfin-VideoOSD-Tweaks-Candy), which puts you in full control of the Jellyfin video player OSD.
 
 ---
 
-# Jellyfin ArtworkPlus
+# ArtworkPlus
 
 - [What This Is](#what-this-is)
 - [What This Is Not](#what-this-is-not)
 - [Kodi Roots](#kodi-roots)
-- [How It Works](#how-it-works)
-- [Case Mod](#case-mod)
-- [Three.js Case](#threejs-case)
-- [Case Mix](#case-mix)
+- [Under the Hood](#under-the-hood)
+  - [Architecture](#architecture)
+  - [One Poster Slot, Several Candidates](#one-poster-slot-several-candidates)
+  - [No Flashing](#no-flashing)
+  - [Naming Modes](#naming-modes)
+  - [Detail Page, Library Views and Show Also On](#detail-page-library-views-and-show-also-on)
+  - [Slideshows](#slideshows)
+- [General](#general)
+- [Case](#case)
+  - [Poster Size](#poster-size)
+  - [Cases](#cases)
+  - [Three.js Case](#threejs-case)
+  - [Case Mix](#case-mix)
 - [Animated Poster](#animated-poster)
+  - [Animated Poster](#animated-poster-1)
+  - [Animated Keyart](#animated-keyart)
 - [Custom Poster](#custom-poster)
-- [Extraposter](#extraposter)
+  - [Postercase](#postercase)
+  - [Keyart](#keyart)
+- [Extraposter aka Character Poster (Sets)](#extraposter-aka-character-poster-sets)
+  - [Extraposter](#extraposter)
+  - [Extrakeyart](#extrakeyart)
 - [LogoArt](#logoart)
+  - [Logos for Movies and Sets](#logos-for-movies-and-sets)
+  - [Logos for TV Shows](#logos-for-tv-shows)
+  - [Logos for Videos](#logos-for-videos)
+  - [Logos for Music](#logos-for-music)
+  - [Logos for Books](#logos-for-books)
+  - [Logos for Persons](#logos-for-persons)
 - [CharacterArt](#characterart)
+  - [Characterart for Movies](#characterart-for-movies)
+  - [Characterart for TV Shows](#characterart-for-tv-shows)
+  - [Positions](#positions)
 - [Red Carpet](#red-carpet)
 - [Backdrops](#backdrops)
-- [Naming Your Files](#naming-your-files)
+  - [Listener](#listener)
+  - [Detail View Backdrops](#detail-view-backdrops)
+  - [Library View Backdrops](#library-view-backdrops)
+  - [People Backdrops](#people-backdrops)
+  - [Genre Backdrops](#genre-backdrops)
+  - [Studio Backdrops](#studio-backdrops)
+  - [Tag Backdrops](#tag-backdrops)
+  - [Favorites Backdrops](#favorites-backdrops)
 - [Installation](#installation)
 - [Settings Management](#settings-management)
 - [Settings Not Applying?](#settings-not-applying)
@@ -42,29 +73,31 @@ It is my third true plugin, next to [Cinema Project](https://github.com/chrissix
 
 ---
 
-**ArtworkPlus shows the artwork Jellyfin leaves unused. Cases, keyart, animated posters, poster slideshows, character art, actor art, name logos and backdrops on almost every page, mostly from artwork you already have.**
+**ArtworkPlus shows the artwork Jellyfin leaves unused. Cases that open and spin their disc, a real 3D case, animated posters, keyart, poster slideshows, character art, actor art, name logos and backdrops on almost every page.**
 
 ---
 
 ## What This Is
 
+A Jellyfin Web plugin for poster, logo, character art and backdrop customization. Nine tabs, one plugin.
+
 Jellyfin shows you a poster, a logo and a backdrop. That's it.
 
-Many of us have much more in our folders: keyart, postercases, extra posters, character art, clearart, animated posters. Jellyfin simply ignores it.
+Many of us have much more in our folders: keyart, postercases, extra posters, character art, clearart, animated posters. Jellyfin simply ignores it. And whole pages, like genres, studios, tags or your favourites, stay plain.
 
-ArtworkPlus puts it on screen. Your poster sits in a Blu-ray case that opens and spins its disc. Or in a real 3D case you can grab and turn. The detail page cycles through alternative posters. Characters stand next to the title. People get their own name logo. And the pages Jellyfin leaves plain, like genres, studios or your favourites, finally get backdrops of their own.
+This plugin changes that. Your poster sits in a Blu-ray case that opens and spins its disc. Or in a real 3D case you can grab, turn and zoom, printed front, spine and back from the movie's own artwork. The detail page cycles through alternative posters. Characters stand next to the title. Actresses stand at the bottom of their person page. People get their own name logo. And almost every page gets backdrops of its own, with a slow Ken Burns zoom and pan.
 
-Nine tabs, one plugin. Everything is adjustable, down to the smallest detail.
+Fully configurable down to the smallest detail.
 
 ---
 
 ## What This Is Not
 
-ArtworkPlus is not a skin, not a theme, not a replacement for Jellyfin Web, and not an artwork downloader.
+ArtworkPlus is not a skin, not a theme, not a replacement for Jellyfin Web, not a frontend of its own, and not an artwork scraper.
 
-It does not fetch artwork for your library. It shows what you already have. The one exception: by default, backdrops on person pages come from Wallpapers.com. Your server looks up the person's name there. You can switch this to the person's own movies and shows, or to a local folder.
+It does not download artwork for your library. It shows what you already have. The one exception: by default, backdrops on person pages come from Wallpapers.com, see [People Backdrops](#people-backdrops).
 
-It sits on top of vanilla Jellyfin. Most features are switched on right after installing, so every movie gets a case straight away. Anything you switch off goes back to exactly how Jellyfin shows it.
+It sits on top of vanilla Jellyfin Web and builds on it. Most features are switched on right after installing, so every movie gets a case straight away. Anything you switch off goes back to exactly how Jellyfin shows it.
 
 ---
 
@@ -72,240 +105,65 @@ It sits on top of vanilla Jellyfin. Most features are switched on right after in
 
 Many features of ArtworkPlus started out in Kodi. Artwork like keyart, clearart, characterart, discart and animated posters has been part of the Kodi world for years, created and collected by the Kodi community. Jellyfin only supports a few of them. ArtworkPlus closes that gap.
 
-- **Case Mod** brings back the cases of the classic Aeon MQ skins and Aeon Tajo, including the way they open and spin the disc, with the same timing and movement as in Kodi.
-- **Red Carpet** is named after [Red Carpet](https://kodi.tv/addons/omega/resource.images.actorart/), a Kodi community addon with more than 500 actress PNGs.
-- **CharacterArt** builds on the Kodi community's [Characterart PNG's for Movies/Moviesets](https://forum.kodi.tv/showthread.php?tid=342468).
-- **Extraposter** is the Jellyfin home of the Kodi community's [Character Poster Sets](https://linktr.ee/CharacterPosterSets), carried on for years by @Konon.
+- **Case** brings back the cases of the classic Aeon MQ skins and Aeon Tajo, including the way they open and spin the disc, with the same timing and movement as in Kodi.
 - **Animated Poster** shows the artwork of the Kodi community's [Animated Poster Project](https://forum.kodi.tv/showthread.php?tid=215727).
+- **Extraposter** is the Jellyfin home of the Kodi community's [Character Poster Sets](https://linktr.ee/CharacterPosterSets), carried on for years by @Konon.
+- **CharacterArt** builds on the Kodi community's [Characterart PNG's for Movies/Moviesets](https://forum.kodi.tv/showthread.php?tid=342468).
+- **Red Carpet** is named after [Red Carpet](https://kodi.tv/addons/omega/resource.images.actorart/), a Kodi community addon with more than 500 actress PNGs.
 - **Backdrops** use the same slow zoom and pan as the Aeon MQ7 home screen, and can read Kodi-style fanart names, so you don't have to copy anything.
 
 If your library was ever set up for Kodi, chances are ArtworkPlus finds your artwork right away.
 
-Everything else, like the Three.js Case, LogoArt, Case Mix and most of the backdrop pages, was made for Jellyfin from scratch.
+Everything else, like the Three.js Case, Case Mix, LogoArt, the person logos and most of the backdrop pages, was made for Jellyfin from scratch.
 
 ---
 
-## How It Works
+## Under the Hood
 
-You put your artwork files next to your media, the same way you already do with posters and fanart. ArtworkPlus finds them by their name. See [Naming Your Files](#naming-your-files).
+### Architecture
 
-Then you decide in the settings what should show up and where. Every feature has its own tab and can be switched off completely. One thing to know: the settings call collections **Sets**.
+ArtworkPlus is not a single script thrown at a page. It is a proper multi-layer Jellyfin plugin.
 
-**One poster, several candidates.** Custom posters, animated posters and extra posters all want the same spot on the detail page. ArtworkPlus picks one in this order:
+The core is written in **C#** and runs server-side as a native Jellyfin plugin. It stores all settings in the Jellyfin backend, finds your artwork files on disk, and decides which image shows up where.
 
-1. Extraposter
-2. Animated Poster
-3. Custom Poster
+On top of that, **JavaScript** feature scripts draw everything in the browser: posters, cases, logos, overlays and backdrops. The 3D engine for the Three.js Case is only loaded when a 3D case is actually shown.
+
+Targeted **CSS** is injected into Jellyfin Web via the File Transformation plugin, so everything fits cleanly into the native pages without looking bolted on.
+
+### One Poster Slot, Several Candidates
+
+Custom Poster, Animated Poster and Extraposter all want the same spot: the poster on the detail page and on library tiles. ArtworkPlus picks one in this order:
+
+1. Extraposter / Extrakeyart
+2. Animated Poster / Animated Keyart
+3. Custom Poster (Postercase / Keyart)
 4. The normal Jellyfin poster
 
-If a file is broken or missing, the next one takes over. The case from Case Mod is not part of this race, it simply wraps whatever poster won.
+If a file is broken or missing, the next one takes over. The case from the Case tab is not part of this race. It simply wraps whatever poster won.
 
-**No flashing.** Jellyfin's own poster, logo and backdrop are held back until ArtworkPlus knows what to show. You don't see the normal poster pop up for a second and then get replaced. And if something goes wrong, Jellyfin's own artwork comes back, so a page is never left empty.
+### No Flashing
 
----
+Normally you would see the vanilla poster, logo or backdrop pop up for a split second before it gets replaced. It looks rough.
 
-## Case Mod
+ArtworkPlus holds them back before the first frame is drawn, and only lets them go once it knows what to show. No vanilla poster flashing up before your keyart, no logo jumping, no backdrop swap. And if something goes wrong, Jellyfin's own artwork comes back, so a page is never left empty.
 
-Put your posters into cases, on the detail page of movies, collections and TV shows. This is on by default.
+### Naming Modes
 
-There are four case styles:
+ArtworkPlus finds your artwork by its file name, in the folder of the movie or TV show. Most features let you choose between three naming modes:
 
-- **Viva Elite** (default)
-- **Clear**
-- **Vortex**
-- **Viva Elite 3D**, slightly turned to the side, with its own inside
+- **Prefixed:** the name of the movie's folder, a dash, then the type name. `Movie (2013)/Movie (2013)-keyart.jpg`. This is the name of the **folder**, not of the video file, so every movie needs its own folder.
+- **Standalone:** just the type name. `Movie (2013)/keyart.jpg`
+- **Folder:** a subfolder with the type name inside the movie folder. `Movie (2013)/keyart/`, with any file names inside.
 
-The case matches your movie on its own. A 4K movie gets a 4K case, a 720p movie a 720p case, a 3D movie a 3D case. TV shows get a TV series case. Collections get a plain case, and Viva Elite 3D even has a special one for them.
+A few rules that apply everywhere:
 
-The case can **open** and show the disc, and the disc can **spin**. Automatically after a few seconds, or when you click on it. For that, the movie, show or collection needs a disc image in Jellyfin. Without one, the case stays closed.
+- **Movies** default to Prefixed.
+- **TV shows** have no Prefixed mode. A show's folder belongs to the show anyway, so it is always Standalone or Folder. Files always come from the show's main folder.
+- **Sets** (collections) have no media folder of their own. Their files go into the folder Jellyfin keeps for each collection, and they always use Standalone.
+- Every **type name** and **folder name** can be changed freely. There is no fixed convention.
+- Every artwork tab (Animated Poster, Custom Poster, Extraposter, CharacterArt, Red Carpet, Backdrops) has its own **allowed image formats**. Out of the box that is `.jpg` for posters, keyart and backdrops, `.png` for characterart and Red Carpet, and `.gif` for animated posters. Tick more formats if your files use them.
 
-The case colour can stay original, or take its colour from the poster.
-
-**Poster Size**
-
-You can also make the poster bigger or smaller, from 10 to 200 percent, and pin it to a corner, an edge or the centre. That works with or without a case, on every detail page, including seasons, episodes and videos. It is off by default.
-
-**Settings**
-
-- Show on Movies, Collections, TV Shows
-- Case style
-- Colour: original, or taken from the poster in seven different ways
-- Case angle (Viva Elite 3D)
-- Open case: automatic, on click, or play the whole sequence on click, plus delay and angle
-- Spinning disc: automatic, on click, or on click automatic, plus direction
-- Poster size and position
-
----
-
-## Three.js Case
-
-*Movies only, experimental, off by default.*
-
-This one is special. A real 3D case, live in your browser. You can grab it and turn it around, zoom in, and look at the back.
-
-It is DVD, Blu-ray or 4K, depending on your file, and it is printed from your movie's own artwork:
-
-- **Front:** the poster, including custom, animated and extra posters
-- **Spine:** studio logo, movie logo, DVD or Blu-ray logo
-- **Back:** fanart, the plot and tagline, a second backdrop, director, runtime and genre, flags for age rating, resolution, aspect ratio and video codec, even a barcode
-- **Inside:** the disc, and if you want, a little booklet
-
-Like the other cases, it can open and spin its disc. It can also rotate on its own. A double click puts it back where it was.
-
-**Settings**
-
-- Size, position, angle, in front of or behind the text
-- Zoom, auto-rotate, rotation speed
-- Colour per case type (DVD, Blu-ray, 4K)
-- Back cover, booklet, spine
-- Open case and spinning disc
-
-It needs a browser with 3D support (WebGL). It also works in Jellyfin Media Player. On TV apps, the normal case is shown instead.
-
----
-
-## Case Mix
-
-Can't decide on one case style? Let ArtworkPlus decide. Every movie, collection and TV show gets a random case, and a random colour, from the styles you pick. "No case" can be part of the mix, and for movies the Three.js Case too.
-
-A new pick comes on every visit, or every 30 seconds, minute, 5 minutes, hour or day. Off by default.
-
----
-
-## Animated Poster
-
-Animated posters and animated keyart, on the detail page and in your library. GIF out of the box, APNG and animated WEBP can be switched on.
-
-Most animated posters out there come from the Kodi community's [Animated Poster Project](https://forum.kodi.tv/showthread.php?tid=215727).
-
-**Settings**
-
-- Show on Movies, Collections, TV Shows
-- Detail page and library separately
-- Which one wins if you have both, poster or keyart
-- File name and format
-- Movie logo on top of animated keyart
-
----
-
-## Custom Poster
-
-Use a different poster than Jellyfin's, on the detail page and in your library.
-
-- **Postercase:** a retouched poster with no lettering
-- **Keyart:** a poster without any text. ArtworkPlus can put the movie logo on top, at the height and size you want
-
-**Settings**
-
-- Show on Movies, Collections, TV Shows
-- Detail page and library separately
-- Which one wins if you have both, postercase or keyart
-- File name, folder, format
-- Movie logo on top of keyart: on or off, position and size
-
----
-
-## Extraposter
-
-Also known as Character Poster Sets.
-
-Got more than one poster for a movie? Extraposter shows them all, one after the other, with a soft fade in between. Up to 50 per movie. Extrakeyart does the same with keyart.
-
-It works on the detail page and in your library. You can choose where exactly: library, home screen, continue watching, favourites, search, genre and studio pages, and more.
-
-Collections can also show the posters of the movies inside them. TV shows can show their season posters.
-
-**Settings**
-
-- Order: in a row, shuffled or random
-- Loop or play once, start at a random poster
-- How long each poster stays, how long the fade takes, delay before it starts
-- Library: all tiles change at the same moment, or each on its own
-- Movie logo on top of extrakeyart
-
----
-
-## LogoArt
-
-Decide what goes into the logo spot on the detail page, for each type separately: movies, TV shows, seasons, episodes, collections, videos, music videos, albums, artists and books.
-
-You can use the normal **logo**, a **clearart**, or **nothing**. Movies, collections, TV shows, seasons and episodes can also use a **characterart**. If the first choice is missing, ArtworkPlus tries a second and a third one. Seasons and episodes can use the logo of their show.
-
-**Logos for People**
-
-People have no logo in Jellyfin. ArtworkPlus can give them one: their name, written in one of 120 fonts that come with the plugin, 60 handwritten and 60 headline fonts. Either drawn right in the page, or saved once as a real `clearlogo.png` in each person's Jellyfin folder with the **Create logos** button, for the missing ones only or for everyone. This is off by default.
-
-**Settings**
-
-- First, second and third choice per type
-- Size and position
-- For people: fonts, outline, upper case
-
----
-
-## CharacterArt
-
-Characters from the movie or show, cut out and placed on the detail page. Next to the title logo in the top left or top right, or in a bottom corner of the screen.
-
-Got several? They take turns, with a soft fade in between.
-
-**Settings**
-
-- Show on Movies, Collections, TV Shows, Seasons, Episodes
-- One image or several taking turns
-- Position, size, spacing, also for fullscreen
-
----
-
-## Red Carpet
-
-Full-figure actress art on the person page and on their lists of movies, TV shows and episodes. Bottom left or bottom right.
-
-Originally a project by the Kodi community. Download the addon from the [Kodi addon page](https://kodi.tv/addons/omega/resource.images.actorart/), copy the PNGs from inside it into a folder called `Red Carpet` in your Jellyfin metadata folder. Each file is named exactly like the person in Jellyfin, for example `Emma Stone.png`.
-
-**Settings**
-
-- Show on the person page, and on their lists of movies, TV shows and episodes
-- Folder name
-- Position and size
-
----
-
-## Backdrops
-
-Jellyfin shows backdrops on some pages and leaves the rest plain. ArtworkPlus gives almost every page a backdrop, and a better one on the pages that already have one.
-
-Backdrops change with a soft fade and move slowly with a Ken Burns zoom and pan. They stop while a video is playing.
-
-- **Detail pages:** movies, collections, TV shows, seasons, episodes and videos, even with backdrops per episode
-- **Library pages:** home screen, movies, TV shows, music, collections, search, user settings
-- **People:** from Wallpapers.com (default), from their movies and shows, or from a folder
-- **Genre** and **Tag:** backdrops of the titles inside
-- **Studio:** the studio's own landscape image from Jellyfin, or backdrops of its titles
-- **Favourites:** all eleven types
-
-While on, ArtworkPlus takes over from Jellyfin's own **Backdrops** and **Details Banner** display settings.
-
-**Wallpapers.com**
-
-People backdrops from Wallpapers.com need your server to be online. An API key is optional: without one you get about 30 lookups a minute, with a free key 60.
-
-**Settings**
-
-- On or off per page type
-- How long each backdrop stays, in order or shuffled
-- Ken Burns on or off, and how fast
-- Use Jellyfin's own backdrops, or read Kodi-style fanart names from your folders
-
----
-
-## Naming Your Files
-
-ArtworkPlus looks for artwork in the folder of the movie or show. There are three ways to name your files, and you can choose per feature:
-
-- **With the folder name in front** (default for movies): `Movie (2013)-keyart.jpg`. This is the name of the movie's folder, not of the video file. So each movie needs its own folder.
-- **Just the type:** `keyart.jpg`. TV shows always use this or a subfolder, since a show's folder belongs to the show anyway.
-- **In a subfolder:** everything inside a folder called `keyart`, for example. Animated posters have no subfolder option.
+Numbered posters, keyart and characterart, like `poster1.jpg`, `poster2.jpg`, can go up to 50. Start with 1, 2 or 3, after that gaps are fine. Numbered backdrops go up to 20.
 
 A movie folder could look like this:
 
@@ -322,17 +180,769 @@ Movie (2013)/
   Movie (2013)-keyart2.jpg
   Movie (2013)-characterart.png
   Movie (2013)-characterart1.png
+  Movie (2013)-characterart2.png
 ```
 
-Extra posters, extra keyart and characterart can be numbered from 1 to 50. Start with 1, 2 or 3, after that gaps are fine.
+### Detail Page, Library Views and Show Also On
 
-**Collections** have no media folder of their own. Their artwork goes into the folder Jellyfin keeps for each collection, named by type only, for example `keyart.jpg`.
+Every poster feature (Animated Poster, Custom Poster, Extraposter) can be switched on separately for the **detail page** and for **library views**, the tiles on the library grid page.
 
-**Episodes** get their backdrops next to the episode file: `Episode.mkv` gets `Episode-backdrop.jpg`, `Episode-backdrop1.jpg` and so on.
+Beyond the library grid, you decide exactly where else the tiles change, in the **Show also on** menus. All of them are off by default.
 
-**File formats:** out of the box, posters, keyart and backdrops are read as `.jpg`, characterart and Red Carpet as `.png`, and animated posters as `.gif`. If your files use other formats, tick them in the matching tab.
+**For Movies show also on**
 
-All names and file formats can be changed in the settings.
+- **Favorites & Search:** the Movies rows of the Favorites tab and the search page
+- **Home:** Recently added, and Continue Watching for a movie without thumb or backdrop
+- **Lists:** Genre, Studio, Tag, and Folder & More (folder views and every "More" list)
+- **Detail pages:** More like this, Set members, People pages
+
+**For Sets show also on**
+
+- **Favorites & Search:** the Sets rows of the Favorites tab and the search page
+- **Lists:** Studio, Tag, and Folder & More (the Sets folder and its "More" lists)
+
+**For TV shows show also on**
+
+- **Favorites & Search:** the Shows rows of the Favorites tab and the search page
+- **Home:** Recently added (Continue Watching shows episodes, never a series card)
+- **Lists:** Genre, Studio, Tag, and Folder & More
+- **Detail pages:** More like this, Set members, People pages
+
+### Slideshows
+
+Extraposter, Extrakeyart, CharacterArt and characterart in the LogoArt slot share the same slideshow controls. LogoArt has no delay, and backdrops have their own controls, see [Backdrops](#backdrops).
+
+- **Order:** Sequential (in order), Shuffle (no repeats per round) or Random (repeats OK)
+- **Playback:** Loop (runs forever) or Play once (fades back to the original after one pass)
+- **Random start position:** Sequential and Loop only. Starts at a random image and continues in order, as if the show had been running all along.
+- **Display duration:** how long each image stays
+- **Transition duration:** how long the fade takes, 0 switches instantly
+- **Delay before first shown:** waits before the slideshow starts (5000 ms once switched on, 0 turns it off)
+
+---
+
+## General
+
+The General tab is the main switchboard. Every feature tab can be turned on or off here as a whole:
+
+- Case Mod
+- Animated Poster
+- Custom Poster
+- Extraposter
+- LogoArt
+- CharacterArt
+- Red Carpet
+- Backdrops
+
+All eight are on by default. The General tab also holds **Restore all tabs** and the **Backup / restore via code**, see [Settings Management](#settings-management).
+
+---
+
+## Case
+
+Put your posters into cases, on the detail pages of movies, sets and TV shows. On by default, with the Viva Elite Case.
+
+The case matches your file on its own. A 4K movie gets a 4K case, a 1080p movie a 1080p case, and so on through 720p, 576p, 540p and 480p. 3D movies get a 3D case. Movies without resolution info, like ISO files, get a plain case. TV shows get a TV series case. Sets get a plain case, and the Viva Elite 3D Case even has a special one for them.
+
+The Case tab has four sections.
+
+---
+
+### Poster Size
+
+Make the detail page poster bigger or smaller, and pin it wherever you like. With or without a case, both case kinds follow it. Off by default.
+
+**Settings**
+
+- **Settings:** General (one size for everything) or Individual (each kind sets its own)
+- **Size per kind:** All, or Movies, Sets, Series, Seasons, Episodes and Videos (every kind not named before) separately. 10 to 200 percent, 100 is how Jellyfin draws it.
+- **Anchor per kind:** Default, Top left, Top center, Top right, Center left, Center, Center right, Bottom left, Bottom center, Bottom right
+
+---
+
+### Cases
+
+The classic 2D cases, straight from the old Aeon MQ skins and Aeon Tajo.
+
+The case can **open** and show the disc, and the disc can **spin**, with the same timing and movement as in Kodi. For that, the movie, show or set needs a disc image in Jellyfin. Without one, the case stays closed.
+
+**Settings**
+
+- **Show Cases on:** Movies, Sets, TV shows. Unchecking all three turns cases off entirely.
+- **Case type:**
+  - Clear Case
+  - Vortex Case
+  - Viva Elite Case (default)
+  - Viva Elite 3D Case, slightly turned to the side, with its own inside
+- **Case color:** Original (default) keeps the case as it is, Full shell tints its plastic to match the cover
+- **Case color blend:** which color the cover gives the case. Dominant dark (default), Dominant colorful, Deep, Material You, Accent, Top region, Vibrant. The same seven the Three.js Case offers.
+- **Case angle:** the tilt of the Viva Elite 3D Case, 0 to 10° (default 5°)
+
+**Open Case**
+
+- **Automatic:** the whole sequence plays on its own when you visit the page (default on)
+- **On click automatic:** the whole sequence plays when you click
+- **On click:** click to open, click again to close (default on)
+- **Delay:** before the case opens automatically (default 5000 ms)
+- **Open angle:** how far the front cover swings open, 0 to 180° (default 90°)
+
+**Spinning Disc**
+
+- **Automatic** and **On click automatic:** the disc spins as part of that sequence (Automatic is on by default)
+- **On click:** click the disc itself
+- **Direction:** Left (default) or Right
+
+**Developer Settings**
+
+For fine-tuning and testing, off by default:
+
+- Hide front case, hide poster, hide disc, hide hub
+- Position and size of the case, the inner case, the hub and the disc, saved per case type, plus a separate case width for sets on the Viva Elite 3D Case
+
+---
+
+### Three.js Case
+
+*Movies only, experimental, off by default.*
+
+This one is special. A real 3D keep case, rendered live in your browser. It replaces the case type above for movies. You can grab it and turn it around, zoom in with the mouse wheel, and look at the back.
+
+It picks its shell on its own:
+
+- **DVD** for DVD discs, ISO files up to 10 GB and files up to 576p
+- **Blu-ray** for Blu-ray discs, ISO files over 10 GB and files up to 1440p. A file without resolution info counts by size: over 10 GB is Blu-ray, otherwise DVD.
+- **4K** for everything above 1440p, in black with a UHD mark on the band
+
+And it is printed from your movie's own artwork and metadata:
+
+- **Front:** the poster that won, including custom, animated and extra posters. Extraposter slides crossfade on the cover, animated GIFs animate.
+- **Spine:** movie logo, studio logo, DVD or Blu-ray mark and a code
+- **Back:** fanart, the plot and tagline, a second backdrop, director, runtime, genre and studio, flags for age rating, resolution, aspect ratio and video codec, a barcode and the usual small print
+- **Inside:** the disc, and a booklet in the lid
+
+**Settings**
+
+- **Case layer:** In front, or Behind the text (default), which lets it pass under titles and details
+- **Case size:** 1 to 200 percent of the poster box (default 80), plus the same nine anchors as Poster Size
+- **Case turn:** how far the case is turned when the page opens, 0 to 360° (default 320°)
+- **Case tilt:** how far it leans back, or forward with a minus, -90 to 90° (default 5°)
+- **Zoom:** the mouse wheel resizes the case while the pointer is over it (default on)
+- **Zoom range:** how far the wheel may go either way, 0 to 99 percent (default 33)
+- **Auto rotate:** Off (default), Left or Right. Turns on its own until you drag it.
+- **Rotate speed:** Very slow, Slow, Medium (default), Fast, Very fast. That is 0.5 to 4 turns per minute.
+- **Reset on double click:** puts pose, size and rotation back (default on). Off, a single click opens the case without delay.
+- **DVD case color:** Original (black) or Full shell
+- **Blu-ray case color:** Original (blue), Full shell or Back spine
+- **4K case color:** Original (black), Full shell or Back spine
+- **Case color blend:** the same seven blends as the 2D cases
+- **Back cover:** prints the back with plot, images, media flags and small print (default on)
+- **Booklet:** Off, Black, B/W fanart (default) or Blurred fanart. Without fanart it falls back to Black.
+- **Spine:** Movie logo, Studio logo, Format mark, Code (all on by default)
+- **Open case:** Automatic (default on), On click automatic, On click. Delay up to one minute (default 5000 ms), open angle 0 to 180° (default 120°).
+- **Spinning disc:** Automatic, On click automatic, On click (all off by default), direction Left or Right
+
+It needs a browser with 3D support (WebGL). It works in desktop browsers and in Jellyfin Media Player. TV apps get the normal 2D case instead.
+
+---
+
+### Case Mix
+
+Can't decide on one case? Let ArtworkPlus decide. Every movie, set and TV show gets a random case, and a random color, from the pools you pick. Off by default.
+
+Case Mix has its own **Restore defaults** button, and a **Randomize** button (only while Case Mix is on) that rolls the pools, poster chains, colors and blends at random, just for fun or to discover combinations. New draw after and the No case size settings stay as they are. Like Restore, it only fills in the fields, click **Save** to keep them.
+
+**Settings**
+
+- **New draw after:** Every visit, 30 seconds, 1 minute (default), 5 minutes, 1 hour or 1 day
+- **Mix pool Movies:** Clear, Vortex, Viva Elite, Viva Elite 3D, Three.js, No case
+- **Mix pool Sets:** Clear, Vortex, Viva Elite, Viva Elite 3D, No case
+- **Mix pool TV shows:** Clear, Vortex, Viva Elite, Viva Elite 3D, No case
+- **Poster chain Cases:** which of Custom Poster, Animated Poster and Extraposter a drawn case may show. Unticked ones yield to the next in the chain.
+- **Poster chain No case:** the same for No case. The plain poster always ends the chain.
+- **No case size on:** Movies, Sets, TV shows. Where a drawn No case shows the poster larger, to match the size a case would have.
+- **No case poster size:** 50 to 150 percent (default 108), anchor default Bottom center
+
+"No case" always needs a case type next to it in the pool. An empty pool leaves the normal case settings in charge.
+
+**Color pools**
+
+Each case type gets its own color pool. Tick the ones that should be drawn, and a blend for the tinted ones. At least one color always stays ticked per case type:
+
+- Clear, Vortex, Viva Elite, Viva Elite 3D: Original, Full shell, plus a color blend each
+- Three.js DVD: Original, Full shell
+- Three.js Blu-ray and 4K: Original, Full shell, Back spine
+- Three.js: one color blend for all three
+
+---
+
+## Animated Poster
+
+Animated posters never found their way into any artwork database or API. They remained a fan project. Most of them can be found on the Kodi community's [Animated Poster Project](https://forum.kodi.tv/showthread.php?tid=215727) page. @moulfo was the main artist of the project, producing the highest-quality posters in the community. He sadly passed away in 2020. All credit for this art style goes to him.
+
+**Settings (tab-wide)**
+
+- **Allowed animated formats:** GIF (default), APNG, Animated WEBP. Shared by both subs, empty disables both.
+- **Priority when both exist:** Animated Poster (default) or Animated Keyart
+
+---
+
+### Animated Poster
+
+Replaces the poster with an animated one, on detail pages and library tiles. On by default.
+
+**Settings**
+
+- **Show on:** Movies, Sets, TV shows. Sets use the Movies settings, but always Standalone.
+
+**Movies**
+
+- **Naming mode:** Prefixed (default) or Standalone. `Movie (2013)-animatedposter.gif` or `animatedposter.gif`
+- **Type name:** `animatedposter` (default)
+- **Enable on detail page**
+- **Enable for library views**
+- **For Movies show also on** and **For Sets show also on**, see [Show Also On](#detail-page-library-views-and-show-also-on)
+
+**TV Shows**
+
+- **Type name:** `animatedposter` (default). Main show page only, always Standalone.
+- **Enable on detail page**
+- **Enable for library views**
+- **Show also on**
+
+---
+
+### Animated Keyart
+
+The same for keyart: a textless animated poster. On by default.
+
+Everything works like Animated Poster above, with the type name `animatedkeyart`. On top of that, Jellyfin's own logo can be laid over the keyart:
+
+**Logo Overlay**
+
+Separately for the **detail page** and for **library views**, off by default:
+
+- **Enable logo overlay:** only shown when Jellyfin has a logo for the title
+- **Vertical position:** from the top of the poster, 0 to 100 percent (default 87). Horizontally it is always centered.
+- **Logo size:** width in percent of the poster (default 60 on the detail page, 80 in library views)
+
+---
+
+## Custom Poster
+
+An alternative base poster: Postercase or Keyart. On detail pages and library tiles.
+
+**Settings (tab-wide)**
+
+- **Allowed image formats:** .jpg (default), .jpeg, .png, .webp, .gif, .tbn, .svg. Shared by both subs.
+- **Priority when both exist:** Postercase (default) or Keyart
+
+---
+
+### Postercase
+
+A retouched poster with no lettering. On by default.
+
+**Settings**
+
+- **Show on:** Movies, Sets, TV shows. Sets use the Movies settings, but always Standalone.
+
+**Movies**
+
+- **Naming mode:** Prefixed (default), Standalone or Folder. In Folder mode, only the first file (alphabetical) is used.
+- **Folder name:** `postercase` (default)
+- **Type name:** `postercase` (default)
+- **Enable on detail page**
+- **Enable for library views**
+- **For Movies show also on** and **For Sets show also on**
+
+**TV Shows**
+
+- **Naming mode:** Standalone (default) or Folder
+- **Folder name** and **Type name:** `postercase` (default). Main show page only.
+- **Enable on detail page**
+- **Enable for library views**
+- **Show also on**
+
+---
+
+### Keyart
+
+A textless poster. On by default.
+
+Everything works like Postercase above, with `keyart` as type and folder name. And because keyart has no title on it, Jellyfin's own logo can be laid over it:
+
+**Logo Overlay**
+
+Separately for the **detail page** and for **library views**, off by default:
+
+- **Enable logo overlay:** only shown when Jellyfin has a logo for the title
+- **Vertical position:** 0 to 100 percent (default 87), always centered horizontally
+- **Logo size:** width in percent of the poster (default 60)
+
+---
+
+## Extraposter aka Character Poster (Sets)
+
+A niche but delightful multi-image feature. Got more than one poster for a movie? Extraposter shows them all, one after the other, with a soft fade in between. On the detail page and on library tiles.
+
+The idea comes from the Kodi community's [Character Poster Sets](https://linktr.ee/CharacterPosterSets): a set of posters per movie, each one showing a different character. The project was later handed over to @Konon, who has since created countless high-quality, polished, hand-crafted sets. Naming and sorting follow character prominence, based on TMDB or general poster chronology. See the full collection on [DeviantArt](https://www.deviantart.com/konon-cat).
+
+**Settings (tab-wide)**
+
+- **Allowed image formats:** .jpg (default), .jpeg, .png, .webp, .gif, .tbn, .svg. Shared by both subs.
+- **Priority when both exist:** Extraposter (default) or Extrakeyart
+
+---
+
+### Extraposter
+
+A poster slideshow. On by default.
+
+**Where the Posters Come From**
+
+- **Movies:** Prefixed `Movie (2013)-poster1.jpg`, Standalone `poster1.jpg`, or Folder: everything inside `extraposter/`. Prefixed is the default.
+- **TV shows:** Standalone (default) `poster1.jpg`, or Folder: everything inside `extraposter/`. On top of that, their **season posters**.
+- **Sets:** their own files, always Standalone, and on top of that, the **posters of the movies inside**.
+
+**Movies and Sets**
+
+Separately for the **detail page** and for **library views**:
+
+- **Enable** and **Show on:** Movies, Sets
+- **Set priority:** Files first, Files only (default), Set movie posters first, Set movie posters only. "First" uses the other source when this one has nothing.
+- **Set order:** Release date ascending (default), Release date descending, Shuffle, Random
+- **Random start position** for the set order
+- **Set image:** which image each movie in the set shows. Poster (default), Postercase, Keyart, Animated Poster or Animated Keyart, named as in the Custom and Animated tabs.
+- **Set fallback** and **Set second fallback:** used for a movie without that file. None (default) skips the movie.
+- **Set Keyart logo overlay:** the movie's own logo on its keyart, with position and size
+- **Files order**, **Playback**, **Random start position**, **Display duration** (default 5000 ms), **Transition duration** (default 1000 ms), **Delay before first shown**, see [Slideshows](#slideshows)
+
+**TV Shows**
+
+Separately for the **detail page** and for **library views**:
+
+- **Enable** and **Show on:** TV shows
+- **Season priority:** Files first, Files only (default), Season posters first, Season posters only
+- **Season order:** Ascending (default), Descending, Shuffle, Random, by season number
+- **Random start position** for the season order
+- **Include specials:** Season 0 is included and always shown first (default off)
+- **Skip single-season series:** a series with only one season poster gets no season slideshow (default on)
+- **Files order**, **Playback**, **Random start position**, **Display duration**, **Transition duration**, **Delay before first shown**
+
+**Library Views Only**
+
+- **Show also on** menus for Movies, Sets and TV shows
+- **Tile seamless loading:** On (default) is nicer to look at with a slightly longer wait. Off is quicker, the original poster peeks through first.
+- **Tile synchronization:** tiles with the same display duration change together (default on). A tile whose image is late joins the next beat.
+
+---
+
+### Extrakeyart
+
+The multi-image, textless variant of Keyart. On by default.
+
+Everything works like Extraposter above, with keyart instead: `Movie (2013)-keyart1.jpg`, `keyart1.jpg`, or everything inside `keyart/`, for movies and TV shows alike. Two extras:
+
+- **Unnumbered file:** Ignored (default), or Counts as #1. Whether a plain `keyart.jpg` is picked up as the first image.
+- **Logo overlay:** Jellyfin's own logo on top, separately for detail page and library views, with position and size (off by default)
+
+Sets and TV shows use their own files only, there are no set or season posters for Extrakeyart.
+
+---
+
+## LogoArt
+
+A logo and art customizer for detail pages. For every item type, you decide what goes into the logo slot, how big it is and where it sits. Or whether there is a logo at all.
+
+And something new: person pages get a logo too. From the person's folder, or their name in one of 120 bundled fonts.
+
+Item types left at their defaults stay exactly as vanilla Jellyfin shows them.
+
+**Sources**
+
+- **clearlogo:** Jellyfin's own logo, the vanilla setting (default)
+- **clearart:** Jellyfin's clearart, shown in a 16:9 box on the logo line
+- **characterart:** the same characterart files the [CharacterArt](#characterart) tab uses
+- **Hide:** the slot stays empty
+
+Every type except Persons has a **Source**, a **Fallback** and a **Second fallback**. If the source has no image, the fallback is tried, then the second one. None (default) leaves the slot empty.
+
+---
+
+### Logos for Movies and Sets
+
+**Movies**
+
+- **Source:** clearlogo (default), clearart, characterart, Hide
+- **Fallback**, **Second fallback**
+- **Source mode:** Default (the item first, then its parents, like Jellyfin), Item only, Parent folder, Grandparent folder
+- **Logo:** size in percent of the vanilla slot, horizontal offset, vertical offset
+- **clearart:** size (100 = 25 percent of the screen width), horizontal offset, vertical offset
+- **characterart:** scale by Height or Width, height and max width or width and max height, align (Centered, Left, Right), offset
+- **Image mode:** Single image or Multi image (default). Multi: the plain file first, then the numbered ones.
+- **Order** (default Shuffle), **Playback**, **Random start position**, **Display duration** (default 5000 ms), **Transition duration** (default 1000 ms)
+- **If only 1 image is found:** stay static, or still fade out after one display duration
+
+**Sets**
+
+- **Settings:** Take over Movies (default) or Individual. Individual gives sets the same options as movies, except Source mode.
+
+---
+
+### Logos for TV Shows
+
+Series, season and episode pages, each with its own source.
+
+- **Series:** the same options as movies, except Source mode
+- **Season:** Take over Series (default) or Individual. Source mode: Default, Season only, Series.
+- **Episode:** Take over Series (default) or Individual. Source mode: Default, Season, Series.
+
+---
+
+### Logos for Videos
+
+Home video and music video pages. A folder logo is inherited like in Jellyfin.
+
+- **Video** and **Music video**, each with:
+  - **Source:** clearlogo (default), clearart, Hide
+  - **Fallback**, **Second fallback**
+  - **Source mode:** Default, Item only, Parent folder, Grandparent folder
+  - **Logo** and **clearart** size and offsets
+
+---
+
+### Logos for Music
+
+Album and artist pages. An album without a logo shows the artist's.
+
+- **Album:** clearlogo (default), clearart, Hide. Source mode: Default, Album only, Artist. Logo and clearart size and offsets.
+- **Artist:** clearlogo (default), clearart, Hide. Logo and clearart size and offsets.
+
+---
+
+### Logos for Books
+
+Book and audiobook pages.
+
+- **Source:** clearlogo (default), clearart, Hide
+- **Fallback**, **Second fallback**
+- **Logo** and **clearart** size and offsets
+
+---
+
+### Logos for Persons
+
+Person pages, where Jellyfin shows no logo at all. Off by default.
+
+**Sources**
+
+- **Off:** no logo, like Jellyfin (default)
+- **Folder logo:** a file in the person's own Jellyfin folder, `clearlogo.png`, `.webp` or `.jpg`
+- **Text:** the person's name, drawn live in one of the bundled fonts, fitted to the slot
+
+**Fonts**
+
+120 fonts come with the plugin:
+
+- **Signature:** 60 handwriting fonts (default)
+- **Title:** 60 headline fonts
+- **Both:** all 120
+
+Open the font list to tick the ones you like, and hover one for a preview with your own preview names. One font ticked: everyone gets that font. Several ticked: each person gets one of them, and always the same one.
+
+If a font has no accented letters, the name is written without accents.
+
+**Create Logos**
+
+The **Create logos** button writes a real `clearlogo.png` for every person into their Jellyfin folder, in the fonts you picked. Update writes only the missing ones, Replace writes all of them. After that, Folder logo shows them without any live drawing.
+
+**Settings**
+
+- **Source:** Off (default), Folder logo, Text
+- **Fallback:** None, Folder logo, Text (default)
+- **Base name:** `clearlogo` (default)
+- **Font pool:** Signature (default), Title, Both
+- **Fonts:** check all, uncheck all, or pick single ones
+- **Preview names:** comma-separated names for the hover preview
+- **Text stroke:** thickens the white letters, in percent of the text size (default 0)
+- **Outline:** black rim around the letters, in percent of the text size (default 1, a fine line)
+- **Uppercase:** title fonts only, signature fonts keep their case
+- **Create logos:** Update or Replace
+- **Size**, **Offset**, **Vertical offset**
+
+---
+
+## CharacterArt
+
+Characters from the movie or show, cut out and placed on the detail page. Next to the title logo in the top left or top right, or in a bottom corner of the screen. On by default.
+
+TV show characterart has official support on [fanart.tv](https://fanart.tv/tv-fanart/#characterart). Movie characterart unfortunately has no database or API support, only fan projects like the Kodi community's [Characterart PNG's for Movies/Moviesets](https://forum.kodi.tv/showthread.php?tid=342468). Many more can be found on DeviantArt.
+
+**Settings (tab-wide)**
+
+- **Allowed image formats:** .jpg, .jpeg, .png (default), .webp, .gif, .tbn, .svg. Empty disables CharacterArt.
+- **Show on:** Movies, Sets, TV shows, Seasons, Episodes (all on by default). Season and episode pages always show the parent show's characterart.
+
+---
+
+### Characterart for Movies
+
+- **Naming mode:** Prefixed (default), Standalone or Folder. `Movie (2013)-characterart.png`, `characterart.png`, or everything inside `characterart/`. Sets always use Standalone.
+- **Type name** and **Folder name:** `characterart` (default)
+- **Image mode:** Single image (`characterart.png`, no number) or Multi image (default): the plain file first, then `characterart1.png`, `characterart2.png` and so on
+- **Order** (default Shuffle), **Playback**, **Random start position**, **Display duration** (default 5000 ms), **Transition duration** (default 1000 ms), **Delay before first shown**
+- **If only 1 image is found:** stay static, or still fade out after one display duration
+- **Position:** Top left, Top right (default), Bottom left, Bottom right
+
+---
+
+### Characterart for TV Shows
+
+The same set of options, always read from the show's main folder, whichever page is open.
+
+- **Naming mode:** Standalone (default) or Folder
+- **Type name** and **Folder name:** `characterart` (default)
+- Image mode, slideshow and position as above
+
+---
+
+### Positions
+
+- **Top left** and **Top right:** next to the logo, scrolls with the page. Hidden in narrow windows, just like Jellyfin's own logo.
+- **Bottom left** and **Bottom right:** glued to the window, does not scroll
+
+Each of the four positions has its own settings:
+
+- **Scale by:** Height or Width, the other follows automatically
+- **Height / max width** or **Width / max height:** 0 as max means auto, following the image
+- **Align:** Centered, Left or Right, once a max value is set
+- **Offset:** shifts the whole box left or right
+- **Fullscreen offset:** an extra shift only while the browser is in fullscreen
+
+---
+
+## Red Carpet
+
+Full-figure actress art on person pages, pinned to the bottom left or bottom right corner. On by default.
+
+Originally a project by the Kodi community. Download the addon from the [Kodi addon page](https://kodi.tv/addons/omega/resource.images.actorart/), and copy the PNGs from inside it into a folder called `Red Carpet` in your Jellyfin metadata folder. Each file is named exactly like the person in Jellyfin:
+
+```
+/config/metadata/Red Carpet/Scarlett Johansson.png
+```
+
+For more information, visit the [Red Carpet](https://linktr.ee/RedCarpetCandy) project page.
+
+**Settings**
+
+- **Allowed image formats:** .jpg, .jpeg, .png (default), .webp, .gif, .tbn, .svg. Empty disables Red Carpet.
+- **Show on:** Person's own page, Movie filmography, TV show filmography, Episode filmography (all on by default)
+- **Folder name:** `Red Carpet` (default)
+- **Position:** Bottom left or Bottom right (default). Glued to the window, does not scroll.
+- **Per position:** scale by, height / max width, width / max height, align, offset, fullscreen offset, see [Positions](#positions)
+
+---
+
+## Backdrops
+
+Various backdrop extensions beyond vanilla Jellyfin. Seven categories, each with its own section and its own Restore defaults button.
+
+Backdrops change with a soft fade and move slowly with a Ken Burns zoom and pan, with the same values as the Aeon MQ7 home screen. They stop while a video is playing. All seven categories are on by default.
+
+**Shared Settings**
+
+Every category has:
+
+- **Cycle time:** how long each backdrop stays (default 10000 ms, no upper limit)
+- **Ken Burns effect:** slow zoom and pan instead of a plain fade (default on)
+- **Zoom speed:** one zoom direction (default 20000 ms)
+- **Pan speed:** one pan direction (default 10000 ms)
+- **Order** and **Random start position**
+
+The pages built from other titles (People, Genre, Studio, Tag, Favorites) also have:
+
+- **Backdrops per item:** Main Backdrop (only the item's first backdrop) or All Backdrops (a random one per item)
+- **Order:** Shuffle (default), Random, Name, Sort name, Date added, Premiere date, Production year, Start date, Community rating, Critic rating, Parental rating, Runtime, Play count, Date played, Video bit rate, Played, Unplayed, Favorite, Studio
+- **Traversal:** Ascending (default) or Descending
+
+Favorites has its own, shorter lists, see [Favorites Backdrops](#favorites-backdrops). People and Studio use these only with the Appearances source.
+
+---
+
+### Listener
+
+Where the backdrops of your titles come from, on every backdrop page. This applies to the whole tab.
+
+- **Native** (default): Jellyfin's own backdrops, the fastest way
+- **Custom:** reads your folders directly, for example Kodi-style names, without duplicating any files. It picks up `fanart`, `background` and `art` (numbered, or with the video name in front) and everything inside `extrafanart/`. Your own **base name** (default `fanart`) takes the place of Jellyfin's `backdrop`: `fanart1.jpg`, `Movie (2013)-fanart1.jpg` and so on, up to 20.
+
+**Allowed image formats:** .jpg (default), .jpeg, .png, .webp, .gif, .tbn, .svg. People backdrops from Wallpapers.com are not affected.
+
+---
+
+### Detail View Backdrops
+
+The item's own backdrops behind its detail page, with your rules. This replaces Jellyfin's own **Details Banner** display setting.
+
+**Settings**
+
+- **Enable native Backdrops override**
+- **Show on:** Movies, Sets, TV shows, Seasons, Episodes, Videos. Each one on its own, unchecked ones stay vanilla.
+- **Cycle time**, **Ken Burns effect**, **Zoom speed**, **Pan speed**
+- **Order:** Sequential (Jellyfin's order), Shuffle (default), Random
+- **Random start position**
+
+**Episode Backdrops**
+
+Own backdrop files per episode, on by default. Without files, the season and then the show backdrops are used.
+
+- **Base name:** `backdrop` (default). The episode file name always goes in front: `Episode.mkv` gets `Episode-backdrop.jpg`
+- **Backdrop files:** Single (`Episode-backdrop.jpg`) or Multiple (default): `Episode-backdrop1.jpg`, `Episode-backdrop2.jpg` and so on, up to 20
+- **Order:** Sequential, Shuffle (default), Random
+- **Random start position**
+
+Like vanilla, detail page backdrops are off on the mobile layout and in very narrow windows.
+
+---
+
+### Library View Backdrops
+
+Random backdrops behind the Home, library and search pages. This replaces Jellyfin's own **Backdrops** display setting, and goes further.
+
+**Settings**
+
+- **Enable native Backdrops override**
+- **Show on (vanilla):** Home (including Favourites), Movies, TV shows, Music. The pages Jellyfin's own setting covers.
+- **Show on (custom):** Sets, Search, User settings. Pages Jellyfin never gives a backdrop.
+- **Home rating cap:** PG-13 (default) or Off. On Home, Favourites, Search and User settings, vanilla only shows titles up to PG-13. Off shows every rating.
+- **Cycle time**, **Ken Burns effect**, **Zoom speed**, **Pan speed**
+- **Order:** Sequential, Shuffle (default), Random
+- **Random start position**
+
+A new random pool is drawn on every visit.
+
+---
+
+### People Backdrops
+
+Backdrops on person pages. From their own movies and shows, from a folder, or from the web.
+
+**Sources**
+
+- **Appearances:** the backdrops of the person's own movies and shows
+- **Folder:** backdrop files in the person's own Jellyfin folder
+- **Wallpapers.com** (default): wallpapers of the person from [Wallpapers.com](https://wallpapers.com/). Your server looks up the person's name there, so it needs internet access. Only widescreen images are used, and the images themselves load straight from Wallpapers.com.
+
+**Settings**
+
+- **Enable**
+- **Show on:** Person's own page, Movie filmography, TV show filmography, Episode filmography (all on by default)
+- **Cycle time**, **Ken Burns effect**, **Zoom speed**, **Pan speed**
+- **Source:** Appearances, Folder, Wallpapers.com (default)
+- **Wipe cache:** forgets every Wallpapers.com result, so they are looked up again
+
+**Appearances**
+
+- **Appearances filter:** Movies and shows (default), Movies only, Shows only
+- **Backdrops per item:** Main Backdrop or All Backdrops
+- **Order:** Shuffle (default) and the full list of sort fields
+- **Traversal:** Ascending or Descending
+- **Random start position**
+
+**Folder**
+
+- **Base name:** `backdrop` (default)
+- **Backdrop files:** Single (`backdrop.jpg`, default) or Multiple (`backdrop1.jpg`, `backdrop2.jpg` and so on)
+- **Order:** Sequential (default), Shuffle, Random
+- **Random start position**
+
+**Wallpapers.com**
+
+- **API Key:** optional, with a **Test API Key** button. Without a key you get about 30 lookups a minute, with a free key 60.
+- **Order:** Sequential, Shuffle (default), Random
+- **Random start position**
+- **Max images per person:** 1 to 10 (default 10). The actual count can be lower after filtering.
+- **Enable text filter:** skips images with text on them (default on). It is not a text recognition engine, so some images with text may still slip through.
+
+---
+
+### Genre Backdrops
+
+Backdrops on genre pages, from the titles of that genre.
+
+**Settings**
+
+- **Enable**
+- **Apply to:** Global Genres, Movie Genres, TV show Genres
+- **Backdrops per item:** Main Backdrop or All Backdrops
+- **Cycle time**, **Ken Burns effect**, **Zoom speed**, **Pan speed**
+- **Order** (default Shuffle), **Traversal**, **Random start position**
+
+---
+
+### Studio Backdrops
+
+Backdrops on studio pages, from the studio's own image or from the studio's titles.
+
+**Sources**
+
+- **Studio image** (default): the studio's own `landscape.jpg` from Jellyfin's metadata folder, `metadata/Studio/<Name>/landscape.jpg`
+- **Appearances:** the backdrops of the studio's titles
+
+**Settings**
+
+- **Enable**
+- **Apply to:** Global Studios, TV show Studios
+- **Source:** Appearances or Studio image (default)
+- **Backdrops per item:** Main Backdrop or All Backdrops
+- **Cycle time**, **Ken Burns effect**, **Zoom speed**, **Pan speed**
+- **Order** (default Shuffle), **Traversal**, **Random start position**
+
+---
+
+### Tag Backdrops
+
+Backdrops on tag pages, from the titles carrying that tag.
+
+**Settings**
+
+- **Enable**
+- **Backdrops per item:** Main Backdrop or All Backdrops
+- **Cycle time**, **Ken Burns effect**, **Zoom speed**, **Pan speed**
+- **Order** (default Shuffle), **Traversal**, **Random start position**
+
+---
+
+### Favorites Backdrops
+
+Backdrops on the full list of each Favorites section, from your favourite titles and people.
+
+**Settings**
+
+- **Enable**
+- **Backdrops per item:** Main Backdrop or All Backdrops
+- **Cycle time**, **Ken Burns effect**, **Zoom speed**, **Pan speed**
+- **Manage:** General (default), one order for every type, or Individual, each type sets its own
+- **General order:** Shuffle (default), Random, Name, Date added. Only fields every type supports.
+- **Traversal**, **Random start position**
+
+**Types**
+
+Eleven types, each with its own Enable (all on by default). With Manage set to Individual, each also gets its own Sort, Traversal and Random start position. The sort lists differ by type: Playlists and Artists only offer Shuffle, Random and Name, Shows add Date episode added, Songs add Album, Album artist and Artist, Albums add Album artist.
+
+- Movies
+- Shows
+- Episodes
+- Videos
+- Collections
+- Playlists
+- People
+- Artists
+- Albums
+- Songs
+- Books
+
+**People** have their own source: Appearances, Folder or Wallpapers.com (default). Appearances has its own filter, backdrops per item, order, traversal and random start. Folder has its own backdrop files, order and random start, and uses the base name from [People Backdrops](#people-backdrops). Wallpapers.com uses the People Backdrops settings: API key, order, max images and text filter.
 
 ---
 
@@ -351,7 +961,7 @@ Requires the [File Transformation Plugin](https://github.com/IAmParadox27/jellyf
 https://raw.githubusercontent.com/chrissix666/Jellyfin-ArtworkPlus/main/manifest.json
 ```
 
-3. Go to the Catalog tab, find ArtworkPlus under Experimental, and install it
+3. Go to the Catalog tab, find ArtworkPlus (category: Experimental), and install it
 4. Restart Jellyfin
 5. Configure the plugin under Dashboard > Plugins > ArtworkPlus
 
@@ -368,7 +978,7 @@ https://raw.githubusercontent.com/chrissix666/Jellyfin-ArtworkPlus/main/manifest
 
 ### Restore Defaults (Tab)
 
-Every settings tab has its own **Restore defaults** button. It resets only the settings of that tab to their default values, everything else stays untouched. Click **Save** afterwards to keep them.
+Every settings tab has its own **Restore defaults** button in the top right corner. It resets only the settings of that tab to their default values, everything else stays untouched. Many sections inside a tab have their own button too, like Case Mix, Postercase, Keyart, Extraposter, Extrakeyart and every backdrop category. Click **Save** afterwards to keep them.
 
 ### Restore Defaults (All)
 
@@ -376,7 +986,7 @@ The General tab has an additional **Restore all tabs** button. This resets every
 
 ### Backup and Restore (All)
 
-The General tab also includes a code-based backup system. **Generate** creates a compact code that represents your complete current settings. Copy it and store it somewhere safe. **Import** lets you paste that code back at any time to restore your full configuration, for example after a reinstall or when moving to a new server. After importing, click **Save all settings**. Your Wallpapers.com API key is not part of the code.
+The General tab also includes a code-based backup system. **Generate** creates a compact code that represents your complete current settings, **Copy to clipboard** copies it. Store it somewhere safe. **Import** lets you paste that code back at any time to restore your full configuration, for example after a reinstall or when moving to a new server. After importing, click **Save all settings**. Your Wallpapers.com API key is not part of the code.
 
 ---
 
@@ -405,12 +1015,12 @@ Other versions may work but are not tested and could lead to unexpected behavior
 ## Credits
 
 - The cases and their effects come from the classic Aeon MQ skins and Aeon Tajo
-- Red Carpet, Characterart PNG's, Character Poster Sets and the Animated Poster Project: the Kodi community
-- Animated Poster Project: above all @moulfo, its main artist, who sadly passed away in 2020. All credit for this art style goes to him
+- Animated Poster Project, Character Poster Sets, Characterart PNG's and Red Carpet: the Kodi community
+- Animated Poster Project: above all @moulfo, its main artist, who sadly passed away in 2020. All credit for this art style goes to him.
 - Character Poster Sets: @Konon, see the full collection on [DeviantArt](https://www.deviantart.com/konon-cat)
 - Characterart for TV shows: [fanart.tv](https://fanart.tv)
-- The 3D case runs on [three.js](https://threejs.org), its model is based on the JFX DVD/Blu-ray case package (2009), heavily reworked
-- Case colours from the poster: [Color Thief](https://lokeshdhakar.com/projects/color-thief/)
+- The Three.js Case runs on [three.js](https://threejs.org). Its model is based on the JFX DVD/Blu-ray case package (2009), heavily reworked.
+- Case colors from the poster: [Color Thief](https://lokeshdhakar.com/projects/color-thief/)
 - Title fonts and the back cover font (Red Hat Display) from Google Fonts, license files included
 - German hyphenation patterns from [hyphenation-patterns](https://github.com/bramstein/hyphenation-patterns) (LGPL)
 - Studio logos and rating marks belong to their respective owners
