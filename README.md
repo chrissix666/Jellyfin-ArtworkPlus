@@ -16,7 +16,7 @@ It is my third true plugin, next to [Cinema Project](https://github.com/chrissix
 
 ---
 
-# ArtworkPlus
+# Jellyfin ArtworkPlus
 
 - [What This Is](#what-this-is)
 - [What This Is Not](#what-this-is-not)
