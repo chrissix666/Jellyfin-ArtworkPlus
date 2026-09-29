@@ -323,6 +323,10 @@ Make the detail page poster bigger or smaller, and pin it wherever you like. Wit
 
 The classic 2D cases.
 
+<img src="images/cases-gallery.jpg" width="100%">
+
+<sub>All four case types, each with the Blu-ray 1080p case.</sub>
+
 The case can **open** and show the disc, and the disc can **spin**. For that, the movie, show or set needs a disc image in Jellyfin. Without one, the case stays closed.
 
 The case color can stay original, or follow the cover: the plastic is tinted with a color taken from the poster, picked in one of seven ways.
