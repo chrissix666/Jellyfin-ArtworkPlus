@@ -16,7 +16,7 @@ I have developed many Jellyfin Web script mods over the years, but besides this 
 
 ---
 
-# ArtworkPlus
+# Jellyfin ArtworkPlus
 
 - [What This Is](#what-this-is)
 - [What This Is Not](#what-this-is-not)
