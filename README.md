@@ -462,7 +462,7 @@ Custom Poster, Animated Poster and Extraposter all want the same spot: the poste
 
 This is only the order. Every type in the chain can be switched on or off on its own, separately for the **detail page** and for **library views**, and separately for movies, sets and TV shows. Whatever is switched off simply drops out, and the next one in line takes its place.
 
-If a file is broken or missing, the next one takes over too.
+If a file is broken or missing, the next one takes over too. It simply wraps whatever poster won.
 
 ---
 
