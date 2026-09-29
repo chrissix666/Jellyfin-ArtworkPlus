@@ -1,7 +1,3 @@
-
-
-https://github.com/user-attachments/assets/b7a06e08-2d6c-45e2-85c5-9c84229ca662
-
 [Jellyfin Projects](https://linktr.ee/JellyfinProjects) | [Kodi Projects](https://linktr.ee/KodiProjects)
 
 ---
@@ -613,6 +609,10 @@ The idea comes from the Kodi community's [Character Poster Sets](https://linktr.
 #### Extraposter
 
 A multi-image poster slideshow, with its own **Enable Extraposter** switch.
+
+<video src="https://github.com/user-attachments/assets/b7a06e08-2d6c-45e2-85c5-9c84229ca662" width="100%" controls></video>
+
+<sub>Extraposter slideshows on library tiles, shown at 3× speed. The view is filtered by a tag holding only movies with extraposters, in a normal library they are more spread out.</sub>
 
 **Where the Posters Come From**
 
