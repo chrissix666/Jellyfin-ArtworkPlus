@@ -1045,6 +1045,11 @@ If nothing is found, nothing is shown.
 - **Random start position:** sorted orders only, starts at a random movie and continues in order
 - With Own: its own cycle time, Ken Burns effect, zoom speed, pan speed, order and random start position
 
+
+<img src="images/set-backdrops-showcase.jpg" width="100%" alt="Set backdrops showcase">
+
+<sub>Vanilla Jellyfin shows set backdrops too, but only from files copied by hand into its collections folder, usually duplicates of the movies' own.<br>ArtworkPlus takes them straight from the movies. Shown here: the settings above, and the slideshow they give.</sub>
+
 ---
 
 ### Library View Backdrops
