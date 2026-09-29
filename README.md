@@ -1045,7 +1045,6 @@ If nothing is found, nothing is shown.
 - **Random start position:** sorted orders only, starts at a random movie and continues in order
 - With Own: its own cycle time, Ken Burns effect, zoom speed, pan speed, order and random start position
 
-
 <img src="images/set-backdrops-showcase.jpg" width="100%" alt="Set backdrops showcase">
 
 <sub>Vanilla Jellyfin shows set backdrops too, but only from files copied by hand into its collections folder, usually duplicates of the movies' own.<br>ArtworkPlus takes them straight from the movies. Shown here: the settings above, and the slideshow they give.</sub>
@@ -1110,6 +1109,10 @@ Backdrops on person pages. From their own movies and shows, from a folder, or fr
 - **Random start position**
 - **Max images per person:** 1 to 10. The actual count can be lower after filtering.
 - **Enable text filter:** skips images with text on them. It is not a text recognition engine, so some images with text may still slip through.
+
+<img src="images/people-backdrops-showcase.jpg" width="100%" alt="People backdrops showcase">
+
+<sub>Scarlett Johansson from Wallpapers.com: only widescreen images pass, other aspect ratios are filtered out.<br>The first lookup saves the list as <code>backdrops.json</code> in the person's folder, later visits read the list instead of calling the API again.<br>Sequential plays them in this order, Shuffle is recommended.</sub>
 
 ---
 
