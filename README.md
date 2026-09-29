@@ -370,6 +370,10 @@ It needs a browser with 3D support (WebGL). It works in desktop browsers and in 
 
 This one is special. A real 3D keep case, rendered live in your browser. It replaces the case type above for movies. You can grab it and turn it around, zoom in with the mouse wheel, and look at the back.
 
+<a href="https://youtu.be/PL6VJRgV58o"><img src="images/threejs-case-video.jpg" width="100%" alt="Three.js Case video"></a>
+
+<sub>▶ Watch on YouTube: open, turn around, close.</sub>
+
 It picks its shell on its own:
 
 - **DVD** for DVD discs, ISO files up to 10 GB and files up to 576p
