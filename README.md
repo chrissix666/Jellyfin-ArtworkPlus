@@ -824,7 +824,11 @@ The **Create logos** button writes a real `clearlogo.png` for every person into 
 
 Characters from the movie or show, cut out and placed on the detail page. Next to the title clearlogo in the top left or top right, or in a bottom corner of the screen.
 
-TV show characterart has official support on [fanart.tv](https://fanart.tv/tv-fanart/#characterart). Movie characterart unfortunately has no database or API support, only fan projects like the Kodi community's [Characterart PNG's for Movies/Moviesets](https://forum.kodi.tv/showthread.php?tid=342468). Many more can be found on DeviantArt.
+TV show characterart has official support on [fanart.tv](https://fanart.tv/tv-fanart/#characterart). Movie characterart unfortunately has no database or API support, only fan projects like the Kodi community's [Characterart PNG's for Movies/Moviesets](https://forum.kodi.tv/showthread.php?tid=342468). Many more, for movies and TV shows alike, can be found on DeviantArt.
+
+<img src="images/characterart-gallery.jpg" width="100%">
+
+<sub>A small selection.</sub>
 
 **Settings (tab-wide)**
 
