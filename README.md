@@ -482,6 +482,10 @@ If a file is broken or missing, the next one takes over too. It simply wraps wha
 
 Animated posters never found their way into any artwork database or API. They remained a fan project. Most of them can be found on the Kodi community's [Animated Poster Project](https://forum.kodi.tv/showthread.php?tid=215727) page. @moulfo was the main artist of the project, producing the highest-quality posters in the community. He sadly passed away in 2020. All credit for this art style goes to him.
 
+<img src="images/animated-poster-harry-potter-collection.webp" width="100%" alt="Harry Potter collection, animated posters">
+
+<sub>Just like the portraits at Hogwarts: the set poster and all eight films, every one of them alive.</sub>
+
 **Settings (tab-wide)**
 
 - **Allowed animated formats:** GIF, APNG, Animated WEBP. Shared by Animated Poster and Animated Keyart, empty disables both.
