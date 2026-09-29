@@ -884,6 +884,10 @@ Each of the four positions has its own settings:
 - **Offset:** shifts the whole box left or right
 - **Fullscreen offset:** an extra shift only while the browser is in fullscreen
 
+<img src="images/characterart-animated-showcase.webp" width="100%" alt="Animated characterart showcase">
+
+<sub>Just for fun: characterart can move too. GIF and WebP are allowed formats, so animated files work, alone or mixed with still ones.</sub>
+
 ---
 
 ## Red Carpet
