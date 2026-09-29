@@ -664,7 +664,7 @@ Separately for the **detail page** and for **library views**:
 
 <img src="images/character-poster-sets-showcase.jpg" width="100%" alt="Character poster sets showcase">
 
-<sub>One set in three versions, and series that only work in the right order. Number the files in that order and set the order to Sequential, see <a href="#multi-image-slideshows">Multi-Image Slideshows</a>.</sub>
+<sub>One set in three versions, and series that only work in the right order.<br>Number the files in that order and set the order to Sequential, see <a href="#multi-image-slideshows">Multi-Image Slideshows</a>.</sub>
 
 ---
 
