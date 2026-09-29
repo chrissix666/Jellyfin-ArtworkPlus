@@ -934,7 +934,7 @@ Various backdrop extensions beyond vanilla Jellyfin. Seven categories, each with
 
 Turn them all on and there is **hardly a page left without a backdrop**, much like the Kodi skins that almost never show a plain background. Moving around Jellyfin, from a library to a title, from a title to a list and back, **one backdrop fades smoothly into the next** instead of cutting, wherever possible. Exceptions include people backdrops with Wallpapers.com as the source, as long as the lookup is not cached yet and has to wait for the fetch.
 
-**Allowed image formats** for the whole tab: .jpg, .jpeg, .png, .webp, .gif, .tbn, .svg. People backdrops from Wallpapers.com are not affected.
+**Allowed image formats** for the whole tab: .jpg, .jpeg, .png, .webp, .gif, .tbn, .svg.<br>People backdrops from Wallpapers.com are not affected.
 
 **Shared Settings**
 
