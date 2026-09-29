@@ -93,6 +93,12 @@ This plugin changes that. Your poster sits in a Blu-ray case that opens and spin
 
 Fully configurable down to the smallest detail.
 
+**Feature example: one person page, three features**
+
+<img src="images/person-page-example.jpg" width="100%">
+
+<sub>Shown here: <a href="#people-backdrops">People Backdrops</a>, <a href="#clearlogos-for-persons">People Logo</a> and <a href="#red-carpet">Red Carpet</a>.</sub>
+
 ---
 
 ## What This Is Not
@@ -109,7 +115,7 @@ It sits on top of vanilla Jellyfin Web and builds on it. Anything you switch off
 
 Many features of ArtworkPlus started out in Kodi. Artwork like keyart, clearart, characterart, discart and animated posters has been part of the Kodi world for years, created and collected by the Kodi community. Jellyfin only supports a few of them. ArtworkPlus closes that gap.
 
-- **Case** brings back the cases of the classic Aeon MQ skins and Aeon Tajo, including the way they open and spin the disc.
+- **Case** brings back the Aeon MQ and Aeon Tajo cases that open and spin their disc.
 - **Animated Poster** shows the artwork of the Kodi community's [Animated Poster Project](https://forum.kodi.tv/showthread.php?tid=215727).
 - **Extraposter** is the Jellyfin home of the Kodi community's [Character Poster Sets](https://linktr.ee/CharacterPosterSets), carried on for years by @Konon.
 - **CharacterArt** builds on the Kodi community's [Characterart PNG's for Movies/Moviesets](https://forum.kodi.tv/showthread.php?tid=342468).
