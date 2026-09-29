@@ -157,8 +157,8 @@ Sets (Jellyfin's collections) are different: a set has no media folder of its ow
 
 | | Prefixed | Standalone | Folder |
 |---|---|---|---|
-| **Movies** | yes | yes | yes, except animated posters |
-| **TV shows** | no | yes | yes, except animated posters |
+| **Movies** | yes | yes | yes |
+| **TV shows** | no | yes | yes |
 | **Sets** | no | always | no |
 
 **Prefixed**
@@ -201,19 +201,13 @@ Movie (2013)/
 
 **Folder**
 
-A subfolder per type, with any file names inside. Works for movies and TV shows, not for animated posters.
+A subfolder per type, with any file names inside. Works for movies and TV shows. It is meant for the types with several images: Extraposter, Extrakeyart and CharacterArt. Single images, like Animated Poster, Postercase and Keyart, stay Prefixed or Standalone.
 
 ```
 Movie (2013)/
   Movie (2013).mkv
-  animatedposter.gif            (no Folder mode, stays Standalone or Prefixed)
-  animatedkeyart.gif
-  postercase/
-    chooseanyname.jpg           (only the first file is used, alphabetical)
-  keyart/
-    anynamepossible.jpg         (only the first file is used, alphabetical)
   extraposter/
-    anyname1.jpg                (all files, in name order)
+    anyname1.jpg
     anyname2.jpg
     whateveryoulike.jpg
   extrakeyart/
@@ -227,7 +221,7 @@ Movie (2013)/
 
 In Folder mode the file names are up to you, and so are the folder names. With Sequential order, the images play in natural name order: `anyname10` comes after `anyname9`, not right after `anyname1`. Shuffle and Random ignore the names.
 
-Extrakeyart has no separate type name: its **Folder name** is also the name its numbered files start with. With `keyart` the files are `keyart1.jpg`, with `extrakeyart` they are `extrakeyart1.jpg`. In Folder mode, Keyart takes only the first file of its folder and Extrakeyart takes all of them, so if both use the same folder, they share their images.
+Extrakeyart has no separate type name: its **Folder name** is also the name its numbered files start with. With `keyart` the files are `keyart1.jpg`, with `extrakeyart` they are `extrakeyart1.jpg`.
 
 A few rules that apply everywhere:
 
@@ -555,8 +549,7 @@ A retouched poster with no lettering.
 
 **Movies**
 
-- **Naming mode:** Prefixed, Standalone or Folder. In Folder mode, only the first file (alphabetical) is used.
-- **Folder name:** the subfolder in Folder mode, freely changeable
+- **Naming mode:** Prefixed or Standalone
 - **Type name:** the name the file is built from, freely changeable
 - **Enable on detail page**
 - **Enable for library views**
@@ -564,8 +557,8 @@ A retouched poster with no lettering.
 
 **TV shows**
 
-- **Naming mode:** Standalone or Folder
-- **Folder name** and **Type name:** freely changeable. Main show page only.
+- **Naming mode:** Standalone
+- **Type name:** freely changeable. Main show page only.
 - **Enable on detail page**
 - **Enable for library views**
 - **Show also on**
