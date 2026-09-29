@@ -662,6 +662,10 @@ Separately for the **detail page** and for **library views**:
 - **Tile seamless loading:** On is nicer to look at with a slightly longer wait. Off is quicker, the original poster peeks through first.
 - **Tile synchronization:** tiles with the same display duration change together. A tile whose image is late joins the next beat.
 
+<img src="images/character-poster-sets-showcase.jpg" width="100%" alt="Character poster sets showcase">
+
+<sub>One set in three versions, and series that only work in the right order. Number the files in that order and set the order to Sequential, see <a href="#multi-image-slideshows">Multi-Image Slideshows</a>.</sub>
+
 ---
 
 #### Extrakeyart
