@@ -449,7 +449,7 @@ Each case type gets its own color pool. Tick the ones that should be drawn, and 
 
 ## The Poster Family
 
-Three tabs for everything that goes into the poster slot: animated posters, custom posters and multi-image poster slideshows.
+One slot, many faces: every poster type ArtworkPlus can show, without replacing any files.
 
 <img src="images/poster-artwork-types-chart.webp" width="100%">
 
