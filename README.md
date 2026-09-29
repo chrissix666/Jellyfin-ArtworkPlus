@@ -796,6 +796,10 @@ Person pages, where Jellyfin shows no clearlogo at all.
 - **Title:** 60 headline fonts
 - **Both:** all 120
 
+<img src="images/fonts-gallery.jpg" width="100%">
+
+<sub>All 120 fonts. Click to open in full size.</sub>
+
 Open the font list to tick the ones you like, and hover one for a preview with your own preview names. One font ticked: everyone gets that font. Several ticked: each person gets one of them, and always the same one.
 
 If a font has no accented letters, the name is written without accents.
