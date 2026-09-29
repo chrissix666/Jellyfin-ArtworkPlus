@@ -1174,6 +1174,10 @@ With **Individual**, each Apply to box gets its own subfolder:
 - **Cycle time**, **Ken Burns effect**, **Zoom speed**, **Pan speed**
 - **Order**, **Traversal**, **Random start position**
 
+<img src="images/studio-backdrops-wall.jpg" width="100%" alt="Studio backdrops wall">
+
+<sub>Jellyfin already keeps studio thumbs in its metadata folder, <code>Studio/&lt;Name&gt;/landscape.jpg</code>.<br>Nothing to add: ArtworkPlus finds the matching one and shows it on the studio page.</sub>
+
 ---
 
 ### Tag Backdrops
