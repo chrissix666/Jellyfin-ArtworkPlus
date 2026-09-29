@@ -370,7 +370,7 @@ It needs a browser with 3D support (WebGL). It works in desktop browsers and in 
 
 This one is special. A real 3D keep case, rendered live in your browser. It replaces the case type above for movies. You can grab it and turn it around, zoom in with the mouse wheel, and look at the back.
 
-<a href="https://youtu.be/PL6VJRgV58o"><img src="images/threejs-case-video.jpg" width="100%" alt="Three.js Case video"></a>
+<a href="https://youtu.be/v8RC8PO3-wQ"><img src="images/threejs-case-video.jpg" width="100%" alt="Three.js Case video"></a>
 
 <sub>▶ Watch on YouTube: open, turn around, close.</sub>
 
