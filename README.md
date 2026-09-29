@@ -1013,6 +1013,10 @@ If an episode has no files of its own, the season backdrops are shown, then the 
 - **Random start position**
 - With Own: its own cycle time, Ken Burns effect, zoom speed, pan speed, order and random start position
 
+<img src="images/episode-backdrops-showcase.jpg" width="100%" alt="Episode backdrops showcase">
+
+<sub>The thumb is Jellyfin's own, from TVDB or generated from the file by its built-in image extractor, one per episode.<br>The backdrops are frames bulk generated from the episode file itself, shown chronologically (order configurable).<br>Easy to make with a tool like Video Thumbnail Maker, or a simple script.</sub>
+
 ---
 
 #### Set Backdrops
