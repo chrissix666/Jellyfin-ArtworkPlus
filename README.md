@@ -288,6 +288,10 @@ The General tab is the main switchboard. Every feature tab can be turned on or o
 
 The General tab also holds **Restore all tabs** and the **Backup / restore via code**, see [Settings Management](#settings-management).
 
+<img src="images/general-tab.jpg" width="100%">
+
+<sub>Switching a feature off greys out its tab. Each tab can be reset on its own or all at once, and all settings can be backed up and restored as a code.</sub>
+
 ---
 
 ## Case
