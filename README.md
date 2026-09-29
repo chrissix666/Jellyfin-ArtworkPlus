@@ -873,9 +873,15 @@ It appears only in the people views: on the person's own page, and on their list
 
 **Where It Comes From**
 
+<img src="images/red-carpet-cover.jpg" width="220" align="right">
+
 Red Carpet started out as a Kodi community project: a resource addon with more than 500 actress PNGs, available in the official Kodi repository under Look and feel > Image collections. Most of the artwork was created by @manfeed.
 
 All images follow the same rules, so they look uniform next to each other: transparent PNG, 1000 px high, fitting a 2:3 frame, tasteful rather than provocative.
+
+<img src="images/red-carpet-gallery.jpg" width="100%">
+
+<sub>A selection from the Red Carpet collection.</sub>
 
 **How to Get It**
 
