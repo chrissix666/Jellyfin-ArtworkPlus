@@ -451,7 +451,7 @@ Each case type gets its own color pool. Tick the ones that should be drawn, and 
 
 Three tabs for everything that goes into the poster slot: animated posters, custom posters and multi-image poster slideshows.
 
-<img src="images/poster-artwork-types-chart.gif" width="100%">
+<img src="images/poster-artwork-types-chart.webp" width="100%">
 
 Custom Poster, Animated Poster and Extraposter all want the same spot: the poster on the detail page and on library tiles. ArtworkPlus picks one in this order:
 
