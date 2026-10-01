@@ -155,10 +155,14 @@ ArtworkPlus finds your artwork by its name, in the folder of the movie or TV sho
 
 Sets (Jellyfin's collections) are different: a set has no media folder of its own. Jellyfin creates a folder for every collection, for example `/config/data/collections/Avengers Collection [boxset]/`, and the set's files go straight into it. That is why sets only support Standalone.
 
+There are two groups. Single images (Animated Poster, Animated Keyart, Postercase, Keyart) have no Folder mode, multi-image types (Extraposter, Extrakeyart, CharacterArt) have all three.
+
 | | Prefixed | Standalone | Folder |
 |---|---|---|---|
-| **Movies** | yes | yes | yes |
-| **TV shows** | no | yes | yes |
+| **Movies, single image** | yes | yes | no |
+| **Movies, multi-image** | yes | yes | yes |
+| **TV shows, single image** | no | always | no |
+| **TV shows, multi-image** | no | yes | yes |
 | **Sets** | no | always | no |
 
 **Prefixed**
@@ -201,7 +205,7 @@ Movie (2013)/
 
 **Folder**
 
-A subfolder per type, with any file names inside. Works for movies and TV shows. It is meant for the types with several images: Extraposter, Extrakeyart and CharacterArt. Single images, like Animated Poster, Postercase and Keyart, stay Prefixed or Standalone.
+A subfolder per type, with any file names inside. Works for movies and TV shows, for the types with several images only: Extraposter, Extrakeyart and CharacterArt. Single images, like Animated Poster, Postercase and Keyart, have no Folder mode.
 
 ```
 Movie (2013)/
@@ -221,11 +225,11 @@ Movie (2013)/
 
 In Folder mode the file names are up to you, and so are the folder names. With Sequential order, the images play in natural name order: `anyname10` comes after `anyname9`, not right after `anyname1`. Shuffle and Random ignore the names.
 
-Extrakeyart has no separate type name: its **Folder name** is also the name its numbered files start with. With `keyart` the files are `keyart1.jpg`, with `extrakeyart` they are `extrakeyart1.jpg`.
+The type name and the folder name are two separate settings. In Folder mode only the folder name counts, in Prefixed and Standalone mode only the type name.
 
 A few rules that apply everywhere:
 
-- Every **type name** and **folder name** can be changed freely. The one fixed name is Extraposter's: its numbered files always start with `poster`.
+- Every **type name** and **folder name** can be changed freely, for every type. Sets use the Movies type name.
 - Every artwork tab (Animated Poster, Custom Poster, Extraposter, CharacterArt, Red Carpet, Backdrops) has its own **allowed image formats**. Tick the formats your files use.
 - Numbered posters, keyart and characterart, like `poster1.jpg`, `poster2.jpg`, can go up to 50. Start with 1, 2 or 3, after that gaps are fine. Numbered backdrops go up to 20, and the search stops after three missing numbers in a row.
 
@@ -263,6 +267,7 @@ Beyond the library grid, you decide exactly where else the tiles change: the spe
 Extraposter, Extrakeyart, CharacterArt and characterart in the LogoArt slot share the same multi-image slideshow controls. LogoArt has no delay, and backdrops have their own controls, see [Backdrops](#backdrops).
 
 - **Order:** Sequential (in order), Shuffle (no repeats per round) or Random (repeats OK)
+- **Unnumbered file:** Ignored or Counts as #1, whether a file without a number, like `poster.jpg` next to `poster1.jpg`, is shown as the first image. Extraposter and Extrakeyart start with Ignored, because `poster.jpg` is Jellyfin's own poster, CharacterArt with Counts as #1. The characterart in the LogoArt slot follows the CharacterArt setting.
 - **Playback:** Loop (runs forever) or Play once (fades back to the original after one pass)
 - **Random start position:** Sequential and Loop only. Starts at a random image and continues in order, as if the show had been running all along.
 - **Display duration:** how long each image stays
@@ -565,8 +570,7 @@ A retouched poster with no lettering.
 
 **TV shows**
 
-- **Naming mode:** Standalone
-- **Type name:** freely changeable. Main show page only.
+- **Type name:** freely changeable. Main show page only, always Standalone.
 - **Enable on detail page**
 - **Enable for library views**
 - **Show also on**
@@ -622,6 +626,8 @@ Movies:
 - **Standalone:** `poster1.jpg`, `poster2.jpg` and so on
 - **Folder:** every file inside a folder of your choice, for example `extraposter/`
 
+The word `poster` is the default **Type name**, freely changeable.
+
 TV shows:
 
 - **Standalone:** `poster1.jpg`, `poster2.jpg` and so on, in the show's main folder
@@ -633,7 +639,7 @@ Sets:
 - Standalone only: `poster1.jpg`, `poster2.jpg` and so on, in the collection folder, see [Naming Modes](#naming-modes)
 - On top of that, the **posters of the movies inside**
 
-Movies and TV shows each have their own **Naming mode** and **Folder name** setting.
+Movies and TV shows each have their own **Naming mode**, **Type name** and **Folder name** setting.
 
 **Movies and Sets**
 
@@ -646,7 +652,7 @@ Separately for the **detail page** and for **library views**:
 - **Set image:** which image each movie in the set shows. Poster, Postercase, Keyart, Animated Poster or Animated Keyart, named as in the Custom and Animated tabs.
 - **Set fallback** and **Set second fallback:** used for a movie without that file. None skips the movie.
 - **Set Keyart logo overlay:** the movie's own clearlogo on its keyart, with position and size
-- **Files order**, **Playback**, **Random start position**, **Display duration**, **Transition duration**, **Delay before first shown**, see [Multi-Image Slideshows](#multi-image-slideshows)
+- **Files order**, **Unnumbered file**, **Playback**, **Random start position**, **Display duration**, **Transition duration**, **Delay before first shown**, see [Multi-Image Slideshows](#multi-image-slideshows)
 
 **TV shows**
 
@@ -658,7 +664,7 @@ Separately for the **detail page** and for **library views**:
 - **Random start position** for the season order
 - **Include specials:** Season 0 is included and always shown first
 - **Skip single-season series:** a series with only one season poster gets no multi-image season slideshow
-- **Files order**, **Playback**, **Random start position**, **Display duration**, **Transition duration**, **Delay before first shown**
+- **Files order**, **Unnumbered file**, **Playback**, **Random start position**, **Display duration**, **Transition duration**, **Delay before first shown**
 
 **Library Views Only**
 
@@ -691,11 +697,9 @@ Sets:
 
 - Standalone only: `keyart1.jpg`, `keyart2.jpg` and so on, in the collection folder, see [Naming Modes](#naming-modes)
 
-The word `keyart` comes from the **Folder name** setting. Extrakeyart has no separate type name, so this one word names the folder in Folder mode and starts the file names in Prefixed and Standalone mode. Set it to `extrakeyart`, and the files become `extrakeyart1.jpg` and so on.
+The word `keyart` is the default **Type name**, separate from the **Folder name**. Set the type name to `extrakeyart`, and the files become `extrakeyart1.jpg` and so on.
 
-Sets and TV shows use their own files only, there are no set or season posters for Extrakeyart. One extra setting:
-
-- **Unnumbered file:** Ignored, or Counts as #1. Whether a plain `keyart.jpg` is picked up as the first image.
+Sets and TV shows use their own files only, there are no set or season posters for Extrakeyart. **Unnumbered file** works like in Extraposter: whether a plain `keyart.jpg` is picked up as the first image.
 
 ---
 
@@ -858,8 +862,8 @@ TV show characterart has official support on [fanart.tv](https://fanart.tv/tv-fa
 
 - **Naming mode:** Prefixed, Standalone or Folder, for example `Movie (2013)-characterart.png`, `characterart.png`, or everything inside `characterart/`. Sets always use Standalone.
 - **Type name** and **Folder name:** freely changeable
-- **Image mode:** Single image (`characterart.png`, no number) or Multi image: the plain file first, then `characterart1.png`, `characterart2.png` and so on
-- **Order**, **Playback**, **Random start position**, **Display duration**, **Transition duration**, **Delay before first shown**
+- **Image mode:** Single image (`characterart.png`, no number) or Multi image: `characterart1.png`, `characterart2.png` and so on, plus the plain file first when **Unnumbered file** says Counts as #1 (the default)
+- **Order**, **Unnumbered file**, **Playback**, **Random start position**, **Display duration**, **Transition duration**, **Delay before first shown**
 - **If only 1 image is found:** stay static, or still fade out after one display duration
 - **Position:** Top left, Top right, Bottom left, Bottom right
 
