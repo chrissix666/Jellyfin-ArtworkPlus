@@ -344,7 +344,7 @@ The case color can stay original, or follow the cover: the plastic is tinted wit
   - Viva Elite 3D Case, slightly turned to the side, with its own inside
 - **Case color:** Original keeps the case as it is, Full shell tints its plastic to match the cover
 - **Case color blend:** which color the cover gives the case. Dominant dark, Dominant colorful, Deep, Material You, Accent, Top region, Vibrant. The same seven the Three.js Case offers.
-- **Case angle:** the tilt of the Viva Elite 3D Case, 0 to 10°
+- **Case angle:** the tilt of the Viva Elite 3D Case, -90 to 90°
 
 **Open Case**
 
@@ -1302,7 +1302,7 @@ https://raw.githubusercontent.com/chrissix666/Jellyfin-ArtworkPlus/main/manifest
 
 **Manual Installation**
 
-1. Download the latest release ZIP from the [Releases page](https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases)
+1. Download the latest release ZIP from the [Releases page](https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases), the one for your Jellyfin version: `_jellyfin-10.10.7.zip` (1.1.0.0) for Jellyfin 10.10.7, `_jellyfin-12.x.zip` (2.0.0.0) for Jellyfin 12.0 and later
 2. Extract the whole ZIP, including the `CaseTextures` and `Fonts` folders, into its own folder inside your Jellyfin plugins folder, for example `plugins/ArtworkPlus`
 3. Restart Jellyfin
 4. Configure the plugin under Dashboard > Plugins > ArtworkPlus
