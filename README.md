@@ -155,7 +155,7 @@ ArtworkPlus finds your artwork by its name, in the folder of the movie or TV sho
 
 Sets (Jellyfin's collections) are different: a set has no media folder of its own. Jellyfin creates a folder for every collection, for example `/config/data/collections/Avengers Collection [boxset]/`, and the set's files go straight into it. That is why sets only support Standalone.
 
-There are two groups. Single images (Animated Poster, Animated Keyart, Postercase, Keyart) have no Folder mode, multi-image types (Extraposter, Extrakeyart, CharacterArt) have all three.
+There are two groups. Single images (Animated Poster, Animated Keyart, Postercase, Keyart) have no Folder mode, multi-image types (Extraposter, Extrakeyart, CharacterArt) have all three for movies. Sets support both groups, always in Standalone.
 
 | | Prefixed | Standalone | Folder |
 |---|---|---|---|
@@ -163,7 +163,8 @@ There are two groups. Single images (Animated Poster, Animated Keyart, Postercas
 | **Movies, multi-image** | yes | yes | yes |
 | **TV shows, single image** | no | always | no |
 | **TV shows, multi-image** | no | yes | yes |
-| **Sets** | no | always | no |
+| **Sets, single image** | no | always | no |
+| **Sets, multi-image** | no | always | no |
 
 **Prefixed**
 
