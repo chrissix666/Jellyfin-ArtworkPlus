@@ -6,13 +6,14 @@
     "overview": "Nine tabs, one plugin: Case Mod (2D/3D cases with disc, and an optional Three.js keep case for movies that is printed front, spine and back from the item's own artwork), Animated Poster/Keyart, Custom Poster/Keyart, Extraposter/Extrakeyart slideshows on detail pages and library tiles (with Also-on areas), LogoArt (clearlogo / clearart / character art per item type, person name logos from 120 bundled fonts), CharacterArt overlays, Red Carpet actor art, and Backdrops for detail pages, people, libraries, genres, studios, tags and favourites. Requires the File Transformation plugin; the three feature scripts live in the plugin's data folder.",
     "owner": "chrissix666",
     "category": "Experimental",
+    "imageUrl": "https://raw.githubusercontent.com/chrissix666/Jellyfin-ArtworkPlus/main/logo.png",
     "versions": [
       {
         "version": "2.0.0.0",
         "changelog": "Release for Jellyfin 12.0+",
         "targetAbi": "12.0.0.0",
         "sourceUrl": "https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases/download/v2.0.0.0/ArtworkPlus_2.0.0.0_jellyfin-12.x.zip",
-        "checksum": "f4b3b852d42ffef1837e429616b8b29f",
+        "checksum": "b874129151d370a09a827c25cdab5dd4",
         "timestamp": "2026-10-03T02:46:14Z"
       },
       {
@@ -20,7 +21,7 @@
         "changelog": "Release for Jellyfin 10.10.7",
         "targetAbi": "10.10.7.0",
         "sourceUrl": "https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases/download/v1.1.0.0/ArtworkPlus_1.1.0.0_jellyfin-10.10.7.zip",
-        "checksum": "19970bf40cc7082e700740f80dd3d2ef",
+        "checksum": "794a52619c72e8d51eac3063a34c907c",
         "timestamp": "2026-10-03T02:46:13Z"
       },
       {
