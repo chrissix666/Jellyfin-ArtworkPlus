@@ -12,7 +12,12 @@ Before Jellyfin, I spent years in the Kodi community, starting and helping out w
 
 When I moved to Jellyfin, I missed all of it. So I built ArtworkPlus. It brings that world to Jellyfin Web, plus a lot of things Kodi never had.
 
-I have developed many Jellyfin Web script mods over the years, but besides this one, only two other true plugins: [Cinema Project](https://github.com/chrissix666/Jellyfin-Cinema-Project), a virtual cinema environment based on three.js that gives your movies an ambient feel, and [VideoOSD Tweaks and Candy](https://github.com/chrissix666/Jellyfin-VideoOSD-Tweaks-Candy), which puts you in full control of the Jellyfin video player OSD.
+Please also have a look at my other plugins:
+
+- [Cinema Project](https://github.com/chrissix666/Jellyfin-Cinema-Project): a virtual cinema environment based on three.js that gives your movies an ambient feel
+- [VideoOSD Tweaks and Candy](https://github.com/chrissix666/Jellyfin-VideoOSD-Tweaks-Candy): puts you in full control of the Jellyfin video player OSD
+- [Destroy](https://github.com/chrissix666/Jellyfin-Destroy): turns the Jellyfin page you are looking at into a game level
+- [VisoMaster Bridge](https://github.com/chrissix666/Jellyfin-VisoMaster-Bridge): swaps faces in the film you are watching, with VisoMaster Fusion
 
 ---
 
