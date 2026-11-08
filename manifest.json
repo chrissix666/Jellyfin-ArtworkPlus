@@ -13,16 +13,16 @@
         "changelog": "Release for Jellyfin 12.0+",
         "targetAbi": "12.0.0.0",
         "sourceUrl": "https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases/download/v2.0.0.0/ArtworkPlus_2.0.0.0_jellyfin-12.x.zip",
-        "checksum": "c6ff28123dfebf1dd0d72b765e31d3e4",
-        "timestamp": "2026-11-08T05:00:43Z"
+        "checksum": "74a5ee69468de845068eb98503d4870d",
+        "timestamp": "2026-11-08T05:52:41Z"
       },
       {
         "version": "1.1.0.0",
         "changelog": "Release for Jellyfin 10.10.7",
         "targetAbi": "10.10.7.0",
         "sourceUrl": "https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases/download/v1.1.0.0/ArtworkPlus_1.1.0.0_jellyfin-10.10.7.zip",
-        "checksum": "270a501decd1f1c39a25042403bffc1f",
-        "timestamp": "2026-11-08T05:00:43Z"
+        "checksum": "b4380ada1ca4d9f77eae2e4376d047e4",
+        "timestamp": "2026-11-08T05:52:41Z"
       },
       {
         "version": "1.0.0.0",
