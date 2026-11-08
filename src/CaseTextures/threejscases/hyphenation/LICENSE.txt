@@ -1,0 +1,4 @@
+German hyphenation patterns in de.js: from https://github.com/bramstein/hyphenation-patterns (dist/browser/de.js),
+derived from the TeX German patterns (dehyph). The patterns are licensed under the LGPL and copyrighted to their
+respective creators and maintainers (see the repository README). The Hypher engine itself is NOT used here;
+the page has its own Liang implementation.

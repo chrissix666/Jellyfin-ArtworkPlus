@@ -1,0 +1,74 @@
+{
+  "1080p": {
+    "colour": "#00aee6",
+    "colour2": "#002ae6"
+  },
+  "3d": {
+    "colour": "#0061c6",
+    "colour2": "#0000c6"
+  },
+  "480p": {
+    "colour": "#7d7d7d",
+    "colour2": "#7d7d7d"
+  },
+  "4k": {
+    "colour": "#000000",
+    "colour2": "#434343"
+  },
+  "540p": {
+    "colour": "#4b4b4b",
+    "colour2": "#4b4b4b"
+  },
+  "576p": {
+    "colour": "#222222",
+    "colour2": "#222222"
+  },
+  "720p": {
+    "colour": "#008194",
+    "colour2": "#002c94"
+  },
+  "back_1080p": {
+    "colour": "#004cc5",
+    "colour2": "#0025c5"
+  },
+  "back_3d": {
+    "colour": "#0019bd",
+    "colour2": "#0000bd"
+  },
+  "back_480p": {
+    "colour": "#5c5c60",
+    "colour2": "#5c5c60"
+  },
+  "back_4k": {
+    "colour": "#171718",
+    "colour2": "#171718"
+  },
+  "back_540p": {
+    "colour": "#48494c",
+    "colour2": "#48494c"
+  },
+  "back_576p": {
+    "colour": "#2c2d2e",
+    "colour2": "#2c2d2e"
+  },
+  "back_720p": {
+    "colour": "#005fa4",
+    "colour2": "#0003a4"
+  },
+  "back_p": {
+    "colour": "#730020",
+    "colour2": "#730004"
+  },
+  "back_tvseries": {
+    "colour": "#b18800",
+    "colour2": "#b15200"
+  },
+  "p": {
+    "colour": "#99004a",
+    "colour2": "#990000"
+  },
+  "tvseries": {
+    "colour": "#aa8200",
+    "colour2": "#aa2000"
+  }
+}

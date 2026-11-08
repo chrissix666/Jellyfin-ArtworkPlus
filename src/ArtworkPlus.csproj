@@ -1,0 +1,153 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- One source, two builds: net8.0 for Jellyfin 10.10.x and net10.0 for Jellyfin 12.x.
+         Always build with -f net8.0 / -f net10.0. -->
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Jellyfin.Plugin.ArtworkPlus</RootNamespace>
+    <AssemblyName>Jellyfin.Plugin.ArtworkPlus</AssemblyName>
+    <!-- This is a class LIBRARY project (a Jellyfin plugin), and .NET class
+         libraries do NOT copy their NuGet package dependencies into the
+         build output by default. Jellyfin.Controller/Jellyfin.Model/
+         Microsoft.Extensions.Caching.Memory are already present in
+         Jellyfin's server process, but SixLabors.ImageSharp is not: without
+         a local copy the plugin fails at runtime with "Could not load file
+         or assembly 'SixLabors.ImageSharp'". This property is MSBuild's
+         documented setting for plugin projects that depend on other
+         libraries. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 10.10.7 does not exist as its own NuGet package (versions jump from
+         10.10.6 to 10.11.x). 10.10.6 is the closest existing version; as a
+         patch release relative to 10.10.7, no API breaks are expected.
+         targetAbi in meta.json (the value that decides whether Jellyfin
+         loads the plugin) stays at 10.10.7.0.
+         ExcludeAssets="runtime": with CopyLocalLockFileAssemblies=true these
+         packages' DLLs and their transitive dependencies (Jellyfin.Data.dll,
+         MediaBrowser.*.dll, Emby.Naming.dll, ICU4N.dll/J2N.dll/
+         Diacritics.dll) would be copied into the plugin's output folder.
+         They are ALREADY loaded in Jellyfin's host process, and a
+         plugin-local copy is a known cause of "FileLoadException: Assembly
+         with same name is already loaded" -> plugin marked "Malfunctioned"
+         (see jellyfin-plugin-webhook#96, jellyfin-plugin-artwork#17).
+         ExcludeAssets="runtime" keeps the packages available at COMPILE
+         time while excluding their runtime assets from the output. -->
+    <PackageReference Include="Jellyfin.Controller" Version="10.10.6" ExcludeAssets="runtime" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <PackageReference Include="Jellyfin.Model" Version="10.10.6" ExcludeAssets="runtime" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <!-- Jellyfin 12.x: the LOWEST supported packages, 12.0.0, never a
+         wildcard. 12.0 -> 12.1 only ADDED public members (compare v12.0...v12.1), so this binary runs on both. -->
+    <PackageReference Include="Jellyfin.Controller" Version="12.0.0" ExcludeAssets="runtime" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <PackageReference Include="Jellyfin.Model" Version="12.0.0" ExcludeAssets="runtime" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <!-- For IMemoryCache (server-side caching). Likely available
+         transitively via Jellyfin.Controller (Jellyfin itself calls
+         AddMemoryCache() in ApplicationHost.cs), but referenced explicitly.
+         Same ExcludeAssets reasoning as the two packages above - Jellyfin's
+         host process already has this loaded. -->
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" ExcludeAssets="runtime" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <!-- net10: Jellyfin 12.1 brings Caching.Memory 10.0.x itself (transitively via Jellyfin.Controller);
+         an explicit 8.0.1 would downgrade it (NU1605), so no explicit reference there. -->
+    <!-- For People Backdrops' image dimension checks (16:9 aspect-ratio
+         lock) AND its text-presence filter (see
+         PeopleBackdropsTextDetector.cs). System.Drawing.Common is
+         Windows-only since .NET 6, and the plugin must also run on
+         Linux/Docker/ARM. SixLabors.ImageSharp is fully managed and
+         cross-platform, with no native binaries.
+         Licensing: the "Six Labors Split License" is free (Apache 2.0
+         terms) for open-source software like this plugin, but from v4.0.0
+         on, DIRECT package dependencies also require a build-time license
+         key. Kept on the 3.1 line (the last line before that requirement)
+         so anyone can build this plugin without extra setup. -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <!-- LogoArt's bulk clearlogo creator renders text with
+         SkiaSharp. Jellyfin 10.10.7 ships SkiaSharp 2.88.9 (+ libSkiaSharp)
+         for its own image pipeline (jellyfin.deps.json), so the plugin
+         compiles against exactly that version and ships nothing - the
+         same ExcludeAssets reasoning as Jellyfin.Controller above. -->
+    <PackageReference Include="SkiaSharp" Version="2.88.9" ExcludeAssets="runtime;native" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <!-- Jellyfin 12.1 ships SkiaSharp 3.119.4 (Directory.Packages.props:73). -->
+    <PackageReference Include="SkiaSharp" Version="3.119.4" ExcludeAssets="runtime;native" Condition="'$(TargetFramework)' == 'net10.0'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Verified against MediaBrowser.Common.Plugins.BasePluginOfT: the
+         plugin ID is read at runtime via
+         GetCustomAttributes(typeof(GuidAttribute)) from the assembly, NOT
+         from meta.json. Must match the guid there. -->
+    <AssemblyAttribute Include="System.Runtime.InteropServices.GuidAttribute">
+      <_Parameter1>a32fa765-c917-4c30-a58c-5998015cd046</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Jellyfin's IHasWebPages/PluginPageInfo.EmbeddedResourcePath
+         requires an embedded resource (MediaBrowser.Model.Plugins.PluginPageInfo),
+         so the config page MUST be embedded.
+         The three feature scripts (Jellyfin-ArtworkPlus-Posters-v1.js,
+         -RenderArt-v1.js, -Backdrops-v1.js) are deliberately NOT embedded:
+         they are read from disk at runtime (one GetScript() endpoint per
+         controller, see Helpers/FeatureScripts.cs), so they can change
+         without a rebuild. RenderArt-v1.js holds CharacterArt and Red
+         Carpet; Posters-v1.js holds Custom Poster, Animated Poster and
+         Extraposter (see each file's header comment).
+         Jellyfin-ArtworkPlus-Core-v1.js is the exception: it is the shared
+         engine the feature scripts depend on, not something to hand-edit,
+         so it IS embedded and served by CoreScriptController.
+         Explicit <LogicalName> (unlike configPage.html above, which relies
+         on MSBuild's default naming): the manifest resource name is then a
+         stated fact instead of a prediction of MSBuild's
+         CreateCSharpManifestResourceName rules. It lives in two places
+         (here and in CoreScriptController.cs), which must be kept in sync
+         if this file is renamed or moved. -->
+    <EmbeddedResource Include="Configuration\configPage.html" />
+    <EmbeddedResource Include="EmbeddedScripts\Jellyfin-ArtworkPlus-Core-v1.js">
+      <LogicalName>Jellyfin-ArtworkPlus-Core-v1.js</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The test harness under tests/ has its own project and
+         must not be compiled into the plugin (duplicate assembly attributes). -->
+    <Compile Remove="tests\**" />
+    <None Remove="tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Case textures - deliberately NOT EmbeddedResource but plain
+         build-output files: they land in the same ZIP as the DLL and, on
+         install/update, right next to it in the assembly folder
+         (plugins/ArtworkPlus_x.x.x.x/CaseTextures/...), without a manual
+         copy step and without bloating the DLL (~8.5MB).
+         NOT in DataFolderPath, because these files must travel with the
+         code (update with every plugin update). The `**` globs pick up the
+         complete subfolder structure (vivaelitecases/clearcases/
+         vortexcases/vivaelite3dcases/threejscases) without listing every
+         file. threejscases needs more than images (.jpg the generic fanart
+         fallback, .ttf the plot font, .js the hyphenation patterns, .txt its
+         licence); the extensions are listed explicitly rather than as
+         `**\*.*`, which would also drag in anything dropped there. -->
+    <Content Include="CaseTextures\**\*.png;CaseTextures\**\*.jpg;CaseTextures\**\*.ttf;CaseTextures\**\*.js;CaseTextures\**\*.txt;CaseTextures\**\*.json;CaseTextures\**\*.webp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- The two bundled LogoArt font pools (Fonts/Signature,
+         Fonts/Title, 60 + 60 OpenType files), their manifest and the
+         licence texts - the same "travels next to the DLL" reasoning as
+         CaseTextures; served by /LogoArt/font/{group}/{file}, whitelisted
+         through fonts.json. -->
+    <Content Include="Fonts\**\*.otf;Fonts\fonts.json;Fonts\LICENSE-*.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- Plugin catalog logo (1280x720, icon + title + subtitle). Jellyfin
+         reads the image via `imagePath` in meta.json, relative to the plugin
+         folder - hence a plain build-output file next to the DLL, like the
+         CaseTextures. -->
+    <Content Include="Assets\logo.png">
+      <Link>logo.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

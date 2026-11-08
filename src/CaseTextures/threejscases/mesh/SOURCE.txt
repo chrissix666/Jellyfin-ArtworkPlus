@@ -1,0 +1,9 @@
+Three.js Case - case geometry
+=============================
+
+The case models this asset is generated from are based on the JFX DVD/Blu-ray
+case package, published in 2009 under a free licence.
+
+The geometry has been reworked since: the DVD shell is a new construction from
+measured Amaray dimensions, and the Blu-ray shell is the original mesh with
+substantial runtime surgery on top.

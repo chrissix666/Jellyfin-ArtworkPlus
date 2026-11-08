@@ -1,0 +1,16 @@
+{
+  "category": "Experimental",
+  "changelog": "Release for Jellyfin 10.10.7",
+  "description": "Poster, logo, character art and backdrop customisation for Jellyfin 10.10.7 and 12.0+: 2D and 3D cases including a real Three.js keep case for movies, animated and custom posters, Extraposter slideshows, LogoArt, CharacterArt, Red Carpet, seven backdrop categories.",
+  "guid": "a32fa765-c917-4c30-a58c-5998015cd046",
+  "name": "ArtworkPlus",
+  "overview": "Nine tabs, one plugin: Case Mod (2D/3D cases with disc, and an optional Three.js keep case for movies that is printed front, spine and back from the item's own artwork), Animated Poster/Keyart, Custom Poster/Keyart, Extraposter/Extrakeyart slideshows on detail pages and library tiles (with Also-on areas), LogoArt (clearlogo / clearart / character art per item type, person name logos from 120 bundled fonts), CharacterArt overlays, Red Carpet actor art, and Backdrops for detail pages, people, libraries, genres, studios, tags and favourites. Requires the File Transformation plugin; the three feature scripts live in the plugin's data folder.",
+  "owner": "chrissix666",
+  "targetAbi": "10.10.7.0",
+  "timestamp": "2026-09-22T00:00:00.0000000Z",
+  "version": "1.0.0.0",
+  "status": "Active",
+  "autoUpdate": false,
+  "assemblies": [],
+  "imagePath": "logo.png"
+}
