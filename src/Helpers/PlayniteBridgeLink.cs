@@ -36,6 +36,8 @@ internal static class PlayniteBridgeLink
     private static MethodInfo? _isCollection;
     private static MethodInfo? _collectionMembers;
     private static MethodInfo? _collectionImages;
+    private static MethodInfo? _gameCase;
+    private static MethodInfo? _gameCasePart;
 
     /// <summary>True when Playnite Bridge's ArtworkPlusLink class is loaded (the plugin is installed, whether or not it has data yet).</summary>
     public static bool Present
@@ -79,6 +81,21 @@ internal static class PlayniteBridgeLink
             // a malformed entry keeps its place (empty tag = skipped by the caller), so every later index stays right
             ? list.Select(p => p is { Length: 2 } ? (p[0] ?? string.Empty, p[1] ?? string.Empty) : (string.Empty, string.Empty)).ToList()
             : Array.Empty<(string, string)>();
+
+    /// <summary>
+    /// Three.js Case Games: the version's case as rows
+    /// [part, value, tag] - kind (box|disc), depth (box only), source (spine|rule|user), platform, front,
+    /// back, spine, disc, logo (path + tag), name, publisher, developer (one row each). Empty = no case
+    /// (front or back missing, game hidden for that user, or no such function in Playnite Bridge).
+    /// </summary>
+    public static IReadOnlyList<(string Part, string Value, string Tag)> GameCase(Guid id, Guid userId)
+        => Call(() => _gameCase, id, userId) is string[][] rows
+            ? rows.Where(r => r is { Length: 3 } && !string.IsNullOrEmpty(r[0]))
+                  .Select(r => (r[0], r[1] ?? string.Empty, r[2] ?? string.Empty)).ToList()
+            : Array.Empty<(string, string, string)>();
+
+    /// <summary>The full path of one case picture when the tag is the one GameCase handed out; null otherwise.</summary>
+    public static string? GameCasePart(Guid id, string part, string tag) => Call(() => _gameCasePart, id, part, tag) as string;
 
     /// <summary>The game's image folder (full path), null when there is none.</summary>
     public static string? GameFolder(Guid id) => Call(() => _gameFolder, id) as string;
@@ -189,6 +206,8 @@ internal static class PlayniteBridgeLink
                     _isCollection = type.GetMethod("IsCollection", new[] { typeof(Guid) });
                     _collectionMembers = type.GetMethod("CollectionMembers", new[] { typeof(Guid), typeof(Guid) });
                     _collectionImages = type.GetMethod("CollectionImages", new[] { typeof(Guid), typeof(string) });
+                    _gameCase = type.GetMethod("GameCase", new[] { typeof(Guid), typeof(Guid) });
+                    _gameCasePart = type.GetMethod("GameCasePart", new[] { typeof(Guid), typeof(string), typeof(string) });
                     _present = true;
                 }
             }

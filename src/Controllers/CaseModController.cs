@@ -162,6 +162,24 @@ public class CaseModInfoResult
     public string PosterSizeAnchor { get; set; } = "Default";
 
     /// <summary>
+    /// Box 3D: on a game page whose artwork ArtworkPlus draws, the version's rendered box picture may
+    /// replace its 2D poster - the client checks that the version has one. False for every other item.
+    /// </summary>
+    public bool Box3d { get; set; }
+
+    /// <summary>Box 3D's own poster size in percent (100 = leave it alone), like PosterSizePercent.</summary>
+    public int Box3dSizePercent { get; set; } = 100;
+
+    /// <summary>Box 3D's own anchor, like PosterSizeAnchor.</summary>
+    public string Box3dAnchor { get; set; } = "Default";
+
+    /// <summary>
+    /// The item is one of Playnite Bridge's games (no library item). The client waits for the games answer only then
+    /// (or when the Bridge already told it), so a movie page never waits for it.
+    /// </summary>
+    public bool IsGame { get; set; }
+
+    /// <summary>
     /// Disc geometry - same units as the Case box above (Top = vw offset from
     /// the poster's -80% base, Left = %), but only ONE size value: a disc is
     /// round, so the size is used as both width and height. Per case type,
@@ -412,14 +430,20 @@ public class CaseModController : ControllerBase
             var posterSize = gameStoodDown ? 100 : ResolvePosterSize(config, item, isGame);
             var posterAnchor = gameStoodDown ? "Default" : ResolvePosterAnchor(config, item, isGame);
 
-            if (!config.CaseModEnabled)
-            {
-                return Ok(new CaseModInfoResult { IsApplicable = false, PosterSizePercent = posterSize, PosterSizeAnchor = posterAnchor });
-            }
+            // Box 3D: only for a game whose artwork ArtworkPlus draws ("Settings From"); its own size and anchor
+            // follow the Poster size block's mode like every other kind.
+            var box3d = item is null && config.CaseModBox3dEnabled && Helpers.PlayniteBridgeLink.IsGame(itemId) && Helpers.PlayniteBridgeLink.DrawsGames;
+            var box3dSize = !box3d || !config.CaseModPosterSizeEnabled ? 100
+                : Math.Clamp(config.CaseModPosterSizeMode == "General" ? config.CaseModPosterSizeAll : config.CaseModPosterSizeBox3d, 10, 200);
+            var box3dAnchorRaw = !box3d || !config.CaseModPosterSizeEnabled ? "Default"
+                : config.CaseModPosterSizeMode == "General" ? config.CaseModPosterSizeAnchorAll : config.CaseModPosterSizeAnchorBox3d;
+            var box3dAnchor = ValidAnchors.Contains(box3dAnchorRaw) ? box3dAnchorRaw : "Default";
 
-            if (item is null)
+            if (!config.CaseModEnabled || item is null)
             {
-                return Ok(new CaseModInfoResult { IsApplicable = false, PosterSizePercent = posterSize, PosterSizeAnchor = posterAnchor });
+                return Ok(new CaseModInfoResult { IsApplicable = false, PosterSizePercent = posterSize, PosterSizeAnchor = posterAnchor,
+                                                  Box3d = box3d, Box3dSizePercent = box3dSize, Box3dAnchor = box3dAnchor,
+                                                  IsGame = item is null && Helpers.PlayniteBridgeLink.IsGame(itemId) });
             }
 
             // The Case mix, a layer on top. Null when it does not apply, and
@@ -633,7 +657,8 @@ public class CaseModController : ControllerBase
             // 100, not the resolved size: `posterSize` lives inside the try,
             // and on an unexpected error leaving the poster untouched is the
             // right answer anyway.
-            return Ok(new CaseModInfoResult { IsApplicable = false });
+            // IsGame still answers (exception-safe): a game the page does not know yet keeps its game case
+            return Ok(new CaseModInfoResult { IsApplicable = false, IsGame = Helpers.PlayniteBridgeLink.IsGame(itemId) });
         }
     }
 

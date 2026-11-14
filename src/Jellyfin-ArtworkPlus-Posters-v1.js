@@ -741,6 +741,18 @@
      * logo overlays), in one place.
      */
     function installPosterPendingByDefault() {
+        // Playnite Bridge's in-place version switch with a case or Box 3D on either side: the old picture goes at once.
+        document.addEventListener('pb:switchrelease', function (e) {
+            // apMayDraw false: only Playnite Bridge's own Box 3D is involved - it draws, ArtworkPlus holds nothing
+            if (!(e && e.detail && e.detail.atOnce) || e.detail.apMayDraw === false) { return; }
+            var view = (e.target && e.target.classList && e.target.classList.contains('itemDetailPage'))
+                ? e.target : document.querySelector('.itemDetailPage:not(.hide)');
+            ThreejsCaseModule.gameSwitchAtOnce(view);
+        });
+        document.addEventListener('viewbeforehide', function (e) {
+            var view = e && e.target;
+            if (view && view.classList && view.classList.contains('itemDetailPage')) { ThreejsCaseModule.gameLeave(); }
+        });
         document.addEventListener('viewshow', function (e) {
             var view = e && e.target;
             if (!view || !view.classList || !view.classList.contains('itemDetailPage')) { return; }
@@ -753,6 +765,8 @@
                 // Same idea for the Three.js case, which needs far longer to
                 // appear - engine, mesh and textures load first.
                 if (ThreejsCaseModule.expected()) { ThreejsCaseModule.hold(view); }
+                // Games: a case or a Box 3D picture was shown on the last game page.
+                ThreejsCaseModule.gameBegin(null, view);
             }
             // Cleanup must happen before the reference is dropped.
             posterArbiterCleanupCoord(posterCoordinatorState);
@@ -2970,6 +2984,8 @@
             return new Promise(function (resolve) {
                 if (!url) { resolve(null); return; }
                 var img = new Image();
+                // a picture from another origin (a server address other than the page's) must stay drawable in WebGL
+                try { if (new URL(url, location.href).origin !== location.origin) { img.crossOrigin = 'anonymous'; } } catch (e) { /* relative */ }
                 img.fetchPriority = priority || 'low';
                 img.onload = function () { resolve(img); };
                 img.onerror = function () { resolve(null); };   // missing is a state, not an error
@@ -3142,6 +3158,14 @@
             var ctx = cv.getContext('2d');
             ctx.fillStyle = '#' + ('000000' + colorHex.toString(16)).slice(-6);
             ctx.fillRect(0, 0, W, W);
+            // Games: back, spine and the front with its run-on round the fold come from the
+            // renderer's own painter (upstream's game block), on the case colour laid down above.
+            if (shellName === 'gamedisc' && Renderer && Renderer.paintGame) {
+                if (!Renderer.paintGame(ctx, W)) { throw new Error('the game wrap could not be painted'); }
+                var gameTex = new THREE.CanvasTexture(cv);
+                if (THREE.sRGBEncoding !== undefined) { gameTex.encoding = THREE.sRGBEncoding; }
+                return gameTex;
+            }
 
             if (img && img.width) {
                 var f = rects.front;
@@ -3284,6 +3308,13 @@
                 if (mounted.aa) { mounted.aa.dispose(); mounted.aa = null; }
                 if (mounted.openTimer) { clearTimeout(mounted.openTimer); }
                 if (mounted.hit && mounted.hit.parentNode) { mounted.hit.parentNode.removeChild(mounted.hit); }
+                // Games: the box is built per mount and disposed with it; the WebGL context is
+                // given back at once (a version switch builds the next one right after).
+                if (mounted.gameBox && mounted.renderer && window.ArtworkPlusThreejsRenderer
+                        && window.ArtworkPlusThreejsRenderer.disposeGameBox) {
+                    window.ArtworkPlusThreejsRenderer.disposeGameBox(mounted.gameBox);
+                }
+                if (mounted.game && mounted.renderer && mounted.renderer.forceContextLoss) { mounted.renderer.forceContextLoss(); }
                 if (mounted.renderer) { mounted.renderer.dispose(); }
                 // The model belongs to the renderer and is cached there per
                 // shell, so its geometries are NOT disposed here - only what
@@ -3397,6 +3428,10 @@
             var camera = new THREE.PerspectiveCamera(FOV, 1, 0.5, 1500);
 
             var shellName = answer.Shell === 'dvdgen' ? 'dvdgen' : 'bluray';
+            // Games: the answer of /ThreejsCase/game/{id}; the renderer already holds the
+            // version's pictures (setGame in renderGame) and builds the Game Disc or Game Box Case.
+            var game = !!answer.Game;
+            if (game) { shellName = answer.Shell === 'gamebox' ? 'gamebox' : 'gamedisc'; }
             var M;
             try {
                 Renderer.init(THREE, meshData, { renderer: renderer, scene: scene, camera: camera });
@@ -3427,6 +3462,16 @@
                     aspect = boxAspect;
                     log('Diagnostics: poster matched to Jellyfin (aspect ' + boxAspect.toFixed(4) + ', centre-cropped)');
                 }
+                if (game) {
+                    // The shape's aspect ("Shape from" front / mean / back), worked out in renderGame.
+                    aspect = answer.__gameAspect || aspect;
+                    var gameGround = { Black: 'black', BwFanart: 'bw', BlurredFanart: 'blur' };
+                    M = Renderer.buildGame({ posterAspect: aspect, aspectMode: 'fitb', openAngle: 0, discOn: true, furnOn: true,
+                                             booklet: (answer.Booklet || 'Off') !== 'Off',
+                                             bookletGround: gameGround[answer.Booklet] || 'black' });
+                    if (!M) { throw new Error('no game case could be built'); }
+                    if (!M.box) { M = Renderer.fit({}); }
+                } else {
                 Renderer.build(shellName, {
                     posterAspect: aspect,
                     aspectMode: 'fitb',
@@ -3450,8 +3495,12 @@
                     bookletGround: groundOf[bookletMode] || 'black',
                     stem: itemId
                 }));
+                }
             } catch (e) {
                 log('the renderer could not build this case - the flat case type stays', e);
+                // a game case gives its box and its WebGL context back at once (the next version builds right after)
+                if (game && M && M.box && Renderer.disposeGameBox) { Renderer.disposeGameBox(M); }
+                if (game && renderer.forceContextLoss) { try { renderer.forceContextLoss(); } catch (e3) { /* gone already */ } }
                 try { renderer.dispose(); } catch (e2) { /* nothing left to save */ }
                 return false;
             }
@@ -3709,7 +3758,19 @@
             // afterwards, the case would appear in the cycling picture's colour
             // and change a moment later, in full view.
             var pinColour = !!colourImg;
-            if (Renderer.applyPoster) {
+            // A game case that cannot be finished gives its WebGL context back here, not at the next teardown.
+            function dropGame(e) {
+                log('the game case could not be finished', e);
+                try { renderer.forceContextLoss(); } catch (e2) { /* gone already */ }
+                try { renderer.dispose(); } catch (e3) { /* nothing left to save */ }
+                return false;
+            }
+            if (game) {
+                // the platform colour ('model'), then the milky plastic inside applyPoster; a box has no wrap
+                try {
+                    if (!M.box && Renderer.applyPoster) { Renderer.applyPoster(poster, { caseColMode: 'model' }); }
+                } catch (e) { return dropGame(e); }
+            } else if (Renderer.applyPoster) {
                 if (pinColour) {
                     Renderer.applyPoster(colourImg, {
                         caseColMode: colourMode,
@@ -3728,8 +3789,13 @@
             }
             // A last paint for the case where the chain painted nothing (no
             // poster at all): without it the wrap would stay empty.
-            if (!coverTexture) {
-                paint(M.caseHex !== undefined ? M.caseHex : (answer.Black ? CASE_BLACK : 0x003986));
+            if (!coverTexture && !M.box) {
+                try {
+                    paint(M.caseHex !== undefined ? M.caseHex : (answer.Black ? CASE_BLACK : 0x003986));
+                } catch (e) {
+                    if (!game) { throw e; }
+                    return dropGame(e);
+                }
             }
 
             // 100 % = the front cover, straight on, as TALL as the poster box.
@@ -3752,7 +3818,7 @@
             // applyAspect does NOT write back into it. The fit leaves the width
             // alone and changes only the height, to FW / posterAspect - so the
             // same formula is used here.
-            var coverUnits = (M.D.FC.x1 - M.D.FC.x0) / aspect;
+            var coverUnits = M.box ? (M.D.FC.y1 - M.D.FC.y0) : (M.D.FC.x1 - M.D.FC.x0) / aspect;
 
             // How big must the canvas be so that NO pose is ever clipped? The
             // answer is a radius about the PIVOT, not half the width: the
@@ -3871,7 +3937,7 @@
                 // factor would be wrong at every pose but one. Two points on
                 // the face, one projection each, and the scale follows - the
                 // projection is linear in `side`, so a single pass is exact.
-                var face = M.meshes && M.meshes.cover;
+                var face = M.meshes && (M.meshes.cover || M.meshes.box);   // the Game Box Case: its front is the box's +z face
                 if (face) {
                     face.updateMatrixWorld(true);
                     if (!face.geometry.boundingBox) { face.geometry.computeBoundingBox(); }
@@ -3945,7 +4011,10 @@
                         coverFade: null, frameQueued: false, lastTick: 0, frames: 0, gif: null, cycle: null, autoPending: false, pinColour: pinColour,
                         get coverMix() { return coverMix; },
                         ownCoverTexture: ownCoverTexture };
-            watchCoverSource();
+            // A game's card belongs to Playnite Bridge (its version switch swaps it) - never follow it.
+            if (!game) { watchCoverSource(); }
+            mounted.game = game;
+            mounted.gameBox = M && M.box ? M : null;
             // THE COVER IS PAINTED BEFORE `mounted` EXISTS. The whole poster
             // chain runs while the case is still being built, so the paint
             // that puts the first picture on the wrap happens with `mounted`
@@ -4006,6 +4075,19 @@
                 if (hangsIn) { posterBoxWatch.observe(hangsIn); }
                 posterBoxWatch.observe(posterEl);
             }
+            // Jellyfin can rebuild the poster card under a standing case (an in-place version switch): the canvas
+            // sits in the view and survives it, only the frame has to follow the new card.
+            mounted.rebind = function (el) {
+                if (!el || el === posterEl) { return; }
+                if (posterBoxWatch) { posterBoxWatch.unobserve(posterEl); posterBoxWatch.observe(el); }
+                posterEl = el;
+                // the ribbon Jellyfin rebuilt with the card is not tinted yet
+                if (mounted && mounted.tints) {
+                    unmarkTints(mounted.tints);
+                    mounted.tints = markTints(view, canvas.getBoundingClientRect());
+                }
+                queueLayout();
+            };
 
             // With diagnostics on, the mount is reachable as
             // ArtworkPlusPostersDiagnostics.caseMount (e.g. to hide the shell
@@ -5415,12 +5497,461 @@
             });
         }
 
+        // ------------------------------------------------------------------
+        // Three.js Case Games. Playnite Bridge's virtual games, behind their own head flag
+        // (window.ArtworkPlusThreejs.games, never flags.enabled) and their own endpoint
+        // (/ThreejsCase/game/{id}). The mount above is shared; what differs is decided here:
+        //   - the claim asks the signed-in endpoint (ApiClient carries the token);
+        //   - the hold has its own remembered key and a 3000 ms net (movies keep 8000 ms): on a miss the
+        //     2D poster fades in over 600 ms at the same place, and a case that arrives later is dropped
+        //     until the next visit;
+        //   - every decision is told to Playnite Bridge as `artworkplus:gamecase` {id, state: shown |
+        //     failed | none}, so it shows its 2D poster when there is no case. Playnite Bridge listens
+        //     for exactly this event name and these fields; renaming them breaks it.
+        // ------------------------------------------------------------------
+        var GAME_NET_MS = 3000;
+        // Own classes, never the movie hold's: the movie claim releases PENDING_CLASS on every page, and a
+        // shared class would let it take the game's hold away.
+        var GAME_HOLD_CLASS = 'artworkplus-threejs-gamehold';
+        var GAME_FADE_CLASS = 'artworkplus-threejs-gamefade';
+        var GAME_FADE_IN_CLASS = 'artworkplus-threejs-gamefadein';
+        // ONE detail page = ONE token. gameBegin() starts it (viewshow, then check() for the item); every
+        // later step of that page asks whether its token is still the current one, so a slower page that
+        // finishes after the next one began can neither release nor show anything. The net
+        // is final: once a token timed out, nothing of it is shown and no new hold starts.
+        // fresh: viewshow began this page and check() has not taken it over yet; shownView: the view whose
+        // current version shows a case or Box 3D - only then does an in-place version switch hold the card
+        // (a 2D <-> 2D switch keeps the Bridge's cross-fade).
+        var gp = { view: null, timer: null, token: 0, timedOut: 0, itemId: null, isGame: false, fresh: false,
+                   shownView: null, oldCard: null, rendering: false, deciding: null, settling: null, keptSize: null,
+                   styleInjected: false };
+
+        function gameFeatureOn() {
+            var flags = window.ArtworkPlusThreejs;
+            return !!(flags && flags.games);
+        }
+
+        function gameEmit(id, state) {
+            try {
+                document.dispatchEvent(new CustomEvent('artworkplus:gamecase', { detail: { id: id, state: state } }));
+            } catch (e) { /* an old browser without CustomEvent has no Bridge to tell either */ }
+            log('game ' + id + ': ' + state);
+        }
+
+        /// While the game case or Box 3D is on, every detail page holds its poster from viewshow until the
+        /// game decision (a movie is told apart only by the answer); the 3000 ms net starts with the page.
+        function gameExpected(itemId) {
+            var flags = window.ArtworkPlusThreejs;
+            return !!(flags && (flags.games || flags.box3d)) && gameKnown(itemId);
+        }
+
+        /// Whether an item is one of Playnite Bridge's games, known without a request: asked of the Bridge's own
+        /// loaded index when it offers that, else from the ids this session has already seen answered as games.
+        /// Movies, series and the rest are never held.
+        var GAME_IDS_KEY = 'ArtworkPlusGameIds';
+        function gameKnown(itemId) {
+            if (!itemId) { return false; }
+            var pb = window.PlayniteBridge;
+            if (pb && typeof pb.isGame === 'function') {
+                // true / false are certain; null means the Bridge has not seen the id yet
+                try { var known = pb.isGame(itemId); if (known === true || known === false) { return known; } } catch (e) { /* fall back to the seen ids */ }
+            }
+            try { return (' ' + (sessionStorage.getItem(GAME_IDS_KEY) || '') + ' ').indexOf(' ' + itemId + ' ') !== -1; } catch (e) { return false; }
+        }
+        function gameSeen(itemId) {
+            if (!itemId || gameKnown(itemId)) { return; }
+            try {
+                var ids = (sessionStorage.getItem(GAME_IDS_KEY) || '').split(' ').filter(Boolean);
+                ids.push(itemId);
+                sessionStorage.setItem(GAME_IDS_KEY, ids.slice(-2000).join(' '));
+            } catch (e) { /* private mode: no memory, only the Bridge's own answer */ }
+        }
+        function gameIdFromHash() {
+            var m = /[?&]id=([^&]+)/.exec(location.hash || '');
+            return m ? m[1].replace(/-/g, '').toLowerCase() : null;
+        }
+
+        function gameStyles() {
+            if (gp.styleInjected) { return; }
+            gp.styleInjected = true;
+            var st = document.createElement('style');
+            st.id = 'artworkplus-threejs-gamehold';
+            st.textContent = '.itemDetailPage.' + GAME_HOLD_CLASS
+                + ' .detailImageContainer .cardScalable{visibility:hidden!important}'
+                + '.itemDetailPage.' + GAME_FADE_CLASS + ' .detailImageContainer .cardScalable'
+                + '{animation:artworkplus-threejs-gamefade .6s ease-out}'
+                + '.itemDetailPage.' + GAME_FADE_IN_CLASS + ' .detailImageContainer .cardScalable'
+                + '{animation:artworkplus-threejs-gamefade .25s ease-out}'
+                + '@keyframes artworkplus-threejs-gamefade{from{opacity:0}to{opacity:1}}';
+            document.head.appendChild(st);
+        }
+
+        /// A new detail page. viewshow (no id): a new token, and the hold when the last game page showed a
+        /// case or Box 3D (the remembered key). check() (the id): takes viewshow's page over as it is; without
+        /// one (Playnite Bridge's in-place version switch, which skips viewshow's hold) it starts its own
+        /// token and holds only when the version being left showed a case or Box 3D on this very view - in
+        /// the same task as the teardown, so nothing paints in between.
+        function gameBegin(itemId, view) {
+            if (itemId && gp.fresh && (!gp.view || gp.view === view)) {
+                gp.fresh = false;
+                gp.itemId = itemId;
+                gp.shownView = null;
+                return gp.token;
+            }
+            var hold = itemId ? (!!view && gp.shownView === view) : (!!view && gameExpected(gameIdFromHash()));
+            gp.oldCard = null;
+            gameRelease(false);
+            gp.token += 1;
+            gp.itemId = itemId || null;
+            gp.isGame = false;
+            gp.rendering = false;
+            gp.deciding = null;
+            gp.settling = null;
+            gp.keptSize = null;
+            gp.fresh = !itemId;
+            gp.shownView = null;
+            gp.t0 = performance.now();
+            if (hold) { gameHold(view); }
+            return gp.token;
+        }
+
+        /// The detail run that owns the page is still deciding (answers on their way): a second run keeps it.
+        function gameDeciding(itemId) { gp.deciding = itemId || null; }
+
+        /// The poster size the standing case or Box 3D of THIS page set, for a second run that keeps it (reset with
+        /// every new page, so a size never carries over to another one).
+        function gameKeptSize() { return gp.keptSize || null; }
+        function gameSetKeptSize(pct, anchor) { gp.keptSize = { pct: pct, anchor: anchor }; }
+
+        /// Debug log of a game page's stages, in ms since the page (or the in-place switch) began.
+        function gameMark(stage) {
+            log('game page +' + Math.round(performance.now() - (gp.t0 || 0)) + ' ms: ' + stage);
+        }
+
+        /// The current version shows a case or Box 3D: an in-place switch away from it holds the card at once.
+        function gameShown(view) {
+            gp.shownView = view || null;
+        }
+
+        /// Playnite Bridge's in-place version switch with a case or Box 3D on either side (pb:switchrelease with
+        /// atOnce): the old picture goes in this task, the card is hidden and the page's net starts. Jellyfin then
+        /// rebuilds the poster card (renderDetailImage sets the container's innerHTML): a case built meanwhile is
+        /// framed again on the new card, and a returning 2D poster waits for it (gameAfterRebuild).
+        function gameSwitchAtOnce(view) {
+            if (!view) { return; }
+            teardown();
+            view.classList.remove('artworkplus-box3d');
+            gameRelease(false);
+            gp.token += 1;
+            gp.itemId = null;
+            gp.isGame = false;
+            gp.rendering = false;
+            gp.deciding = null;
+            gp.settling = null;
+            gp.keptSize = null;
+            gp.fresh = true;
+            gp.shownView = null;
+            gp.oldCard = view.querySelector('.detailImageContainer .card');
+            gp.t0 = performance.now();
+            gameHold(view);
+        }
+
+        /// Resolves once the card that stood when the switch began has been replaced (or at once when there was
+        /// no switch, or after the net at the latest).
+        function gameAfterRebuild(view, token) {
+            return new Promise(function (resolve) {
+                var old = gp.oldCard;
+                var box = view ? view.querySelector('.detailImageContainer') : null;
+                if (!old || token !== gp.token || !box || !box.contains(old)) { resolve(); return; }
+                var done = false;
+                var mo = new MutationObserver(function () { if (!box.contains(old)) { finish(); } });
+                var timer = setTimeout(finish, GAME_NET_MS);
+                function finish() {
+                    if (done) { return; }
+                    done = true;
+                    mo.disconnect();
+                    clearTimeout(timer);
+                    resolve();
+                }
+                mo.observe(box, { childList: true, subtree: true });
+            });
+        }
+
+        /// The poster element of the page as it is NOW (the card may have been rebuilt since check() found it).
+        function gamePoster(view, fallback) {
+            var el = view ? view.querySelector('.detailImageContainer .cardImageContainer') : null;
+            return el || fallback;
+        }
+
+        /// The end of a game page without a case: after a rebuild, the 2D poster comes back - with the short
+        /// fade-in on a game, as it is (no fade) on a movie page that was only held because it could be a game.
+        function gameSettle(view, token) {
+            // while Jellyfin's rebuild is awaited after an in-place switch, a second run for this version keeps it
+            var box = view ? view.querySelector('.detailImageContainer') : null;
+            if (gp.oldCard && box && box.contains(gp.oldCard)) { gp.settling = gp.itemId; }
+            return gameAfterRebuild(view, token).then(function () {
+                if (token !== gp.token) { return; }
+                gp.settling = null;
+                gameRelease(gp.isGame ? 'quick' : false);
+            });
+        }
+
+        /// The decoded pictures of the last game versions, by URL (the URLs carry the file's tag, so a changed
+        /// picture is a new entry): switching back to a version needs no new download or decode. Bounded, the
+        /// oldest goes first.
+        var GAME_PICTURE_CACHE = 12;
+        var gamePictures = [];
+        function gameImage(url, priority) {
+            if (!url) { return Promise.resolve(null); }
+            for (var i = 0; i < gamePictures.length; i++) {
+                if (gamePictures[i].url === url) { return gamePictures[i].img; }
+            }
+            var img = loadImage(url, priority).then(function (im) {
+                if (!im) { return null; }
+                // decoded before the case is built, not during the texture upload
+                // a picture without a size could not be decoded (no picture: the case falls back to the 2D poster); one
+                // with a size is drawable even when decode() refuses it (some engines do for large pictures or under memory
+                // pressure). decode() waits for a rendered frame, so in a background tab it may never answer: after 400 ms
+                // the loaded picture is used as it is (the texture upload decodes it then).
+                if (!im.decode) { return im; }
+                return Promise.race([
+                    im.decode().then(function () { return im; }, function () { return im.naturalWidth > 0 ? im : null; }),
+                    new Promise(function (resolve) { setTimeout(function () { resolve(im.naturalWidth > 0 ? im : null); }, 400); })
+                ]);
+            });
+            gamePictures.push({ url: url, img: img });
+            if (gamePictures.length > GAME_PICTURE_CACHE) { gamePictures.shift(); }
+            var settled = false;
+            var forget = function () { gamePictures = gamePictures.filter(function (e) { return e.url !== url; }); };
+            img.then(function (im) { settled = true; if (!im) { forget(); } });
+            // a request that stalls is not kept: the next visit asks again
+            setTimeout(function () { if (!settled) { forget(); } }, 10000);
+            return img;
+        }
+
+        /// The detail page is left: a game case gives its WebGL context back now, not on the next detail page,
+        /// and a case still loading for it is dropped.
+        function gameLeave() {
+            gameRelease(false);
+            gp.token += 1;
+            gp.rendering = false;
+            gp.deciding = null;
+            gp.settling = null;
+            gp.keptSize = null;
+            if (mounted && mounted.game) { teardown(); }
+        }
+
+        /// A second detail run for the SAME game version (the navigation watcher picks up the URL of an in-place
+        /// switch after its viewshow) must neither tear down a standing case or Box 3D nor restart one that is
+        /// being built for this very version.
+        function gameKeeps(itemId, view) {
+            if (!itemId || gp.itemId !== itemId || gp.timedOut === gp.token) { return false; }
+            if (mounted && mounted.game && mounted.itemId === itemId) { return true; }
+            if (view && gp.shownView === view && view.classList.contains('artworkplus-box3d')) { return true; }
+            // deciding counts only for a game: a movie's second run does its own work, as without the games feature
+            if (gp.deciding === itemId && (gp.isGame || gameKnown(itemId))) { return true; }
+            return !!gp.rendering || gp.settling === itemId;
+        }
+
+        /// A case or Box 3D of this very version stands on the page (not only: is being decided or built).
+        function gameStanding(itemId, view) {
+            if (mounted && mounted.game && mounted.itemId === itemId) { return true; }
+            return !!view && gp.shownView === view && view.classList.contains('artworkplus-box3d');
+        }
+
+        /// Box 3D answered for this item: the server knows it as a game.
+        function gameConfirmed(itemId) {
+            gp.isGame = true;
+            gameSeen(itemId);
+        }
+
+        function gameToken() { return gp.token; }
+        function gameCurrent(token) { return token === gp.token && gp.timedOut !== token; }
+
+        /// Hides the 2D poster of the current page and starts its 3000 ms net (once per page).
+        function gameHold(view) {
+            if (!view || gp.timedOut === gp.token) { return; }
+            gameStyles();
+            if (gp.view === view && gp.timer) { return; }
+            if (gp.view && gp.view !== view) { gp.view.classList.remove(GAME_HOLD_CLASS); }
+            gp.view = view;
+            view.classList.remove(GAME_FADE_CLASS);
+            view.classList.remove(GAME_FADE_IN_CLASS);
+            view.classList.add(GAME_HOLD_CLASS);
+            if (gp.timer) { return; }
+            var token = gp.token;
+            gp.timer = setTimeout(function () {
+                gp.timer = null;
+                if (token !== gp.token) { return; }
+                log('the game picture did not arrive within ' + GAME_NET_MS + ' ms - the 2D poster is shown');
+                gp.timedOut = token;
+                gameRelease(true);
+                // only a page the server confirmed as a game is reported - never a movie page
+                if (gp.isGame && gp.itemId) { gameEmit(gp.itemId, 'failed'); }
+            }, GAME_NET_MS);
+        }
+
+        /// Ends the hold. fade: the 2D poster fades in (a miss); the fade class goes again after it ran,
+        /// so a card the Bridge rebuilds later does not replay it.
+        function gameRelease(fade) {
+            if (gp.timer) { clearTimeout(gp.timer); gp.timer = null; }
+            var view = gp.view;
+            gp.view = null;
+            if (!view) { return; }
+            view.classList.remove(GAME_HOLD_CLASS);
+            if (fade) {
+                // 'quick': the new picture of a switch (0.25 s); otherwise a miss (0.6 s). Per view, so a second fade
+                // elsewhere cannot leave this one's class on.
+                var cls = fade === 'quick' ? GAME_FADE_IN_CLASS : GAME_FADE_CLASS;
+                view.classList.add(cls);
+                if (view.__apGameFade) { clearTimeout(view.__apGameFade); }
+                view.__apGameFade = setTimeout(function () { view.__apGameFade = null; view.classList.remove(cls); }, 700);
+            }
+        }
+
+        /// The game's answer, or null. Asked for every detail page while the flag is on (a movie answers
+        /// "not a game" at once); only a GAME without a case is told to the Bridge as 'none'.
+        function claimGame(itemId) {
+            if (!gameFeatureOn()) { return null; }
+            // the Bridge knows this is no game: a movie does not wait for the games endpoint
+            try {
+                var pb = window.PlayniteBridge;
+                if (pb && typeof pb.isGame === 'function' && pb.isGame(itemId) === false) { return null; }
+            } catch (e) { /* ask the server */ }
+            var token = gp.token;
+            var draw = isWebBrowser() && hasWebGL();
+            return gameAnswer(itemId).then(function (r) {
+                if (token !== gp.token) { return null; }   // the page has moved on
+                gameMark('game answer ' + (r && r.Enabled ? 'case' : (r && r.Reason) || 'none'));
+                if (r && r.failedRequest) {
+                    // no answer: whether this is a game is unknown, so the Bridge hears 'failed' (it ignores ids that
+                    // are no game) and draws its 2D poster rules again
+                    gameEmit(itemId, 'failed');
+                    return null;
+                }
+                // only the server's own "this game has no case" reasons mark a game
+                var GAME_NO_CASE = { 'no case': 1, 'box switched off': 1, 'disc case switched off': 1 };
+                var isGame = !!(r && (r.Enabled || GAME_NO_CASE[r.Reason]));
+                if (isGame) { gp.isGame = true; gameSeen(itemId); }
+                if (gp.timedOut === token) {
+                    // the net was faster than the answer: the poster is back; a case is dropped, and the Bridge
+                    // still has to hear it
+                    if (r && r.Enabled) { gameEmit(itemId, 'failed'); }
+                    return null;
+                }
+                if (!r || !r.Enabled || !draw) {
+                    if (isGame) { gameEmit(itemId, 'none'); }
+                    return null;   // check() releases the hold once Box 3D had its say
+                }
+                return r;
+            });
+        }
+
+        function gameAnswer(itemId) {
+            var api = window.ApiClient;
+            if (!api || typeof api.getJSON !== 'function' || typeof api.getUrl !== 'function') { return Promise.resolve(null); }
+            return Promise.resolve(api.getJSON(api.getUrl('ThreejsCase/game/' + encodeURIComponent(itemId))))
+                .catch(function (e) { log('game endpoint failed for ' + itemId, e); return { failedRequest: true }; });
+        }
+
+        /// Builds the game's case. The 2D poster is hidden from here on; a miss within the page's 3000 ms
+        /// gives it back with a fade and tells the Bridge 'failed'.
+        function renderGame(answer, itemId, posterEl, myGeneration, onSize) {
+            window.ArtworkPlusThreejsLast = answer;
+            ensureStyles();
+            var token = gp.token;
+            if (!gameCurrent(token)) { log('the game case came too late - dropped until the next visit'); return; }
+            gp.rendering = true;
+            gp.deciding = null;
+            // the card may already have been rebuilt (in-place switch): then the page is the held one
+            var view = (posterEl.closest && posterEl.closest('.itemDetailPage')) || gp.view
+                || document.querySelector('.itemDetailPage:not(.hide)');
+            gameHold(view);
+            var G = answer.Game || {}, P = G.Pictures || {};
+            // bound to the page's token, not to the card (Jellyfin may rebuild it while this loads) and not to the
+            // navigation generation (a second run for the same version keeps this one, see gameKeeps)
+            function stale() {
+                var gone = token !== gp.token || !view || !document.body.contains(view);
+                if (gone && token === gp.token) { gp.rendering = false; }
+                return gone;
+            }
+            function fail(why, e) {
+                if (token === gp.token) { gp.rendering = false; }
+                if (onSize && token === gp.token) { onSize(false); }
+                log('no game case for ' + itemId + ' - ' + why, e);
+                if (stale()) { return; }                          // another page is up - leave it alone
+                teardown();
+                if (gp.timedOut === token) { return; }            // the net already gave the poster back and told the Bridge
+                gameRelease(true);
+                gameEmit(itemId, 'failed');
+            }
+            // the server names its picture routes from the root; ApiClient puts the server's own address and base path first
+            var onServer = function (u) {
+                return u && window.ApiClient && u.charAt(0) === '/' ? window.ApiClient.getUrl(u.slice(1)) : u;
+            };
+            // the fanart URL carries the backdrop's tag (from the server), so a changed backdrop is a new picture
+            var fanart = (answer.Booklet === 'BwFanart' || answer.Booklet === 'BlurredFanart') ? onServer(P.Fanart || null) : null;
+            var pics = Promise.all([P.Front, answer.BackCover || G.Kind === 'box' ? P.Back : null, P.Spine, P.Disc, P.Logo]
+                .map(onServer).concat([fanart])
+                .map(function (u, i) { return gameImage(u, i < 2 ? 'high' : 'low'); }));
+            Promise.all([loadThree(), loadMesh(), loadRenderer(), pics]).then(function (res) {
+                var THREE = res[0], Renderer = res[2], im = res[3];
+                gameMark('engine and pictures ready');
+                if (stale()) { log('navigated away while loading - no game case for ' + itemId); return; }
+                if (gp.timedOut === token) { gp.rendering = false; log('the game case came too late - dropped until the next visit'); return; }
+                var front = im[0], back = im[1];
+                // a cover the browser cannot draw is no case (front or back missing -> 2D poster)
+                if (!front || (G.Kind === 'box' && !back) || (answer.BackCover && !back)) { fail('a cover picture did not load'); return; }
+                var fa = front.naturalWidth / front.naturalHeight, ba = back ? back.naturalWidth / back.naturalHeight : fa;
+                var aspect = G.ShapeFrom === 'Back' ? ba : G.ShapeFrom === 'Mean' ? (fa + ba) / 2 : fa;
+                answer.__gameAspect = aspect;
+                var sides = G.BoxSides === 'Black' ? ['black', 'black'] : G.BoxSides === 'ColouredSpineBlack' ? ['dominant', 'black'] : ['dominant', 'faces'];
+                return Promise.resolve(Renderer.setGame({
+                    cur: { folder: itemId, name: G.Name || '', kind: G.Kind, spineRatio: G.Depth || null,
+                           publisher: G.Publisher || [], developer: G.Developer || [] },
+                    pics: { front: front, back: back, spine: im[2], disc: im[3], logo: im[4], backdrop: im[5] },
+                    platform: G.Platform, form: G.Kind === 'box' ? 'box' : 'disc',
+                    radius: (Number(G.BoxEdgeMm) || 0) / 270, boxFaces: sides[0], boxSpine: sides[1],
+                    spineLogo: G.SpineLogo !== false, aspect: G.ShapeFrom === 'Front' ? null : aspect,
+                    titleFont: window.ApiClient ? window.ApiClient.getUrl('LogoArt/font/Title/BarlowCondensed.otf') : null
+                })).then(function () {
+                    if (stale()) { return; }
+                    if (gp.timedOut === token) { gp.rendering = false; log('the game case came too late - dropped until the next visit'); return; }
+                    // built at once on the card that stands now; when Jellyfin still rebuilds it (in-place switch),
+                    // the standing case is only framed again on the new card
+                    posterEl = gamePoster(view, posterEl);
+                    gameMark('build starts');
+                    // the case frames itself on the card at the size it keeps (in the same task, no re-layout after)
+                    if (onSize) { onSize(true); }
+                    if (!mount(answer, itemId, posterEl, THREE, front, Renderer, null, null, null)) { fail('the case could not be built'); return; }
+                    gameMark('case built');
+                    gameAfterRebuild(view, token).then(function () {
+                        if (mounted && mounted.itemId === itemId && token === gp.token && mounted.rebind) {
+                            mounted.rebind(gamePoster(view, posterEl));
+                        }
+                    });
+
+                    // mount() put HOLD_CLASS on the page: the 2D poster stays hidden while the case is up
+                    gp.rendering = false;
+                    gameRelease(false);
+                    gameShown(view);
+                    gameEmit(itemId, 'shown');
+                });
+            }).catch(function (e) { fail('engine, mesh or pictures unavailable', e); });
+        }
+
         // The same three gates claimFor() asks, for the Case mix's
         // webgl flag - a page that would not build the case must not draw it.
         function canDraw() { return featureOn() && isWebBrowser() && hasWebGL(); }
 
         return { claimFor: claimFor, render: render, reset: teardown, hasWebGL: hasWebGL, featureOn: featureOn, canDraw: canDraw,
-                 expected: pendingExpected, hold: pendingHold, release: pendingRelease };
+                 expected: pendingExpected, hold: pendingHold, release: pendingRelease,
+                 claimGame: claimGame, renderGame: renderGame, gameExpected: gameExpected, gameBegin: gameBegin,
+                 gameHold: gameHold, gameRelease: gameRelease, gameEmit: gameEmit, gameSwitchAtOnce: gameSwitchAtOnce,
+                 gameAfterRebuild: gameAfterRebuild, gameMark: gameMark, gameKeeps: gameKeeps, gameDeciding: gameDeciding,
+                 gameKeptSize: gameKeptSize, gameSetKeptSize: gameSetKeptSize, gameKnown: gameKnown, gameIdFromHash: gameIdFromHash, gamePoster: gamePoster, gameSettle: gameSettle, gameLeave: gameLeave,
+                 gameToken: gameToken, gameCurrent: gameCurrent, gameShown: gameShown, gameStanding: gameStanding,
+                 gameConfirmed: gameConfirmed };
     }());
 
     var CaseModModule = (function () {
@@ -7029,13 +7560,84 @@
             response.HubTopPercent = top(response.HubTopPercent);
             response.HubSizeVw *= f;
         }
+
+        // ---- Box 3D -------------------------------------------------------------------------
+        // On a game page whose artwork ArtworkPlus draws, the version's box3d picture (a rendered box
+        // on a transparent ground, from Playnite Bridge's pictures route) replaces the 2D poster, with
+        // its own size and anchor. The 2D poster of such a version is never shown first: the game hold
+        // keeps the card hidden until the picture is in. A version without one keeps its 2D poster.
+        var BOX3D_CLASS = 'artworkplus-box3d';
+        function box3dReset() {
+            document.querySelectorAll('.' + BOX3D_CLASS).forEach(function (el) { el.classList.remove(BOX3D_CLASS); });
+            var st = document.getElementById('artworkplus-box3d-style');
+            if (st) { st.textContent = ''; }
+        }
+        function box3dUrl(itemId) {
+            var api = window.ApiClient;
+            if (!api || typeof api.getJSON !== 'function') { return Promise.resolve(null); }
+            var base = 'PlayniteBridge/games/' + encodeURIComponent(itemId) + '/pictures';
+            return Promise.resolve(api.getJSON(api.getUrl(base))).then(function (list) {
+                var hit = (list || []).filter(function (p) { return p && p.Type === 'box3d' && p.Tag; })[0];
+                return hit ? api.getUrl(base + '/box3d', { tag: hit.Tag }) : null;
+            }).catch(function () { return null; });
+        }
+        async function box3dApply(itemId, view, posterEl, response, myGeneration, token) {
+            ThreejsCaseModule.gameConfirmed(itemId);
+            ThreejsCaseModule.gameDeciding(itemId);
+            if (!ThreejsCaseModule.gameCurrent(token)) { return; }
+            ThreejsCaseModule.gameHold(view);
+            var url = await box3dUrl(itemId);
+            var img = url ? await new Promise(function (resolve) {
+                var i = new Image(); i.onload = function () { resolve(i); }; i.onerror = function () { resolve(null); }; i.src = url;
+            }) : null;
+            if (!ThreejsCaseModule.gameCurrent(token)) { return; }
+            ThreejsCaseModule.gameDeciding(null);
+            if (!img) {
+                // no Box 3D picture: the 2D poster stays at the Games size
+                ThreejsCaseModule.gameSettle(view, token);
+                return;
+            }
+            // the marker sits on the view, so it holds for the card that stands now and for the one Jellyfin
+            // rebuilds on an in-place switch - nothing to wait for
+            if (!view) { return; }
+            var st = document.getElementById('artworkplus-box3d-style');
+            if (!st) { st = document.createElement('style'); st.id = 'artworkplus-box3d-style'; document.head.appendChild(st); }
+            var u = String(url).replace(/["\\]/g, '');
+            st.textContent = '.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .cardImageContainer{background-image:url("' + u + '")!important;'
+                + 'background-size:contain!important;background-position:center bottom!important;background-repeat:no-repeat!important;background-color:transparent!important}'
+                + '.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .cardScalable,.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .cardBox,'
+                + '.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .cardImageContainer{box-shadow:none!important;background-color:transparent!important}'
+                + '.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .blurhash-canvas,.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .cardImageIcon{display:none!important}';
+            view.classList.add(BOX3D_CLASS);
+            // applied, not remembered: the remembered size is pre-applied to the NEXT page of any kind
+            posterSizeApplyTo(view, response.Box3dSizePercent || 100, response.Box3dAnchor || 'Default');
+            ThreejsCaseModule.gameSetKeptSize(response.Box3dSizePercent || 100, response.Box3dAnchor || 'Default');
+            ThreejsCaseModule.gameShown(view);
+            ThreejsCaseModule.gameRelease('quick');
+            log('Box 3D for ' + itemId);
+        }
+
         async function check(coord, itemId, posterEl, myGeneration) {
+            // Playnite Bridge's in-place switch: Jellyfin can rebuild the card between the wait for it and this call,
+            // so a card that is no longer in the page is replaced by the one that stands now
+            if (posterEl && !document.body.contains(posterEl)) {
+                posterEl = document.querySelector('.itemDetailPage:not(.hide) .detailImageContainer .cardImageContainer') || posterEl;
+            }
             removeExistingOverlay();
             // Poster size is NOT reset here. startDetail has just applied the
             // remembered value to this view, and a reset would take it
             // straight off again - the card would appear at Jellyfin's size
             // and flicker when the answer lands. posterSizeApplyTo() below
             // takes the previous view's class off when it sets the new one.
+            // a second run for the same game version leaves its standing or loading case / Box 3D alone
+            var keptView = posterEl.closest ? posterEl.closest('.itemDetailPage') : null;
+            if (ThreejsCaseModule.gameKeeps(itemId, keptView)) {
+                ThreejsCaseModule.gameMark('second run for ' + itemId + ' - the case stays');
+                // a standing case or Box 3D keeps its own size; a run still deciding or building sets the size itself
+                var kept = ThreejsCaseModule.gameKeptSize();
+                if (kept && keptView && ThreejsCaseModule.gameStanding(itemId, keptView)) { posterSizeApplyTo(keptView, kept.pct, kept.anchor); }
+                return;
+            }
             ThreejsCaseModule.reset();   // a case from the previous item goes with it
             var holdView = posterEl.closest ? posterEl.closest('.itemDetailPage') : null;
             if (holdView && (caseTiltExpected() || posterSizeExpected()) && caseTiltHold.view !== holdView) { caseModHoldPoster(holdView); }
@@ -7044,6 +7646,14 @@
             // flight together - a movie with the feature on must not wait
             // twice. Null when a synchronous gate already said no.
             var threejsClaim = ThreejsCaseModule.claimFor(itemId);
+            // Games: this page's game token (the hold goes on again at once when the last game page
+            // showed a case or Box 3D - also on the Bridge's in-place version switch), then the game claim,
+            // in flight together with the others (null while its flag is off).
+            var gameTok = ThreejsCaseModule.gameBegin(itemId, holdView);
+            ThreejsCaseModule.gameMark('check for ' + itemId);
+            var gameClaim = ThreejsCaseModule.claimGame(itemId);
+            if (gameClaim) { ThreejsCaseModule.gameDeciding(itemId); }
+            box3dReset();
 
             var response;
             try {
@@ -7052,6 +7662,16 @@
             } catch (e) {
                 log('Fetch error', e);
                 caseModReleasePoster();
+                if (ThreejsCaseModule.gameCurrent(gameTok)) {
+                    ThreejsCaseModule.gameDeciding(null);
+                    ThreejsCaseModule.gameRelease(false);
+                    // a game whose case answer came: the Bridge must not wait for a case that will not be built
+                    if (gameClaim) {
+                        gameClaim.then(function (r) {
+                            if (r && ThreejsCaseModule.gameCurrent(gameTok)) { ThreejsCaseModule.gameEmit(itemId, 'failed'); }
+                        });
+                    }
+                }
                 return;
             }
 
@@ -7074,11 +7694,50 @@
             // leave it hidden. The tilt keeps its own hold if it wants one.
             if (!caseTiltExpected()) { caseModReleasePoster(); }
             if (wantPct !== 100) { log('poster size ' + wantPct + '% ' + wantAnchor); }
+            // A movie page never waits for the games answer: the game path is taken only for a game - the Bridge
+            // already knows it, or this answer says so. Any other page goes on as without games; its games request
+            // ends on its own ("not a game").
+            // (an answer without the field - an older server - keeps the claim: then nothing tells a game apart)
+            if (gameClaim && !ThreejsCaseModule.gameKnown(itemId) && response && 'IsGame' in response && !response.IsGame && !response.Box3d) {
+                ThreejsCaseModule.gameDeciding(null);
+                gameClaim = null;
+            }
 
             // If the Three.js Case takes this item, the flat case
             // stands down completely - one slot, one winner. Everything this
             // module did so far is undone first (the hold, any overlay), so a
             // claim leaves the page exactly as if CaseMod had never run.
+            if (gameClaim) {
+                var gClaim = await gameClaim;
+                // the game path follows its page token: a second run for the same version keeps this one
+                if (!ThreejsCaseModule.gameCurrent(gameTok)) { caseModReleasePoster(); return; }
+                if (gClaim) {
+                    caseModReleasePoster();
+                    removeExistingOverlay();
+                    // the game's own 2D poster size stands down for the case (it carries its own size); a case that
+                    // fails puts the Games size back for the 2D poster
+                    ThreejsCaseModule.renderGame(gClaim, itemId, posterEl, myGeneration, function (forCase) {
+                        if (forCase) { ThreejsCaseModule.gameSetKeptSize(100, 'Default'); }
+                        posterSizeApplyTo(holdView, forCase ? 100 : wantPct, forCase ? 'Default' : wantAnchor);
+                    });
+                    return;
+                }
+            }
+            // Box 3D: no case for this game version - its rendered box picture may replace the 2D poster.
+            if (gameClaim ? !ThreejsCaseModule.gameCurrent(gameTok) : myGeneration !== currentGeneration()) {
+                caseModReleasePoster();
+                return;
+            }
+            if (ThreejsCaseModule.gameCurrent(gameTok)) {
+                ThreejsCaseModule.gameDeciding(null);
+                if (response && response.Box3d) {
+                    await box3dApply(itemId, holdView, posterEl, response, myGeneration, gameTok);
+                    return;
+                }
+                // nothing of the games' own came: the hold must not wait for its net
+                ThreejsCaseModule.gameSettle(holdView, gameTok);
+            }
+
             if (threejsClaim) {
                 var claim = await threejsClaim;
                 if (myGeneration !== currentGeneration()) { caseModReleasePoster(); return; }
@@ -8297,7 +8956,8 @@
         // the card is waited for - so the card is born at its size instead
         // of being corrected into it. The answer that follows either
         // confirms it or changes it once.
-        CaseModModule.posterSizePreapply();
+        // (a known game with a games feature on is born at its size from its own answer instead)
+        if (!ThreejsCaseModule.gameExpected(itemId)) { CaseModModule.posterSizePreapply(); }
 
         var posterEl = await waitForPosterElement(8000);
         if (!posterEl || myGeneration !== currentGeneration()) { return; }

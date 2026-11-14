@@ -174,6 +174,13 @@
                        installed and active (epDetectPlayniteBridge); hidden, never grey. */
                     #ArtworkPlusConfigPage:not(.epPlayniteBridge) .epPlayniteOnly { display: none !important; }
                     #ArtworkPlusConfigPage .epTabLocked .epRow.epLockExempt { opacity: 1; pointer-events: auto; }
+                    /* an exempt row its own trigger switched off stays grey inside a locked tab */
+                    #ArtworkPlusConfigPage .epTabLocked .epRow.epLockExempt.epFieldDisabled { opacity: 0.35; }
+                    /* The collapse headers that hold exempt rows (Poster size, Three.js Case) stay
+                       clickable on a locked tab, or those rows could never be reached; their own
+                       gate node alone decides the dimming. */
+                    #ArtworkPlusConfigPage .epTabLocked .epCollapseHeader.epLockExempt { opacity: 1; pointer-events: auto; }
+                    #ArtworkPlusConfigPage .epTabLocked .epCollapseHeader.epLockExempt.epFieldDisabled { opacity: 0.35; }
                     /* The intro's external links stay clickable on a locked tab
                        (pointer-events:none is inherited from .epTabLocked); no underline in the
                        intros, the link colour is the marker. */
@@ -635,7 +642,7 @@
                         <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:4px; white-space:normal;">Overlays physical disc-case artwork on detail pages.</div>
                         </div>
 
-                        <div class="epCollapseHeader" data-collapse="casemodPosterSize"><span class="epChevron">&#9654;</span><span>Poster size</span></div>
+                        <div class="epCollapseHeader epLockExempt" data-collapse="casemodPosterSize"><span class="epChevron">&#9654;</span><span>Poster size</span></div>
                         <div class="epCollapseBody" data-collapsebody="casemodPosterSize">
 
                         <div class="epRow epRowCheckbox epLockExempt" id="CaseModPosterSizeRow">
@@ -730,6 +737,27 @@
                                 <select is="emby-select" id="CaseModPosterSizeAnchorGames" name="CaseModPosterSizeAnchorGames" class="emby-select-withcolor emby-select epSelectCompact" style="max-width:150px;"><option value="Default">Default</option><option value="TopLeft">Top left</option><option value="TopCenter">Top center</option><option value="TopRight">Top right</option><option value="CenterLeft">Center left</option><option value="Center">Center</option><option value="CenterRight">Center right</option><option value="BottomLeft">Bottom left</option><option value="BottomCenter">Bottom center</option><option value="BottomRight">Bottom right</option></select>
                             </div>
                             <div class="epDesc">Percent of the normal poster size on game pages (Playnite Bridge); 100 is how Jellyfin draws it (10-200).</div>
+                        </div>
+                        <!-- Box 3D: the switch has its own row, so its size field sits in the size column below;
+                             the gate node targets only the size row, so the switch (its trigger) stays live. -->
+                        <div class="epPlayniteOnly epRow epRowCheckbox epLockExempt" id="CaseModBox3dEnabledRow">
+                            <label for="CaseModBox3dEnabled">Box 3D</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CaseModBox3dEnabled" name="CaseModBox3dEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Game pages: the rendered box picture replaces the 2D poster.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModPosterSizeBox3dRow">
+                            <label for="CaseModPosterSizeBox3d" class="epRowLabelSpan">Box 3D size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="text" inputmode="decimal" data-numeric="true" class="epNumberCompact" id="CaseModPosterSizeBox3d" name="CaseModPosterSizeBox3d" min="10" max="200" step="1" />
+                                <span class="epUnitLabel">%</span>
+                                <select is="emby-select" id="CaseModPosterSizeAnchorBox3d" name="CaseModPosterSizeAnchorBox3d" class="emby-select-withcolor emby-select epSelectCompact" style="max-width:150px;"><option value="Default">Default</option><option value="TopLeft">Top left</option><option value="TopCenter">Top center</option><option value="TopRight">Top right</option><option value="CenterLeft">Center left</option><option value="Center">Center</option><option value="CenterRight">Center right</option><option value="BottomLeft">Bottom left</option><option value="BottomCenter">Bottom center</option><option value="BottomRight">Bottom right</option></select>
+                            </div>
+                            <div class="epDesc">Percent of the normal poster size for the Box 3D picture; 100 is how Jellyfin draws it (10-200).</div>
                         </div>
                         </div>
 
@@ -988,7 +1016,7 @@
                              CaseModThreejsDependentFields, which keeps it clickable while everything
                              it gates is greyed. The header dims with the options through the node's
                              headerTarget. -->
-                        <div class="epCollapseHeader" data-collapse="casemodThreejs"><span class="epChevron">&#9654;</span><span>Three.js Case</span></div>
+                        <div class="epCollapseHeader epLockExempt" data-collapse="casemodThreejs"><span class="epChevron">&#9654;</span><span>Three.js Case</span></div>
                         <div class="epCollapseBody" data-collapsebody="casemodThreejs">
                         <div class="epTabHeaderRow">
                             <div></div>
@@ -1185,6 +1213,224 @@
                         <div class="epRow epRowMerged" id="CaseModThreejsSpinDirectionRow">
                             <label for="CaseModThreejsSpinDirection" class="epRowLabelSpan">Direction</label>
                             <select is="emby-select" id="CaseModThreejsSpinDirection" name="CaseModThreejsSpinDirection" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Left">Left</option>
+                                <option value="Right">Right</option>
+                            </select>
+                            <div class="epDesc">Direction the disc should spin in.</div>
+                        </div>
+
+                        </div>
+
+                        <!-- === Three.js Case Games ===============
+                             The 3D case for Playnite Bridge's virtual games (Game Box Case, Game Disc Case), an own set
+                             beside the movie block above: no own header, menu or Restore button (the group's button resets
+                             both). Rows in the movie block's order, slot by slot; the game-only rows follow the switch and
+                             sit in the colour slot. Hidden without Playnite Bridge (epPlayniteOnly) and exempt from the
+                             tab lock (epLockExempt): its gate is the top-level node case_threejs_games, so it works with
+                             the flat case off. The switch sits outside CaseModThreejsGamesDependentFields, so it stays live. -->
+                        <div class="epPlayniteOnly epRow epRowCheckbox epLockExempt" id="CaseModThreejsGamesEnabledRow">
+                            <label for="CaseModThreejsGamesEnabled">Three.js Case Games</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CaseModThreejsGamesEnabled" name="CaseModThreejsGamesEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Experimental! Real 3D box or disc case for games (Playnite Bridge), rendered with Three.js.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="epPlayniteOnly" id="CaseModThreejsGamesDependentFields">
+
+                        <div class="epPlayniteOnly epRow epRowCheckbox epLockExempt" id="CaseModThreejsGamesBoxRow">
+                            <label for="CaseModThreejsGamesBox">Box</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CaseModThreejsGamesBox" name="CaseModThreejsGamesBox" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Versions whose form is a box get the Game Box Case; off, they keep their 2D poster.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowCheckbox epLockExempt" id="CaseModThreejsGamesDiscRow">
+                            <label for="CaseModThreejsGamesDisc">Disc case</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CaseModThreejsGamesDisc" name="CaseModThreejsGamesDisc" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Versions whose form is a disc case get the Game Disc Case; off, they keep their 2D poster.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesNoSpineFormRow">
+                            <label for="CaseModThreejsGamesNoSpineForm" class="epRowLabelSpan">Form without spine</label>
+                            <select is="emby-select" id="CaseModThreejsGamesNoSpineForm" name="CaseModThreejsGamesNoSpineForm" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Year">Year rule</option>
+                                <option value="Box">Always box</option>
+                                <option value="Disc">Always disc case</option>
+                            </select>
+                            <div class="epDesc">PC versions without a spine picture: Year rule (see Year), Always box or Always disc case.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesNoSpineYearRow">
+                            <label for="CaseModThreejsGamesNoSpineYear" class="epRowLabelSpan">Year</label>
+                            <input type="text" inputmode="decimal" data-numeric="true" class="epNumberCompact" id="CaseModThreejsGamesNoSpineYear" name="CaseModThreejsGamesNoSpineYear" min="1970" max="2100" step="1" />
+                            <div class="epDesc">Year rule: released up to this year is a box, later a disc case; no year is a disc case.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesShapeFromRow">
+                            <label for="CaseModThreejsGamesShapeFrom" class="epRowLabelSpan">Shape from</label>
+                            <select is="emby-select" id="CaseModThreejsGamesShapeFrom" name="CaseModThreejsGamesShapeFrom" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Front">Front</option>
+                                <option value="Mean">Mean</option>
+                                <option value="Back">Back</option>
+                            </select>
+                            <div class="epDesc">Front and back in different aspects: Front stretches the back, Mean adjusts both, Back the front.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesCaseLayerRow">
+                            <label for="CaseModThreejsGamesCaseLayer" class="epRowLabelSpan">Case layer</label>
+                            <select is="emby-select" id="CaseModThreejsGamesCaseLayer" name="CaseModThreejsGamesCaseLayer" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="InFront">In front</option>
+                                <option value="BehindText">Behind the text</option>
+                            </select>
+                            <div class="epDesc">In front keeps the case above the page; Behind the text lets it pass under titles and details.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesCaseSizeRow">
+                            <label for="CaseModThreejsGamesCaseSize" class="epRowLabelSpan">Case size</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="text" inputmode="decimal" data-numeric="true" class="epNumberCompact" id="CaseModThreejsGamesCaseSize" name="CaseModThreejsGamesCaseSize" min="1" max="200" step="1" />
+                                <span class="epUnitLabel">%</span>
+                                <select is="emby-select" id="CaseModThreejsGamesCaseAnchor" name="CaseModThreejsGamesCaseAnchor" class="emby-select-withcolor emby-select epSelectCompact" style="max-width:150px;"><option value="Default">Default</option><option value="TopLeft">Top left</option><option value="TopCenter">Top center</option><option value="TopRight">Top right</option><option value="CenterLeft">Center left</option><option value="Center">Center</option><option value="CenterRight">Center right</option><option value="BottomLeft">Bottom left</option><option value="BottomCenter">Bottom center</option><option value="BottomRight">Bottom right</option></select>
+                            </div>
+                            <div class="epDesc">Cover height against the poster box, and where it sits inside it; 100 matches exactly (1-200).</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesCaseTurnRow">
+                            <label for="CaseModThreejsGamesCaseTurn" class="epRowLabelSpan">Case turn</label>
+                            <input type="text" inputmode="decimal" data-numeric="true" class="epNumberCompact" id="CaseModThreejsGamesCaseTurn" name="CaseModThreejsGamesCaseTurn" min="0" max="360" step="0.1" />
+                            <div class="epDesc">How far the case is turned when the page opens; 0-360, past 180 shows the other edge.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesCaseTiltRow">
+                            <label for="CaseModThreejsGamesCaseTilt" class="epRowLabelSpan">Case tilt</label>
+                            <input type="text" inputmode="decimal" data-numeric="true" class="epNumberCompact" id="CaseModThreejsGamesCaseTilt" name="CaseModThreejsGamesCaseTilt" min="-90" max="90" step="0.1" />
+                            <div class="epDesc">How far the case leans back, or forward with a minus, when the page opens (-90 to 90).</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowCheckbox epLockExempt" id="CaseModThreejsGamesZoomEnabledRow">
+                            <label for="CaseModThreejsGamesZoomEnabled">Zoom</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CaseModThreejsGamesZoomEnabled" name="CaseModThreejsGamesZoomEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Mouse wheel over the case or a two-finger pinch on it resizes the case; elsewhere the page scrolls.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesZoomRangeRow">
+                            <label for="CaseModThreejsGamesZoomRange" class="epRowLabelSpan">Zoom range</label>
+                            <input type="text" inputmode="decimal" data-numeric="true" class="epNumberCompact" id="CaseModThreejsGamesZoomRange" name="CaseModThreejsGamesZoomRange" min="0" max="99" step="1" />
+                            <div class="epDesc">How far wheel or pinch may go either way, in percent of the case size; 0 does nothing (0-99).</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesAutoRotateDirectionRow">
+                            <label for="CaseModThreejsGamesAutoRotateDirection" class="epRowLabelSpan">Auto rotate</label>
+                            <select is="emby-select" id="CaseModThreejsGamesAutoRotateDirection" name="CaseModThreejsGamesAutoRotateDirection" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Off">Off</option>
+                                <option value="Left">Left</option>
+                                <option value="Right">Right</option>
+                            </select>
+                            <div class="epDesc">Turns the case on its own until you drag it; Left or Right is the direction it turns.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesRotateSpeedRow">
+                            <label for="CaseModThreejsGamesRotateSpeed" class="epRowLabelSpan">Rotate speed</label>
+                            <select is="emby-select" id="CaseModThreejsGamesRotateSpeed" name="CaseModThreejsGamesRotateSpeed" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="VerySlow">Very slow</option>
+                                <option value="Slow">Slow</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Fast">Fast</option>
+                                <option value="VeryFast">Very fast</option>
+                            </select>
+                            <div class="epDesc">Turns per minute - Very slow 0.5, Slow 1, Medium 2, Fast 3, Very fast 4; same on any screen.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowCheckbox epLockExempt" id="CaseModThreejsGamesResetOnDoubleClickRow">
+                            <label for="CaseModThreejsGamesResetOnDoubleClick">Reset on double click</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CaseModThreejsGamesResetOnDoubleClick" name="CaseModThreejsGamesResetOnDoubleClick" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Puts pose, size and the automatic turn back; off, a single click opens a disc case at once.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesBoxSidesRow">
+                            <label for="CaseModThreejsGamesBoxSides" class="epRowLabelSpan">Box sides</label>
+                            <select is="emby-select" id="CaseModThreejsGamesBoxSides" name="CaseModThreejsGamesBoxSides" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Coloured">Colored</option>
+                                <option value="ColouredSpineBlack">Colored, spine black</option>
+                                <option value="Black">Black</option>
+                            </select>
+                            <div class="epDesc">Game Box Case: sides without a picture in the spine or front color, with a black spine, or Black.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesBoxEdgeMmRow">
+                            <label for="CaseModThreejsGamesBoxEdgeMm" class="epRowLabelSpan">Box edges</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="text" inputmode="decimal" data-numeric="true" class="epNumberCompact" id="CaseModThreejsGamesBoxEdgeMm" name="CaseModThreejsGamesBoxEdgeMm" min="0" max="15" step="0.1" />
+                                <span class="epUnitLabel">mm</span>
+                            </div>
+                            <div class="epDesc">Game Box Case: edge rounding in mm on a real 270 mm tall box; 0 is a sharp edge (0-15).</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowCheckbox epLockExempt" id="CaseModThreejsGamesBackCoverRow">
+                            <label for="CaseModThreejsGamesBackCover">Back cover</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CaseModThreejsGamesBackCover" name="CaseModThreejsGamesBackCover" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Prints the back of the case with the version's own back picture.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesBookletRow">
+                            <label for="CaseModThreejsGamesBooklet" class="epRowLabelSpan">Booklet</label>
+                            <select is="emby-select" id="CaseModThreejsGamesBooklet" name="CaseModThreejsGamesBooklet" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Off">Off</option>
+                                <option value="Black">Black</option>
+                                <option value="BwFanart">B/W fanart</option>
+                                <option value="BlurredFanart">Blurred fanart</option>
+                            </select>
+                            <div class="epDesc">Game Disc Case: the booklet in the lid and its cover; without fanart it falls back to Black.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesSpineRow">
+                            <span class="epRowLabelSpan">Spine</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CaseModThreejsGamesSpineLogo" name="CaseModThreejsGamesSpineLogo" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Game logo</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Spines without a spine picture: the game's logo, or its title when it has none.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesOpenRow">
+                            <span class="epRowLabelSpan">Open case</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CaseModThreejsGamesOpenAutomatic" name="CaseModThreejsGamesOpenAutomatic" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Automatic</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CaseModThreejsGamesOpenOnClickAutomatic" name="CaseModThreejsGamesOpenOnClickAutomatic" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">On click automatic</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CaseModThreejsGamesOpenOnClick" name="CaseModThreejsGamesOpenOnClick" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">On click</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Game Disc Case only; a box never opens. Automatic, On click automatic, On click as for movies.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesOpenDelayMsRow">
+                            <label for="CaseModThreejsGamesOpenDelayMs" class="epRowLabelSpan">Delay</label>
+                            <input type="text" inputmode="decimal" data-numeric="true" class="epNumberCompact" id="CaseModThreejsGamesOpenDelayMs" name="CaseModThreejsGamesOpenDelayMs" min="0" max="60000" step="100" />
+                            <div class="epDesc">Delay before the case opens automatically, in milliseconds; 60000 is one minute (0-60000).</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesOpenAngleDegreesRow">
+                            <label for="CaseModThreejsGamesOpenAngleDegrees" class="epRowLabelSpan">Open angle</label>
+                            <input type="text" inputmode="decimal" data-numeric="true" class="epNumberCompact" id="CaseModThreejsGamesOpenAngleDegrees" name="CaseModThreejsGamesOpenAngleDegrees" min="0" max="180" step="1" />
+                            <div class="epDesc">How far the front cover swings open; 0 leaves it shut (0-180).</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesSpinRow">
+                            <span class="epRowLabelSpan">Spinning disc</span>
+                            <div class="epFormatGrid">
+                                <label class="epFormatItem emby-checkbox-label" id="CaseModThreejsGamesSpinAutomaticItem"><input type="checkbox" is="emby-checkbox" id="CaseModThreejsGamesSpinAutomatic" name="CaseModThreejsGamesSpinAutomatic" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Automatic</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label" id="CaseModThreejsGamesSpinOnClickAutomaticItem"><input type="checkbox" is="emby-checkbox" id="CaseModThreejsGamesSpinOnClickAutomatic" name="CaseModThreejsGamesSpinOnClickAutomatic" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">On click automatic</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CaseModThreejsGamesSpinOnClick" name="CaseModThreejsGamesSpinOnClick" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">On click</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                            </div>
+                            <div class="epDesc">Game Disc Case only. Automatic and On click automatic: spins in that sequence; On click: click the disc.</div>
+                        </div>
+                        <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesSpinDirectionRow">
+                            <label for="CaseModThreejsGamesSpinDirection" class="epRowLabelSpan">Direction</label>
+                            <select is="emby-select" id="CaseModThreejsGamesSpinDirection" name="CaseModThreejsGamesSpinDirection" class="emby-select-withcolor emby-select epSelectCompact">
                                 <option value="Left">Left</option>
                                 <option value="Right">Right</option>
                             </select>
@@ -10346,6 +10592,9 @@
                 CaseModPosterSizeAnchorEpisodes: { type: 'select', def: 'Default', tab: 'casemod' },
                 CaseModPosterSizeAnchorVideos: { type: 'select', def: 'Default', tab: 'casemod' },
                 CaseModPosterSizeAnchorGames: { type: 'select', def: 'Default', tab: 'casemod' },
+                CaseModBox3dEnabled: { type: 'checkbox', def: false, tab: 'casemod' },
+                CaseModPosterSizeBox3d: { type: 'number', def: 100, tab: 'casemod' },
+                CaseModPosterSizeAnchorBox3d: { type: 'select', def: 'Default', tab: 'casemod' },
                 CaseModThreejsCaseAnchor: { type: 'select', def: 'Default', tab: 'casemodthreejs' },
                 CaseModThreejsCaseSize: { type: 'number', def: 80, tab: 'casemodthreejs' },
                 CaseModThreejsCaseTurn: { type: 'number', def: 320, tab: 'casemodthreejs' },
@@ -10372,6 +10621,37 @@
                 CaseModThreejsOpenOnClickAutomatic: { type: 'checkbox', def: false, tab: 'casemodthreejs' },
                 CaseModThreejsSpinOnClickAutomatic: { type: 'checkbox', def: false, tab: 'casemodthreejs' },
                 CaseModThreejsSpinDirection: { type: 'select', def: 'Left', tab: 'casemodthreejs' },
+                // Three.js Case Games: reset with the movie block by the group's button.
+                CaseModThreejsGamesEnabled: { type: 'checkbox', def: false, tab: 'casemodthreejs' },
+                CaseModThreejsGamesBox: { type: 'checkbox', def: true, tab: 'casemodthreejs' },
+                CaseModThreejsGamesDisc: { type: 'checkbox', def: true, tab: 'casemodthreejs' },
+                CaseModThreejsGamesNoSpineForm: { type: 'select', def: 'Year', tab: 'casemodthreejs' },
+                CaseModThreejsGamesNoSpineYear: { type: 'number', def: 2005, tab: 'casemodthreejs' },
+                CaseModThreejsGamesShapeFrom: { type: 'select', def: 'Front', tab: 'casemodthreejs' },
+                CaseModThreejsGamesCaseLayer: { type: 'select', def: 'BehindText', tab: 'casemodthreejs' },
+                CaseModThreejsGamesCaseSize: { type: 'number', def: 80, tab: 'casemodthreejs' },
+                CaseModThreejsGamesCaseAnchor: { type: 'select', def: 'Default', tab: 'casemodthreejs' },
+                CaseModThreejsGamesCaseTurn: { type: 'number', def: 320, tab: 'casemodthreejs' },
+                CaseModThreejsGamesCaseTilt: { type: 'number', def: 5, tab: 'casemodthreejs' },
+                CaseModThreejsGamesZoomEnabled: { type: 'checkbox', def: true, tab: 'casemodthreejs' },
+                CaseModThreejsGamesZoomRange: { type: 'number', def: 33, tab: 'casemodthreejs' },
+                CaseModThreejsGamesAutoRotateDirection: { type: 'select', def: 'Off', tab: 'casemodthreejs' },
+                CaseModThreejsGamesRotateSpeed: { type: 'select', def: 'Medium', tab: 'casemodthreejs' },
+                CaseModThreejsGamesResetOnDoubleClick: { type: 'checkbox', def: true, tab: 'casemodthreejs' },
+                CaseModThreejsGamesBoxSides: { type: 'select', def: 'Coloured', tab: 'casemodthreejs' },
+                CaseModThreejsGamesBoxEdgeMm: { type: 'number', def: 1.6, tab: 'casemodthreejs' },
+                CaseModThreejsGamesBackCover: { type: 'checkbox', def: true, tab: 'casemodthreejs' },
+                CaseModThreejsGamesBooklet: { type: 'select', def: 'Black', tab: 'casemodthreejs' },
+                CaseModThreejsGamesSpineLogo: { type: 'checkbox', def: true, tab: 'casemodthreejs' },
+                CaseModThreejsGamesOpenAutomatic: { type: 'checkbox', def: true, tab: 'casemodthreejs' },
+                CaseModThreejsGamesOpenOnClick: { type: 'checkbox', def: false, tab: 'casemodthreejs' },
+                CaseModThreejsGamesOpenOnClickAutomatic: { type: 'checkbox', def: false, tab: 'casemodthreejs' },
+                CaseModThreejsGamesOpenDelayMs: { type: 'number', def: 5000, tab: 'casemodthreejs' },
+                CaseModThreejsGamesOpenAngleDegrees: { type: 'number', def: 120, tab: 'casemodthreejs' },
+                CaseModThreejsGamesSpinAutomatic: { type: 'checkbox', def: false, tab: 'casemodthreejs' },
+                CaseModThreejsGamesSpinOnClickAutomatic: { type: 'checkbox', def: false, tab: 'casemodthreejs' },
+                CaseModThreejsGamesSpinOnClick: { type: 'checkbox', def: false, tab: 'casemodthreejs' },
+                CaseModThreejsGamesSpinDirection: { type: 'select', def: 'Left', tab: 'casemodthreejs' },
                 // The Case Mix block: its own restore key, also reset with the Case tab.
                 CaseModMixEnabled: { type: 'checkbox', def: false, tab: 'casemodmix' },
                 CaseModMixNewDrawAfter: { type: 'select', def: '60s', tab: 'casemodmix' },
@@ -10619,7 +10899,13 @@
                     return !cond.values.some(function (x) { return String(x) === vNot; });
                 }
                 if (cond.kind === 'anyGroup') {
-                    return cond.groups.some(function (g) { return g.every(function (id) { return epGetFieldValue(id) === true; }); });
+                    // A games box hidden without Playnite Bridge counts as off: it does not apply.
+                    return cond.groups.some(function (g) {
+                        return g.every(function (id) {
+                            var el = document.getElementById(id);
+                            return epGetFieldValue(id) === true && !(el && epHiddenGamesField(el));
+                        });
+                    });
                 }
                 if (cond.kind === 'anyOf') {
                     return cond.conds.some(epEvalCondition);
@@ -10755,6 +11041,17 @@
                     // checkbox still ticked would look unaffected. Checked recursively through
                     // the whole subtree (see epSubtreeEverActive).
                     var anyChildActive = node.children.some(function (child) { return epSubtreeEverActive(child, true); });
+                    // Features that live on this tab but sit at the top of the tree (so they work while the tab's
+                    // own switch is off) count as well; a Playnite-only one only while Playnite Bridge is there.
+                    if (!anyChildActive && node.pageNodes) {
+                        var pageRoot = document.getElementById('ArtworkPlusConfigPage');
+                        anyChildActive = node.pageNodes.some(function (id) {
+                            var other = EP_TREE.filter(function (n) { return n.id === id; })[0];
+                            if (!other) { return false; }
+                            if (other.playniteOnly && !(pageRoot && pageRoot.classList.contains('epPlayniteBridge'))) { return false; }
+                            return epSubtreeEverActive(other, true);
+                        });
+                    }
                     if (!anyChildActive) { buttonOnlyGreyed = true; }
                 }
                 epApplyNodeVisual(node, active, buttonOnlyGreyed, parentActive, ancestorTargetEls);
@@ -11056,11 +11353,72 @@
               when: [ValueNotIn('CaseModPosterSizeVideos', ['100'])], children: [] },
             { id: 'case_postersize_anchor_games', structural: true,
               target: ['CaseModPosterSizeAnchorGames'],
-              when: [ValueNotIn('CaseModPosterSizeGames', ['100'])], children: [] }] }] },
+              when: [ValueNotIn('CaseModPosterSizeGames', ['100'])], children: [] },
+            // Box 3D: the switch row is no target of any node (it must stay live in
+            // General mode too; the server applies Box 3D whatever the size mode).
+            // This node greys the size row while Box 3D is off; the anchor child
+            // follows the Games pattern.
+            { id: 'case_postersize_box3d', structural: true,
+              target: ['CaseModPosterSizeBox3dRow'],
+              when: [AllChecked(['CaseModBox3dEnabled'])],
+              children: [
+                { id: 'case_postersize_anchor_box3d', structural: true,
+                  target: ['CaseModPosterSizeAnchorBox3d'],
+                  when: [ValueNotIn('CaseModPosterSizeBox3d', ['100'])], children: [] }] }] }] },
+
+                // ── Three.js Case Games ──
+                // Top level for the reason Poster size is (see above): the games block
+                // must work with CaseModEnabled off, and a child of `casemod` could never
+                // escape it; its rows carry .epLockExempt against the page lock. The switch
+                // row is not a target (it stays live), the container holds every row it governs.
+                // The collapse header has its own node below (dims only while both switches are off).
+                // terminal: the block being on already means "it does something". The
+                // children are the movie block's twins, plus the Year row (Year rule only).
+    { id: 'case_threejs_games', playniteOnly: true, target: ['CaseModThreejsGamesDependentFields'],
+      when: [AllChecked(['CaseModThreejsGamesEnabled'])],
+      terminal: true,
+      children: [
+        { id: 'case_threejs_games_year', structural: true, target: ['CaseModThreejsGamesNoSpineYearRow'],
+          when: [ValueIn('CaseModThreejsGamesNoSpineForm', ['Year'])], children: [] },
+        // Box sides and Box edges act on the Game Box Case only.
+        { id: 'case_threejs_games_box', structural: true,
+          target: ['CaseModThreejsGamesBoxSidesRow', 'CaseModThreejsGamesBoxEdgeMmRow'],
+          when: [AllChecked(['CaseModThreejsGamesBox'])], children: [] },
+        { id: 'case_threejs_games_zoom', target: ['CaseModThreejsGamesZoomRangeRow'],
+          when: [AllChecked(['CaseModThreejsGamesZoomEnabled'])], children: [] },
+        { id: 'case_threejs_games_rotdir', target: ['CaseModThreejsGamesRotateSpeedRow'],
+          when: [ValueIn('CaseModThreejsGamesAutoRotateDirection', ['Left', 'Right'])], children: [] },
+        // Booklet, opening and the disc act on the Game Disc Case only. The parent greys
+        // Booklet and Open case; the rows below them belong to the children (one grey level).
+        { id: 'case_threejs_games_disc', structural: true,
+          target: ['CaseModThreejsGamesBookletRow', 'CaseModThreejsGamesOpenRow'],
+          when: [AllChecked(['CaseModThreejsGamesDisc'])],
+          children: [
+            { id: 'case_threejs_games_delay', target: ['CaseModThreejsGamesOpenDelayMsRow'],
+              when: [AllChecked(['CaseModThreejsGamesOpenAutomatic'])], children: [] },
+            { id: 'case_threejs_games_opens',
+              target: ['CaseModThreejsGamesOpenAngleDegreesRow', 'CaseModThreejsGamesSpinRow'],
+              when: [AnyChecked(['CaseModThreejsGamesOpenAutomatic', 'CaseModThreejsGamesOpenOnClickAutomatic', 'CaseModThreejsGamesOpenOnClick'])],
+              children: [
+                { id: 'case_threejs_games_spindir', target: ['CaseModThreejsGamesSpinDirectionRow'],
+                  when: [AnyChecked(['CaseModThreejsGamesSpinAutomatic', 'CaseModThreejsGamesSpinOnClickAutomatic',
+                                     'CaseModThreejsGamesSpinOnClick'])], children: [] },
+                { id: 'case_threejs_games_spin_auto', target: ['CaseModThreejsGamesSpinAutomaticItem'],
+                  when: [AllChecked(['CaseModThreejsGamesOpenAutomatic'])], children: [] },
+                { id: 'case_threejs_games_spin_clickauto', target: ['CaseModThreejsGamesSpinOnClickAutomaticItem'],
+                  when: [AllChecked(['CaseModThreejsGamesOpenOnClickAutomatic'])], children: [] }] }] }] },
+
+                // The "Three.js Case" collapse holds the movie and the games block, so its header dims
+                // only while neither block is in effect: the movie switch counts with its ancestors
+                // (case on, Show on Movies), the games switch alone. Header only: it disables nothing.
+    { id: 'case_threejs_header', structural: true, headerTarget: ['casemodThreejs'],
+      when: [AnyGroupChecked([['CaseModEnabled', 'CaseModShowOnMovies', 'CaseModThreejsEnabled'],
+                              ['CaseModThreejsGamesEnabled']])], children: [] },
 
                 // ─────────────────────────── Case ───────────────────────────
                 {
                     id: 'casemod', isTabRoot: true, when: [AllChecked(['CaseModEnabled'])],
+                    pageNodes: ['case_postersize', 'case_threejs_games'],
                     children: [{
                         // Case has a single sub-feature, so CaseModEnabled (General) is its only
                         // gate, client and server side (see CaseModController.cs GetInfo()). This
@@ -11131,10 +11489,8 @@
                                     // below target single rows inside it, never the same element twice along
                                     // the chain.
                                     id: 'case_threejs_fields', target: ['CaseModThreejsDependentFields'],
-                                    // The header dims with the options while the Enable row stays live: the
-                                    // row is not in `target`, and a headerTarget only dims, it never disables
-                                    // anything.
-                                    headerTarget: ['casemodThreejs'],
+                                    // The collapse header is dimmed by its own node (case_threejs_header), since it
+                                    // also holds the games block.
                                     when: [AllChecked(['CaseModThreejsEnabled'])],
                                     children: [{
                                         // The range only matters once the wheel does anything. 0 stays a legal
@@ -12424,7 +12780,13 @@
                     });
                     page.classList.toggle('epPlayniteBridge', active);
                     epPlayniteDetected = true;
-                }, function () { page.classList.remove('epPlayniteBridge'); epPlayniteDetected = true; });
+                    epRecomputeAfterBridgeAnswer();
+                }, function () { page.classList.remove('epPlayniteBridge'); epPlayniteDetected = true; epRecomputeAfterBridgeAnswer(); });
+            }
+            // A gate reads the answer (a hidden games box counts as off), so the tree is walked again
+            // once it is in; before the configuration has loaded, the load's own walk does it.
+            function epRecomputeAfterBridgeAnswer() {
+                if (epLastLoadedConfig) { epRecomputeDependencyTree(); }
             }
             function epHiddenGamesField(el) {
                 var page = document.getElementById('ArtworkPlusConfigPage');
@@ -13968,6 +14330,7 @@
 
             epBindExclusiveClickModes('CaseMod2DOpenOnClickAutomatic', 'CaseMod2DOpenOnClick');
             epBindExclusiveClickModes('CaseModThreejsOpenOnClickAutomatic', 'CaseModThreejsOpenOnClick');
+            epBindExclusiveClickModes('CaseModThreejsGamesOpenOnClickAutomatic', 'CaseModThreejsGamesOpenOnClick');
 
             document.getElementById('CaseModType').addEventListener('change', function () {
                 epLoadActiveCaseTuneFields(epLastLoadedConfig);

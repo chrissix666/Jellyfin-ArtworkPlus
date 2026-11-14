@@ -69,8 +69,8 @@
     // material colour, so white is the neutral element. A transparent stub
     // would make every textured surface of the case vanish.
     var PNG_BLANK = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGP4DwQACfsD/fteaysAAAAASUVORK5CYII=';
-    var TEX = { bluray: PNG_BLANK, dvd: PNG_BLANK, dvdgen: PNG_BLANK };
-    var BOOKLET_TEX = { bluray: PNG_BLANK, dvd: PNG_BLANK, dvdgen: PNG_BLANK };
+    var TEX = { bluray: PNG_BLANK, dvd: PNG_BLANK, dvdgen: PNG_BLANK, gamedisc: PNG_BLANK };
+    var BOOKLET_TEX = { bluray: PNG_BLANK, dvd: PNG_BLANK, dvdgen: PNG_BLANK, gamedisc: PNG_BLANK };
     // The real interior maps, derived from upstream's PNGs and served by the
     // plugin (~63 KB). INTERIOR_PNG stays blank on purpose: upstream loads it
     // into interiorTex and never uses it again - about 1 MB of dead weight.
@@ -208,6 +208,7 @@ const BADGE = {
   dvd:    {studio: {yFrac: 0.10, hFrac: 0.07, wFrac: 0.55, size: 1.10, dy: -0.5}, format: {onLip: false, yFrac: 0.035, hFrac: 0.045, wFrac: 0.45, size: 1.40, dy: 0}, tmdb: {hFrac: 0.020, wFrac: 0.40, size: 1.10, dy: 0}},   // fitted DVD placement
   dvdgen: {studio: {yFrac: 0.10, hFrac: 0.07, wFrac: 0.55, size: 1.10, dy: -0.5}, format: {onLip: false, yFrac: 0.035, hFrac: 0.045, wFrac: 0.45, size: 1.40, dy: 0}, tmdb: {hFrac: 0.020, wFrac: 0.40, size: 1.10, dy: 0}},   // fitted DVD placement
 };
+BADGE.gamedisc = null;   // game cases carry no spine badges; every BADGE lookup guards `!B`, so the badge meshes stay hidden
 
 const BOOKLET = {ground: 'bw', W: 900, key: null};
 
@@ -229,6 +230,12 @@ const MODELS = {
            uvFront:{u0:0.5445,u1:0.9583,v0:0.0544,v1:0.6531}, uvBack:{u0:0.0419,u1:0.4557,v0:0.0544,v1:0.6531},
            doubleWall:true, rx:0.84,
            gen:{rEdgeN:0.84, rEdgeD:0.62, rCorner:0.84, wall:0.31, paperIn:0.28, floorIn:0.53, paperSpineIn:0.14, paperPanelIn:0.56, paperRz:0.55, clamp:0.6}},
+  // Game cases: gamedisc = a COPY of the Blu-ray JFX
+  // shell whose head band is squeezed to the bottom lip's height (bandRim), so the cover runs over the
+  // whole front like on a console / PC game case; no embossed logo, colour by platform (GAME_SHELL).
+  gamedisc: {label:'Game Disc Case', FC:{x0:-25.752, x1:22.958, y0:1.737, y1:55.782}, OUT:{x0:-27.462, x1:24.668, y0:0.005, y1:62.583},
+           Z:{min:-1.701, max:3.203}, hingeZ:{a:-0.30, b:1.80}, shell:0x1c1c1e, logoZ:0, bandRim:1.732, game:true,
+           uvFront:{u0:0.5332,u1:0.9510,v0:0.0299,v1:0.4936}, uvBack:{u0:0.0469,u1:0.4648,v0:0.0299,v1:0.4936}, uvSpine:{u0:0.4648,u1:0.5332,v0:0.0299,v1:0.4936}},
 };
 
 const LOGO_C = {x:(-5.0932+2.4746)/2, y:(56.5302+60.5226)/2, h:(60.5226-56.5302)};
@@ -696,7 +703,8 @@ function buildModel(name){
     // that first ring a hair outside the wall plane; the polygon offset handles the rest.
     // (normals stay the smooth JFX ones - overriding them drew a shading stripe down the middle)
     const a = M.meshes.cover.geometry.attributes.position.array;
-    for (let i=0;i<a.length;i+=3) if (a[i] < D.OUT.x0 + 0.1) a[i] = D.OUT.x0 - 0.015;
+    const lim = D.game ? 0.01 : 0.1;   // on the 2 mm game rounding 0.1 would also flatten the first rounding ring (lip, kink, 15 % stretch) - only true wall points
+    for (let i=0;i<a.length;i+=3) if (a[i] < D.OUT.x0 + lim) a[i] = D.OUT.x0 - 0.015;
     // same for the shell's flat wall (incl. the collapsed groove): one normal, one flat shade
     for (const mn of ['case', 'caseBL']){ const cp = M.meshes[mn].geometry.attributes.position.array, cn = M.meshes[mn].geometry.attributes.normal.array;
       for (let i=0;i<cp.length;i+=3) if (cp[i] < D.OUT.x0 + 0.02 && cp[i+2] > D.hingeZ.a - 0.01 && cp[i+2] < D.hingeZ.b + 0.01){ cn[i] = -1; cn[i+1] = 0; cn[i+2] = 0; } }
@@ -895,15 +903,16 @@ function genDvdShell(D){
 
 const INTERIOR = {aspect: 1365/2208, ringU: HUB_GEOM.px[0]/1365, ringV: 1 - HUB_GEOM.px[1]/2208, q: 1};
 
-const DISC = {u: HUB_GEOM.px[0]/1365, v: 0.5, mm: {bluray: 171.5/62.578, dvd: 190/73.68, dvdgen: 190/73.68}, dMM: 120, holeMM: 15, tMM: 1.2, lift: 0.05};
+const DISC = {u: HUB_GEOM.px[0]/1365, v: 0.5, mm: {bluray: 171.5/62.578, dvd: 190/73.68, dvdgen: 190/73.68, gamedisc: 2.606}, dMM: 120, holeMM: 15, tMM: 1.2, lift: 0.05};
 
 // The disc is 1.5 mm smaller in diameter than upstream on both cases (Blu-ray 119.28 ->
 // 117.78 mm, DVD 120.72 -> 119.22 mm). The factor scales the hole with it, and the hub button
 // follows the hole (layoutBoss: button radius = hole radius less clearance), so it changes by
 // the same factor.
-const DISC_SIZE = {bluray: 117.78/120, dvd: 119.22/120, dvdgen: 119.22/120};
+// gamedisc: upstream's 0.994 (119.28 mm at the game scale) less the same 1.5 mm = the Blu-ray value.
+const DISC_SIZE = {bluray: 117.78/120, dvd: 119.22/120, dvdgen: 119.22/120, gamedisc: 117.78/120};
 
-const DISC_OFF = {bluray:{x:0, y:0.2}, dvd:{x:0, y:0.2}, dvdgen:{x:0, y:0.2}};
+const DISC_OFF = {bluray:{x:0, y:0.2}, dvd:{x:0, y:0.2}, dvdgen:{x:0, y:0.2}, gamedisc:{x:0, y:0.2}};
 
 function ensureDisc(){
   if (M.disc) return M.disc;
@@ -1035,7 +1044,7 @@ function applyAspect(mode){
   const sx = FW/(PNG.px[2]-PNG.px[1]), sy = H/(PNG.py[1]-PNG.py[2]);
   const follow = mode==='fit';
   const dxRim  = follow ? (PNG.px[1]-PNG.px[0])*sx - (FC.x0-OUT.x0) : 0;
-  const dyBand = follow ? (PNG.py[2]-PNG.py[3])*sy - (OUT.y1-FC.y1) : 0;
+  const dyBand = follow ? (PNG.py[2]-PNG.py[3])*sy - (OUT.y1-FC.y1) : (M.D.bandRim !== undefined ? M.D.bandRim - (OUT.y1-FC.y1) : 0);   // gamedisc: band squeezed to the lip height
   const dyBot  = follow ? (PNG.py[0]-PNG.py[1])*sy - (FC.y0-OUT.y0) : 0;
   const winY = y => y >= FC.y1-0.01 ? y+dy : (y > FC.y0 ? FC.y0 + (y-FC.y0)*H/FH : y);
   const bandH = (OUT.y1-FC.y1) + dyBand, bandBottom = FC.y1 + dy;
@@ -1432,12 +1441,12 @@ function applyInterior(){
   M.matFurn.map = M.matLidIn.map; M.matFurn.needsUpdate = true;
 }
 
-const FORMAT_ICON = {bluray: (SPINE_MARK.bluray), dvd: (SPINE_MARK.dvd), dvdgen: (SPINE_MARK.dvd)};
+const FORMAT_ICON = {bluray: (SPINE_MARK.bluray), dvd: (SPINE_MARK.dvd), dvdgen: (SPINE_MARK.dvd), gamedisc: (SPINE_MARK.bluray)};
 
 const CASE_BLACK = 0x1c1c1e;
 const shellHex = () => (blackCase && M.name === 'bluray') ? CASE_BLACK : M.D.shell;
 
-const SPINE_LOGO_SCALE = {bluray: 1.5, dvd: 1.0, dvdgen: 1.0};
+const SPINE_LOGO_SCALE = {bluray: 1.5, dvd: 1.0, dvdgen: 1.0, gamedisc: 1.5};
 
 const rgb2hsl = ([r,g,b]) => { r/=255; g/=255; b/=255; const mx=Math.max(r,g,b), mn=Math.min(r,g,b), l=(mx+mn)/2; let h=0, sat=0;
   if (mx!==mn){ const d=mx-mn; sat = l>0.5 ? d/(2-mx-mn) : d/(mx+mn); h = mx===r ? (g-b)/d + (g<b?6:0) : mx===g ? (b-r)/d + 2 : (r-g)/d + 4; h/=6; } return [h, sat, l]; };
@@ -1529,7 +1538,8 @@ function applyCaseColour(){
 function applyFurniture(){
   for (const c of ['A','B','C']){ const m = M.meshes['clip'+c]; m.visible = furnOn && (furnConcept === c); m.position.y = furnY; }
   M.meshes.stops.visible = furnOn; M.meshes.stops.position.y = furnY;
-  M.meshes.booklet.visible = furnOn && bookletOn; M.meshes.booklet.position.y = furnY;
+  const noGameBooklet = M.D.game && typeof GAME !== 'undefined' && GAME.cur && !GAME.pics.logo;   // games: no logo -> no booklet
+  M.meshes.booklet.visible = furnOn && bookletOn && !noGameBooklet; M.meshes.booklet.position.y = furnY;
   statusEl('fy').value = furnY; statusEl('fy_val').textContent = (furnY>=0?'+':'')+furnY.toFixed(1);
 }
 
@@ -1607,7 +1617,8 @@ function paintBooklet(){
     M.meshes.booklet.geometry.computeBoundingBox(); const bb = M.meshes.booklet.geometry.boundingBox;
     return (bb.max.x - bb.min.x)/(bb.max.y - bb.min.y);
   })();
-  const key = [stem, BOOKLET.ground, M.name, aspect.toFixed(3), !!currentLogo, !!currentStudio].join('|'); if (key === BOOKLET.key) return; BOOKLET.key = key;
+  const gameB = M.D.game && typeof GAME !== 'undefined' && GAME.cur, bLogo = gameB ? GAME.pics.logo : currentLogo;   // games: the clearlogo, also when the spine has its own picture
+  const key = [gameB ? GAME.cur.folder : stem, BOOKLET.ground, M.name, aspect.toFixed(3), !!bLogo, !!currentStudio].join('|'); if (key === BOOKLET.key) return; BOOKLET.key = key;
   const W = BOOKLET.W, H = Math.round(W / aspect), cv = document.createElement('canvas'); cv.width = W; cv.height = H; const ctx = cv.getContext('2d');
   bookletGround(ctx, W, H, BOOKLET.ground);
   const fam = '"Arial Narrow", Arial, sans-serif', lines = [];              // {kind, h, draw}
@@ -1615,8 +1626,8 @@ function paintBooklet(){
   // Every text line is wrapped to at most `maxLines`, then shrunk in 6 % steps until it fits,
   // and as a last resort squeezed horizontally on the way out - so nothing can leave the page,
   // whatever the .nfo contains (e.g. a long tagline).
-  const textLine = (text, fs0, maxLines, colour, weight) => {
-    const words = String(text).split(/\s+/).filter(Boolean), maxW = W*0.86, font = f => (weight ? weight + ' ' : '') + f + 'px ' + fam;
+  const textLine = (text, fs0, maxLines, colour, weight, family) => {
+    const words = String(text).split(/\s+/).filter(Boolean), maxW = W*0.86, font = f => (weight ? weight + ' ' : '') + f + 'px ' + (family || fam);
     const wrap = () => { const out = []; let cur = '';
       for (const w of words){ const t = cur ? cur + ' ' + w : w; if (cur && ctx.measureText(t).width > maxW){ out.push(cur); cur = w; } else cur = t; }
       if (cur) out.push(cur); return out; };
@@ -1630,11 +1641,17 @@ function paintBooklet(){
         if (w > maxW){ ctx.save(); ctx.translate(W/2, y + i*lead); ctx.scale(maxW/w, 1); ctx.fillText(l, 0, 0); ctx.restore(); }   // hard clamp
         else ctx.fillText(l, W/2, y + i*lead); }); }};
   };
-  if (currentLogo){ const [lw, lh] = fitBox(currentLogo, W * 0.78, H * 0.26); lines.push({kind: 'logo', h: lh, draw: y => ctx.drawImage(currentLogo, (W - lw) / 2, y, lw, lh)}); }
-  else lines.push(textLine((side.title || stem.replace(/-postercase\.[^.]+$/i, '')).toUpperCase(), H*0.05, 2, '#f0f0f0', 'bold'));
-  if (side.tagline) lines.push(textLine(side.tagline.toUpperCase(), H*0.022, 2, '#cdcdcd'));
-  if (currentStudio){ const [sw, sh] = fitBox(currentStudio, W * 0.16, H * 0.06); lines.push({kind: 'img', h: sh, draw: y => { ctx.save(); ctx.globalAlpha = 0.9; ctx.drawImage(currentStudio, (W - sw) / 2, y, sw, sh); ctx.restore(); }}); }
-  const cl = bookletCredits(side); if (cl) lines.push(textLine(cl, H*0.019, 2, '#a0a0a6'));
+  if (bLogo){ const [lw, lh] = fitBox(bLogo, W * 0.78, H * 0.26); lines.push({kind: 'logo', h: lh, draw: y => ctx.drawImage(bLogo, (W - lw) / 2, y, lw, lh)}); }
+  if (gameB){
+    // game booklet: logo, divider, publisher · developer; no title text, no year, no genre.
+    // Without publisher and developer: the logo only (no divider).
+    const people = [...new Set([...(GAME.cur.publisher || []), ...(GAME.cur.developer || [])])].slice(0, 2);
+    if (people.length) lines.push(textLine(people.join('   ·   '), H*0.02, 2, '#a0a0a6'));
+  }
+  else if (!bLogo) lines.push(textLine((side.title || stem.replace(/-postercase\.[^.]+$/i, '')).toUpperCase(), H*0.05, 2, '#f0f0f0', 'bold'));
+  if (!gameB && side.tagline) lines.push(textLine(side.tagline.toUpperCase(), H*0.022, 2, '#cdcdcd'));
+  if (!gameB && currentStudio){ const [sw, sh] = fitBox(currentStudio, W * 0.16, H * 0.06); lines.push({kind: 'img', h: sh, draw: y => { ctx.save(); ctx.globalAlpha = 0.9; ctx.drawImage(currentStudio, (W - sw) / 2, y, sw, sh); ctx.restore(); }}); }
+  const cl = gameB ? '' : bookletCredits(side); if (cl) lines.push(textLine(cl, H*0.019, 2, '#a0a0a6'));
   const gap = {logo: H * 0.06, text: H * 0.025, img: H * 0.035};
   const total = lines.reduce((a, l, i) => a + l.h + (i < lines.length - 1 ? gap[l.kind] : 0), 0); let y = (H - total) / 2;
   lines.forEach((l, i) => { l.draw(y); if (l.kind === 'logo' && lines.length > 1){ ctx.strokeStyle = 'rgba(120,120,126,0.55)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(W * 0.2, y + l.h + gap.logo / 2); ctx.lineTo(W * 0.8, y + l.h + gap.logo / 2); ctx.stroke(); } y += l.h + (i < lines.length - 1 ? gap[l.kind] : 0); });
@@ -1735,7 +1752,8 @@ function setSpineLogo(li){
   const m = M.meshes.spineLogo, D = M.D;
   if (!li){ m.visible = false; return; }
   const b = logoBounds(li);
-  const flat = D.hingeZ.b - D.hingeZ.a, hMax = flat*0.85*spineLogoScale, wMax = (D.FC.y1 - D.FC.y0)*0.95;   // slider 'Spine logo' scales the flat-width limit (1.0 = 85 % of the flat spine)
+  const gs = D.game ? 0.8 : 1;   // placeholder logo on the game disc case 0.8 of the film size; the box keeps 1
+  const flat = D.hingeZ.b - D.hingeZ.a, hMax = flat*0.85*spineLogoScale*gs, wMax = (D.FC.y1 - D.FC.y0)*0.95*gs;   // slider 'Spine logo' scales the flat-width limit (1.0 = 85 % of the flat spine)
   const sc = Math.min(hMax/b.h, wMax/b.w);                          // by the VISIBLE size
   const q = spineLogoQuad(D, b.w*sc, b.h*sc, b);
   M.orig.spineLogo = Float32Array.from(q.p); M.norm0.spineLogo = Float32Array.from(q.n);
@@ -2160,6 +2178,251 @@ function paintBack(ctx, bx, by, bw, bh, A){
   ctx.restore();
 }
 
+// ---- game cases (upstream's game block) ---------------------------------------------------------
+// gameDiscShell is upstream's verbatim; it needs MESH.bluray, so bootOnce calls it. The page parts of
+// upstream's game block (picker bar, fields, loadGame) are not taken; the host hands the state over
+// through setGame() instead, in the same GAME shape the ported booklet / furniture code reads.
+// gamedisc spine roundings: the JFX Blu-ray rounds the spine over rx 1.71 (x) and rz 1.40 (z,
+// = 3.8 mm) per side, the flat wall is 5.8 mm. gameDiscShell(k) scales both roundings towards their
+// corner by k (k < 1 = smaller radius): x in [x0, FC.x0] -> [x0, x0 + k*rx], the next 6 units stretch
+// to stay continuous; z in the two rounding zones -> k*rz at the faces, blended out by x so the
+// interior (tray floor, clips) is untouched. The window edge FC.x0 and hingeZ follow, so the hinge
+// apexes (applyAspect: rx = FC.x0 - x0, rz from hingeZ) and the planar UVs fit the new shell.
+const GAMEDISC_BASE = JSON.parse(JSON.stringify({FC: MODELS.gamedisc.FC, hingeZ: MODELS.gamedisc.hingeZ, Z: MODELS.gamedisc.Z}));
+// Game scale: the front window IS the cover panel, a real one is 129.5 mm wide
+// -> 2.606 mm per model unit (the film scale 171.5 mm / height does not hold: the game case height
+// follows the cover's aspect). Thickness per platform (keep-case
+// facts): DVD keep cases (PC, Xbox, Xbox 360) 14 mm, PS3/PS4/PS5 cases 14 mm (supplier listings, not
+// measured), Xbox One / Series Blu-ray-size cases 12 mm. 14 mm also matches the 159 disc-case spine
+// scans (median native width 13.9 mm at this scale), so a spine picture and the case agree.
+let GAME_BLURAY_SRC = null;   // the Blu-ray mesh's groups as loaded (bootOnce), the game shell's source
+const MMU_GAME = 2.606, GAME_THICK = {pc: 14, ps3: 14, ps4: 14, ps5: 14, xbox: 14, xbox360: 14, xboxone: 12, xboxseries: 12};
+function gameDiscShell(mmR, mmT){
+  const D = MODELS.gamedisc, B = GAMEDISC_BASE, x0 = D.OUT.x0, xf = B.FC.x0, rx = xf - x0, L = 6, xe = xf + L;
+  // 1. depth: scale z about the case centre so the thickness is mmT (shell, paper, interior alike)
+  const zc = (B.Z.min + B.Z.max)/2, f = (mmT/MMU_GAME)/(B.Z.max - B.Z.min), zs = z => zc + (z - zc)*f;
+  const Zmin = zs(B.Z.min), Zmax = zs(B.Z.max), a = zs(B.hingeZ.a), b = zs(B.hingeZ.b), zm = (a + b)/2;
+  // 2. circular spine roundings of radius R (mm) in x and z (the JFX ellipse is 1.22:1)
+  const R = Math.min(mmR/MMU_GAME, rx, Zmax - b, a - Zmin), kx = R/rx, k = R/(Zmax - b);
+  const nxF = x0 + R, za = Zmin + R, zb = Zmax - R;
+  const mx = x => x <= xf ? x0 + (x - x0)*kx : x < xe ? nxF + (x - xf)*(xe - nxF)/(xe - xf) : x;
+  const sx = x => x <= xf ? kx : x < xe ? (xe - nxF)/(xe - xf) : 1;                       // d mx / dx
+  const sz = z => z >= b ? (Zmax - zb)/(Zmax - b) : z > zm ? (zb - zm)/(b - zm) : z <= a ? (za - Zmin)/(a - Zmin) : (za - zm)/(a - zm);
+  const mz = z => z >= b ? zb + (z - b)*(Zmax - zb)/(Zmax - b) : z > zm ? zm + (z - zm)*(zb - zm)/(b - zm)
+               : z <= a ? Zmin + (z - Zmin)*(za - Zmin)/(a - Zmin) : zm + (z - zm)*(za - zm)/(a - zm);
+  // ArtworkPlus: a plain deep copy instead of upstream's structuredClone (Chromium 98+): the mesh is
+  // parsed JSON (plain objects and arrays), and Jellyfin Desktop's Qt 5.15 engine is Chromium 83.
+  // From the Blu-ray mesh as it was LOADED (bootOnce keeps it): buildModel('bluray') later replaces its
+  // case group by one without the groove faces, so a copy taken after a movie case would differ.
+  const mesh = JSON.parse(JSON.stringify(GAME_BLURAY_SRC || MESH.bluray));
+  for (const g of Object.values(mesh)) if (g && g.p) for (let i = 0; i < g.p.length; i += 3){
+    g.p[i+2] = zs(g.p[i+2]); if (g.n){ g.n[i+2] /= f; const l = Math.hypot(g.n[i], g.n[i+1], g.n[i+2]) || 1; g.n[i] /= l; g.n[i+1] /= l; g.n[i+2] /= l; }
+    const x = g.p[i], z = g.p[i+2], w = x <= xf ? 1 : x >= xf + 1 ? 0 : xf + 1 - x;
+    g.p[i] = mx(x); g.p[i+2] = z + w*(mz(z) - z);
+    if (g.n){ const fx = sx(x), fz = 1 + w*(sz(z) - 1), nx = g.n[i]/fx, ny = g.n[i+1], nz = g.n[i+2]/fz, l = Math.hypot(nx, ny, nz) || 1;   // normals follow the stretch (n' ~ n / scale)
+      g.n[i] = nx/l; g.n[i+1] = ny/l; g.n[i+2] = nz/l; }
+  }
+  // Roundings keep the JFX's 5 segments: at R = 2 mm a chord deviates from the circle by r(1 - cos 9 deg) =
+  // 0.025 mm (invisible). Deliberately not split: more segments leave T-junctions (open edges) at the
+  // quarter-spherical end caps.
+  D.FC = Object.assign({}, B.FC, {x0: nxF}); D.hingeZ = {a: za, b: zb}; D.Z = {min: Zmin, max: Zmax}; D.spineK = k; D.mmR = mmR; D.mmT = mmT;
+  // the paper strip from the back face edge round the spine to the front face edge gets u by ARC
+  // LENGTH again (the reshape kept the JFX u, which stretched the wall and squeezed the roundings).
+  // The two face-edge points keep uvBack.u1 / uvFront.u0, so back and front stay where they are.
+  // z rises monotonically along the strip, so the profile is the zone's (x, z) points sorted by z.
+  const C = mesh.cover, uB = D.uvBack.u1, uF = D.uvFront.u0, key = (x, z) => x.toFixed(4) + ',' + z.toFixed(4);
+  const prof = new Map([[key(nxF, Zmin), [nxF, Zmin]], [key(nxF, Zmax), [nxF, Zmax]]]);
+  for (let i = 0; i < C.p.length; i += 3) if (C.p[i] < nxF - 1e-4) prof.set(key(C.p[i], C.p[i+2]), [C.p[i], C.p[i+2]]);
+  const pts = [...prof.values()].sort((p, q) => p[1] - q[1] || q[0] - p[0]), sAt = new Map(); let acc = 0;
+  pts.forEach((pt, i) => { if (i) acc += Math.hypot(pt[0] - pts[i-1][0], pt[1] - pts[i-1][1]); sAt.set(key(pt[0], pt[1]), acc); });
+  // Triangles that touch the front rect become the front mesh (buildModel: coverFront, own texture,
+  // uv = (u - uF)/(uF1 - uF)). Their strip vertices must sit at the FRONT picture's scale, so the
+  // picture runs on round the fold without a smeared edge column: u = uF - d*(uF1 - uF)/FW with d the
+  // arc distance to the window edge (gameFrontOffset adds the matching texture offset per game).
+  // ArtworkPlus: there is no separate coverFront mesh here - the whole cover is one wrap texture the
+  // host paints, so the strip stays at ONE scale (below); sStrad is still found, gameStrip needs it.
+  let sStrad = acc;
+  for (let i = 0, j = 0; i < C.p.length; i += 9, j += 6){
+    let front = false; for (let q = 0; q < 3; q++) if (C.t[j + 2*q] >= uF - 1e-4 && C.p[i + 3*q] >= nxF - 1e-4) front = true;
+    for (let q = 0; q < 3; q++){ const pi = i + 3*q, ti = j + 2*q; if (C.p[pi] >= nxF - 1e-4) continue;
+      const sv = sAt.get(key(C.p[pi], C.p[pi+2]));
+      // ArtworkPlus: one wrap texture, so the fold keeps the arc-length scale paintGame paints at
+      // (upstream's front scale u = uF - (acc - sv)*(uF1 - uF)/FWf is for its separate coverFront mesh;
+      // here it would leave a ~1 px step where the run-on meets the flat front).
+      if (front) sStrad = Math.min(sStrad, sv);
+      C.t[ti] = uB + sv/acc*(uF - uB); }
+  }
+  const wall = pts.filter(q => q[0] < x0 + 1e-3);                       // the flat spine wall (x = OUT.x0)
+  D.spineArc = {L: acc, wall0: sAt.get(key(...wall[0])), wall1: sAt.get(key(...wall[wall.length - 1])), sStrad};   // sStrad: from here on the fold belongs to the front mesh
+  return mesh;
+}
+// Platform colours: estimates of the real cases' plastic.
+const GAME_SHELL = {pc: 0x1c1c1e, ps3: 0xe6eaec, ps4: 0x2b5fa8, ps5: 0x224f95, xbox: 0x1e5a2a, xbox360: 0x4caf3a, xboxone: 0x1f7a2e, xboxseries: 0x1f7a2e};
+// Translucent plastic per platform (estimates): o = opacity of the case body, r = its roughness, m = share
+// of white mixed into the colour, so the plastic reads as thick, matt, milky moulding rather than glass.
+// PC and the original Xbox are opaque. The insert's inner side (white paper, BackSide copy of the wrap)
+// shows through the translucent tray and lid like on a real case.
+const GAME_PLASTIC = {pc: {o: 1, r: 0.45, m: 0}, xbox: {o: 1, r: 0.45, m: 0}, ps3: {o: 0.78, r: 0.5, m: 0.3}, ps4: {o: 0.9, r: 0.45, m: 0.06}, ps5: {o: 0.9, r: 0.45, m: 0.06},
+                      xbox360: {o: 0.9, r: 0.45, m: 0.06}, xboxone: {o: 0.9, r: 0.45, m: 0.05}, xboxseries: {o: 0.9, r: 0.45, m: 0.05}};
+// placeholder spine colour where it differs from the case colour (the clear PS3 case gets a black spine, as its printed spines are)
+const GAME_SPINE_FILL = {ps3: 0x111111};
+function gamePlastic(platform){
+  const P = GAME_PLASTIC[platform] || GAME_PLASTIC.pc, clear = P.o < 1; const f = statusEl('gameopac'); if (f) f.value = P.o;
+  for (const n of ['matCase', 'matCaseIn', 'matInner', 'matLidIn', 'matFurn', 'matHub', 'matCaseBL', 'matCaseInBL', 'matFront', 'matBack', 'matFrontBL', 'matBackBL']){
+    const m = M[n]; if (!m) continue;
+    if (m.userData.base === undefined) m.userData.base = {t: m.transparent, o: m.opacity, r: m.roughness};
+    const B = m.userData.base; m.transparent = clear || B.t; m.opacity = clear ? B.o*P.o : B.o; m.roughness = clear ? P.r : B.r;
+    if (M.caseHex !== undefined){ m.color.copy(srgb(M.caseHex)); if (P.m) m.color.lerp(new THREE.Color(0xffffff), P.m); }   // milky: a share of white in the body colour (from the base colour each time, never cumulative)
+    m.needsUpdate = true;
+  }
+  if (!M.paperIn){                                   // the insert's inner side: white paper behind the plastic (shares the wrap geometry, so it opens with it)
+    const mat = new THREE.MeshStandardMaterial({color: 0xf2f2f0, roughness: 0.8, metalness: 0, side: THREE.BackSide});
+    M.paperIn = ['cover', 'coverFront'].filter(n => M.meshes[n]).map(n => { const q = new THREE.Mesh(M.meshes[n].geometry, mat); q.renderOrder = 0; M.meshes[n].parent.add(q); return q; });
+  }
+}
+// ArtworkPlus: upstream's page-level GAME state, filled by the host through setGame(). The
+// per-version picture set replaces upstream's loadGame(); the settings replace its fields.
+const GAME = {list: [], cur: null, form: 'disc', platform: 'pc', seq: 0, pics: {front: null, back: null, spine: null, logo: null, disc: null},
+              box: null, radius: 0.006, boxH: 60, discR: 2, boxFaces: 'dominant', boxSpine: 'faces'};
+// Paper strip layout (arc length s from the back face edge, 0..L), centred on the flat wall.
+// With a spine picture the printed spine is exactly as wide as the picture needs at the cover height
+// (native: never stretched, never cropped). Without one (logo placeholder) it takes a fixed width: the
+// median of the 159 disc-case spine scans = 1.085 x the case thickness (p10 1.019,
+// p90 1.165). Back and front pictures run on over the rest of their rounding at their own scale.
+let GAME_SPINE_WIDTH = 1.0;              // placeholder spine width, x case thickness (Z.max - Z.min): a real insert's printed spine = the case thickness
+function gameStrip(){
+  const D = M.D, A = D.spineArc; if (!A) return null;
+  const Sp = GAME.pics.spine, Hw = (D.FC.x1 - D.FC.x0)/posterAspect;
+  const span = Math.min(A.L, Sp ? Sp.naturalWidth/Sp.naturalHeight*Hw : GAME_SPINE_WIDTH*(D.Z.max - D.Z.min));
+  const s0 = Math.min(A.L - span, Math.max(0, (A.wall0 + A.wall1)/2 - span/2)), s1 = Math.min(s0 + span, A.sStrad);   // the spine never reaches into the front mesh's fold
+  const u = s => D.uvBack.u1 + s/A.L*(D.uvFront.u0 - D.uvBack.u1), FW = D.FC.x1 - D.FC.x0;
+  return {s0, s1, L: A.L, u, FW, backShare: s0/(s0 + FW), frontShare: (A.L - s1)/((A.L - s1) + FW)};
+}
+// gamebox: a closed cuboid with rounded edges, generated (no mesh file). Height boxH, width = front
+// aspect (clamp 0.55-1.10), depth = spine ratio (box without spine 0.164), edge radius r x height.
+// Six material groups (BoxGeometry order): +x right side, -x spine, +y top, -y bottom, +z front, -z back.
+function makeGameBox(aspect, depth, r){
+  const H = GAME.boxH, W = H*Math.min(1.10, Math.max(0.55, aspect)), D = H*depth, R = Math.max(0.0001, H*r);
+  const k = 4, n = 2*k + 1, g = new THREE.BoxGeometry(2, 2, 2, n, n, n);
+  const half = [W/2, H/2, D/2], inner = half.map(h => Math.max(0, h - R));
+  const map = (t, h) => { const i = Math.round((t + 1)/2*n); return i <= k ? -h + R*(i/k) : h - R + R*((i - k - 1)/k); };
+  const p = g.attributes.position, nr = g.attributes.normal, uv = g.attributes.uv, v = new THREE.Vector3(), c = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++){
+    v.set(map(p.getX(i), half[0]), map(p.getY(i), half[1]), map(p.getZ(i), half[2]));
+    c.set(Math.max(-inner[0], Math.min(inner[0], v.x)), Math.max(-inner[1], Math.min(inner[1], v.y)), Math.max(-inner[2], Math.min(inner[2], v.z)));
+    const d = v.clone().sub(c); if (d.lengthSq() < 1e-12) d.set(nr.getX(i), nr.getY(i), nr.getZ(i)); d.normalize();
+    v.copy(c).addScaledVector(d, R); p.setXYZ(i, v.x, v.y, v.z); nr.setXYZ(i, d.x, d.y, d.z);
+  }
+  // UVs by position per face, so every picture runs on over the rounded edge without a jump
+  for (const grp of g.groups) for (let j = grp.start; j < grp.start + grp.count; j++){
+    const i = g.index.getX(j), x = p.getX(i), y = p.getY(i), z = p.getZ(i), vv = (y + H/2)/H;
+    const u = grp.materialIndex === 4 ? (x + W/2)/W : grp.materialIndex === 5 ? (W/2 - x)/W
+            : grp.materialIndex === 1 ? (z + D/2)/D : grp.materialIndex === 0 ? (D/2 - z)/D : (x + W/2)/W;
+    uv.setXY(i, u, grp.materialIndex === 2 || grp.materialIndex === 3 ? (z + D/2)/D : vv);
+  }
+  g.computeBoundingSphere();
+  return {geo: g, W, H, D};
+}
+function gameTex(img){ if (!img) return null; const t = new THREE.Texture(img); t.encoding = THREE.sRGBEncoding; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); t.needsUpdate = true; return t; }
+// placeholder spine of a box without a spine picture: the logo (or title) on the colour of the free faces, so all
+// four side faces match (default); GAME.boxSpine 'black' = a black spine (admin setting)
+function spineFallback(faceHex){
+  const bg = GAME.boxSpine === 'black' ? 0x1c1c1e : faceHex, L = gameSpinePlaceholder(bg), cv = document.createElement('canvas'); cv.width = 256; cv.height = 1024; const c = cv.getContext('2d');
+  c.fillStyle = '#' + bg.toString(16).padStart(6, '0'); c.fillRect(0, 0, 256, 1024);
+  if (GAME.spineLogo === false || !L.naturalWidth) return cv;   // ArtworkPlus: "Game logo" off = the plain spine colour
+  c.save(); c.translate(128, 512); c.rotate(Math.PI/2); const sc = Math.min(900/L.naturalWidth, 200/L.naturalHeight); c.drawImage(L, -L.naturalWidth*sc/2, -L.naturalHeight*sc/2, L.naturalWidth*sc, L.naturalHeight*sc); c.restore();
+  return cv;
+}
+// The box's three free faces (right side, top, bottom; no picture of their own) all take ONE colour: the
+// dominant colour of the spine picture (a real side face of the box), without a spine the dominant colour
+// of the front. Measured on 75 boxes with a spine (truth = the spine's dominant colour):
+// front dominant dE 12.9 (71 % < 20) beat back / both / edge strips / means (means dE 30: muddy mixes).
+// GAME.boxFaces 'black' = all three #1c1c1e (admin setting, boxes only).
+function dominantColour(img){
+  const cv = document.createElement('canvas'); cv.width = cv.height = 48; const c = cv.getContext('2d'); c.drawImage(img, 0, 0, 48, 48);
+  const d = c.getImageData(0, 0, 48, 48).data, bins = new Map();
+  for (let i = 0; i < d.length; i += 4){ const k = (d[i] >> 5)*64 + (d[i+1] >> 5)*8 + (d[i+2] >> 5), b = bins.get(k) || [0, 0, 0, 0]; b[0] += d[i]; b[1] += d[i+1]; b[2] += d[i+2]; b[3]++; bins.set(k, b); }
+  let best = null; for (const b of bins.values()) if (!best || b[3] > best[3]) best = b;
+  return (Math.round(best[0]/best[3]) << 16) | (Math.round(best[1]/best[3]) << 8) | Math.round(best[2]/best[3]);
+}
+function boxFreeFaces(P){
+  const black = 0x1c1c1e; if (GAME.boxFaces === 'black') return {right: black, top: black, bottom: black};
+  const col = dominantColour(P.spine || P.front); return {right: col, top: col, bottom: col};
+}
+// ArtworkPlus: upstream's showGameBox() without the page parts - it returns a model-shaped object
+// ({name, group, meshes, D.FC}) so the host's mount (pose, framing, radius, gestures) takes it like
+// a case; the box never opens and carries no furniture, badges, disc or booklet.
+function buildGameBox(){
+  const e = GAME.cur, P = GAME.pics; if (!e || !P.front) return null;
+  const b = makeGameBox(GAME.aspect || P.front.naturalWidth/P.front.naturalHeight, e.spineRatio && e.kind === 'box' ? e.spineRatio : 0.164, GAME.radius);
+  const E = boxFreeFaces(P), spineImg = P.spine || spineFallback(E.right);
+  const mat = (o) => new THREE.MeshStandardMaterial(Object.assign({roughness: 0.55, metalness: 0}, o));
+  const box = new THREE.Mesh(b.geo, [mat({color: srgb(E.right)}), mat({map: gameTex(spineImg)}), mat({color: srgb(E.top)}), mat({color: srgb(E.bottom)}),
+                                     mat({map: gameTex(P.front)}), mat({map: gameTex(P.back)})]);
+  const group = new THREE.Group(); group.add(box);
+  return {name: 'gamebox', box: true, group, meshes: {box},
+          D: {FC: {x0: -b.W/2, x1: b.W/2, y0: -b.H/2, y1: b.H/2}, OUT: {x0: -b.W/2, x1: b.W/2, y0: -b.H/2, y1: b.H/2}, Z: {min: -b.D/2, max: b.D/2}},
+          dims: {W: b.W, H: b.H, D: b.D}};
+}
+function disposeGameBox(G){
+  if (!G || !G.meshes || !G.meshes.box) return;
+  const m = G.meshes.box; m.geometry.dispose(); m.material.forEach(x => { if (x.map) x.map.dispose(); x.dispose(); });
+}
+// rebuild the gamedisc when rounding or thickness change (thickness follows the platform)
+function ensureGameDisc(mmR, mmT){
+  const D = MODELS.gamedisc; if (D.mmR === mmR && D.mmT === mmT) return false;
+  const old = models.gamedisc;
+  if (old && old.group) old.group.traverse(o => {
+    if (!o.isMesh) return;
+    o.geometry.dispose();
+    // the old model's own materials and canvas maps (booklet, wrap) go with it; the shared interior maps stay cached
+    for (const m of [].concat(o.material)) if (m){ if (m.map && m.map.isCanvasTexture) m.map.dispose(); m.dispose(); }
+  });
+  MESH.gamedisc = gameDiscShell(mmR, mmT); delete models.gamedisc;
+  return true;
+}
+// Placeholder spine content: the logo as it is (never recoloured: it is brand design); without a logo the title in Barlow Condensed (the plugin's Fonts/Title font, served by
+// the LogoArt font route), white or black by contrast to the spine colour.
+let TITLE_FONT = null;
+function loadTitleFont(){
+  if (TITLE_FONT) return TITLE_FONT;                 // the same promise - a second call waits for the same load
+  if (typeof FontFace !== 'function') return Promise.resolve();
+  TITLE_FONT = new FontFace('GameTitle', 'url(' + (GAME.titleFont || '/LogoArt/font/Title/BarlowCondensed.otf') + ')').load()
+    .then(f => { document.fonts.add(f); }).catch(() => {});
+  return TITLE_FONT;
+}
+function relLum(r, g, b){ const f = c => { c /= 255; return c <= 0.03928 ? c/12.92 : Math.pow((c + 0.055)/1.055, 2.4); }; return 0.2126*f(r) + 0.7152*f(g) + 0.0722*f(b); }
+function contrast(l1, l2){ return (Math.max(l1, l2) + 0.05)/(Math.min(l1, l2) + 0.05); }
+function gameSpinePlaceholder(caseHex){
+  const lc = relLum(caseHex >> 16 & 255, caseHex >> 8 & 255, caseHex & 255), L = GAME.pics.logo;
+  const tint = () => contrast(1, lc) >= contrast(0, lc) ? '#ffffff' : '#000000';
+  if (L) return L;                                     // the logo is never recoloured: it is brand design
+  // ArtworkPlus: the host hands the version's display name; upstream cut it out of its folder name
+  const title = (GAME.cur ? (GAME.cur.name || '') : '').replace(/\s+\[[0-9a-f]{8}\]$/, '').replace(/\s{2,}/g, ': ');
+  const cv = document.createElement('canvas'), c = cv.getContext('2d'), fs = 200; c.font = `600 ${fs}px GameTitle, "Arial Narrow", sans-serif`;
+  cv.width = Math.max(1, Math.ceil(c.measureText(title).width) + 20); cv.height = Math.round(fs*1.25);
+  c.font = `600 ${fs}px GameTitle, "Arial Narrow", sans-serif`; c.fillStyle = tint(); c.textBaseline = 'middle'; c.fillText(title, 10, cv.height/2);
+  cv.naturalWidth = cv.width; cv.naturalHeight = cv.height; cv._title = true; return cv;
+}
+// ArtworkPlus: upstream's paintCover game block, as a painter for the host's wrap canvas. Upstream
+// paints the flat front through its separate coverFront mesh (gameFrontOffset shifts its UVs by the
+// front share); here the whole cover is one texture, so the flat front rect gets the picture from the
+// front share on, and the run-on round the fold gets the rest - the same split, one canvas.
+function paintGame(ctx, W){
+  const D = M.D, F = D.uvFront, Bk = D.uvBack, g = gameStrip(); if (!g) return false;
+  const bx = Bk.u0*W, by = (1 - Bk.v1)*W, bw = (Bk.u1 - Bk.u0)*W, bh = (Bk.v1 - Bk.v0)*W;
+  const su0 = g.u(g.s0)*W, su1 = g.u(g.s1)*W, fx0 = F.u0*W, fx1 = F.u1*W, Pb = GAME.pics.back, Pf = GAME.pics.front;
+  if (Pb){ const cut = Pb.naturalWidth*(1 - g.backShare);                 // back face | back rounding: one picture, one scale
+    ctx.drawImage(Pb, 0, 0, cut, Pb.naturalHeight, bx, by, bw, bh);
+    if (su0 > bx + bw) ctx.drawImage(Pb, cut, 0, Pb.naturalWidth - cut, Pb.naturalHeight, bx + bw, by, su0 - (bx + bw), bh); }
+  if (GAME.pics.spine) ctx.drawImage(GAME.pics.spine, su0, by, su1 - su0, bh);   // the strip IS the picture's native width
+  else if (GAME_SPINE_FILL[GAME.platform] !== undefined){ ctx.fillStyle = '#' + GAME_SPINE_FILL[GAME.platform].toString(16).padStart(6, '0'); ctx.fillRect(su0, by, su1 - su0, bh); }
+  if (Pf){ const cutF = Pf.naturalWidth*g.frontShare;
+    if (fx0 > su1) ctx.drawImage(Pf, 0, 0, cutF, Pf.naturalHeight, su1, by, fx0 - su1, bh);
+    ctx.drawImage(Pf, cutF, 0, Pf.naturalWidth - cutF, Pf.naturalHeight, fx0, by, fx1 - fx0, bh); }
+  return true;
+}
+
     // ==================== PORTED CORE ABOVE ====================
 
     // applyAspect IS the fit chain, and several things call it on their own -
@@ -2194,8 +2457,13 @@ function paintBack(ctx, bx, by, bw, bh, A){
     function bootOnce() {
         if (booted) { return; }
         booted = true;
-        for (const [n, D] of Object.entries(MODELS)) D.mmU = (n === 'bluray' ? 171.5 : 190)/(D.OUT.y1 - D.OUT.y0);   // mm per model unit (real case heights: Blu-ray 171.5, DVD 190) - furniture that has a real size is written in mm and divided by this
+        for (const [n, D] of Object.entries(MODELS)) D.mmU = (n === 'bluray' || n === 'gamedisc' ? 171.5 : 190)/(D.OUT.y1 - D.OUT.y0);   // mm per model unit (real case heights: Blu-ray 171.5, DVD 190) - furniture that has a real size is written in mm and divided by this
         MESH.dvdgen = genDvdShell(MODELS.dvdgen); TEX.dvdgen = TEX.dvd; BOOKLET_TEX.dvdgen = BOOKLET_TEX.dvd;   // dvdgen shares the DVD booklet map (without one its slab renders black, no text)
+        // the game disc case is built from the Blu-ray mesh; its interior uses the game scale too
+        MODELS.gamedisc.mmU = MMU_GAME;
+        GAME_BLURAY_SRC = Object.assign({}, MESH.bluray);   // group references only - buildModel replaces groups, never edits their arrays
+        // MESH.gamedisc is made on the first game case (ensureGameDisc in buildGame), never for a movie page
+        TEX.gamedisc = TEX.bluray; BOOKLET_TEX.gamedisc = BOOKLET_TEX.bluray;   // own copy of the Blu-ray shell, the original stays untouched
     }
 
     // Renderer settings and lights, copied from upstream rather than invented.
@@ -2993,7 +3261,67 @@ function paintBack(ctx, bx, by, bw, bh, A){
         },
         /// The opening angle alone, for the animation - applyOpen is the one
         /// place that may be driven on its own.
-        open: function (deg) { openAngle = deg; applyOpen(); return M; },
+        open: function (deg) { if (M && M.box) { return M; } openAngle = deg; applyOpen(); return M; },
+        /// GAMES. The version's state in upstream's GAME shape: cur {folder (a unique key, the
+        /// version id), name, kind, spineRatio, publisher[], developer[]}, pics {front, back, spine, logo,
+        /// disc, backdrop} as loaded images or null, platform, form ('disc' | 'box'), and the settings
+        /// radius (box edge, x height), boxFaces ('dominant' | 'black'), boxSpine ('faces' | 'black'),
+        /// spineLogo (the placeholder spine's logo or title on/off).
+        setGame: function (g) {
+            g = g || {};
+            GAME.cur = g.cur || null;
+            GAME.pics = Object.assign({ front: null, back: null, spine: null, logo: null, disc: null, backdrop: null }, g.pics || {});
+            GAME.platform = GAME_SHELL[g.platform] !== undefined ? g.platform : 'pc';
+            GAME.form = g.form === 'box' ? 'box' : 'disc';
+            if (g.radius !== undefined) { GAME.radius = g.radius; }
+            if (g.boxFaces !== undefined) { GAME.boxFaces = g.boxFaces; }
+            if (g.boxSpine !== undefined) { GAME.boxSpine = g.boxSpine; }
+            GAME.spineLogo = g.spineLogo !== false;
+            GAME.aspect = g.aspect > 0 ? g.aspect : null;
+            if (g.titleFont) { GAME.titleFont = g.titleFont; }
+            // the title font only matters for a placeholder spine without a logo
+            return !GAME.pics.spine && !GAME.pics.logo && GAME.spineLogo ? loadTitleFont() : Promise.resolve();
+        },
+        /// Builds the version's case: the Game Box Case (a model-shaped object, see buildGameBox)
+        /// or the Game Disc Case, the way upstream's showGame() does it - thickness per platform,
+        /// platform colour, placeholder spine, disc, booklet. The host then runs applyPoster with
+        /// the front picture (aspect, colour, fit) like for a film; the plastic follows in there.
+        buildGame: function (state) {
+            state = state || {};
+            // games: neutral light from below and from the fill side - the film's blue
+            // ground light (0x334) and blue fill (0x9fb8ff) turned every downward face blue-grey; box and disc case alike
+            if (LIGHTS) { LIGHTS.hemi.groundColor.setHex(0x555555); LIGHTS.fill.color.setHex(0xffffff); }
+            if (GAME.form === 'box') {
+                if (M && M.box) { disposeGameBox(M); }
+                M = buildGameBox();
+                return M;
+            }
+            ensureGameDisc(GAME.discR, GAME_THICK[GAME.platform] || 14);                 // thickness per platform
+            this.build('gamedisc', state);
+            MODELS.gamedisc.shell = GAME_SHELL[GAME.platform]; caseColMode = 'model'; blackCase = false; onlyBack = false;
+            const place = GAME.pics.spine || !GAME.spineLogo ? null : gameSpinePlaceholder(GAME_SPINE_FILL[GAME.platform] ?? GAME_SHELL[GAME.platform]);   // placeholder spine only without a spine picture
+            currentLogo = place; currentSpineLogo = place;
+            setDisc(GAME.pics.disc || null); setStudio(null);
+            // Clips, stops and booklet stay at furnY 0 like the plugin's Blu-ray case: the game disc case is that shell
+            // with the same interior textures, which the furniture is placed against (upstream's own value is 3.2).
+            // booklet: the backdrop is the fanart for the fanart grounds; its lines come from GAME.cur
+            currentBack = { side: { title: (GAME.cur && GAME.cur.name) || '' }, img: { fanart: GAME.pics.backdrop || null } };
+            if (state.booklet !== undefined) { bookletOn = !!state.booklet; }
+            if (state.bookletGround !== undefined) { BOOKLET.ground = state.bookletGround; }
+            if (GAME.cur) { statusEl('postersel').value = GAME.cur.folder || ''; }
+            applyFurniture();                                             // booklet visibility follows the game's logo
+            return M;
+        },
+        /// The game's printed wrap - back, spine and the front with its run-on round the fold - into
+        /// the host's wrap canvas of side W. False when the model is not a game disc case.
+        paintGame: function (ctx, W) {
+            if (!ctx || !M || !M.D || !M.D.game) { return false; }
+            try { return paintGame(ctx, W); } catch (e) { return false; }
+        },
+        /// The box's measured size, for the host's framing and the log.
+        gameBoxDims: function () { return M && M.box ? M.dims : null; },
+        /// Frees a box built by buildGame (geometry, materials, textures) - the host's teardown calls it.
+        disposeGameBox: function (G) { try { disposeGameBox(G); } catch (e) { /* teardown never throws */ } },
         /// Called with the case colour whenever it changes, so the host can
         /// repaint the printed wrap (back and spine carry the case colour).
         onCaseColor: function (fn) { onCaseHex = fn; },
@@ -3054,6 +3382,8 @@ function paintBack(ctx, bx, by, bw, bh, A){
             if (state.onlyBack !== undefined) { onlyBack = !!state.onlyBack; }
             currentPoster = img || null;
             if (img && img.naturalWidth) { posterAspect = img.naturalWidth / img.naturalHeight; }
+            // games: "Shape from" mean / back sets the case's aspect instead of the front picture's
+            if (M && M.D && M.D.game && GAME.aspect) { posterAspect = GAME.aspect; }
             // keepColour: the artwork changes, the case colour does not.
             // Needed by the host for Extraposter, where the cover cycles
             // through several pictures but the colour must come ONCE from the
@@ -3073,6 +3403,8 @@ function paintBack(ctx, bx, by, bw, bh, A){
                 try { applyCaseColour(); } catch (e) { /* colour is not worth the case */ }
             }
             applyAspect(aspectMode);
+            // games: the milky platform plastic over the colour applyCaseColour just set (upstream's showGame order)
+            if (M && M.D && M.D.game) { try { gamePlastic(GAME.platform); } catch (e) { /* the plastic is not worth the case */ } }
             try { if (typeof paintBooklet === 'function') { paintBooklet(); } } catch (e) { /* ditto */ }
             return M;
         },
@@ -3116,7 +3448,7 @@ function paintBack(ctx, bx, by, bw, bh, A){
         /// The model's OWN uv rectangles for front and back, taken from the
         /// model so they follow every fit instead of describing the unfitted
         /// shape.
-        uvRects: function () { return M && M.D ? { front: M.D.uvFront, back: M.D.uvBack } : null; },
+        uvRects: function () { return M && M.D && M.D.uvFront ? { front: M.D.uvFront, back: M.D.uvBack, spine: M.D.uvSpine || null } : null; },
         state: function () { return { M: M, models: models, status: statusSink, openAngle: openAngle }; }
     };
 }());

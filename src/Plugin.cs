@@ -22,6 +22,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         Instance = this;
         Logger = logger;
+        _cachePath = applicationPaths.CachePath;
 
         // DataFolderPath is derived from PluginsPath + the assembly file
         // name (BasePluginOfT.cs) - not obvious to predict, hence logged.
@@ -47,6 +48,8 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// </summary>
     public static Plugin? Instance { get; private set; }
 
+    private readonly string _cachePath;
+
     /// <summary>
     /// The logger exposed publicly: IPluginServiceRegistrator, per its own
     /// XML doc comment, requires a parameterless constructor ("DI is not
@@ -63,6 +66,25 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     public override string Description => "Poster, logo, character art and backdrop customisation for Jellyfin 10.10.7 and 12.0+: 2D and 3D cases including a real Three.js keep case for movies, animated and custom posters, Extraposter slideshows, LogoArt, CharacterArt, Red Carpet, seven backdrop categories.";
 
     public override Guid Id => Guid.Parse("a32fa765-c917-4c30-a58c-5998015cd046");
+
+    /// <summary>The upright copies of game case pictures in Jellyfin's cache folder go with the plugin.</summary>
+    public override void OnUninstalling()
+    {
+        var dir = Path.Combine(_cachePath, Helpers.GameCasePictures.CacheFolderName);
+        try
+        {
+            if (Directory.Exists(dir))
+            {
+                Directory.Delete(dir, true);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Logger.LogWarning(ex, "ArtworkPlus: the cache folder {Path} could not be removed on uninstall", dir);
+        }
+
+        base.OnUninstalling();
+    }
 
     /// <summary>
     /// Every save (admin page and API) reduces the

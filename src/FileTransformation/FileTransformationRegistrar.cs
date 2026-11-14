@@ -248,8 +248,15 @@ public static class FileTransformCallback
     private static string BuildThreejsFlagsScriptTag(Configuration.PluginConfiguration config)
     {
         var enabled = config.CaseModEnabled && config.CaseModShowOnMovies && config.CaseModThreejsEnabled;
+        // Three.js Case Games: its own main switch and the two shape switches, independent of the
+        // movie flag above; Playnite Bridge reads these three.
+        var games = config.CaseModThreejsGamesEnabled;
         return "<script id=\"artworkplus-threejs-flags\">window.ArtworkPlusThreejs={enabled:"
-               + (enabled ? "true" : "false") + "};</script>";
+               + (enabled ? "true" : "false")
+               + ",games:" + (games ? "true" : "false")
+               + ",gamesBox:" + (games && config.CaseModThreejsGamesBox ? "true" : "false")
+               + ",gamesDisc:" + (games && config.CaseModThreejsGamesDisc ? "true" : "false")
+               + ",box3d:" + (config.CaseModBox3dEnabled ? "true" : "false") + "};</script>";
     }
 
     /// <summary>

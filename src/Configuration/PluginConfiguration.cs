@@ -3476,6 +3476,19 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>The anchor on game pages. See CaseModPosterSizeAnchorAll.</summary>
     public string CaseModPosterSizeAnchorGames { get; set; } = "Default";
 
+    // ---- Box 3D: on a game page the version's rendered box picture (box3d.png,
+    // transparent ground) replaces its 2D poster. Priority per version: Three.js Case Games > Box 3D >
+    // 2D poster. Only while ArtworkPlus draws the games' artwork (Playnite Bridge "Settings From").
+
+    /// <summary>Box 3D replaces the 2D poster on game pages where the version has a box3d picture. Default off.</summary>
+    public bool CaseModBox3dEnabled { get; set; } = false;
+
+    /// <summary>Percent of the normal poster size for the Box 3D picture (10-200), its own value.</summary>
+    public int CaseModPosterSizeBox3d { get; set; } = 100;
+
+    /// <summary>The Box 3D picture's anchor. See CaseModPosterSizeAnchorAll.</summary>
+    public string CaseModPosterSizeAnchorBox3d { get; set; } = "Default";
+
     /// <summary>The anchor on every kind not named above. See CaseModPosterSizeAnchorAll.</summary>
     public string CaseModPosterSizeAnchorVideos { get; set; } = "Default";
 
@@ -3729,6 +3742,115 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>"Left" or "Right", like the flat cases' spinning disc.</summary>
     public string CaseModThreejsSpinDirection { get; set; } = "Left";
+
+    // --- Three.js Case Games. The 3D case for Playnite Bridge's virtual games,
+    //     an own set independent of the movie fields above (and of CaseModEnabled / CaseModShowOnMovies):
+    //     the Game Disc Case and the Game Box Case.
+    //     Playnite Bridge reads CaseModThreejsGamesEnabled, CaseModThreejsGamesNoSpineForm and
+    //     CaseModThreejsGamesNoSpineYear from the saved configuration file (Jellyfin.Plugin.ArtworkPlus.xml)
+    //     under exactly these names; renaming them breaks it.
+
+    /// <summary>The block's main switch ("Three.js Case Games"); off = games keep their 2D poster.</summary>
+    public bool CaseModThreejsGamesEnabled { get; set; } = false;
+
+    /// <summary>Versions whose form is a box get the Game Box Case; off = their 2D poster.</summary>
+    public bool CaseModThreejsGamesBox { get; set; } = true;
+
+    /// <summary>Versions whose form is a disc case get the Game Disc Case; off = their 2D poster.</summary>
+    public bool CaseModThreejsGamesDisc { get; set; } = true;
+
+    /// <summary>
+    /// The form of a PC version WITHOUT a spine picture: "Year" (up to CaseModThreejsGamesNoSpineYear a box,
+    /// later a disc case; no year = disc case), "Box" or "Disc". Consoles are always a disc case, a spine
+    /// picture decides by its aspect, the per-version choice (casetype.txt) always wins - Playnite Bridge
+    /// computes the form server side and reads this value.
+    /// </summary>
+    public string CaseModThreejsGamesNoSpineForm { get; set; } = "Year";
+
+    /// <summary>The last release year that is still a box under "Year" (2005: 195 of 234 spined versions right).</summary>
+    public int CaseModThreejsGamesNoSpineYear { get; set; } = 2005;
+
+    /// <summary>
+    /// Which cover sets the case's shape when front and back differ in aspect: "Front" (the back is
+    /// stretched onto it), "Mean" (both are adjusted a little) or "Back" (the front is stretched).
+    /// </summary>
+    public string CaseModThreejsGamesShapeFrom { get; set; } = "Front";
+
+    /// <summary>The movie field's twin: "BehindText" or "InFront".</summary>
+    public string CaseModThreejsGamesCaseLayer { get; set; } = "BehindText";
+
+    /// <summary>The movie field's twin: the case's size in percent of the poster box.</summary>
+    public double CaseModThreejsGamesCaseSize { get; set; } = 80;
+
+    /// <summary>The movie field's twin: where the cover window sits inside the poster box.</summary>
+    public string CaseModThreejsGamesCaseAnchor { get; set; } = "Default";
+
+    /// <summary>The movie field's twin: the resting turn in degrees.</summary>
+    public double CaseModThreejsGamesCaseTurn { get; set; } = 320;
+
+    /// <summary>The movie field's twin: the resting tilt in degrees.</summary>
+    public double CaseModThreejsGamesCaseTilt { get; set; } = 5;
+
+    /// <summary>The movie field's twin: zoom with the wheel.</summary>
+    public bool CaseModThreejsGamesZoomEnabled { get; set; } = true;
+
+    /// <summary>The movie field's twin: the zoom range in percent.</summary>
+    public double CaseModThreejsGamesZoomRange { get; set; } = 33;
+
+    /// <summary>The movie field's twin: "Off", "Left" or "Right".</summary>
+    public string CaseModThreejsGamesAutoRotateDirection { get; set; } = "Off";
+
+    /// <summary>The movie field's twin: "VerySlow", "Slow", "Medium", "Fast" or "VeryFast".</summary>
+    public string CaseModThreejsGamesRotateSpeed { get; set; } = "Medium";
+
+    /// <summary>The movie field's twin: a double click returns to the resting pose.</summary>
+    public bool CaseModThreejsGamesResetOnDoubleClick { get; set; } = true;
+
+    /// <summary>
+    /// Game Box Case only: the colour of the side faces without a picture (right, top, bottom and - without a
+    /// spine picture - the spine side; the logo or title stays on the spine): "Coloured" (the dominant colour of
+    /// the spine picture, else of the front), "ColouredSpineBlack" (the spine side black) or "Black".
+    /// </summary>
+    public string CaseModThreejsGamesBoxSides { get; set; } = "Coloured";
+
+    /// <summary>Game Box Case only: the edge rounding in mm on a real 270 mm tall box (0-15).</summary>
+    public double CaseModThreejsGamesBoxEdgeMm { get; set; } = 1.6;
+
+    /// <summary>The printed back: the version's own back picture.</summary>
+    public bool CaseModThreejsGamesBackCover { get; set; } = true;
+
+    /// <summary>The booklet inside the lid: "Off", "Black", "BwFanart" or "BlurredFanart". Default "Black".</summary>
+    public string CaseModThreejsGamesBooklet { get; set; } = "Black";
+
+    /// <summary>The placeholder spine (no spine picture): the game's logo, without one its title.</summary>
+    public bool CaseModThreejsGamesSpineLogo { get; set; } = true;
+
+    /// <summary>The movie field's twin (Game Disc Case only - a box never opens).</summary>
+    public bool CaseModThreejsGamesOpenAutomatic { get; set; } = true;
+
+    /// <summary>The movie field's twin (Game Disc Case only).</summary>
+    public bool CaseModThreejsGamesOpenOnClick { get; set; } = false;
+
+    /// <summary>The movie field's twin (Game Disc Case only).</summary>
+    public bool CaseModThreejsGamesOpenOnClickAutomatic { get; set; } = false;
+
+    /// <summary>The movie field's twin (Game Disc Case only).</summary>
+    public double CaseModThreejsGamesOpenDelayMs { get; set; } = 5000;
+
+    /// <summary>The movie field's twin (Game Disc Case only).</summary>
+    public double CaseModThreejsGamesOpenAngleDegrees { get; set; } = 120;
+
+    /// <summary>The movie field's twin.</summary>
+    public bool CaseModThreejsGamesSpinAutomatic { get; set; } = false;
+
+    /// <summary>The movie field's twin.</summary>
+    public bool CaseModThreejsGamesSpinOnClickAutomatic { get; set; } = false;
+
+    /// <summary>The movie field's twin.</summary>
+    public bool CaseModThreejsGamesSpinOnClick { get; set; } = false;
+
+    /// <summary>The movie field's twin: "Left" or "Right".</summary>
+    public string CaseModThreejsGamesSpinDirection { get; set; } = "Left";
 
     // --- Case mix. A layer on top of the settings above: when on, each detail
     //     page draws its case type - or No case - out of its kind's pool,
