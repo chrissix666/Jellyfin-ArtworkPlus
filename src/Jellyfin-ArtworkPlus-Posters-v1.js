@@ -5502,9 +5502,9 @@
         // (window.ArtworkPlusThreejs.games, never flags.enabled) and their own endpoint
         // (/ThreejsCase/game/{id}). The mount above is shared; what differs is decided here:
         //   - the claim asks the signed-in endpoint (ApiClient carries the token);
-        //   - the hold has its own remembered key and a 3000 ms net (movies keep 8000 ms): on a miss the
-        //     2D poster fades in over 600 ms at the same place, and a case that arrives later is dropped
-        //     until the next visit;
+        //   - the hold has its own remembered key and a 3000 ms net (movies keep 8000 ms) that counts only
+        //     the time the page is visible: on a miss the 2D poster fades in over 600 ms at the same place,
+        //     and a case that arrives later is dropped until the next visit;
         //   - every decision is told to Playnite Bridge as `artworkplus:gamecase` {id, state: shown |
         //     failed | none}, so it shows its 2D poster when there is no case. Playnite Bridge listens
         //     for exactly this event name and these fields; renaming them breaks it.
@@ -5523,7 +5523,7 @@
         // current version shows a case or Box 3D - only then does an in-place version switch hold the card
         // (a 2D <-> 2D switch keeps the Bridge's cross-fade).
         var gp = { view: null, timer: null, token: 0, timedOut: 0, itemId: null, isGame: false, fresh: false,
-                   shownView: null, oldCard: null, rendering: false, deciding: null, settling: null, keptSize: null,
+                   shownView: null, oldCard: null, rendering: false, deciding: null, settling: null, keptSize: null, waitShow: 0,
                    styleInjected: false };
 
         function gameFeatureOn() {
@@ -5779,22 +5779,65 @@
             view.classList.remove(GAME_FADE_IN_CLASS);
             view.classList.add(GAME_HOLD_CLASS);
             if (gp.timer) { return; }
-            var token = gp.token;
-            gp.timer = setTimeout(function () {
-                gp.timer = null;
-                if (token !== gp.token) { return; }
-                log('the game picture did not arrive within ' + GAME_NET_MS + ' ms - the 2D poster is shown');
-                gp.timedOut = token;
-                gameRelease(true);
-                // only a page the server confirmed as a game is reported - never a movie page
-                if (gp.isGame && gp.itemId) { gameEmit(gp.itemId, 'failed'); }
-            }, GAME_NET_MS);
+            gp.netLate = false;
+            gameNet(gp.token, GAME_NET_MS);
+        }
+
+        /// The page's net: GAME_NET_MS of VISIBLE time. A hidden tab renders no frame, and timers in a hidden tab can
+        /// be delayed by up to a minute, so nothing it waits for can be on time - hidden time does not count, and a
+        /// case built meanwhile stays.
+        function gameNet(token, ms) {
+            gp.netStart = performance.now();
+            gp.netHidden = !!document.hidden;
+            gp.timer = setTimeout(function () { gameNetEnd(token); }, ms);
+        }
+        function gameNetEnd(token) {
+            gp.timer = null;
+            if (token !== gp.token) { return; }
+            // still hidden: the visibilitychange handler below starts the net once the page is seen
+            if (document.hidden) { gp.waitShow = token; return; }
+            var now = performance.now();
+            if (gp.netHidden) {
+                // hidden on the way (the timer may wake only after the switch back): what is left of the net counts
+                // from the moment the page became visible
+                // (a visible moment from before this net says nothing about it: then the rest counts from now)
+                var since = gp.visibleSince > gp.netStart ? gp.visibleSince : now;
+                var left = GAME_NET_MS - (now - since);
+                if (left > 0) { gameNet(token, left); return; }
+            } else if (!gp.netLate && now - gp.netStart > GAME_NET_MS + 1000) {
+                // far too late without a hide (a throttled or stalled page): one fresh net
+                gp.netLate = true;
+                gameNet(token, GAME_NET_MS);
+                return;
+            }
+            log('the game picture did not arrive within ' + GAME_NET_MS + ' ms of visible time - the 2D poster is shown');
+            gp.timedOut = token;
+            gameRelease(true);
+            // only a page the server confirmed as a game is reported - never a movie page
+            if (gp.isGame && gp.itemId) { gameEmit(gp.itemId, 'failed'); }
+        }
+        // One handler for the whole page (no listener per hold): a hide during a running net marks it, and a net that
+        // ended while the page was hidden starts again in full once it is seen.
+        if (typeof document !== 'undefined' && document.addEventListener) {
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden) {
+                    if (gp.timer) { gp.netHidden = true; }
+                    return;
+                }
+                gp.visibleSince = performance.now();
+                if (gp.waitShow && gp.waitShow === gp.token && !gp.timer) {
+                    var token = gp.waitShow;
+                    gp.waitShow = 0;
+                    gameNet(token, GAME_NET_MS);
+                }
+            });
         }
 
         /// Ends the hold. fade: the 2D poster fades in (a miss); the fade class goes again after it ran,
         /// so a card the Bridge rebuilds later does not replay it.
         function gameRelease(fade) {
             if (gp.timer) { clearTimeout(gp.timer); gp.timer = null; }
+            gp.waitShow = 0;
             var view = gp.view;
             gp.view = null;
             if (!view) { return; }
