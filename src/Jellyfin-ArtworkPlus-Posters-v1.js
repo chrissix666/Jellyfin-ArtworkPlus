@@ -431,7 +431,7 @@
             caseTiltHold.styleInjected = true;
             var st = document.createElement('style');
             st.id = 'artworkplus-case-tilt-pending';
-            st.textContent = '.itemDetailPage.' + TILT_HOLD_CLASS + ' .detailImageContainer .cardScalable{visibility:hidden!important}';
+            st.textContent = '.itemDetailPage.' + TILT_HOLD_CLASS + ' .detailImageContainer .card:not(.pbBoxCard) .cardScalable{visibility:hidden!important}';   // .pbBoxCard: the Bridge's served Box 3D stands from its first frame
             document.head.appendChild(st);
         }
         caseTiltRelease();
@@ -2603,7 +2603,7 @@
                 var st = document.createElement('style');
                 st.id = 'artworkplus-threejs-pending';
                 st.textContent = '.itemDetailPage.' + PENDING_CLASS
-                    + ' .detailImageContainer .cardScalable{visibility:hidden!important}';
+                    + ' .detailImageContainer .card:not(.pbBoxCard) .cardScalable{visibility:hidden!important}';   // not the Bridge's served Box 3D
                 document.head.appendChild(st);
             }
             pendingRelease();
@@ -2636,7 +2636,7 @@
                 // its box, so the page layout does not shift by a single pixel
                 // when the case takes over (and display:none would zero every
                 // rect we measure).
-                '.itemDetailPage.' + HOLD_CLASS + ' .detailImageContainer .cardScalable{visibility:hidden!important}' +
+                '.itemDetailPage.' + HOLD_CLASS + ' .detailImageContainer .card:not(.pbBoxCard) .cardScalable{visibility:hidden!important}' +   // not the Bridge's served Box 3D
                 // The vanilla card is hidden but still ANSWERS the pointer, and
                 // Jellyfin gives it z-index 3 of its own (librarybrowser.scss:854,
                 // `.detailImageContainer .card`), so our hit box could never win
@@ -5584,11 +5584,13 @@
             gp.styleInjected = true;
             var st = document.createElement('style');
             st.id = 'artworkplus-threejs-gamehold';
+            // .pbBoxCard: Playnite Bridge served the Box 3D itself as the card's picture (marked before the first paint) -
+            // that card stands from its first frame, nothing to hold or fade
             st.textContent = '.itemDetailPage.' + GAME_HOLD_CLASS
-                + ' .detailImageContainer .cardScalable{visibility:hidden!important}'
-                + '.itemDetailPage.' + GAME_FADE_CLASS + ' .detailImageContainer .cardScalable'
+                + ' .detailImageContainer .card:not(.pbBoxCard) .cardScalable{visibility:hidden!important}'
+                + '.itemDetailPage.' + GAME_FADE_CLASS + ' .detailImageContainer .card:not(.pbBoxCard) .cardScalable'
                 + '{animation:artworkplus-threejs-gamefade .6s ease-out}'
-                + '.itemDetailPage.' + GAME_FADE_IN_CLASS + ' .detailImageContainer .cardScalable'
+                + '.itemDetailPage.' + GAME_FADE_IN_CLASS + ' .detailImageContainer .card:not(.pbBoxCard) .cardScalable'
                 + '{animation:artworkplus-threejs-gamefade .25s ease-out}'
                 + '@keyframes artworkplus-threejs-gamefade{from{opacity:0}to{opacity:1}}';
             document.head.appendChild(st);
@@ -7524,14 +7526,15 @@
             POSTER_SIZE_LAYOUTS.forEach(function (lay) {
                 var root = lay.sel + ' .itemDetailPage.' + cls + ' .detailImageContainer ';
                 var sx = lay.w * (1 - f) * a[0];
-                css.push(root + '.card {',
+                // .pbBoxCard: the Bridge's served Box 3D carries the size of whoever draws in its own static rules
+                css.push(root + '.card:not(.pbBoxCard) {',
                          '    width: ' + (lay.w * f) + 'vw;',
                          '    max-width: ' + (lay.w * f) + 'vw;',
                          '    margin-left: ' + sx + 'vw;',
                          '}');
                 POSTER_SIZE_SHAPES.forEach(function (sh) {
                     var sy = lay.w * sh[1] * (1 - f) * (lay.fromBottom ? (1 - a[1]) : a[1]);
-                    css.push(root + '.card' + sh[0] + ' {',
+                    css.push(root + '.card:not(.pbBoxCard)' + sh[0] + ' {',
                              '    margin-' + (lay.fromBottom ? 'bottom' : 'top') + ': ' + sy + 'vw;',
                              '}');
                 });
@@ -7636,6 +7639,23 @@
             ThreejsCaseModule.gameConfirmed(itemId);
             ThreejsCaseModule.gameDeciding(itemId);
             if (!ThreejsCaseModule.gameCurrent(token)) { return; }
+            // Playnite Bridge served the Box 3D itself as the card's picture (tag=pbbox-, card marked .pbBoxCard before its
+            // first paint): it stands already - no picture of ours over it, no hold, no fade, and no size of ours either:
+            // the Bridge writes size and anchor of whoever draws (ours too) as static rules on .card.pbBoxCard
+            var served = view && view.querySelector('.detailImageContainer .card.pbBoxCard, .detailImageContainer .cardImageContainer[data-src*="tag=pbbox-"]');
+            if (!served && view) {
+                var ci = view.querySelector('.detailImageContainer .cardImageContainer');
+                served = !!ci && /tag=pbbox-/.test(ci.style.backgroundImage || '');
+            }
+            if (served) {
+                ThreejsCaseModule.gameDeciding(null);
+                posterSizeApplyTo(view, 100, 'Default');
+                ThreejsCaseModule.gameSetKeptSize(100, 'Default');
+                ThreejsCaseModule.gameShown(view);
+                ThreejsCaseModule.gameRelease(false);
+                log('Box 3D served by Playnite Bridge for ' + itemId);
+                return;
+            }
             ThreejsCaseModule.gameHold(view);
             var url = await box3dUrl(itemId);
             var img = url ? await new Promise(function (resolve) {

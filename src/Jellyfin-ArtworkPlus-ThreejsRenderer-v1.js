@@ -529,12 +529,56 @@ function buildModel(name){
   // -> drop the wall triangles in those two zones, add one cap quad per panel and zone.
   const capZones = [[D.FC.y1, Infinity], [-Infinity, D.FC.y0]];
   const spineEnds = {p:[],n:[],t:[]};   // original spine geometry above/below the window: shown only when shut
+  // hinge tabs, gamedisc + film Blu-ray + dvdgen (user 2026-11-15): lid and tray are two shells of their own, the spine only joins them. The head and foot
+  // above / below the spine are the shells' tabs: shut they meet in the middle, open each goes with its shell. So nothing is
+  // shut-only here and nothing belongs to the spine: the band / lip geometry at the spine is cut exactly at the middle plane
+  // z = zMid (triangles are split, not sorted by their centre), each half is its shell's (buildModel: band -> shell by z),
+  // and the cut is closed by a flat solid face on both sides (the head is a hollow hood). The spine ends at the window edge,
+  // closed by a flat face over its own section (its body by uv -3).
+  const gs = (name === 'gamedisc' || name === 'bluray' || name === 'dvdgen') ? (() => {   // the film Blu-ray and the generated DVD the same way (user 2026-11-15)
+    const nx = D.FC.x0, za = D.hingeZ.a, zb = D.hingeZ.b, zM = (D.Z.min + D.Z.max)/2, cuts = {};
+    const rx = nx - D.OUT.x0, rzA = za - D.Z.min, rzB = D.Z.max - zb;   // the spine roundings (gamedisc: circles R, Blu-ray: JFX ellipse 1.71 x 1.40)
+    const band = (y) => y > D.FC.y1 + 1e-4 ? 1 : y < D.FC.y0 - 1e-4 ? -1 : 0;
+    const lerp = (a, b, t) => ({p: a.p.map((c, k) => c + (b.p[k] - c)*t), t: a.t.map((c, k) => c + (b.t[k] - c)*t),
+      n: (() => { const n = a.n.map((c, k) => c + (b.n[k] - c)*t), l = Math.hypot(...n) || 1; return n.map(c => c/l); })()});
+    const clip = (poly, f) => { const o = [], seg = [];
+      for (let k = 0; k < poly.length; k++){ const a = poly[k], b = poly[(k+1)%poly.length], fa = f(a), fb = f(b);
+        if (fa <= 0) o.push(a); if ((fa < 0 && fb > 0) || (fa > 0 && fb < 0)){ const q = lerp(a, b, fa/(fa - fb)); o.push(q); seg.push(q.p); } }
+      return [o, seg]; };
+    const push = (g, poly) => { for (let k = 1; k + 1 < poly.length; k++) for (const v of [poly[0], poly[k], poly[k+1]]){ g.p.push(...v.p); g.n.push(...v.n); g.t.push(...v.t); } };
+    const hull2 = pts => { const cr = (o, a, b) => (a[0]-o[0])*(b[1]-o[1]) - (a[1]-o[1])*(b[0]-o[0]), s2 = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]), lo = [], hi = [];
+      for (const q of s2){ while (lo.length > 1 && cr(lo[lo.length-2], lo[lo.length-1], q) <= 1e-12) lo.pop(); lo.push(q); }
+      for (const q of s2.reverse()){ while (hi.length > 1 && cr(hi[hi.length-2], hi[hi.length-1], q) <= 1e-12) hi.pop(); hi.push(q); }
+      return lo.slice(0, -1).concat(hi.slice(0, -1)); };
+    const fan = (g, ring, nrm, uv) => { const c = [0, 1, 2].map(k => ring.reduce((a, q) => a + q[k], 0)/ring.length);
+      for (let k = 0; k < ring.length; k++){ const A = c, Bq = ring[k], Cq = ring[(k+1)%ring.length];
+        const gn = [(Bq[1]-A[1])*(Cq[2]-A[2]) - (Bq[2]-A[2])*(Cq[1]-A[1]), (Bq[2]-A[2])*(Cq[0]-A[0]) - (Bq[0]-A[0])*(Cq[2]-A[2]), (Bq[0]-A[0])*(Cq[1]-A[1]) - (Bq[1]-A[1])*(Cq[0]-A[0])];
+        for (const q of (gn[0]*nrm[0] + gn[1]*nrm[1] + gn[2]*nrm[2] >= 0 ? [A, Bq, Cq] : [A, Cq, Bq])){ g.p.push(...q); g.n.push(...nrm); g.t.push(uv, uv); } } };
+    // a band triangle at the spine that crosses the middle: split there; returns false for every other triangle
+    const split = (P, N, T, i, keep) => {
+      const zn = band((P[i+1]+P[i+4]+P[i+7])/3), zs = [P[i+2], P[i+5], P[i+8]];
+      if (!zn || Math.max(P[i], P[i+3], P[i+6]) >= nx + 0.05 || Math.min(...zs) >= zM - 1e-6 || Math.max(...zs) <= zM + 1e-6) return false;
+      const tri = [0, 1, 2].map(k => ({p: [P[i+3*k], P[i+3*k+1], P[i+3*k+2]], n: [N[i+3*k], N[i+3*k+1], N[i+3*k+2]], t: [T[i/9*6+2*k], T[i/9*6+2*k+1]]}));
+      const [a, seg] = clip(tri, v => v.p[2] - zM), [b] = clip(tri, v => zM - v.p[2]); push(keep, a); push(keep, b);
+      if (seg.length === 2) (cuts[zn] = cuts[zn] || []).push(seg); return true; };
+    // the cut faces in the middle plane (solid: convex hull of the section; 1e-4 off the plane so each lies on its shell's
+    // side) and the spine's flat top / bottom face at the window edge
+    const close = (keep) => { const out = {};
+      for (const [zn, segs] of Object.entries(cuts)){ const ring = hull2(segs.flat().map(q => [q[0], q[1]])); if (ring.length < 3) continue;
+        fan(keep, ring.map(([x, y]) => [x, y, zM - 1e-4]), [0, 0, 1], 0); fan(keep, ring.map(([x, y]) => [x, y, zM + 1e-4]), [0, 0, -1], 0); out['mid' + zn] = ring.length; }
+      const P = keep.p;
+      for (const [yc, ny] of [[D.FC.y1, 1], [D.FC.y0, -1]]){ const pts = [[nx, za], [nx, zb]];
+        for (let i = 0; i < P.length; i += 3){ const x = P[i], z = P[i+2]; if (Math.abs(P[i+1] - yc) > 1e-4 || x >= nx - 1e-6) continue;
+          if (z < zM ? (nx - x)/rx - (za - z)/rzA >= -1e-6 : (nx - x)/rx - (z - zb)/rzB >= -1e-6) pts.push([x, z]); }
+        const ring = hull2(pts); if (ring.length < 3) continue; fan(keep, ring.map(([x, z]) => [x, yc, z]), [0, ny, 0], -3); out['spine' + ny] = ring.length; }
+      return out; };
+    return {split, close}; })() : null;
   { const P=rest.p, N=rest.n, T=rest.t, keep={p:[],n:[],t:[]}; let yMax=-Infinity, yMin=Infinity;
     for (let i=0;i<P.length;i+=9){
       const cx=(P[i]+P[i+3]+P[i+6])/3, cy=(P[i+1]+P[i+4]+P[i+7])/3;
       // band zone (top): also the triangles that tie the wall to the roundings (centroid up to
       // x0+0.15) go, so that nothing blue bridges the two panels above the spine
-      const wall = !D.gen && cx < D.OUT.x0 + 0.15;   // the generated shell has no shut-only head - its plates carry their head halves (JFX heuristic only)
+      const wall = !D.gen && !gs && cx < D.OUT.x0 + 0.15;   // the generated shell has no shut-only head - its plates carry their head halves (JFX heuristic only)
       // spine-top / spine-bottom caps (JFX DVD: the single skin closes the spine head with plates
       // that reach from the wall to the panel start and span the flat spine depth) - they only
       // exist while shut too, otherwise their rigid halves stick out of the open plates
@@ -551,12 +595,14 @@ function buildModel(name){
         if (cz3 >= hz.b){ return Math.atan2((xf - cx)/rx, (cz3 - (Z.max - rzB))/rzB) >= Math.PI/4; }
         return true; })();
       const inZone = capZones.some(([a,b]) => cy > a && cy < b);
+      if (gs && gs.split(P, N, T, i, keep)) continue;   // hinge tabs: exact split in the middle (above)
       if ((wall || cap || spineBody) && inZone){ for (let k=1;k<9;k+=3){ yMax=Math.max(yMax,P[i+k]); yMin=Math.min(yMin,P[i+k]); }
         for (let k=0;k<9;k++){ spineEnds.p.push(P[i+k]); spineEnds.n.push(N[i+k]); } for (let k=0;k<6;k++) spineEnds.t.push(T[i/9*6+k]);
         continue; }
       for (let k=0;k<9;k++){ keep.p.push(P[i+k]); keep.n.push(N[i+k]); }
       for (let k=0;k<6;k++) keep.t.push(T[i/9*6+k]);
     }
+    if (gs) M.tabFaces = gs.close(keep);
     rest = keep; M.wallY = {min:yMin, max:yMax};
   }
   if (D.gen){ // the generated spine's inner face (uv mark -4) -> own mesh with the lid interior map
@@ -1258,7 +1304,7 @@ function applyAspect(mode){
 }
 
 function buildEndCaps(){
-  if (!M.quadInterior) return;                                  // Blu-ray: JFX has its own band end caps
+  if (!M.quadInterior || M.name === 'dvdgen') return;           // Blu-ray: JFX has its own band end caps; dvdgen (2026-11-15): its plates carry their tabs, nothing is added for the open case only
   const w = M.win, g = {p:[],n:[],t:[]}, bodies = [], log = [];
   const tri = (A,B,C,nrm,body) => {                           // winding follows the wanted normal
     const ux=B[0]-A[0], uy=B[1]-A[1], uz=B[2]-A[2], vx=C[0]-A[0], vy=C[1]-A[1], vz=C[2]-A[2];
@@ -1409,7 +1455,7 @@ function applyOpen(){
     }
     m.geometry.attributes.position.needsUpdate = true; m.geometry.attributes.normal.needsUpdate = true; m.geometry.computeBoundingSphere();
   }
-  M.meshes.spineEnds.visible = openAngle < 0.5;
+  M.meshes.spineEnds.visible = openAngle < 0.5;   // gamedisc / film Blu-ray: holds only the spine wall's groove faces (no shut-only head, the tabs are the shells')
   if (M.meshes.endCaps) M.meshes.endCaps.visible = openAngle >= 0.5;   // the plates' swept rim ends replace the JFX head while open
   { // hinge fillet strips (see applyAspect): body lo copy -> body hi copy, over the spine strip height
     const place = (x, z, b) => { if (b===2) [x,z] = rot(x,z,B.x,B.z,cB,sB); if (b>=1) [x,z] = rot(x,z,A.x,A.z,cA,sA); return [x,z]; };
@@ -2612,8 +2658,11 @@ function paintGame(ctx, W){
         if (M.__groove) { return M.__groove; }
         var D = M.D, G = {}, GF = {}, GM = {}, N0 = {}, P0 = {};
         GROOVE_ALL.filter(function (n) { return M.orig[n] && M.norm0[n]; }).forEach(function (n) {
-            var P = M.orig[n], N = M.norm0[n], idx = [], fine = [], max = [];
+            var P = M.orig[n], N = M.norm0[n], idx = [], fine = [], max = [], U = M.meshes[n] ? M.meshes[n].geometry.attributes.uv.array : null;
             for (var t = 0; t < P.length / 9; t++) {
+                // the hinge tabs' flat spine cover faces (uv mark -3 on all three corners, buildModel's gs.close) lie
+                // exactly on the window edge but are no groove - turned they would shade like the spine wall
+                if (U && U[t * 6] === -3 && U[t * 6 + 1] === -3 && U[t * 6 + 2] === -3 && U[t * 6 + 3] === -3 && U[t * 6 + 4] === -3 && U[t * 6 + 5] === -3) { continue; }
                 var ok = true, okW = true, ny = 0;
                 for (var k = 0; k < 3; k++) {
                     var i = (t * 3 + k) * 3, y = P[i + 1]; ny += N[i + 1] / 3;

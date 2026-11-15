@@ -214,7 +214,7 @@ public static class FileTransformCallback
     /// applies.
     /// </summary>
     private const string PrehidingStyleTag =
-        "<style id=\"artworkplus-prehiding\">.detailImageContainer .cardImageContainer.artworkplus-pending{visibility:hidden!important}</style>";
+        "<style id=\"artworkplus-prehiding\">.detailImageContainer .card:not(.pbBoxCard) .cardImageContainer.artworkplus-pending{visibility:hidden!important}</style>";
 
 
     /// <summary>
@@ -409,8 +409,10 @@ for(var k=0;k<found.length;k++){armSafetyNet(found[k]);}
     /// from running invisibly and clearing that placeholder too early -
     /// releasing the class restarts the fade, Jellyfin's native reveal.
     /// </summary>
+    /// `.pbBoxCard`: Playnite Bridge served a game's Box 3D itself as the card's picture and marks that card before its
+    /// first paint - it stands from its first frame, so neither rule holds it (movies and series never carry the class).
     private const string PosterPendingStyleTag =
-        "<style id=\"artworkplus-poster-pending\">.itemDetailPage.artworkplus-poster-pending .detailImageContainer .cardImageContainer{opacity:0!important;animation:none!important}</style>";
+        "<style id=\"artworkplus-poster-pending\">.itemDetailPage.artworkplus-poster-pending .detailImageContainer .card:not(.pbBoxCard) .cardImageContainer{opacity:0!important;animation:none!important}</style>";
 
     /// <summary>
     /// Independent last-resort net for the rule above, same philosophy as
