@@ -5542,7 +5542,15 @@
         /// game decision (a movie is told apart only by the answer); the 3000 ms net starts with the page.
         function gameExpected(itemId) {
             var flags = window.ArtworkPlusThreejs;
-            return !!(flags && (flags.games || flags.box3d)) && gameKnown(itemId);
+            return !!(flags && (flags.games || flags.box3d)) && (gameKnown(itemId) || gameUnsure(itemId));
+        }
+
+        /// The Bridge cannot tell yet (its list of game ids has not arrived, right after a reload): held like a game, the
+        /// item's answer releases a page that is none.
+        function gameUnsure(itemId) {
+            var pb = window.PlayniteBridge;
+            if (!itemId || !pb || typeof pb.isGame !== 'function') { return false; }
+            try { return pb.isGame(itemId) === null; } catch (e) { return false; }
         }
 
         /// Whether an item is one of Playnite Bridge's games, known without a request: asked of the Bridge's own
