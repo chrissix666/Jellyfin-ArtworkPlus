@@ -1216,13 +1216,15 @@ function applyAspect(mode){
     // centre (INTERIOR.ringV, bottom-up) sits on the tray's vertical centre. Rows beyond the map's
     // top / bottom clamp to the edge row (ClampToEdge) - the overhang is cut or extended there,
     // never at the sides. The lid map gets the same scale, anchored at its centre.
-    const Wc = xs[3]-xs[0], yc = (ys[0]+ys[3])/2, Hmap = Wc/INTERIOR.aspect/INTERIOR.q;   // map height in model units at width-fit scale (lid map)
+    // gamedisc: M.D.mapX = a fixed frame for the interior maps (tray, lid, hub, disc), set by gameDiscShell
+    const MX = M.D.mapX || {x0: xs[0], x1: xs[3]};
+    const Wc = MX.x1-MX.x0, yc = (ys[0]+ys[3])/2, Hmap = Wc/INTERIOR.aspect/INTERIOR.q;   // map height in model units at width-fit scale (lid map)
     const vMap = (y, anchor) => anchor + (y - yc)/Hmap;
     // The TRAY map spans the flat floor, not the outline, so nothing of it is lost at the sides -
     // the Blu-ray's raised rim (1.73 u per side) and the DVD's roundings would swallow the map's
     // outer 3 % on the walls, and the recess ring sits only 3 % from the map's left edge. Rim /
     // wall faces beyond the floor clamp to the edge column. Hub and disc use the same frame.
-    const fl = M.floorX = floorExtent(M.fitted.inner, xs), Wf = fl.x1 - fl.x0, HmapF = Wf/INTERIOR.aspect/INTERIOR.q;
+    const fl = M.floorX = M.D.mapX || floorExtent(M.fitted.inner, xs), Wf = fl.x1 - fl.x0, HmapF = Wf/INTERIOR.aspect/INTERIOR.q;
     const vMapF = (y, anchor) => anchor + (y - yc)/HmapF;
     for (const n of ['inner','headInR']){ if (!M.meshes[n]) continue;
       const a = M.meshes[n].geometry.attributes.position.array, uv = M.meshes[n].geometry.attributes.uv.array;
@@ -1232,7 +1234,7 @@ function applyAspect(mode){
       if (!M.meshes[n]) continue;
       const a = M.meshes[n].geometry.attributes.position.array, uv = M.meshes[n].geometry.attributes.uv.array;
       const Z = M.D.Z;   // spineIn is a vertical plate at constant x: sample the map across its depth instead
-      for (let i=0, j=0; i<a.length; i+=3, j+=2){ uv[j] = n==='spineIn' ? (a[i+2]-Z.min)/Wc : (a[i]-xs[0])/Wc; uv[j+1] = vMap(a[i+1], 0.5); }
+      for (let i=0, j=0; i<a.length; i+=3, j+=2){ uv[j] = n==='spineIn' ? (a[i+2]-Z.min)/Wc : (a[i]-MX.x0)/Wc; uv[j+1] = vMap(a[i+1], 0.5); }
       M.meshes[n].geometry.attributes.uv.needsUpdate = true;
     }
   }
@@ -2188,7 +2190,7 @@ function paintBack(ctx, bx, by, bw, bh, A){
 // to stay continuous; z in the two rounding zones -> k*rz at the faces, blended out by x so the
 // interior (tray floor, clips) is untouched. The window edge FC.x0 and hingeZ follow, so the hinge
 // apexes (applyAspect: rx = FC.x0 - x0, rz from hingeZ) and the planar UVs fit the new shell.
-const GAMEDISC_BASE = JSON.parse(JSON.stringify({FC: MODELS.gamedisc.FC, hingeZ: MODELS.gamedisc.hingeZ, Z: MODELS.gamedisc.Z}));
+const GAMEDISC_BASE = JSON.parse(JSON.stringify({FC: MODELS.gamedisc.FC, OUT: MODELS.gamedisc.OUT, hingeZ: MODELS.gamedisc.hingeZ, Z: MODELS.gamedisc.Z}));
 // Game scale: the front window IS the cover panel, a real one is 129.5 mm wide
 // -> 2.606 mm per model unit (the film scale 171.5 mm / height does not hold: the game case height
 // follows the cover's aspect). Thickness per platform (keep-case
@@ -2222,6 +2224,28 @@ function gameDiscShell(mmR, mmT){
     if (g.n){ const fx = sx(x), fz = 1 + w*(sz(z) - 1), nx = g.n[i]/fx, ny = g.n[i+1], nz = g.n[i+2]/fz, l = Math.hypot(nx, ny, nz) || 1;   // normals follow the stretch (n' ~ n / scale)
       g.n[i] = nx/l; g.n[i+1] = ny/l; g.n[i+2] = nz/l; }
   }
+  // ---- 2b. right edge = the spine's roundings mirrored ----------------------------------------------------
+  // The opening edge is the JFX rim [FC.x1, OUT.x1] (rx 1.71, the same ellipse as the spine). It gets the
+  // same R in x and z: x is squeezed towards the window edge by R/rx, z takes the spine's mz. The window
+  // FC.x1 stays (front window = the 129.5 mm cover at MMU_GAME), so OUT.x1 moves in by rx - R.
+  // Only vertices at x >= FC.x1 move. Untouched: the lid and tray inner faces (one quad each, ending at
+  // x 22.935), the tray floor (x1 22.935), clips A/B (x <= 22.927) and the tip of clip C, which reaches
+  // 0.10 past the window edge on the lid side (more than 1.25 Blu-ray units above the centre plane).
+  // The head and foot corner caps (y outside the plate faces' 1.738 .. 60.85) get the spine's 1-unit z
+  // blend mirrored, as on the left; without it a hairline opens along the head and foot ends.
+  { const xg = B.FC.x1, kxR = R/(B.OUT.x1 - xg), clipTip = (x, z) => x < xg + 0.15 && (z - zc)/f > 1.25;
+    const endCap = y => y < B.FC.y0 - 0.03 || y > B.OUT.y1 - B.FC.y0 + 0.01;
+    for (const g of Object.values(mesh)) if (g && g.p) for (let i = 0; i < g.p.length; i += 3){
+      const x = g.p[i], y = g.p[i+1], z = g.p[i+2], rim = x >= xg - 1e-4 && !clipTip(x, z);
+      const w = rim ? 1 : x > xg - 1 && endCap(y) ? 1 - (xg - x) : 0; if (!w) continue;
+      if (rim) g.p[i] = xg + (x - xg)*kxR; g.p[i+2] = z + w*(mz(z) - z);
+      if (g.n){ const fx = rim ? kxR : 1, fz = 1 + w*(sz(z) - 1), nx = g.n[i]/fx, ny = g.n[i+1], nz = g.n[i+2]/fz, l = Math.hypot(nx, ny, nz) || 1;   // normals follow the stretch
+        g.n[i] = nx/l; g.n[i+1] = ny/l; g.n[i+2] = nz/l; } }
+    D.OUT = Object.assign({}, B.OUT, {x1: xg + R});
+    // The interior maps keep the full JFX outline as their frame: the right rim's inner skin now lies within
+    // the tray floor test's 0.03 band and would narrow it by 2.1 units (tray picture 4 % smaller, disc 0.4
+    // units to the left).
+    D.mapX = {x0: B.OUT.x0, x1: B.OUT.x1}; }
   // Roundings keep the JFX's 5 segments: at R = 2 mm a chord deviates from the circle by r(1 - cos 9 deg) =
   // 0.025 mm (invisible). Deliberately not split: more segments leave T-junctions (open edges) at the
   // quarter-spherical end caps.

@@ -7649,6 +7649,8 @@
             st.textContent = '.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .cardImageContainer{background-image:url("' + u + '")!important;'
                 + 'background-size:contain!important;background-position:center bottom!important;background-repeat:no-repeat!important;background-color:transparent!important}'
                 + '.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .cardScalable,.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .cardBox,'
+                // .cardPadder: Jellyfin paints the poster card's #242424 ground and its shadow there (card.scss)
+                + '.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .cardPadder,'
                 + '.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .cardImageContainer{box-shadow:none!important;background-color:transparent!important}'
                 + '.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .blurhash-canvas,.itemDetailPage.' + BOX3D_CLASS + ' .detailImageContainer .cardImageIcon{display:none!important}';
             view.classList.add(BOX3D_CLASS);
