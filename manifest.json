@@ -13,16 +13,16 @@
         "changelog": "(Jellyfin 12.0+) Three.js Case for games (Playnite Bridge): game disc case and game box with their own settings, Box 3D poster size",
         "targetAbi": "12.0.0.0",
         "sourceUrl": "https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases/download/v2.0.0.0/ArtworkPlus_2.0.0.0_jellyfin-12.x.zip",
-        "checksum": "024f90dda802ecb02657df4b6ff69532",
-        "timestamp": "2026-11-15T14:27:24Z"
+        "checksum": "0afa5218878985f30981c81e2a55cf39",
+        "timestamp": "2026-11-15T17:36:24Z"
       },
       {
         "version": "1.1.0.0",
         "changelog": "(Jellyfin 10.10.7) Three.js Case for games (Playnite Bridge): game disc case and game box with their own settings, Box 3D poster size",
         "targetAbi": "10.10.7.0",
         "sourceUrl": "https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases/download/v1.1.0.0/ArtworkPlus_1.1.0.0_jellyfin-10.10.7.zip",
-        "checksum": "21fe9d403b3c2b7c8cc43434e899d5b0",
-        "timestamp": "2026-11-15T14:27:24Z"
+        "checksum": "5aaa86c9f69ac5d78334737943617ea6",
+        "timestamp": "2026-11-15T17:36:24Z"
       },
       {
         "version": "1.0.0.0",
