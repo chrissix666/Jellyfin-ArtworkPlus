@@ -1075,8 +1075,9 @@ const highZone = (v,inner,outer,d) => d>=0 ? (v>(inner+outer)/2 ? v+d : v)
 
 const UHD = {w: 0.44, body: 1935/2000, size: 1.10, dy: -0.80}, uhdImg = new Image();
 // Port note: upstream's M is a model from the start (`let M = models.bluray`), here it is null until build() - the
-// mark can finish loading before that, so `M &&` is added; otherwise verbatim.
-uhdImg.onload = () => { if (typeof M !== 'undefined' && M && M.D) applyAspect(aspectMode); }; uhdImg.src = (SPINE_MARK.uhd);
+// mark can finish loading before that, so `M &&` is added; and a generated game box has no aspect fit (no M.orig), so
+// `!M.box` too; otherwise verbatim.
+uhdImg.onload = () => { if (typeof M !== 'undefined' && M && M.D && !M.box) applyAspect(aspectMode); }; uhdImg.src = (SPINE_MARK.uhd);
 
 function applyAspect(mode){
   aspectMode = mode;

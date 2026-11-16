@@ -244,7 +244,7 @@ public class ThreejsGameCaseController : ControllerBase
                 PictureQuality, Path.Combine(_appPaths.CachePath, GameCasePictures.CacheFolderName)).ConfigureAwait(false);
             if (upright is { } u)
             {
-                var uprightStream = System.IO.File.OpenRead(u.Path);
+                var uprightStream = await OpenWhenWritten(u.Path).ConfigureAwait(false);
                 Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
                 Response.Headers.Append("Vary", "Origin");   // a no-CORS copy in the cache must not answer a CORS request
                 return File(uprightStream, u.Mime);
@@ -301,7 +301,7 @@ public class ThreejsGameCaseController : ControllerBase
 
             // Opened inside the try: a cache file that vanished is a 404, not a 500. The long cache header is set only
             // once the file is open, so a 404 never carries it.
-            var stream = System.IO.File.OpenRead(resultPath);
+            var stream = await OpenWhenWritten(resultPath).ConfigureAwait(false);
             Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
             Response.Headers.Append("Vary", "Origin");
             return File(stream, string.IsNullOrEmpty(mime) ? "application/octet-stream" : mime);
@@ -314,6 +314,28 @@ public class ThreejsGameCaseController : ControllerBase
             }
 
             return NotFound();
+        }
+    }
+
+    /// <summary>
+    /// Opens a cache file for reading once nobody writes it any more. Jellyfin's image processor writes a scaled picture
+    /// straight into its cache, and a second request for the same picture (the front and back of two versions, a page
+    /// and its prefetch) finds the path while the first still writes it: a plain open then fails with a sharing
+    /// violation. Reading alongside the writer would serve half a file, so the open waits for the writer instead
+    /// (up to 3 s), and shares Delete so Jellyfin's cache clean-up is never blocked by a stream of ours.
+    /// </summary>
+    private static async Task<FileStream> OpenWhenWritten(string file)
+    {
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                return new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete, 81920, FileOptions.Asynchronous);
+            }
+            catch (IOException) when (attempt < 30 && System.IO.File.Exists(file))
+            {
+                await Task.Delay(100).ConfigureAwait(false);
+            }
         }
     }
 }
