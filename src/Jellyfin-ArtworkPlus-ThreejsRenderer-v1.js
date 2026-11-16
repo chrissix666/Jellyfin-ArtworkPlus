@@ -1091,7 +1091,7 @@ function applyAspect(mode){
   const sx = FW/(PNG.px[2]-PNG.px[1]), sy = H/(PNG.py[1]-PNG.py[2]);
   const follow = mode==='fit';
   const dxRim  = follow ? (PNG.px[1]-PNG.px[0])*sx - (FC.x0-OUT.x0) : 0;
-  const dyBand = follow ? (PNG.py[2]-PNG.py[3])*sy - (OUT.y1-FC.y1) : (M.D.bandRim !== undefined ? M.D.bandRim - (OUT.y1-FC.y1) : 0);   // gamedisc: band squeezed to the lip height
+  const dyBand = follow ? (PNG.py[2]-PNG.py[3])*sy - (OUT.y1-FC.y1) : (M.D.bandRim !== undefined ? (typeof GAME !== 'undefined' && {ps3:1, ps4:1, ps5:1, xboxone:1, xboxseries:1}[GAME.platform] ? Math.max(M.D.bandRim, 171.5/MMU_GAME - H - (FC.y0-OUT.y0)) - (OUT.y1-FC.y1) : M.D.bandRim - (OUT.y1-FC.y1)) : 0);   // gamedisc: band squeezed to the lip height; the Blu-ray family's head band fills the case up to 171.5 mm (size convention)
   const dyBot  = follow ? (PNG.py[0]-PNG.py[1])*sy - (FC.y0-OUT.y0) : 0;
   const winY = y => y >= FC.y1-0.01 ? y+dy : (y > FC.y0 ? FC.y0 + (y-FC.y0)*H/FH : y);
   const bandH = (OUT.y1-FC.y1) + dyBand, bandBottom = FC.y1 + dy;
@@ -1443,15 +1443,15 @@ function applyOpen(){
   const cA=Math.cos(thA), sA=Math.sin(thA), cB=Math.cos(thB), sB=Math.sin(thB);
   const A = M.hingeA, B = M.hingeB;
   const rot = (x, z, hx, hz, c, s) => [hx + (x-hx)*c - (z-hz)*s, hz + (x-hx)*s + (z-hz)*c];
-  const rotN = (nx, nz, c, s) => [nx*c - nz*s, nx*s + nz*c];
   for (const [n,m] of Object.entries(M.meshes)){
     const a = m.geometry.attributes.position.array, nn = m.geometry.attributes.normal.array;
     const f = M.fitted[n], n0 = M.norm0[n], body = M.body[n];
-    for (let i=0;i<a.length;i+=3){
-      let x=f[i], z=f[i+2], nx=n0[i], nz=n0[i+2];
+    if (th === 0 && a.length === f.length && nn.length === n0.length){ a.set(f); nn.set(n0); }   // closed = the fitted pose
+    else for (let i=0;i<a.length;i+=3){   // the rotations written out: no array per vertex
+      let x=f[i], z=f[i+2], nx=n0[i], nz=n0[i+2], t;
       const b = body[i/3];
-      if (b===2){ [x,z] = rot(x,z,B.x,B.z,cB,sB); [nx,nz] = rotN(nx,nz,cB,sB); }   // lid about B ...
-      if (b>=1){ [x,z] = rot(x,z,A.x,A.z,cA,sA); [nx,nz] = rotN(nx,nz,cA,sA); }   // ... then with the spine about A
+      if (b===2){ t = B.x + (x-B.x)*cB - (z-B.z)*sB; z = B.z + (x-B.x)*sB + (z-B.z)*cB; x = t; t = nx*cB - nz*sB; nz = nx*sB + nz*cB; nx = t; }   // lid about B ...
+      if (b>=1){ t = A.x + (x-A.x)*cA - (z-A.z)*sA; z = A.z + (x-A.x)*sA + (z-A.z)*cA; x = t; t = nx*cA - nz*sA; nz = nx*sA + nz*cA; nx = t; }   // ... then with the spine about A
       a[i]=x; a[i+1]=f[i+1]; a[i+2]=z; nn[i]=nx; nn[i+1]=n0[i+1]; nn[i+2]=nz;
     }
     m.geometry.attributes.position.needsUpdate = true; m.geometry.attributes.normal.needsUpdate = true; m.geometry.computeBoundingSphere();
@@ -2484,13 +2484,13 @@ function paintGame(ctx, W){
   const bx = Bk.u0*W, by = (1 - Bk.v1)*W, bw = (Bk.u1 - Bk.u0)*W, bh = (Bk.v1 - Bk.v0)*W;
   const su0 = g.u(g.s0)*W, su1 = g.u(g.s1)*W, fx0 = F.u0*W, fx1 = F.u1*W, Pb = GAME.pics.back, Pf = GAME.pics.front;
   if (Pb){ const cut = Pb.naturalWidth*(1 - g.backShare);                 // back face | back rounding: one picture, one scale
-    ctx.drawImage(Pb, 0, 0, cut, Pb.naturalHeight, bx, by, bw, bh);
-    if (su0 > bx + bw) ctx.drawImage(Pb, cut, 0, Pb.naturalWidth - cut, Pb.naturalHeight, bx + bw, by, su0 - (bx + bw), bh); }
-  if (GAME.pics.spine) ctx.drawImage(GAME.pics.spine, su0, by, su1 - su0, bh);   // the strip IS the picture's native width
+    ctx.drawImage(Pb.bitmap || Pb, 0, 0, cut, Pb.naturalHeight, bx, by, bw, bh);
+    if (su0 > bx + bw) ctx.drawImage(Pb.bitmap || Pb, cut, 0, Pb.naturalWidth - cut, Pb.naturalHeight, bx + bw, by, su0 - (bx + bw), bh); }
+  if (GAME.pics.spine) ctx.drawImage(GAME.pics.spine.bitmap || GAME.pics.spine, su0, by, su1 - su0, bh);   // the strip IS the picture's native width
   else if (GAME_SPINE_FILL[GAME.platform] !== undefined){ ctx.fillStyle = '#' + GAME_SPINE_FILL[GAME.platform].toString(16).padStart(6, '0'); ctx.fillRect(su0, by, su1 - su0, bh); }
   if (Pf){ const cutF = Pf.naturalWidth*g.frontShare;
-    if (fx0 > su1) ctx.drawImage(Pf, 0, 0, cutF, Pf.naturalHeight, su1, by, fx0 - su1, bh);
-    ctx.drawImage(Pf, cutF, 0, Pf.naturalWidth - cutF, Pf.naturalHeight, fx0, by, fx1 - fx0, bh); }
+    if (fx0 > su1) ctx.drawImage(Pf.bitmap || Pf, 0, 0, cutF, Pf.naturalHeight, su1, by, fx0 - su1, bh);
+    ctx.drawImage(Pf.bitmap || Pf, cutF, 0, Pf.naturalWidth - cutF, Pf.naturalHeight, fx0, by, fx1 - fx0, bh); }
   return true;
 }
 
@@ -3355,6 +3355,13 @@ function paintGame(ctx, W){
             if (g.titleFont) { GAME.titleFont = g.titleFont; }
             // the title font only matters for a placeholder spine without a logo
             return !GAME.pics.spine && !GAME.pics.logo && GAME.spineLogo ? loadTitleFont() : Promise.resolve();
+        },
+        /// The one-time game disc mesh ahead of the first disc case, in two calls the host runs as separate tasks:
+        /// 'shell' (the shell mesh, 14 mm - the thickness of most platforms) and 'model' (the case model from it).
+        warmDisc: function (what) {
+            if (what === 'model') { if (!models.gamedisc) { models.gamedisc = buildModel('gamedisc'); } return true; }
+            ensureGameDisc(GAME.discR, 14);
+            return true;
         },
         /// Builds the version's case: the Game Box Case (a model-shaped object, see buildGameBox)
         /// or the Game Disc Case, the way upstream's showGame() does it - thickness per platform,
