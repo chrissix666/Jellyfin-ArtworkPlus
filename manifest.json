@@ -13,16 +13,16 @@
         "changelog": "(Jellyfin 12.0+) Game pages: a version switch to the same pictures keeps the case, Box 3D or poster standing; switches to other pictures never leave an empty place; the 3D case releases its GPU memory; game case pictures wait for a busy cache file",
         "targetAbi": "12.0.0.0",
         "sourceUrl": "https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases/download/v2.0.0.0/ArtworkPlus_2.0.0.0_jellyfin-12.x.zip",
-        "checksum": "b587d0b7ba95b454d8462f088089bada",
-        "timestamp": "2026-11-16T03:34:03Z"
+        "checksum": "f546bbbcbf1910ffde3e5cb94fe1c4f0",
+        "timestamp": "2026-11-16T05:24:55Z"
       },
       {
         "version": "1.1.0.0",
         "changelog": "(Jellyfin 10.10.7) Game pages: a version switch to the same pictures keeps the case, Box 3D or poster standing; switches to other pictures never leave an empty place; the 3D case releases its GPU memory; game case pictures wait for a busy cache file",
         "targetAbi": "10.10.7.0",
         "sourceUrl": "https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases/download/v1.1.0.0/ArtworkPlus_1.1.0.0_jellyfin-10.10.7.zip",
-        "checksum": "c1700f5864d6a91a7ce3df70975e37bb",
-        "timestamp": "2026-11-16T03:34:03Z"
+        "checksum": "9e0a6506a7ad783d9ad37834fd90ce8f",
+        "timestamp": "2026-11-16T05:24:55Z"
       },
       {
         "version": "1.0.0.0",

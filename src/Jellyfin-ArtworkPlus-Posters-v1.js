@@ -6175,8 +6175,19 @@
                     gameMark('build starts');
                     // the case frames itself on the card at the size it keeps (in the same task, no re-layout after)
                     if (onSize) { onSize(true); }
+                    // an in-place version switch: the new case takes the place of what stood - the case left standing
+                    // (replaced in this task) or the Bridge's overlay of the old picture (which fades out over it) - at
+                    // full opacity in the same frame, never faded in from nothing (its first frame is drawn before
+                    // mount() hangs it in). gp.oldCard is set only by a switch (gameSwitchAtOnce).
+                    var swapIn = (!!gp.keepOld && !!(mounted && mounted.game)) || !!gp.oldCard;
                     if (!mount(answer, itemId, posterEl, THREE, front, Renderer, null, null, null)) { gp.keepOld = false; fail('the case could not be built'); return; }
                     gp.keepOld = false;   // mount() replaced the left-behind case in this very task
+                    if (swapIn && mounted && mounted.canvas) {
+                        var swapped = mounted.canvas;
+                        swapped.style.transition = 'none';
+                        void swapped.offsetWidth;   // the fade-in is cancelled before the frame is painted
+                        requestAnimationFrame(function () { requestAnimationFrame(function () { swapped.style.transition = ''; }); });
+                    }
                     gameMark('case built');
                     gameAfterRebuild(view, token).then(function () {
                         if (mounted && mounted.itemId === itemId && token === gp.token && mounted.rebind) {
