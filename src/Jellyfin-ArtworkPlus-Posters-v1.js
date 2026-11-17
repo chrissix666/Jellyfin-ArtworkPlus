@@ -2588,6 +2588,13 @@
         // rest of renderGame's work after a mount that finishes in later tasks (see mount's hangIn).
         var gameRenderer = null;
         var afterMount = null;
+        /// The tab's game renderer, made once (the same options as every case: logarithmicDepthBuffer is read only at
+        /// context creation); it remembers a lost context so the next case makes a new one.
+        function makeGameRenderer(THREE) {
+            var made = gameRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, logarithmicDepthBuffer: true });
+            made.domElement.addEventListener('webglcontextlost', function () { made.lostContext = true; });
+            return made;
+        }
 
         function pendingExpected() {
             if (caseMixOn()) { return featureOn(); } // no guessing under the mix
@@ -3344,6 +3351,7 @@
             try {
                 if (mounted.raf) { cancelAnimationFrame(mounted.raf); }
                 if (mounted.aa) { mounted.aa.dispose(); mounted.aa = null; }
+                if (mounted.onCaseLost && mounted.canvas) { mounted.canvas.removeEventListener('webglcontextlost', mounted.onCaseLost, false); }
                 if (mounted.openTimer) { clearTimeout(mounted.openTimer); }
                 if (mounted.hit && mounted.hit.parentNode) { mounted.hit.parentNode.removeChild(mounted.hit); }
                 // Games: the box is built per mount and disposed with it; the WebGL context is
@@ -3455,13 +3463,11 @@
                 // is created and ignores it afterwards.
                 if (answer.Game && gameRenderer && !gameRenderer.lostContext) {
                     renderer = gameRenderer;   // one renderer for all game cases of the tab
+                } else if (answer.Game) {
+                    renderer = makeGameRenderer(THREE);
                 } else {
                     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true,
                                                          logarithmicDepthBuffer: true });
-                    if (answer.Game) {
-                        var madeRenderer = gameRenderer = renderer;
-                        madeRenderer.domElement.addEventListener('webglcontextlost', function () { madeRenderer.lostContext = true; });
-                    }
                 }
             } catch (e) {
                 log('WebGL context creation failed - the flat case type stays', e);
@@ -4090,13 +4096,17 @@
             // still hides the poster - an empty place. The case goes, the poster comes back as without a case, and a
             // game's Bridge hears 'failed' (it falls back to its Box 3D / 2D). Our own teardown (forceContextLoss) finds
             // another or no mount by the time the event arrives, so it never lands here.
-            canvas.addEventListener('webglcontextlost', function () {
+            // (kept on the mount and removed by teardown: the tab's game canvas outlives this case, and a listener left
+            // on it would keep this page alive)
+            var onCaseLost = function () {
                 if (!mounted || mounted.canvas !== canvas) { return; }
                 log('the WebGL context was lost - the case goes, the poster comes back');
                 var wasGame = mounted.game, id = mounted.itemId;
                 teardown();
                 if (wasGame) { gameLost(id); }
-            }, false);
+            };
+            canvas.addEventListener('webglcontextlost', onCaseLost, false);
+            mounted.onCaseLost = onCaseLost;
             // THE COVER IS PAINTED BEFORE `mounted` EXISTS. The whole poster
             // chain runs while the case is still being built, so the paint
             // that puts the first picture on the wrap happens with `mounted`
@@ -6163,7 +6173,9 @@
                     })();
                 });
             };
-            // the one-time disc mesh in two tasks of its own (shell, then model), before the disc case is built
+            // the one-time disc mesh in two tasks of its own (shell, then model), before the disc case is built; the
+            // engine is loaded and the renderer given THREE, the mesh and the tab's game renderer first (on a page
+            // without a box candidate nothing has made them yet - the model reads the renderer's capabilities)
             var warm = function () {
                 var step = function (what) {
                     return new Promise(function (resolve) { setTimeout(function () {
@@ -6171,7 +6183,12 @@
                         resolve();
                     }, 0); });
                 };
-                return step('shell').then(function () { return step('model'); });
+                return Promise.all([loadThree(), loadMesh(), loadRenderer()]).then(function (res) {
+                    if (moved()) { return; }
+                    if (!gameRenderer || gameRenderer.lostContext) { makeGameRenderer(res[0]); }
+                    res[2].init(res[0], res[1], { renderer: gameRenderer });
+                    return step('shell').then(function () { return step('model'); });
+                }, function (e) { log('pre-link: engine not loaded - no disc warm-up', e); });
             };
             Promise.resolve(api.getJSON(api.getUrl('PlayniteBridge/games/' + encodeURIComponent(pageId)))).then(function (g) {
                 var ids = ((g && g.versions) || []).map(function (v) { return gameNormId(v.id); }).filter(function (id) { return id && id !== pageId; });
