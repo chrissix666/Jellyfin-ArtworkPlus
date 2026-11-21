@@ -62,6 +62,19 @@ public class FileTransformationRegistrationHostedService : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         TryRegisterWithFileTransformation(_logger);
+        // every plugin is loaded by now: Playnite Bridge learns the one CharacterArt fade time of game pages (2026-11-18)
+        try
+        {
+            if (Plugin.Instance?.Configuration is Configuration.PluginConfiguration config)
+            {
+                Helpers.PlayniteBridgeLink.PushArtFadeMs(config.CharacterartGamesFadeTimeMs);
+            }
+        }
+        catch (Exception)
+        {
+            // never let this stop the server start
+        }
+
         return Task.CompletedTask;
     }
 

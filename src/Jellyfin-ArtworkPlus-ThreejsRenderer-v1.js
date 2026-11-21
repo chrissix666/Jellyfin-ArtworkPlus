@@ -3399,6 +3399,33 @@ function paintGame(ctx, W){
             if (!ctx || !M || !M.D || !M.D.game) { return false; }
             try { return paintGame(ctx, W); } catch (e) { return false; }
         },
+        /// Playnite Bridge's version switch to a version with the SAME case structure (contract-version-switch-parts,
+        /// 2026-11-17): after setGame() with the new version's pictures, the standing game disc case takes over what
+        /// buildGame() derives from them - the shell colour, the placeholder spine, the disc, the booklet's lines and
+        /// ground - without rebuilding the model. The host repaints the wrap (applyPoster) for front, back and spine.
+        /// False when the model is not a game disc case.
+        refreshGame: function () {
+            if (!M || !M.D || !M.D.game) { return false; }
+            MODELS.gamedisc.shell = GAME_SHELL[GAME.platform];
+            const place = GAME.pics.spine || !GAME.spineLogo ? null : gameSpinePlaceholder(GAME_SPINE_FILL[GAME.platform] ?? GAME_SHELL[GAME.platform]);
+            currentLogo = place; currentSpineLogo = place;
+            setDisc(GAME.pics.disc || null);
+            currentBack = { side: { title: (GAME.cur && GAME.cur.name) || '' }, img: { fanart: GAME.pics.backdrop || null } };
+            applyFurniture();
+            return true;
+        },
+        /// The same for a standing game box: front, back and spine faces take the new version's pictures (the box's
+        /// size stays, it is the structure). False when the model is not a game box.
+        setGameFaces: function () {
+            if (!M || !M.box || !M.meshes || !M.meshes.box) { return false; }
+            const P = GAME.pics, mats = M.meshes.box.material, E = boxFreeFaces(P);
+            const swap = (i, img) => { if (!img || !mats[i]) return; const old = mats[i].map; mats[i].map = gameTex(img); mats[i].needsUpdate = true; if (old) old.dispose(); };
+            swap(4, P.front); swap(5, P.back);
+            swap(1, P.spine || spineFallback(E.right));
+            // the three free faces take the dominant colour of the (new) spine or front, as buildGameBox does
+            [[0, E.right], [2, E.top], [3, E.bottom]].forEach(([i, hex]) => { if (mats[i]) mats[i].color.copy(srgb(hex)); });
+            return true;
+        },
         /// The box's measured size, for the host's framing and the log.
         gameBoxDims: function () { return M && M.box ? M.dims : null; },
         /// Frees a box built by buildGame (geometry, materials, textures) - the host's teardown calls it.

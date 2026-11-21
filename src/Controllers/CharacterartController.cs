@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Jellyfin.Plugin.ArtworkPlus.Configuration;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -136,7 +137,7 @@ public class CharacterartController : ControllerBase
             var (folderPath, namingMode, typeName, folderName, multiImage, allowedFormatsCsv,
                 cycleMs, fadeMs, delayEnabled, delayMs, singlePass, staySingleImageStatic, orderMode, kind, randomStart) = resolved.Value;
 
-            var position = kind switch { "Movies" => config.CharacterartMoviesPosition, "Games" => config.CharacterartGamesPosition, _ => config.CharacterartTvShowsPosition };
+            var position = kind switch { "Movies" => config.CharacterartMoviesPosition, "Games" => config.CharacterartGamesPosition, "Music" => config.CharacterartMusicPosition, _ => config.CharacterartTvShowsPosition };
             var lastWriteUtc = SafeGetLastWriteTimeUtc(folderPath);
             var sizing = ResolvePositionSizing(config, kind, position);
             var etag = ComputeETag(
@@ -362,6 +363,30 @@ public class CharacterartController : ControllerBase
                 config.CharacterartMoviesStaySingleImageStatic, config.CharacterartMoviesOrderMode, "Movies", config.CharacterartMoviesRandomStart);
         }
 
+        // Music: the files lie in the artist's own folder, read with the Music rows (Standalone or Folder naming). An album
+        // page reads its album artist's folder, as a season or episode page reads its show's.
+        if (item is MusicArtist || item is MusicAlbum)
+        {
+            if (item is MusicArtist ? !config.CharacterartShowOnArtists : !config.CharacterartShowOnAlbums)
+            {
+                _logger.LogDebug("Characterart: ResolveItem - {ItemId} is a {Type}, but its Show on box is off", itemId, item.GetType().Name);
+                return null;
+            }
+
+            folderPath = item is MusicArtist artist ? artist.Path : ((MusicAlbum)item).MusicArtist?.Path;
+            if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
+            {
+                _logger.LogDebug("Characterart: ResolveItem - artist folder not found for {ItemId}: \"{Path}\"", itemId, folderPath ?? "(empty)");
+                return null;
+            }
+
+            return (folderPath, TvNaming(config.CharacterartMusicNamingMode), config.CharacterartMusicTypeName,
+                config.CharacterartMusicFolderName, config.CharacterartMusicMultiImage, config.CharacterartAllowedFormats,
+                config.CharacterartMusicCycleTimeMs, config.CharacterartMusicFadeTimeMs,
+                config.CharacterartMusicDelayEnabled, config.CharacterartMusicDelayMs, config.CharacterartMusicSinglePass,
+                config.CharacterartMusicStaySingleImageStatic, config.CharacterartMusicOrderMode, "Music", config.CharacterartMusicRandomStart);
+        }
+
         if (item is Series series)
         {
             if (!config.CharacterartShowOnTvShows)
@@ -520,6 +545,17 @@ public class CharacterartController : ControllerBase
             };
         }
 
+        if (kind == "Music")
+        {
+            return position switch
+            {
+                "TopLeft" => (config.CharacterartMusicTopLeftScaleMode, config.CharacterartMusicTopLeftHeightVh, config.CharacterartMusicTopLeftMaxWidthVw, config.CharacterartMusicTopLeftWidthVw, config.CharacterartMusicTopLeftMaxHeightVh, config.CharacterartMusicTopLeftHorizontalAlign, config.CharacterartMusicTopLeftOffsetVw, config.CharacterartMusicTopLeftFullscreenOffsetVw),
+                "TopRight" => (config.CharacterartMusicTopRightScaleMode, config.CharacterartMusicTopRightHeightVh, config.CharacterartMusicTopRightMaxWidthVw, config.CharacterartMusicTopRightWidthVw, config.CharacterartMusicTopRightMaxHeightVh, config.CharacterartMusicTopRightHorizontalAlign, config.CharacterartMusicTopRightOffsetVw, config.CharacterartMusicTopRightFullscreenOffsetVw),
+                "BottomRight" => (config.CharacterartMusicBottomRightScaleMode, config.CharacterartMusicBottomRightHeightVh, config.CharacterartMusicBottomRightMaxWidthVw, config.CharacterartMusicBottomRightWidthVw, config.CharacterartMusicBottomRightMaxHeightVh, config.CharacterartMusicBottomRightHorizontalAlign, config.CharacterartMusicBottomRightOffsetVw, config.CharacterartMusicBottomRightFullscreenOffsetVw),
+                _ => (config.CharacterartMusicBottomLeftScaleMode, config.CharacterartMusicBottomLeftHeightVh, config.CharacterartMusicBottomLeftMaxWidthVw, config.CharacterartMusicBottomLeftWidthVw, config.CharacterartMusicBottomLeftMaxHeightVh, config.CharacterartMusicBottomLeftHorizontalAlign, config.CharacterartMusicBottomLeftOffsetVw, config.CharacterartMusicBottomLeftFullscreenOffsetVw)
+            };
+        }
+
         if (kind == "Movies")
         {
             return position switch
@@ -580,7 +616,7 @@ public class CharacterartController : ControllerBase
     private static string TvNaming(string mode) => mode == "Folder" ? "Folder" : "Standalone";
 
     /// <summary>The "Unnumbered file" setting of the Movies (also Sets and Games, which use the Movies naming) or TV shows section.</summary>
-    private static string UnnumberedFor(PluginConfiguration c, string kind) => kind == "TvShows" ? c.CharacterartTvShowsUnnumberedMode : c.CharacterartMoviesUnnumberedMode;
+    private static string UnnumberedFor(PluginConfiguration c, string kind) => kind == "TvShows" ? c.CharacterartTvShowsUnnumberedMode : kind == "Music" ? c.CharacterartMusicUnnumberedMode : c.CharacterartMoviesUnnumberedMode;
 
     /// <summary>Games: the Movies naming, Prefixed read as Standalone (the folder name carries the short id).</summary>
     private static string GameNaming(string mode) => mode == "Prefixed" ? "Standalone" : mode;

@@ -1304,7 +1304,7 @@
                         <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesCaseTurnRow">
                             <label for="CaseModThreejsGamesCaseTurn" class="epRowLabelSpan">Case turn</label>
                             <input type="text" inputmode="decimal" data-numeric="true" class="epNumberCompact" id="CaseModThreejsGamesCaseTurn" name="CaseModThreejsGamesCaseTurn" min="0" max="360" step="0.1" />
-                            <div class="epDesc">How far the case is turned when the page opens; 0-360, past 180 shows the other edge.<br>Tip: Box 3D look = Case turn 35&deg;, Case size = Box 3D size &minus; 5 % (e.g. 95 % at 100 %).</div>
+                            <div class="epDesc">How far the case is turned when the page opens (0-360); Box 3D look: 35&deg;, size = Box 3D &minus; 5 %.</div>
                         </div>
                         <div class="epPlayniteOnly epRow epRowMerged epLockExempt" id="CaseModThreejsGamesCaseTiltRow">
                             <label for="CaseModThreejsGamesCaseTilt" class="epRowLabelSpan">Case tilt</label>
@@ -6114,15 +6114,18 @@
                         </div>
                         <div class="epRow epRowMerged" id="CharacterartShowOnRow">
                             <span class="epRowLabelSpan">Show on</span>
-                            <div class="epFormatGrid">
+                            <!-- the Show on gap (14px, as .epFormatGrid) in a grid: Artists / Albums stand in the columns of Movies / Sets -->
+                            <div style="display:grid; grid-template-columns:repeat(6, max-content); gap:14px; align-items:center;">
                                 <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CharacterartShowOnMovies" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Movies</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
                                 <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CharacterartShowOnSets" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Sets</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
                                 <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CharacterartShowOnTvShows" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">TV shows</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
                                 <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CharacterartShowOnSeasons" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Seasons</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
                                 <label class="epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CharacterartShowOnEpisodes" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Episodes</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
                                 <label class="epPlayniteOnly epFormatItem emby-checkbox-label"><input type="checkbox" is="emby-checkbox" id="CharacterartShowOnGames" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Games</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label" style="grid-row:2; grid-column:1;"><input type="checkbox" is="emby-checkbox" id="CharacterartShowOnArtists" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Artists</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
+                                <label class="epFormatItem emby-checkbox-label" style="grid-row:2; grid-column:2;"><input type="checkbox" is="emby-checkbox" id="CharacterartShowOnAlbums" data-embycheckbox="true" class="emby-checkbox" /> <span class="checkboxLabel">Albums</span><span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span></label>
                             </div>
-                            <div class="epDesc">Season and episode pages always show the parent show's own characterart.</div>
+                            <div class="epDesc">Season and episode pages always show the parent show's own characterart, album pages the artist's.</div>
                         </div>
 
                         <div class="epCollapseHeader" data-collapse="characterartMovies"><span class="epChevron">▶</span><span>Movies</span></div>
@@ -6787,6 +6790,340 @@
                             <label for="CharacterartTvShowsBottomRightFullscreenOffsetVw" class="epRowLabelSpan">Fullscreen offset</label>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <input type="number" step="0.5" class="epNumberCompact" id="CharacterartTvShowsBottomRightFullscreenOffsetVw" name="CharacterartTvShowsBottomRightFullscreenOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Extra shift added to Offset above, only while the tab is in fullscreen.</div>
+                        </div>
+                        </div>
+
+                        <div class="epCollapseHeader" data-collapse="characterartMusic"><span class="epChevron">▶</span><span>Music</span></div>
+                        <div class="epCollapseBody" data-collapsebody="characterartMusic">
+                        <div class="epDesc" style="padding-left:0; height:auto; margin-bottom:0.4em;">Artist and album pages: reads the artist's own folder.</div>
+                        <div class="epRow epRowMerged">
+                            <label for="CharacterartMusicNamingMode" class="epRowLabelSpan">Naming mode</label>
+                            <select is="emby-select" id="CharacterartMusicNamingMode" name="CharacterartMusicNamingMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Standalone">Standalone</option>
+                                <option value="Folder">Folder</option>
+                            </select>
+                            <div class="epDesc">Standalone: typename.png. Folder: subfolder. No Prefixed - folder's already exclusive.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="CharacterartMusicTypeName" class="epRowLabelSpan">Type name</label>
+                            <input type="text" class="epTextCompact" id="CharacterartMusicTypeName" name="CharacterartMusicTypeName" />
+                            <div class="epDesc">Used to build the filename: "typename.ext" for single image, e.g. "cutout.png".</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicFolderNameRow">
+                            <label for="CharacterartMusicFolderName" class="epRowLabelSpan">Folder name</label>
+                            <input type="text" class="epTextCompact" id="CharacterartMusicFolderName" name="CharacterartMusicFolderName" />
+                            <div class="epDesc">Only used when naming mode is "Folder".</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="CharacterartMusicMultiImageSelect" class="epRowLabelSpan">Image mode</label>
+                            <select id="CharacterartMusicMultiImageSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Single image</option>
+                                <option value="true">Multi image</option>
+                            </select>
+                            <input type="checkbox" id="CharacterartMusicMultiImage" name="CharacterartMusicMultiImage" style="display:none;" />
+                            <div class="epDesc">Single: "typename.ext", no number. Multi: the numbered files, plus the plain one per "Unnumbered file".</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicOrderRow">
+                            <label for="CharacterartMusicOrderMode" class="epRowLabelSpan">Order</label>
+                            <select is="emby-select" id="CharacterartMusicOrderMode" name="CharacterartMusicOrderMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Sequential">Sequential</option>
+                                <option value="Shuffle">Shuffle</option>
+                                <option value="Random">Random</option>
+                            </select>
+                            <div class="epDesc">Multi-image only. Sequential: in order. Shuffle: no repeats/round. Random: repeats OK.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicUnnumberedRow">
+                            <label for="CharacterartMusicUnnumberedMode" class="epRowLabelSpan">Unnumbered file</label>
+                            <select is="emby-select" id="CharacterartMusicUnnumberedMode" name="CharacterartMusicUnnumberedMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Ignored">Ignored</option>
+                                <option value="Counts">Counts as #1</option>
+                            </select>
+                            <div class="epDesc">Multi-image only. Whether the file without a number (e.g. "cutout.png") comes first.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicSinglePassRow">
+                            <label for="CharacterartMusicSinglePassSelect" class="epRowLabelSpan">Playback</label>
+                            <select id="CharacterartMusicSinglePassSelect" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="false">Loop</option>
+                                <option value="true">Play once</option>
+                            </select>
+                            <input type="checkbox" id="CharacterartMusicSinglePass" name="CharacterartMusicSinglePass" style="display:none;" />
+                            <div class="epDesc">Multi-image only. Loop: runs forever. Play once: fades back after one pass.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="CharacterartMusicRandomStartRow">
+                            <label for="CharacterartMusicRandomStart">Random start position</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CharacterartMusicRandomStart" name="CharacterartMusicRandomStart" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Sequential + Loop only: start at a random image and continue in order, as if the show were running.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="CharacterartMusicStaySingleImageStaticRow">
+                            <label for="CharacterartMusicStaySingleImageStatic">If only 1 image is found</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CharacterartMusicStaySingleImageStatic" name="CharacterartMusicStaySingleImageStatic" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                <span class="epDescInline checkboxLabel">Stay static (unchecked: still fades out after one display duration, like Play once normally does).</span>
+                                <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicCycleRow">
+                            <label for="CharacterartMusicCycleTimeMs" class="epRowLabelSpan">Display duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="CharacterartMusicCycleTimeMs" name="CharacterartMusicCycleTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Only used while "Multi-image slideshow" is checked above.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicFadeRow">
+                            <label for="CharacterartMusicFadeTimeMs" class="epRowLabelSpan">Transition duration</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="50" class="epNumberCompact" id="CharacterartMusicFadeTimeMs" name="CharacterartMusicFadeTimeMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">0 = instant switch. Never exceeds the display duration above.</div>
+                        </div>
+                        <div class="epRow epRowCheckbox" id="CharacterartMusicDelayEnabledRow">
+                            <label for="CharacterartMusicDelayEnabled">Delay before first shown</label>
+                            <div class="checkboxContainer" style="margin:0;">
+                                <label class="emby-checkbox-label" style="display:flex; align-items:center; gap:10px;">
+                                    <input id="CharacterartMusicDelayEnabled" name="CharacterartMusicDelayEnabled" type="checkbox" is="emby-checkbox" data-embycheckbox="true" class="emby-checkbox" />
+                                    <span class="epDescInline checkboxLabel">Only used while "Multi-image slideshow" is checked above.</span>
+                                    <span class="checkboxOutline"><span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span><span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicDelayRow">
+                            <label for="CharacterartMusicDelayMs" class="epRowLabelSpan">Delay</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" min="0" step="100" class="epNumberCompact" id="CharacterartMusicDelayMs" name="CharacterartMusicDelayMs" />
+                                <span class="epUnitLabel">ms</span>
+                            </div>
+                            <div class="epDesc">Setting this to 0 turns the delay off automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged">
+                            <label for="CharacterartMusicPosition" class="epRowLabelSpan">Position</label>
+                            <select is="emby-select" id="CharacterartMusicPosition" name="CharacterartMusicPosition" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="TopLeft">Top left</option>
+                                <option value="TopRight">Top right</option>
+                                <option value="BottomLeft">Bottom left</option>
+                                <option value="BottomRight">Bottom right</option>
+                            </select>
+                            <div class="epDesc">Top: next to logo, scrolls with page. Bottom: glued to window, no scroll.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopLeftPosRow">
+                            <label for="CharacterartMusicTopLeftScaleMode" class="epRowLabelSpan">Top left: scale by</label>
+                            <select is="emby-select" id="CharacterartMusicTopLeftScaleMode" name="CharacterartMusicTopLeftScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Height">Height</option>
+                                <option value="Width">Width</option>
+                            </select>
+                            <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopLeftHeightRow">
+                            <label for="CharacterartMusicTopLeftHeightVh" class="epRowLabelSpan">Height / max width</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicTopLeftHeightVh" name="CharacterartMusicTopLeftHeightVh" />
+                                <span class="epUnitLabel">vh</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicTopLeftMaxWidthVw" name="CharacterartMusicTopLeftMaxWidthVw" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Height, then optional max width (0 = auto width, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopLeftWidthRow">
+                            <label for="CharacterartMusicTopLeftWidthVw" class="epRowLabelSpan">Width / max height</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicTopLeftWidthVw" name="CharacterartMusicTopLeftWidthVw" />
+                                <span class="epUnitLabel">vw</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicTopLeftMaxHeightVh" name="CharacterartMusicTopLeftMaxHeightVh" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopLeftAlignRow">
+                            <label for="CharacterartMusicTopLeftHorizontalAlign" class="epRowLabelSpan">Align</label>
+                            <select is="emby-select" id="CharacterartMusicTopLeftHorizontalAlign" name="CharacterartMusicTopLeftHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Center">Centered</option>
+                                <option value="Left">Left</option>
+                                <option value="Right">Right</option>
+                            </select>
+                            <div class="epDesc">Only applies once Max* above is > 0; otherwise the box hugs the image exactly.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopLeftOffsetRow">
+                            <label for="CharacterartMusicTopLeftOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" step="0.5" class="epNumberCompact" id="CharacterartMusicTopLeftOffsetVw" name="CharacterartMusicTopLeftOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole box (negative = left, positive = right) - independent of Align, always active.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopLeftFullscreenOffsetRow">
+                            <label for="CharacterartMusicTopLeftFullscreenOffsetVw" class="epRowLabelSpan">Fullscreen offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" step="0.5" class="epNumberCompact" id="CharacterartMusicTopLeftFullscreenOffsetVw" name="CharacterartMusicTopLeftFullscreenOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Extra shift added to Offset above, only while the tab is in fullscreen.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopRightPosRow">
+                            <label for="CharacterartMusicTopRightScaleMode" class="epRowLabelSpan">Top right: scale by</label>
+                            <select is="emby-select" id="CharacterartMusicTopRightScaleMode" name="CharacterartMusicTopRightScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Height">Height</option>
+                                <option value="Width">Width</option>
+                            </select>
+                            <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopRightHeightRow">
+                            <label for="CharacterartMusicTopRightHeightVh" class="epRowLabelSpan">Height / max width</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicTopRightHeightVh" name="CharacterartMusicTopRightHeightVh" />
+                                <span class="epUnitLabel">vh</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicTopRightMaxWidthVw" name="CharacterartMusicTopRightMaxWidthVw" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Height, then optional max width (0 = auto width, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopRightWidthRow">
+                            <label for="CharacterartMusicTopRightWidthVw" class="epRowLabelSpan">Width / max height</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicTopRightWidthVw" name="CharacterartMusicTopRightWidthVw" />
+                                <span class="epUnitLabel">vw</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicTopRightMaxHeightVh" name="CharacterartMusicTopRightMaxHeightVh" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopRightAlignRow">
+                            <label for="CharacterartMusicTopRightHorizontalAlign" class="epRowLabelSpan">Align</label>
+                            <select is="emby-select" id="CharacterartMusicTopRightHorizontalAlign" name="CharacterartMusicTopRightHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Center">Centered</option>
+                                <option value="Left">Left</option>
+                                <option value="Right">Right</option>
+                            </select>
+                            <div class="epDesc">Only applies once Max* above is > 0; otherwise the box hugs the image exactly.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopRightOffsetRow">
+                            <label for="CharacterartMusicTopRightOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" step="0.5" class="epNumberCompact" id="CharacterartMusicTopRightOffsetVw" name="CharacterartMusicTopRightOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole box (negative = left, positive = right) - independent of Align, always active.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicTopRightFullscreenOffsetRow">
+                            <label for="CharacterartMusicTopRightFullscreenOffsetVw" class="epRowLabelSpan">Fullscreen offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" step="0.5" class="epNumberCompact" id="CharacterartMusicTopRightFullscreenOffsetVw" name="CharacterartMusicTopRightFullscreenOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Extra shift added to Offset above, only while the tab is in fullscreen.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomLeftPosRow">
+                            <label for="CharacterartMusicBottomLeftScaleMode" class="epRowLabelSpan">Bottom left: scale by</label>
+                            <select is="emby-select" id="CharacterartMusicBottomLeftScaleMode" name="CharacterartMusicBottomLeftScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Height">Height</option>
+                                <option value="Width">Width</option>
+                            </select>
+                            <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomLeftHeightRow">
+                            <label for="CharacterartMusicBottomLeftHeightVh" class="epRowLabelSpan">Height / max width</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicBottomLeftHeightVh" name="CharacterartMusicBottomLeftHeightVh" />
+                                <span class="epUnitLabel">vh</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicBottomLeftMaxWidthVw" name="CharacterartMusicBottomLeftMaxWidthVw" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Height, then optional max width (0 = auto width, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomLeftWidthRow">
+                            <label for="CharacterartMusicBottomLeftWidthVw" class="epRowLabelSpan">Width / max height</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicBottomLeftWidthVw" name="CharacterartMusicBottomLeftWidthVw" />
+                                <span class="epUnitLabel">vw</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicBottomLeftMaxHeightVh" name="CharacterartMusicBottomLeftMaxHeightVh" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomLeftAlignRow">
+                            <label for="CharacterartMusicBottomLeftHorizontalAlign" class="epRowLabelSpan">Align</label>
+                            <select is="emby-select" id="CharacterartMusicBottomLeftHorizontalAlign" name="CharacterartMusicBottomLeftHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Center">Centered</option>
+                                <option value="Left">Left</option>
+                                <option value="Right">Right</option>
+                            </select>
+                            <div class="epDesc">Only applies once Max* above is > 0; otherwise the box hugs the image exactly.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomLeftOffsetRow">
+                            <label for="CharacterartMusicBottomLeftOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" step="0.5" class="epNumberCompact" id="CharacterartMusicBottomLeftOffsetVw" name="CharacterartMusicBottomLeftOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole box (negative = left, positive = right) - independent of Align, always active.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomLeftFullscreenOffsetRow">
+                            <label for="CharacterartMusicBottomLeftFullscreenOffsetVw" class="epRowLabelSpan">Fullscreen offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" step="0.5" class="epNumberCompact" id="CharacterartMusicBottomLeftFullscreenOffsetVw" name="CharacterartMusicBottomLeftFullscreenOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Extra shift added to Offset above, only while the tab is in fullscreen.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomRightPosRow">
+                            <label for="CharacterartMusicBottomRightScaleMode" class="epRowLabelSpan">Bottom right: scale by</label>
+                            <select is="emby-select" id="CharacterartMusicBottomRightScaleMode" name="CharacterartMusicBottomRightScaleMode" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Height">Height</option>
+                                <option value="Width">Width</option>
+                            </select>
+                            <div class="epDesc">Which dimension to scale from - the other adjusts automatically.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomRightHeightRow">
+                            <label for="CharacterartMusicBottomRightHeightVh" class="epRowLabelSpan">Height / max width</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicBottomRightHeightVh" name="CharacterartMusicBottomRightHeightVh" />
+                                <span class="epUnitLabel">vh</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicBottomRightMaxWidthVw" name="CharacterartMusicBottomRightMaxWidthVw" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Height, then optional max width (0 = auto width, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomRightWidthRow">
+                            <label for="CharacterartMusicBottomRightWidthVw" class="epRowLabelSpan">Width / max height</label>
+                            <div class="epPairedFieldRow" style="position:relative;">
+                                <input type="number" min="1" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicBottomRightWidthVw" name="CharacterartMusicBottomRightWidthVw" />
+                                <span class="epUnitLabel">vw</span>
+                                <input type="number" min="0" step="0.5" class="epNumberCompact epPairedField" id="CharacterartMusicBottomRightMaxHeightVh" name="CharacterartMusicBottomRightMaxHeightVh" style="margin-left:10px;" />
+                                <span class="epUnitLabel epOverflowLabel">vh</span>
+                            </div>
+                            <div class="epDesc">Width, then optional max height (0 = auto height, follows the image).</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomRightAlignRow">
+                            <label for="CharacterartMusicBottomRightHorizontalAlign" class="epRowLabelSpan">Align</label>
+                            <select is="emby-select" id="CharacterartMusicBottomRightHorizontalAlign" name="CharacterartMusicBottomRightHorizontalAlign" class="emby-select-withcolor emby-select epSelectCompact">
+                                <option value="Center">Centered</option>
+                                <option value="Left">Left</option>
+                                <option value="Right">Right</option>
+                            </select>
+                            <div class="epDesc">Only applies once Max* above is > 0; otherwise the box hugs the image exactly.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomRightOffsetRow">
+                            <label for="CharacterartMusicBottomRightOffsetVw" class="epRowLabelSpan">Offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" step="0.5" class="epNumberCompact" id="CharacterartMusicBottomRightOffsetVw" name="CharacterartMusicBottomRightOffsetVw" />
+                                <span class="epUnitLabel">vw</span>
+                            </div>
+                            <div class="epDesc">Shifts the whole box (negative = left, positive = right) - independent of Align, always active.</div>
+                        </div>
+                        <div class="epRow epRowMerged" id="CharacterartMusicBottomRightFullscreenOffsetRow">
+                            <label for="CharacterartMusicBottomRightFullscreenOffsetVw" class="epRowLabelSpan">Fullscreen offset</label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" step="0.5" class="epNumberCompact" id="CharacterartMusicBottomRightFullscreenOffsetVw" name="CharacterartMusicBottomRightFullscreenOffsetVw" />
                                 <span class="epUnitLabel">vw</span>
                             </div>
                             <div class="epDesc">Extra shift added to Offset above, only while the tab is in fullscreen.</div>
@@ -9988,6 +10325,54 @@
                 CharacterartTvShowsStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartTvShowsOrderMode: { type: 'select', def: 'Shuffle', tab: 'characterart' },
                 CharacterartTvShowsUnnumberedMode: { type: 'select', def: 'Counts', tab: 'characterart' },
+                CharacterartShowOnArtists: { type: 'checkbox', def: true, tab: 'characterart' },
+                CharacterartShowOnAlbums: { type: 'checkbox', def: true, tab: 'characterart' },
+                CharacterartMusicPosition: { type: 'select', def: 'TopRight', tab: 'characterart' },
+                CharacterartMusicTopLeftScaleMode: { type: 'text', def: 'Height', tab: 'characterart' },
+                CharacterartMusicTopLeftHeightVh: { type: 'number', def: 20, tab: 'characterart' },
+                CharacterartMusicTopLeftMaxWidthVw: { type: 'number', def: 12, tab: 'characterart' },
+                CharacterartMusicTopLeftWidthVw: { type: 'number', def: '', tab: 'characterart' },
+                CharacterartMusicTopLeftMaxHeightVh: { type: 'number', def: '', tab: 'characterart' },
+                CharacterartMusicTopLeftHorizontalAlign: { type: 'text', def: 'Center', tab: 'characterart' },
+                CharacterartMusicTopLeftOffsetVw: { type: 'number', def: 4, tab: 'characterart' },
+                CharacterartMusicTopLeftFullscreenOffsetVw: { type: 'number', def: -2.5, tab: 'characterart' },
+                CharacterartMusicTopRightScaleMode: { type: 'text', def: 'Height', tab: 'characterart' },
+                CharacterartMusicTopRightHeightVh: { type: 'number', def: 20, tab: 'characterart' },
+                CharacterartMusicTopRightMaxWidthVw: { type: 'number', def: 12, tab: 'characterart' },
+                CharacterartMusicTopRightWidthVw: { type: 'number', def: '', tab: 'characterart' },
+                CharacterartMusicTopRightMaxHeightVh: { type: 'number', def: '', tab: 'characterart' },
+                CharacterartMusicTopRightHorizontalAlign: { type: 'text', def: 'Center', tab: 'characterart' },
+                CharacterartMusicTopRightOffsetVw: { type: 'number', def: -5, tab: 'characterart' },
+                CharacterartMusicTopRightFullscreenOffsetVw: { type: 'number', def: 2.5, tab: 'characterart' },
+                CharacterartMusicBottomLeftScaleMode: { type: 'text', def: 'Height', tab: 'characterart' },
+                CharacterartMusicBottomLeftHeightVh: { type: 'number', def: 30, tab: 'characterart' },
+                CharacterartMusicBottomLeftMaxWidthVw: { type: 'number', def: 30, tab: 'characterart' },
+                CharacterartMusicBottomLeftWidthVw: { type: 'number', def: '', tab: 'characterart' },
+                CharacterartMusicBottomLeftMaxHeightVh: { type: 'number', def: '', tab: 'characterart' },
+                CharacterartMusicBottomLeftHorizontalAlign: { type: 'text', def: 'Center', tab: 'characterart' },
+                CharacterartMusicBottomLeftOffsetVw: { type: 'number', def: -1.5, tab: 'characterart' },
+                CharacterartMusicBottomLeftFullscreenOffsetVw: { type: 'number', def: 0, tab: 'characterart' },
+                CharacterartMusicBottomRightScaleMode: { type: 'text', def: 'Height', tab: 'characterart' },
+                CharacterartMusicBottomRightHeightVh: { type: 'number', def: 30, tab: 'characterart' },
+                CharacterartMusicBottomRightMaxWidthVw: { type: 'number', def: 30, tab: 'characterart' },
+                CharacterartMusicBottomRightWidthVw: { type: 'number', def: '', tab: 'characterart' },
+                CharacterartMusicBottomRightMaxHeightVh: { type: 'number', def: '', tab: 'characterart' },
+                CharacterartMusicBottomRightHorizontalAlign: { type: 'text', def: 'Center', tab: 'characterart' },
+                CharacterartMusicBottomRightOffsetVw: { type: 'number', def: 1.5, tab: 'characterart' },
+                CharacterartMusicBottomRightFullscreenOffsetVw: { type: 'number', def: 0, tab: 'characterart' },
+                CharacterartMusicNamingMode: { type: 'select', def: 'Standalone', tab: 'characterart' },
+                CharacterartMusicTypeName: { type: 'text', def: 'cutout', tab: 'characterart' },
+                CharacterartMusicFolderName: { type: 'text', def: 'cutout', tab: 'characterart' },
+                CharacterartMusicMultiImage: { type: 'checkbox', def: false, tab: 'characterart' },
+                CharacterartMusicCycleTimeMs: { type: 'number', def: 5000, tab: 'characterart' },
+                CharacterartMusicFadeTimeMs: { type: 'number', def: 1000, tab: 'characterart' },
+                CharacterartMusicDelayEnabled: { type: 'checkbox', def: false, tab: 'characterart' },
+                CharacterartMusicDelayMs: { type: 'number', def: 5000, tab: 'characterart' },
+                CharacterartMusicSinglePass: { type: 'checkbox', def: false, tab: 'characterart' },
+                CharacterartMusicRandomStart: { type: 'checkbox', def: false, tab: 'characterart' },
+                CharacterartMusicStaySingleImageStatic: { type: 'checkbox', def: false, tab: 'characterart' },
+                CharacterartMusicOrderMode: { type: 'select', def: 'Shuffle', tab: 'characterart' },
+                CharacterartMusicUnnumberedMode: { type: 'select', def: 'Counts', tab: 'characterart' },
                 CharacterartShowOnGames: { type: 'checkbox', def: false, tab: 'characterart' },
                 CharacterartGamesMultiImage: { type: 'checkbox', def: true, tab: 'characterart' },
                 CharacterartGamesCycleTimeMs: { type: 'number', def: 5000, tab: 'characterart' },
@@ -12203,6 +12588,33 @@
                                 ]
                             },
                             {
+                                id: 'ca_music', terminal: true, target: ['characterartMusic'],
+                                when: [AnyChecked(['CharacterartShowOnArtists', 'CharacterartShowOnAlbums'])],
+                                children: [
+                                    {
+                                        id: 'ca_music_folder', target: ['CharacterartMusicFolderNameRow'],
+                                        when: [ValueIn('CharacterartMusicNamingMode', ['Folder'])], children: []
+                                    },
+                                    {
+                                        id: 'ca_music_multiimage',
+                                        target: ['CharacterartMusicCycleRow', 'CharacterartMusicFadeRow', 'CharacterartMusicDelayEnabledRow', 'CharacterartMusicSinglePassRow', 'CharacterartMusicOrderRow', 'CharacterartMusicUnnumberedRow'],
+                                        when: [AllChecked(['CharacterartMusicMultiImage'])], children: [{ id: 'ca_music_randomstart', target: ['CharacterartMusicRandomStartRow'], when: [ValueIn('CharacterartMusicOrderMode', ['Sequential']), NoneChecked(['CharacterartMusicSinglePass'])], children: [] }]
+                                    },
+                                    {
+                                        id: 'ca_music_delay', target: ['CharacterartMusicDelayRow'],
+                                        when: [AllChecked(['CharacterartMusicMultiImage', 'CharacterartMusicDelayEnabled'])], children: []
+                                    },
+                                    {
+                                        id: 'ca_music_staysingle', target: ['CharacterartMusicStaySingleImageStaticRow'],
+                                        when: [AllChecked(['CharacterartMusicMultiImage', 'CharacterartMusicSinglePass'])], children: []
+                                    },
+                                    epMakePositionNode('CharacterartMusic', 'TopLeft'),
+                                    epMakePositionNode('CharacterartMusic', 'TopRight'),
+                                    epMakePositionNode('CharacterartMusic', 'BottomLeft'),
+                                    epMakePositionNode('CharacterartMusic', 'BottomRight')
+                                ]
+                            },
+                            {
                                 id: 'ca_games', terminal: true, target: ['characterartGames'],
                                 when: [AllChecked(['CharacterartShowOnGames'])],
                                 children: [
@@ -12848,6 +13260,8 @@
                 ['CharacterartMoviesSinglePass', 'CharacterartMoviesSinglePassSelect'],
                 ['CharacterartTvShowsMultiImage', 'CharacterartTvShowsMultiImageSelect'],
                 ['CharacterartTvShowsSinglePass', 'CharacterartTvShowsSinglePassSelect'],
+                ['CharacterartMusicMultiImage', 'CharacterartMusicMultiImageSelect'],
+                ['CharacterartMusicSinglePass', 'CharacterartMusicSinglePassSelect'],
                 ['CharacterartGamesMultiImage', 'CharacterartGamesMultiImageSelect'],
                 ['CharacterartGamesSinglePass', 'CharacterartGamesSinglePassSelect']
             ];
@@ -13738,7 +14152,7 @@
             // load-time call: this loop only attaches 'change'/'input' listeners, and
             // without that call the Delay/Ms pairs would show the wrong enabled state
             // on a fresh page load until the user touches something.
-            var EP_DELAY_DEPENDENCY_PAIRS = [['ExtraposterMoviesDetailDelayEnabled', 'ExtraposterMoviesDetailDelayMs'], ['ExtraposterMoviesLibraryDelayEnabled', 'ExtraposterMoviesLibraryDelayMs'], ['ExtraposterTvShowsDetailDelayEnabled', 'ExtraposterTvShowsDetailDelayMs'], ['ExtraposterTvShowsLibraryDelayEnabled', 'ExtraposterTvShowsLibraryDelayMs'], ['ExtrakeyartMoviesDetailDelayEnabled', 'ExtrakeyartMoviesDetailDelayMs'], ['ExtrakeyartMoviesLibraryDelayEnabled', 'ExtrakeyartMoviesLibraryDelayMs'], ['ExtrakeyartTvShowsDetailDelayEnabled', 'ExtrakeyartTvShowsDetailDelayMs'], ['ExtrakeyartTvShowsLibraryDelayEnabled', 'ExtrakeyartTvShowsLibraryDelayMs'], ['CharacterartMoviesDelayEnabled', 'CharacterartMoviesDelayMs'], ['CharacterartTvShowsDelayEnabled', 'CharacterartTvShowsDelayMs'], ['CharacterartGamesDelayEnabled', 'CharacterartGamesDelayMs']];
+            var EP_DELAY_DEPENDENCY_PAIRS = [['ExtraposterMoviesDetailDelayEnabled', 'ExtraposterMoviesDetailDelayMs'], ['ExtraposterMoviesLibraryDelayEnabled', 'ExtraposterMoviesLibraryDelayMs'], ['ExtraposterTvShowsDetailDelayEnabled', 'ExtraposterTvShowsDetailDelayMs'], ['ExtraposterTvShowsLibraryDelayEnabled', 'ExtraposterTvShowsLibraryDelayMs'], ['ExtrakeyartMoviesDetailDelayEnabled', 'ExtrakeyartMoviesDetailDelayMs'], ['ExtrakeyartMoviesLibraryDelayEnabled', 'ExtrakeyartMoviesLibraryDelayMs'], ['ExtrakeyartTvShowsDetailDelayEnabled', 'ExtrakeyartTvShowsDetailDelayMs'], ['ExtrakeyartTvShowsLibraryDelayEnabled', 'ExtrakeyartTvShowsLibraryDelayMs'], ['CharacterartMoviesDelayEnabled', 'CharacterartMoviesDelayMs'], ['CharacterartTvShowsDelayEnabled', 'CharacterartTvShowsDelayMs'], ['CharacterartMusicDelayEnabled', 'CharacterartMusicDelayMs'], ['CharacterartGamesDelayEnabled', 'CharacterartGamesDelayMs']];
             EP_DELAY_DEPENDENCY_PAIRS
                 .forEach(function (pair) {
                     var enabledEl = document.getElementById(pair[0]);
@@ -13837,6 +14251,8 @@
                 'CharacterartMoviesBottomLeft', 'CharacterartMoviesBottomRight',
                 'CharacterartTvShowsTopLeft', 'CharacterartTvShowsTopRight',
                 'CharacterartTvShowsBottomLeft', 'CharacterartTvShowsBottomRight',
+                'CharacterartMusicTopLeft', 'CharacterartMusicTopRight',
+                'CharacterartMusicBottomLeft', 'CharacterartMusicBottomRight',
                 'CharacterartGamesTopLeft', 'CharacterartGamesTopRight',
                 'CharacterartGamesBottomLeft', 'CharacterartGamesBottomRight',
                 'RedCarpetBottomLeft', 'RedCarpetBottomRight',
@@ -14390,6 +14806,7 @@
                     epUpdateFadeCycleClamp('ExtrakeyartTvShowsLibraryCycleTimeMs', 'ExtrakeyartTvShowsLibraryFadeTimeMs');
                     epUpdateFadeCycleClamp('CharacterartMoviesCycleTimeMs', 'CharacterartMoviesFadeTimeMs');
                     epUpdateFadeCycleClamp('CharacterartTvShowsCycleTimeMs', 'CharacterartTvShowsFadeTimeMs');
+                    epUpdateFadeCycleClamp('CharacterartMusicCycleTimeMs', 'CharacterartMusicFadeTimeMs');
                     epUpdateFadeCycleClamp('CharacterartGamesCycleTimeMs', 'CharacterartGamesFadeTimeMs');
                     ApiClient.getPluginConfiguration(ArtworkPlusConfig.pluginUniqueId).then(function (config) {
                         Object.keys(EP_FIELDS).forEach(function (id) {

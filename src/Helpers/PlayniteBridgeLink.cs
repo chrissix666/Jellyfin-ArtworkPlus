@@ -38,6 +38,7 @@ internal static class PlayniteBridgeLink
     private static MethodInfo? _collectionImages;
     private static MethodInfo? _gameCase;
     private static MethodInfo? _gameCasePart;
+    private static MethodInfo? _setArtFade;
 
     /// <summary>True when Playnite Bridge's ArtworkPlusLink class is loaded (the plugin is installed, whether or not it has data yet).</summary>
     public static bool Present
@@ -102,6 +103,13 @@ internal static class PlayniteBridgeLink
 
     /// <summary>The image folder of the version whose CharacterArt is shown under the Version Change rule; null = none.</summary>
     public static string? GameFolder(Guid id, Guid? firstId) => VersionImageId(id, firstId, "Characterart") is Guid source ? GameFolder(source) : null;
+
+    /// <summary>
+    /// The one CharacterArt fade time of a game page (user 2026-11-18, the Coordinator's decision (c)): ArtworkPlus' stored
+    /// CharacterartGamesFadeTimeMs, handed to Playnite Bridge so its own CharacterArt (carrier Playnite Bridge) fades as long as
+    /// ours. Called at the server start and on every save; no such function in Playnite Bridge = nothing happens.
+    /// </summary>
+    public static void PushArtFadeMs(int ms) => Call(() => _setArtFade, ms);
 
     /// <summary>
     /// Playnite Bridge's "Settings From": false = Playnite Bridge draws the games' artwork itself, so every
@@ -208,6 +216,7 @@ internal static class PlayniteBridgeLink
                     _collectionImages = type.GetMethod("CollectionImages", new[] { typeof(Guid), typeof(string) });
                     _gameCase = type.GetMethod("GameCase", new[] { typeof(Guid), typeof(Guid) });
                     _gameCasePart = type.GetMethod("GameCasePart", new[] { typeof(Guid), typeof(string), typeof(string) });
+                    _setArtFade = type.GetMethod("SetArtworkPlusArtFadeMs", new[] { typeof(int) });
                     _present = true;
                 }
             }

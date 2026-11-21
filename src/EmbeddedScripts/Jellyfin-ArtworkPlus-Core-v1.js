@@ -159,10 +159,24 @@
         clearTimeout(s.timer);
         s.waiters.splice(0).forEach(function (fn) { fn(); });
     }
+    /**
+     * Playnite Bridge's in-place version switch is under way for the page's item (window.PlayniteBridge.switching(id),
+     * 2026-11-19): a navigation signal that is NOT the Bridge's own (the tv sheet's pop - Jellyfin's hashchange and
+     * viewshow come ~190 ms before the Bridge's pick) must not start a detail run - the Bridge's viewshow starts the one
+     * run. No such function, or any error: false (behaviour as before).
+     */
+    function pbSwitchPending(e) {
+        if (e && e.detail && e.detail.pbInPlace) { return false; }
+        var pb = window.PlayniteBridge;
+        if (!pb || typeof pb.switching !== 'function') { return false; }
+        var id = getItemIdFromHash();
+        try { return !!id && pb.switching(id) === true; } catch (x) { return false; }
+    }
     function pbEndSwitch() {
         if (pbSwitch) { pbReleaseSwitch(pbSwitch); pbSwitch = null; }
     }
     document.addEventListener('viewshow', function (e) {
+        if (pbSwitchPending(e)) { return; }   // Jellyfin's own router run during the Bridge's switch (2026-11-20): the switch goes on
         pbEndSwitch();
         if (!(e.detail && e.detail.pbInPlace)) { return; }
         // detail.pbGeneration: the pick's number, the same count as the release's generation.
@@ -517,6 +531,9 @@
      */
     function startPresenceHeartbeat(isPresent, recover, intervalMs) {
         function check() {
+            // Playnite Bridge's in-place switch under way: Jellyfin rebuilds the page and the element is briefly gone - the
+            // Bridge's own viewshow starts the one run (2026-11-20); the next tick or mutation checks again afterwards
+            if (pbSwitchPending()) { return; }
             if (!isPresent()) { recover(); }
         }
         setInterval(check, intervalMs || 750);
@@ -715,6 +732,7 @@
         document.addEventListener('viewshow', function () { lastHash = location.hash; });
         setInterval(function () {
             if (location.hash !== lastHash) {
+                if (pbSwitchPending()) { return; }   // checked again next tick, after the Bridge's switch
                 lastHash = location.hash;
                 onChange();
             }
@@ -840,7 +858,19 @@
             }, remaining);
         }
 
-        function start(images, orderMode, cycleMs, renderImage) {
+        function start(images, orderMode, cycleMs, renderImage, keepAt) {
+            // Playnite Bridge's version switch to another backdrop set that holds the picture standing now
+            // (2026-11-18, the Bridge's backdropHashes): the new list takes over at that picture - nothing is
+            // rendered, the standing picture finishes on its timer and the rotation goes on through the new list.
+            if (typeof keepAt === 'number' && keepAt >= 0 && keepAt < images.length && state._currentImageShownAt !== null) {
+                state.images = images;
+                state.index = keepAt;
+                state._randomBag = [];
+                state._orderMode = orderMode;
+                state._cycleMs = cycleMs;
+                state._lastRenderImage = renderImage;
+                return true;
+            }
             // Skipping the restart only because the incoming list equals
             // state.images is not enough: addImages() (the same-person
             // subpage-continuation path) only pushes URLs and never renders, so
@@ -917,6 +947,8 @@
         return {
             start: start,
             clear: clear,
+            // the picture on screen now (null before the first one is confirmed shown)
+            current: function () { return state._currentImageShownAt !== null && state.index >= 0 ? state.images[state.index] || null : null; },
             setPaused: function (paused) { state.paused = paused; },
             // Triggers one immediate, out-of-schedule tick using whatever
             // renderImage callback the last start() call supplied - lets a caller
@@ -1386,10 +1418,14 @@
     var navigationListeners = [];
     var navigationInstalled = false;
     var lastDispatchedHash = null;
-    function dispatchNavigation(source) {
+    function dispatchNavigation(source, e) {
+        if (pbSwitchPending(e)) { return; }   // the Bridge's own viewshow follows (2026-11-19)
         var hash = location.hash;
         if (hash === lastDispatchedHash && source !== 'viewshow') { return; }
         lastDispatchedHash = hash;
+        // how many navigation runs started, per source - read by the switch measurement ("runs per pick", Coordinator 2026-11-20)
+        var runs = window.ArtworkPlusNavRuns || (window.ArtworkPlusNavRuns = {});
+        runs[source] = (runs[source] || 0) + 1;
         navigationListeners.forEach(function (fn) {
             try { fn(hash, source); } catch (e) { /* one listener must not stop the others */ }
         });
@@ -1406,7 +1442,7 @@
         if (navigationInstalled) { return; }
         navigationInstalled = true;
         window.addEventListener('hashchange', function () { dispatchNavigation('hashchange'); });
-        document.addEventListener('viewshow', function () { dispatchNavigation('viewshow'); });
+        document.addEventListener('viewshow', function (e) { dispatchNavigation('viewshow', e); });
         setInterval(function () { dispatchNavigation('poll'); }, 1000);
         // The first load - the hash is already there, nothing will "change".
         // ONE boot dispatch for every listener, armed by the first
@@ -1653,8 +1689,9 @@
             });
         }
 
-        /** Starts (or restarts) the rotation for a fresh list. The bus must have been claimed already. */
-        function start(images, settings) {
+        /** Starts (or restarts) the rotation for a fresh list. The bus must have been claimed already.
+         *  keepAt: index in `images` of the picture standing now (a version switch that keeps it), else undefined. */
+        function start(images, settings, keepAt) {
             generation++;
             if (pendingCancel) { pendingCancel(); pendingCancel = null; }
             var cycleMs = Math.max(settings.CycleTimeMs || 0, Math.ceil(BACKDROP_FADE_MS * 1.5));
@@ -1669,7 +1706,7 @@
                     engine.removeFailedImage(failedUrl);
                     if (engine.peekNext() !== null || images.length > 1) { engine.advance(); } else { busEmpty(name); }
                 });
-            });
+            }, keepAt);
             // The same list kept running - the image is already on screen, so
             // this visit is ready now (otherwise the claim would stay open for
             // up to one cycle, until the next tick).
@@ -1726,6 +1763,7 @@
             start: start,
             render: render,
             addImages: function (urls) { engine.addImages(urls); },
+            current: function () { return engine.current(); },
             release: release,
             setPaused: function (p) { engine.setPaused(p); },
             hasContent: hasContent,
@@ -1770,6 +1808,7 @@
         backdropBus: { claim: busClaim, ready: busReady, empty: busEmpty, release: busRelease, state: busState },
         BACKDROP_FADE_MS: BACKDROP_FADE_MS,
         setDebug: setDebug,
+        pbSwitchPending: pbSwitchPending,
         isDebugTagEnabled: isDebugTagEnabled
     };
 })();

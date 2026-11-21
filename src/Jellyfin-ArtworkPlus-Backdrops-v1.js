@@ -154,9 +154,12 @@ var ArtworkPlusBackdropTransition = {
     var activeItemId = null;
     var fetchToken = 0;
 
-    async function loadForCurrentItem() {
+    // quiet: a Bridge in-place switch while nothing of ours is on screen - the claim waits for the answer, so a version without a
+    // backdrop of ours touches nothing (no claim/empty pair toggling .withBackdrop for one frame; 2026-11-19, mobile layout)
+    async function loadForCurrentItem(quiet) {
         var itemId = getItemIdFromHash();
         var myToken = ++fetchToken;
+        var empty = function () { if (!quiet) { owner.empty(); } };
         var settings;
         try {
             // Through ApiClient like the pools, so the server knows the user - a set's
@@ -167,7 +170,7 @@ var ArtworkPlusBackdropTransition = {
             settings = await window.ApiClient.getJSON(window.ApiClient.getUrl('Backdrops/settings', query));
         } catch (e) {
             log('The settings could not be loaded', e);
-            if (myToken === fetchToken) { owner.empty(); }
+            if (myToken === fetchToken) { empty(); }
             return;
         }
         if (myToken !== fetchToken) { return; }
@@ -175,16 +178,60 @@ var ArtworkPlusBackdropTransition = {
             // Not enabled for this type, or nothing to show (incl. a person
             // page: the server answers with no images) - vanilla alternative.
             log('Nothing to show for this item (Enabled=' + (settings && settings.Enabled) + ', images=' + (settings && settings.Images ? settings.Images.length : 0) + ') - Jellyfin\'s own display stays untouched');
-            owner.empty();
+            empty();
             return;
         }
+        if (quiet) { owner.claim('normal'); owner.beginVisit(); }
         var resolvedUrls = settings.Images.map(function (u) { return u.charAt(0) === '/' ? (window.ApiClient && window.ApiClient.serverAddress ? window.ApiClient.serverAddress() : '') + u : u; });
         var effective = settings;
         if (settings.ImageSource === 'Episode' && settings.EpisodeOrderMode) {
             effective = Object.assign({}, settings, { OrderMode: settings.EpisodeOrderMode });
         }
         log('Detail View images from server | source:', settings.ImageSource, '| count:', resolvedUrls.length, '| order:', effective.OrderMode);
-        owner.start(resolvedUrls, effective);
+        var keepAt = keepStandingAt(resolvedUrls, itemId);
+        if (keepAt !== undefined) { log('Version switch to another backdrop set that holds the standing picture - it stays, the rotation goes on through the new set'); }
+        owner.start(resolvedUrls, effective, keepAt);
+    }
+
+    // Playnite Bridge's in-place version switch carries the part keys of both versions (contract-version-switch-parts,
+    // 2026-11-17); its viewbeforehide comes before the navigation dispatch. A switch between two versions with the same
+    // backdrop set keeps the backdrop on screen (wanted state: equal content stays).
+    var pbSameBackdrops = null;   // { from, to } of the last in-place switch whose backdrops are equal
+    // { from, to, fromHashes, toHashes } of the last in-place switch to ANOTHER backdrop set: the picture standing now stays
+    // when the target set holds the same picture (same content hash; the Bridge's backdropHashes, index = BackdropImageTags
+    // index), and the rotation goes on through the new set (2026-11-18, the same rule as the Bridge's own backdrop engine)
+    var pbOtherBackdrops = null;
+    var pbInPlaceTo = null;   // the target of the last Bridge in-place switch (its viewbeforehide comes before the navigation)
+    var pbNormId = function (id) { return String(id || '').replace(/-/g, '').toLowerCase(); };
+    document.addEventListener('viewbeforehide', function (e) {
+        if (Core.pbSwitchPending && Core.pbSwitchPending(e)) { return; }   // Jellyfin's own router run during the Bridge's switch (2026-11-20)
+        var d = e && e.detail, p = d && d.pbParts;
+        pbInPlaceTo = d && d.pbInPlace ? pbNormId(d.toId || (d.params && d.params.id)) : null;
+        var both = d && d.pbInPlace && p && p.from && p.to && p.from.backdrops;
+        var ids = both ? { from: pbNormId(d.fromId), to: pbNormId(d.toId || (d.params && d.params.id)) } : null;
+        pbSameBackdrops = both && p.from.backdrops === p.to.backdrops ? ids : null;
+        // the Bridge sends backdropHashes as one comma-separated string (index order = BackdropImageTags); a list is taken too
+        var hashes = function (x) { return Array.isArray(x) ? x : (typeof x === 'string' && x ? x.split(',') : null); };
+        var fh = both && hashes(p.from.backdropHashes), th = both && hashes(p.to.backdropHashes);
+        pbOtherBackdrops = both && p.from.backdrops !== p.to.backdrops && fh && th
+            ? Object.assign({ fromHashes: fh, toHashes: th }, ids) : null;
+    }, true);
+
+    // The index in `urls` (the new version's list) of the picture standing now, when the new set holds it - else undefined.
+    function keepStandingAt(urls, itemId) {
+        var k = pbOtherBackdrops;
+        if (!k || pbNormId(itemId) !== k.to) { log('keep: no other-set switch for', itemId, k && k.to); return undefined; }
+        var shown = owner.current && owner.current();
+        var m = shown && /\/Items\/([0-9a-fA-F-]+)\/Images\/Backdrop\/(\d+)/.exec(shown);
+        if (!m || pbNormId(m[1]) !== k.from) { log('keep: standing picture', shown, 'is not of', k.from); return undefined; }
+        var hash = k.fromHashes[+m[2]];
+        var j = hash ? k.toHashes.indexOf(hash) : -1;
+        if (j < 0) { log('keep: standing picture', m[2], 'not in the new set'); return undefined; }
+        for (var i = 0; i < urls.length; i++) {
+            var u = /\/Items\/([0-9a-fA-F-]+)\/Images\/Backdrop\/(\d+)/.exec(urls[i]);
+            if (u && pbNormId(u[1]) === k.to && +u[2] === j) { return i; }
+        }
+        return undefined;
     }
 
     // --- navigation: claim/release synchronously on hashchange ---
@@ -209,12 +256,22 @@ var ArtworkPlusBackdropTransition = {
         }
         var itemId = getItemIdFromHash();
         if (itemId === activeItemId) { return; } // same item (return from video, viewshow repeat)
+        // a version switch with the same backdrops: the running backdrop answers for the new version
+        if (pbSameBackdrops && pbNormId(itemId) === pbSameBackdrops.to && pbNormId(activeItemId) === pbSameBackdrops.from) {
+            log('Version switch with the same backdrops - the backdrop stays for', itemId);
+            activeItemId = itemId;
+            return;
+        }
         activeItemId = itemId;
+        var quiet = !!pbInPlaceTo && pbNormId(itemId) === pbInPlaceTo && !(owner.current && owner.current());
+        pbInPlaceTo = null;
         // Same owner, different item: crossfade inside our own container -
-        // no release, just a new visit and a new claim.
-        owner.claim('normal');
-        owner.beginVisit();
-        loadForCurrentItem();
+        // no release, just a new visit and a new claim (on a quiet in-place switch: only once there are images).
+        if (!quiet) {
+            owner.claim('normal');
+            owner.beginVisit();
+        }
+        loadForCurrentItem(quiet);
     });
 
     // First load: Core.onNavigation arms the one boot dispatch for all owners.
@@ -351,6 +408,14 @@ var ArtworkPlusBackdropTransition = {
         return hash.split('?')[0].replace(/^#\/?/, '') === 'video';
     }
 
+    // the target of Playnite Bridge's in-place version switch (its viewbeforehide comes before the navigation dispatch)
+    var pbInPlaceTo = null;
+    document.addEventListener('viewbeforehide', function (e) {
+        if (Core.pbSwitchPending && Core.pbSwitchPending(e)) { return; }   // Jellyfin's own router run during the Bridge's switch (2026-11-20)
+        var d = e && e.detail;
+        pbInPlaceTo = d && d.pbInPlace ? String(d.toId || (d.params && d.params.id) || '').replace(/-/g, '').toLowerCase() || null : null;
+    }, true);
+
     // One "visit" = one person, across its info page and filmography lists
     // (same person, other scope = seamless continuation: the rotation keeps
     // running, the new scope's images are added). A different person or a
@@ -468,6 +533,13 @@ var ArtworkPlusBackdropTransition = {
         owner.setPaused(false);
 
         var detected = detectPersonAndScope();
+        // Playnite Bridge's in-place version switch is never a person page: no claim (a claim/empty pair toggles Jellyfin's
+        // .withBackdrop for a frame - the backdrop dip measured in the mobile layouts, 2026-11-19)
+        if (detected && pbInPlaceTo && String(detected.personId).replace(/-/g, '').toLowerCase() === pbInPlaceTo) {
+            pbInPlaceTo = null;
+            return;
+        }
+        pbInPlaceTo = null;
         if (!detected) {
             if (activePersonId !== null) { endVisit(); owner.release(); }
             return;

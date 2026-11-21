@@ -102,6 +102,12 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
         }
 
         base.UpdateConfiguration(configuration);
+
+        // the one CharacterArt fade time of game pages goes to Playnite Bridge too (its carrier fades as long as ours)
+        if (configuration is PluginConfiguration saved)
+        {
+            Helpers.PlayniteBridgeLink.PushArtFadeMs(saved.CharacterartGamesFadeTimeMs);
+        }
     }
 
     public IEnumerable<PluginPageInfo> GetPages()

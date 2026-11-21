@@ -61,6 +61,7 @@
     Core.installFullscreenClass();
 
     var runToken = 0;
+    var prefetched = null;   // the answer recheckInPlace already has, handed to the start() its schedule(true) leads to (one request per pick)
     var tracker = Core.createTimerTracker();
     var clearTimers = tracker.clearTimers;
     var track = tracker.track;
@@ -187,8 +188,10 @@
         log('Starting for item', itemId);
 
         var result;
+        var known = prefetched && prefetched.itemId === itemId ? prefetched : null;
+        prefetched = null;
         try {
-            result = await fetchResult(itemId);
+            result = known ? known.result : await fetchResult(itemId);
         } catch (e) {
             log('Error fetching', e);
             return;
@@ -318,10 +321,11 @@
 
     // switching = Playnite Bridge's in-place version switch with a different answer: the drawn box
     // fades out instead of vanishing; every other call removes everything at once.
-    function schedule(switching) {
+    function schedule(switching, known) {
         clearTimers();
         navTracker.clearTimers();
         runToken++;
+        prefetched = known || null;
         if (switching) {
             keepAsOutgoing();
         } else {
@@ -355,7 +359,7 @@
             log('In-place version switch: same Characterart, box kept for', itemId);
             return;
         }
-        schedule(true);
+        schedule(true, itemId && result ? { itemId: itemId, result: result } : null);
     }
 
     // On a hard reload the 1 200 ms cold-start timer below fires BEFORE
@@ -366,6 +370,7 @@
     // schedule().
     document.addEventListener('viewshow', function (e) {
         if (Core.isBootRaceRepeat(startedFor)) { return; }
+        if (Core.pbSwitchPending && Core.pbSwitchPending(e)) { return; }   // the Bridge's own viewshow follows (2026-11-19)
         if (e.detail && e.detail.pbInPlace && runningSig) { recheckInPlace(); return; }
         schedule();
     });
@@ -534,7 +539,7 @@
     }
 
     // See the Characterart note on the boot race.
-    document.addEventListener('viewshow', function () { if (Core.isBootRaceRepeat(startedFor)) { return; } schedule(); });
+    document.addEventListener('viewshow', function (e) { if (Core.isBootRaceRepeat(startedFor)) { return; } if (Core.pbSwitchPending && Core.pbSwitchPending(e)) { return; } schedule(); });
     Core.watchForNavigation(schedule);
     track(setTimeout(function () {
         if (contentReady) { return; }
@@ -587,6 +592,7 @@
     Core.ensureRenderArtStyles();
 
     var runToken = 0;
+    var prefetched = null;   // the answer recheckInPlace already has, handed to the start() its schedule(true) leads to (one request per pick)
     var tracker = Core.createTimerTracker();
     var clearTimers = tracker.clearTimers;
     var track = tracker.track;
@@ -883,8 +889,10 @@
         startedFor = { hash: location.hash, at: performance.now() };
 
         var result = null;
+        var known = prefetched && prefetched.itemId === itemId ? prefetched : null;
+        prefetched = null;
         try {
-            result = await fetchResult(itemId);
+            result = known ? known.result : await fetchResult(itemId);
         } catch (e) {
             log('Error fetching', e);
         }
@@ -975,10 +983,11 @@
 
     // switching = Playnite Bridge's in-place version switch with a different answer: the drawn box
     // fades out instead of vanishing; every other call removes everything at once.
-    function schedule(switching) {
+    function schedule(switching, known) {
         clearTimers();
         navTracker.clearTimers();
         runToken++;
+        prefetched = known || null;
         if (switching) {
             keepAsOutgoing();
             if (resizeHandler) { window.removeEventListener('resize', resizeHandler); resizeHandler = null; }
@@ -1013,7 +1022,7 @@
             log('In-place version switch: same answer, box kept for', itemId);
             return;
         }
-        schedule(true);
+        schedule(true, itemId && result ? { itemId: itemId, result: result } : null);
     }
 
     // On a hard reload the 1 200 ms cold-start timer below fires BEFORE
@@ -1024,6 +1033,7 @@
     // schedule().
     document.addEventListener('viewshow', function (e) {
         if (Core.isBootRaceRepeat(startedFor)) { return; }
+        if (Core.pbSwitchPending && Core.pbSwitchPending(e)) { return; }   // the Bridge's own viewshow follows (2026-11-19)
         if (e.detail && e.detail.pbInPlace && runningSig) { recheckInPlace(); return; }
         schedule();
     });

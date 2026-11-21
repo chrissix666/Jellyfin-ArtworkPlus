@@ -2261,6 +2261,105 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Multi image - whether the file without a number (e.g. "characterart.png") is the first image - "Counts" (default) or "Ignored".</summary>
     public string CharacterartTvShowsUnnumberedMode { get; set; } = "Counts";
 
+    // ───────────── CharacterArt: Music (artist folders) ─────────────
+    // The TV shows block for MusicArtist and MusicAlbum pages: the files lie in the artist's own folder (an album reads its
+    // album artist's, as a season reads its show's; Standalone or Folder naming). Defaults: file name "cutout", single image;
+    // position and sizes as Movies / TV shows.
+    public bool CharacterartShowOnArtists { get; set; } = true;
+
+    public bool CharacterartShowOnAlbums { get; set; } = true;
+
+    public string CharacterartMusicPosition { get; set; } = "TopRight";
+
+    public string CharacterartMusicTopLeftScaleMode { get; set; } = "Height";
+
+    public double CharacterartMusicTopLeftHeightVh { get; set; } = 20;
+
+    public double CharacterartMusicTopLeftMaxWidthVw { get; set; } = 12;
+
+    public double CharacterartMusicTopLeftWidthVw { get; set; } = 11.5;
+
+    public double CharacterartMusicTopLeftMaxHeightVh { get; set; }
+
+    public string CharacterartMusicTopLeftHorizontalAlign { get; set; } = "Center";
+
+    public double CharacterartMusicTopLeftOffsetVw { get; set; } = 4;
+
+    public double CharacterartMusicTopLeftFullscreenOffsetVw { get; set; } = -2.5;
+
+    public string CharacterartMusicTopRightScaleMode { get; set; } = "Height";
+
+    public double CharacterartMusicTopRightHeightVh { get; set; } = 20;
+
+    public double CharacterartMusicTopRightMaxWidthVw { get; set; } = 12;
+
+    public double CharacterartMusicTopRightWidthVw { get; set; } = 11.5;
+
+    public double CharacterartMusicTopRightMaxHeightVh { get; set; }
+
+    public string CharacterartMusicTopRightHorizontalAlign { get; set; } = "Center";
+
+    public double CharacterartMusicTopRightOffsetVw { get; set; } = -5;
+
+    public double CharacterartMusicTopRightFullscreenOffsetVw { get; set; } = 2.5;
+
+    public string CharacterartMusicBottomLeftScaleMode { get; set; } = "Height";
+
+    public double CharacterartMusicBottomLeftHeightVh { get; set; } = 30;
+
+    public double CharacterartMusicBottomLeftMaxWidthVw { get; set; } = 30;
+
+    public double CharacterartMusicBottomLeftWidthVw { get; set; } = 11.5;
+
+    public double CharacterartMusicBottomLeftMaxHeightVh { get; set; }
+
+    public string CharacterartMusicBottomLeftHorizontalAlign { get; set; } = "Center";
+
+    public double CharacterartMusicBottomLeftOffsetVw { get; set; } = -1.5;
+
+    public double CharacterartMusicBottomLeftFullscreenOffsetVw { get; set; }
+
+    public string CharacterartMusicBottomRightScaleMode { get; set; } = "Height";
+
+    public double CharacterartMusicBottomRightHeightVh { get; set; } = 30;
+
+    public double CharacterartMusicBottomRightMaxWidthVw { get; set; } = 30;
+
+    public double CharacterartMusicBottomRightWidthVw { get; set; } = 11.5;
+
+    public double CharacterartMusicBottomRightMaxHeightVh { get; set; }
+
+    public string CharacterartMusicBottomRightHorizontalAlign { get; set; } = "Center";
+
+    public double CharacterartMusicBottomRightOffsetVw { get; set; } = 1.5;
+
+    public double CharacterartMusicBottomRightFullscreenOffsetVw { get; set; }
+
+    public string CharacterartMusicNamingMode { get; set; } = "Standalone";
+
+    public string CharacterartMusicTypeName { get; set; } = "cutout";
+
+    public string CharacterartMusicFolderName { get; set; } = "cutout";
+
+    public bool CharacterartMusicMultiImage { get; set; }
+
+    public int CharacterartMusicCycleTimeMs { get; set; } = 5000;
+
+    public int CharacterartMusicFadeTimeMs { get; set; } = 1000;
+
+    public bool CharacterartMusicDelayEnabled { get; set; }
+
+    public int CharacterartMusicDelayMs { get; set; } = 5000;
+
+    public bool CharacterartMusicSinglePass { get; set; }
+
+    public bool CharacterartMusicRandomStart { get; set; }
+
+    public bool CharacterartMusicStaySingleImageStatic { get; set; }
+
+    public string CharacterartMusicOrderMode { get; set; } = "Shuffle";
+
+    public string CharacterartMusicUnnumberedMode { get; set; } = "Counts";
     // ───────────── CharacterArt: Games (Playnite Bridge's virtual games) ─────────────
     // The Movies block without its naming rows: a game's files are read in its game folder with the
     // Movies naming (Prefixed reads as Standalone - the folder name carries Playnite Bridge's short id).

@@ -10,19 +10,19 @@
     "versions": [
       {
         "version": "2.0.0.0",
-        "changelog": "(Jellyfin 12.0+) Game pages: a version switch to the same pictures keeps the case standing, other pictures are a normal page change; one 3D renderer per tab and a lighter case build; game case size convention (same front width, all on one floor); a slow case answer no longer shows the 2D poster first",
+        "changelog": "(Jellyfin 12.0+) Game pages: every switch between a 3D case, Box 3D and 2D is one clean cut, the case keeps its size and zoom on a version switch; CharacterArt for music artists and albums",
         "targetAbi": "12.0.0.0",
         "sourceUrl": "https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases/download/v2.0.0.0/ArtworkPlus_2.0.0.0_jellyfin-12.x.zip",
-        "checksum": "7fd8e38c21e57fbae1f412c483345716",
-        "timestamp": "2026-11-17T02:49:00Z"
+        "checksum": "e1da95cbe7bb28e158deac4bc48b748a",
+        "timestamp": "2026-11-21T21:36:48Z"
       },
       {
         "version": "1.1.0.0",
-        "changelog": "(Jellyfin 10.10.7) Game pages: a version switch to the same pictures keeps the case standing, other pictures are a normal page change; one 3D renderer per tab and a lighter case build; game case size convention (same front width, all on one floor); a slow case answer no longer shows the 2D poster first",
+        "changelog": "(Jellyfin 10.10.7) Game pages: every switch between a 3D case, Box 3D and 2D is one clean cut, the case keeps its size and zoom on a version switch; CharacterArt for music artists and albums",
         "targetAbi": "10.10.7.0",
         "sourceUrl": "https://github.com/chrissix666/Jellyfin-ArtworkPlus/releases/download/v1.1.0.0/ArtworkPlus_1.1.0.0_jellyfin-10.10.7.zip",
-        "checksum": "7493c93334081d7cfd60790727f1d5f1",
-        "timestamp": "2026-11-17T02:49:01Z"
+        "checksum": "851dc8350f1a45af76dbcfdbdca4cf00",
+        "timestamp": "2026-11-21T21:36:48Z"
       },
       {
         "version": "1.0.0.0",
