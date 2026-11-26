@@ -18,6 +18,9 @@ Please also have a look at my other plugins:
 - [VideoOSD Tweaks and Candy](https://github.com/chrissix666/Jellyfin-VideoOSD-Tweaks-Candy): puts you in full control of the Jellyfin video player OSD
 - [Destroy](https://github.com/chrissix666/Jellyfin-Destroy): turns the Jellyfin page you are looking at into a game level
 - [VisoMaster Bridge](https://github.com/chrissix666/Jellyfin-VisoMaster-Bridge): swaps faces in the film you are watching, with [VisoMaster Fusion](https://github.com/VisoMasterFusion/VisoMaster-Fusion)
+- [Playnite Bridge](https://github.com/chrissix666/Jellyfin-Playnite-Bridge): shows your Playnite games as a Jellyfin library, and works with ArtworkPlus
+- [Globe](https://github.com/chrissix666/Jellyfin-Globe): your Jellyfin libraries as a 3D globe
+- [Essentials](https://github.com/chrissix666/Jellyfin-Essentials): eight Jellyfin Web additions in one plugin: buttons, richer detail pages, ratings, hover previews, keyboard navigation
 
 ---
 
@@ -97,6 +100,8 @@ Many of us have much more in our folders: keyart, postercases, extra posters, ch
 This plugin changes that. Your poster sits in a Blu-ray case that opens and spins its disc. Or in a real 3D case you can grab, turn and zoom, printed front, spine and back from the movie's own artwork. The detail page cycles through alternative posters. Characters stand next to the title. Actresses stand at the bottom of their person page. People get their own name clearlogo. And almost every page gets backdrops of its own, with a slow Ken Burns zoom and pan.
 
 Fully configurable down to the smallest detail.
+
+With [Playnite Bridge](https://github.com/chrissix666/Jellyfin-Playnite-Bridge) installed, your Playnite games get the same treatment as movies: a Games row in Poster Size, a 3D game case, Box 3D, LogoArt, CharacterArt and Backdrops. These rows are hidden while Playnite Bridge is not installed, and they only take effect while Playnite Bridge's **Settings From** is set to ArtworkPlus.
 
 **Feature example: one person page, three features**
 
@@ -323,8 +328,9 @@ Make the detail page poster bigger or smaller, and pin it wherever you like. Wit
 
 - **Poster size:** on or off
 - **General or Individual:** one size for everything, or each kind sets its own
-- **Size per kind:** All, or Movies, Sets, Series, Seasons, Episodes and Videos (every kind not named before) separately. 10 to 200 percent, 100 is how Jellyfin draws it.
+- **Size per kind:** All, or Movies, Sets, Series, Seasons, Episodes, Videos and, with Playnite Bridge, Games (every kind not named before) separately. 10 to 200 percent, 100 is how Jellyfin draws it.
 - **Anchor per kind:** Default, Top left, Top center, Top right, Center left, Center, Center right, Bottom left, Bottom center, Bottom right
+- **Box 3D** (Playnite Bridge only, off by default): game pages show the rendered box picture in place of the 2D poster, with its own size and anchor.
 
 ---
 
@@ -377,11 +383,11 @@ For fine-tuning and testing, behind their own **Developer settings** switch:
 
 ### Three.js Case
 
-*Movies only, experimental.*
+*Movies and games, experimental.*
 
 It needs a browser with 3D support (WebGL). It works in desktop browsers and in Jellyfin Media Player. Other Jellyfin apps, mobile and TV, get the normal 2D case instead.
 
-This one is special. A real 3D keep case, rendered live in your browser. It replaces the case type above for movies. You can grab it and turn it around, zoom in with the mouse wheel, and look at the back.
+This one is special. A real 3D keep case, rendered live in your browser. It replaces the case type above for movies, and for games with Playnite Bridge. You can grab it and turn it around, zoom in with the mouse wheel, and look at the back.
 
 <a href="https://youtu.be/v8RC8PO3-wQ"><img src="images/threejs-case-video.jpg" width="100%" alt="Three.js Case video"></a>
 
@@ -436,6 +442,21 @@ The front always shows the poster.
 - **Spine:** Movie logo, Studio logo, Format mark, Code (the TMDb number)
 - **Open case:** Automatic, On click automatic, On click. Delay up to one minute, open angle 0 to 180°.
 - **Spinning disc:** Automatic, On click automatic, On click, direction Left or Right
+
+**Game cases**
+
+Switch on **Three.js Case Games** (off by default; the row appears only with Playnite Bridge). It has its own settings next to the movie ones: Box and Disc case on/off, **Form without spine**, **Shape from** (front, mean or back picture), **Box sides**, **Box edges**, **Booklet**, and the usual size, turn, tilt, zoom, rotation, open and disc rows.
+
+- **Game Disc Case:** a Blu-ray-style case without the head band. Consoles always get this one. The plastic takes the colour of the platform: black for PC, silver-white for PlayStation 3, blue for PlayStation 4 and 5, green for Xbox, Xbox One and Series, light green for Xbox 360.
+- **Game Box Case:** for older PC games that came in a box. It has no platform colour. Sides without a picture take a colour from the spine or the front (setting **Box sides**).
+- Which form a PC game gets is decided per version: by the proportion of its spine picture, otherwise by release year (up to 2005 a box). A file `casetype.txt` (one word, `box` or `disc`) in the game's folder forces the form.
+- The **Booklet** (Off, Black, B/W fanart, Blurred fanart; Black by default) shows the game's logo, publisher and developer. Without a logo there is no booklet, and the box has none.
+
+Logos are never recoloured, and the shape follows your cover pictures. A game version without box front and back pictures (JPEG or PNG) gets no case.
+
+The hinge tabs stay with the lid and the tray when the case opens (Blu-ray, 4K, DVD and game disc case). Only the 3D cases have them.
+
+Switching a game page between a 3D case, Box 3D and a 2D poster is one clean cut, and a case that stays across a version switch keeps its size and zoom.
 
 ---
 
@@ -758,6 +779,10 @@ Every type has a **Source**, a **Fallback** and a **Second fallback**, Persons h
 
 - **Settings:** Take over Movies or Individual. Individual gives sets the same options as movies, except Source mode.
 
+**Games** (Playnite Bridge only)
+
+- The same options as Movies, with their own settings.
+
 ---
 
 ### Clearlogos / Clearart / Characterart for TV Shows
@@ -860,7 +885,7 @@ TV show characterart has official support on [fanart.tv](https://fanart.tv/tv-fa
 **Settings (tab-wide)**
 
 - **Allowed image formats:** .jpg, .jpeg, .png, .webp, .gif, .tbn, .svg. Empty disables CharacterArt.
-- **Show on:** Movies, Sets, TV shows, Seasons, Episodes. Season and episode pages always show the parent show's characterart.
+- **Show on:** Movies, Sets, TV shows, Seasons, Episodes, Artists, Albums and, with Playnite Bridge, Games. Season and episode pages always show the parent show's characterart. Artists and Albums are on by default, Games is off by default.
 
 ---
 
@@ -882,6 +907,22 @@ The same set of options, always read from the show's main folder, whichever page
 - **Naming mode:** Standalone or Folder
 - **Type name** and **Folder name:** freely changeable
 - Image mode, multi-image slideshow and position as above
+
+---
+
+### Characterart for Music
+
+An artist's page shows characterart from the artist's own folder. Album pages show the album artist's characterart.
+
+- **Naming mode:** Standalone or Folder
+- **Type name** and **Folder name:** freely changeable. The default file name is `cutout`.
+- **Image mode:** Single image by default, Multi image optional. Position and sizes as above.
+
+---
+
+### Characterart for Games
+
+With Playnite Bridge. The same options as Movies without the naming rows: a game's characterart is read from the game's own folder.
 
 ---
 
@@ -988,7 +1029,7 @@ The item's own backdrops behind its detail page, with your rules. This replaces 
 **Settings**
 
 - **Enable native Backdrops override**
-- **Show on:** Movies, Sets, TV shows, Seasons, Episodes, Videos. Each one on its own, unchecked ones stay vanilla.
+- **Show on:** Movies, Sets, TV shows, Seasons, Episodes, Videos and, with Playnite Bridge, Games and Game collections. Each one on its own, unchecked ones stay vanilla.
 - **Cycle time**, **Ken Burns effect**, **Zoom speed**, **Pan speed**
 - **Order:** Sequential (Jellyfin's order), Shuffle, Random
 - **Random start position**
@@ -1071,6 +1112,17 @@ If nothing is found, nothing is shown.
 
 ---
 
+### Game Collection Backdrops
+
+With Playnite Bridge. Game collection pages can have their own backdrops. All of this is off by default.
+
+- **Source:** Own, Games, Own then games, Mixed. Default Games.
+- **Own images** (default Multiple) and **Game images** (default Single), each with its own order
+- **Game order:** Release date ascending or descending, Shuffle, Random. Default ascending.
+- **Random start position:** on by default
+
+---
+
 ### Library View Backdrops
 
 Random backdrops behind the Home, library and search pages. This replaces Jellyfin's own **Backdrops** display setting, and goes further.
@@ -1079,7 +1131,7 @@ Random backdrops behind the Home, library and search pages. This replaces Jellyf
 
 - **Enable native Backdrops override**
 - **Show on (vanilla):** Home (including Favorites), Movies, TV shows, Music. The pages Jellyfin's own setting covers.
-- **Show on (custom):** Sets, Search, User settings. Pages Jellyfin never gives a backdrop.
+- **Show on (custom):** Sets, Search, User settings and, with Playnite Bridge, Games. Pages Jellyfin never gives a backdrop.
 - **Home rating cap:** PG-13 or Off. On Home, Favorites, Search and User settings, vanilla only shows titles up to PG-13. Off shows every rating.
 - **Cycle time**, **Ken Burns effect**, **Zoom speed**, **Pan speed**
 - **Order:** Sequential, Shuffle, Random
@@ -1345,7 +1397,7 @@ If that happens: open your browser's DevTools (right-click anywhere, **Inspect**
 
 ## Developed For & Tested On
 
-- Designed and written for Jellyfin Web 10.10.7 and 12.0+
+- Designed and written for Jellyfin Web 10.10.7 and 12.0+ (tested on 12.1)
 - Google Chrome
 - Windows 11
 
